@@ -375,11 +375,17 @@ STAND_DOWN_PHRASES = [
     'תרגיל',             # Drill / exercise
 ]
 
-# Pre-alert warnings — not threats, not standdowns
+# Pre-alert warnings — imminent attack, tells people to PREPARE/SHELTER
+# These are THREATS, not standdowns! They say "alerts expected in your area soon"
 PRE_ALERT_PHRASES = [
     'צפויות להתקבל',     # Expected to receive (alerts)
     'בדקות הקרובות',     # In the coming minutes
     'היערכות',            # Preparation
+    'לשפר את המיקום',    # Improve your position (to shelter)
+    'למיגון המיטבי',     # To best protection
+    'להיכנס למרחב המוגן', # Enter the protected space
+    'להישאר במרחב המוגן', # Stay in the protected space
+    'לשהות בו עד',       # Stay in it until
 ]
 
 # Categories that are real threats vs informational
@@ -402,14 +408,17 @@ try:
         desc = a.get('desc', '')
         combined = f'{title} {desc}'
         
-        # Check if this is a stand-down message by content
-        is_standdown = any(phrase in combined for phrase in STAND_DOWN_PHRASES)
+        # PRIORITY 1: Check pre-alert phrases FIRST — these override standdown detection
+        # A message saying "ניתן לצאת" BUT ALSO "בדקות הקרובות צפויות להתקבל התרעות"
+        # is a PRE-ALERT (imminent attack), NOT a standdown!
         is_prealert = any(phrase in combined for phrase in PRE_ALERT_PHRASES)
+        is_standdown = any(phrase in combined for phrase in STAND_DOWN_PHRASES)
         
-        if is_standdown:
-            has_standdown = True
-        elif is_prealert:
-            has_standdown = True  # Pre-alerts are informational, not threats
+        if is_prealert:
+            # Pre-alert = imminent attack warning = THREAT
+            has_threat = True
+        elif is_standdown and not is_prealert:
+            # Pure standdown (no pre-alert phrases) = informational
             has_standdown = True
         elif cat in THREAT_CATS:
             has_threat = True
@@ -1095,7 +1104,7 @@ elif level == 'MINOR_ISSUES':
     lines.append('')
 
 lines.append('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-lines.append('📡 <b>@magenyehudaupdates</b> | Magen Yehuda')
+lines.append('📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}')
 
 print('\n'.join(lines))
 " 2>/dev/null)
@@ -1210,6 +1219,85 @@ check_strike_correlation() {
   fi
 }
 
+# ──────────────────────────────────────────────────────────
+# CYBER WARFARE MONITOR
+# ──────────────────────────────────────────────────────────
+check_cyber() {
+  log "🛡️  Scanning cyber threat sources..."
+  local raw_alerts
+  raw_alerts=$(python3 "$SKILL_DIR/scripts/scan-cyber.py" "$CONFIG_FILE" "$STATE_DIR" 2>>"$SKILL_DIR/state/watcher.log")
+  local exit_code=$?
+
+  if [ $exit_code -ne 0 ]; then
+    log "  ⚠️  Cyber scan failed"
+    return
+  fi
+
+  local alert_count
+  alert_count=$(echo "$raw_alerts" | python3 -c "import sys,json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+
+  log "  🛡️  Cyber alerts: $alert_count"
+
+  if [ "${alert_count:-0}" = "0" ] || [ "${alert_count:-0}" -lt 1 ]; then
+    return
+  fi
+
+  # Format the alerts into bilingual summary
+  local formatted
+  formatted=$(echo "$raw_alerts" | python3 -c "
+import sys, json
+sys.path.insert(0, '$SKILL_DIR/scripts')
+from scan_cyber import format_cyber_summary
+alerts = json.load(sys.stdin)
+result = format_cyber_summary(alerts)
+print(json.dumps(result, ensure_ascii=False))
+" 2>/dev/null)
+
+  if [ -z "$formatted" ]; then
+    # Fallback: use scan-cyber's own formatter via import
+    formatted=$(python3 -c "
+import sys, json
+sys.path.insert(0, '$SKILL_DIR/scripts')
+raw = json.loads('''$raw_alerts''')
+
+# Simple inline formatter
+lines_en = ['🛡️ <b>CYBER INTELLIGENCE</b>', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━']
+lines_he = ['\u200F🛡️ <b>מודיעין סייבר</b>', '\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━']
+for a in raw[:6]:
+    en_line = a.get('attack_label_en','⚡') + ' <b>' + a.get('group_name', a.get('channel','?'))[:30] + '</b>: ' + a.get('text','')[:120]
+    he_line = '\u200F' + a.get('attack_label_he','⚡') + ' <b>' + a.get('group_name', a.get('channel','?'))[:30] + '</b>: ' + a.get('text','')[:120]
+    link = a.get('link','')
+    if link:
+        en_line += ' <a href=\"' + link + '\">[↗]</a>'
+        he_line += ' <a href=\"' + link + '\">[↗]</a>'
+    lines_en.append(en_line)
+    lines_he.append(he_line)
+print(json.dumps({'text_en': '\n'.join(lines_en), 'text_he': '\n'.join(lines_he), 'count': len(raw)}, ensure_ascii=False))
+" 2>/dev/null)
+  fi
+
+  local text_en text_he max_severity
+  text_en=$(echo "$formatted" | python3 -c "import sys,json; print(json.load(sys.stdin).get('text_en',''))" 2>/dev/null)
+  text_he=$(echo "$formatted" | python3 -c "import sys,json; print(json.load(sys.stdin).get('text_he',''))" 2>/dev/null)
+
+  # Determine max severity from alerts
+  max_severity=$(echo "$raw_alerts" | python3 -c "
+import sys,json
+alerts = json.load(sys.stdin)
+order = {'CRITICAL':3,'HIGH':2,'MEDIUM':1,'LOW':0}
+best = max((order.get(a.get('severity','MEDIUM'),1) for a in alerts), default=1)
+rev = {0:'LOW',1:'MEDIUM',2:'HIGH',3:'CRITICAL'}
+print(rev.get(best,'MEDIUM'))
+" 2>/dev/null || echo "MEDIUM")
+
+  if [ -n "$text_en" ] || [ -n "$text_he" ]; then
+    emit_alert "cyber" "$max_severity" "$text_he" "$text_en"
+    log "  ✅ Cyber intel alert dispatched ($alert_count events, severity: $max_severity)"
+
+    log_intel "{\"type\":\"cyber_scan\",\"count\":$alert_count,\"severity\":\"$max_severity\"}"
+  fi
+}
+
 # ══════════════════════════════════════════════════════════════
 # MAIN LOOP
 # ══════════════════════════════════════════════════════════════
@@ -1288,10 +1376,11 @@ while true; do
     LAST_FIRES_CHECK=$NOW
   fi
 
-  # Extended intel: blackout + military flights (less frequent)
+  # Extended intel: blackout + military flights + cyber warfare (less frequent)
   if [ $((NOW - LAST_INTEL_CHECK)) -ge $EFFECTIVE_INTEL ]; then
     check_blackout
     check_military_flights
+    check_cyber
     LAST_INTEL_CHECK=$NOW
   fi
 

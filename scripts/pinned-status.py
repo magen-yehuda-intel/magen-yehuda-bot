@@ -215,6 +215,7 @@ def generate_status_en(config, state):
 {on} ✈️ <b>Mil. Flights</b> — live
 {on} 🌐 <b>Iran Internet</b> — IODA
 {on} 🎯 <b>Correlations</b> — auto
+{on} 🛡 <b>Cyber Intel</b> — 30+ groups
 
 ━━━━━━━━━━━━━━━━━
 
@@ -293,6 +294,7 @@ def generate_status_he(config, state):
 {R}✈️ טיסות צבאיות — {on} חי
 {R}🌐 אינטרנט איראן — {on} בדיקות
 {R}🎯 קורלציית תקיפות — {on} אוטו
+{R}🛡 מודיעין סייבר — {on} 30+ קבוצות
 
 {R}━━━━━━━━━━━━━━━━━
 

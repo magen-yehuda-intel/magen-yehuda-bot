@@ -9,7 +9,7 @@ Multi-source intelligence aggregation for Iran/Israel/US military escalation. Ad
 
 ## What It Does
 
-Monitors 30+ intelligence sources across 11 categories, auto-adjusts polling frequency based on threat level, auto-detects breaking news from credible sources, and pushes instant bilingual alerts to Telegram channels:
+Monitors 40+ intelligence sources across 12 categories, auto-adjusts polling frequency based on threat level, auto-detects breaking news from credible sources, and pushes instant bilingual alerts to Telegram channels:
 
 | Source | Channels | Speed | Auth Required |
 |--------|----------|-------|---------------|
@@ -24,6 +24,9 @@ Monitors 30+ intelligence sources across 11 categories, auto-adjusts polling fre
 | ✈️ **Military Flights** | ADS-B (OpenSky) | 5-30min | None |
 | ✈️ **Flight Radar** | FR24 air traffic | Hourly map | None |
 | 🎯 **Strike Correlation** | Fire + seismic fusion | After each scan | None |
+| 🛡️ **Cyber Warfare** | ~25 hacktivist TG channels | 5-30min | None |
+| 🛡️ **Cyber CTI Twitter** | 8 CTI accounts | 5-30min | None |
+| 🛡️ **Dark Web / Breach RSS** | 4+ feeds | 5-30min | None |
 
 ### Key Features
 
@@ -37,6 +40,8 @@ Monitors 30+ intelligence sources across 11 categories, auto-adjusts polling fre
 - **Live pinned status dashboard** — Single message edited every 60s with full system state
 - **Bilingual hourly reports** — Intel map + flight map + Hebrew summary + English summary + 24h time-lapse GIF
 - **Wire service integration** — Reuters and AP News via Google News RSS proxy (direct feeds are Cloudflared)
+- **Cyber warfare monitor** — 30+ hacktivist groups (Handala, CyberAv3ngers, Predatory Sparrow, etc.), CTI Twitter, dark web feeds
+- **Attack classification** — Auto-categorizes ICS/SCADA, data breach, ransomware, DDoS, espionage with severity scoring
 
 ## Quick Start
 
@@ -227,7 +232,7 @@ Netanyahu, Biden, Trump, IDF confirms, Pentagon confirms, Reuters, Associated Pr
 - **Nuclear events** — Nuclear detonation, nuclear strike, nuclear bomb
 - **Compound matching** — Words appearing anywhere in text (e.g., "khamenei" + "dead")
 
-## OSINT Sources (30+ channels)
+## OSINT Sources (40+ channels)
 
 ### Telegram OSINT Channels (10)
 | Channel | Description |
@@ -448,6 +453,71 @@ https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=
 - Both are treated as **credible sources** — alerts skip "UNVERIFIED" label
 - Works reliably, returns dozens of items per feed
 
+## 🛡️ Cyber Warfare Monitor
+
+Monitors 30+ hacktivist groups, cyber threat intel aggregators, and dark web breach feeds for Iran-Israel cyber operations. Auto-classifies attacks and dispatches bilingual alerts.
+
+### Hacktivist Groups Monitored
+
+**Pro-Iran / Pro-Palestinian:**
+
+| Group | Affiliation | Threat | Known TTPs |
+|-------|-------------|--------|------------|
+| **Handala Hack** | IRGC-linked | HIGH | Data leak, wiper malware, Telegram hijack |
+| **CyberAv3ngers** | IRGC | CRITICAL | ICS/SCADA attacks, PLC exploits (water, power) |
+| **Moses Staff** | IRGC | HIGH | Data leak, encryption, extortion |
+| **Cyber Toufan** | Iran-linked | HIGH | Hack-and-leak, data destruction |
+| **DieNet** | Pro-Iran | MEDIUM | DDoS (emergency systems, broadcasting) |
+| **Dark Storm Team** | Pro-Palestine/Russia | MEDIUM | DDoS-for-hire |
+| **RipperSec** | Pro-Palestine (Malaysia) | MEDIUM | DDoS, SCADA intrusion |
+| **Cyber Fattah** | Pro-Iran | MEDIUM | Data leak, reconnaissance |
+| **Cyber Islamic Resistance** | Hezbollah-linked | HIGH | ICS recon, surveillance |
+
+**Pro-Israel:**
+
+| Group | Affiliation | Threat | Known TTPs |
+|-------|-------------|--------|------------|
+| **Predatory Sparrow** | Israel-linked | HIGH | ICS destruction (steel mills, gas stations, banks) |
+| **Israeli Elite Force** | Pro-Israel | MEDIUM | Financial systems, data leak |
+
+### CTI Twitter Accounts (8)
+
+`@FalconFeedsio` · `@CyberKnow20` · `@DarkWebInformer` · `@HackManac` · `@MonThreat` · `@cybaboreh` · `@BrettCallow` · `@vaboreh`
+
+### Dark Web / Breach RSS Feeds
+
+- **Darkfeed** — Ransomware victim tracker
+- **CISA Advisories** — US government cybersecurity alerts
+- **The Hacker News** — Cyber news with Iran/Israel filtering
+- **BleepingComputer** — Breach and malware news
+
+### Attack Auto-Classification
+
+| Category | Severity | Trigger Keywords |
+|----------|----------|-----------------|
+| 🏭 ICS/SCADA | CRITICAL | SCADA, PLC, water system, power grid, pipeline |
+| 📂 Data Breach | HIGH | Data leak, database, credentials, source code |
+| 💀 Ransomware/Wiper | HIGH | Ransomware, wiper, encrypted, destroyed |
+| 🕵️ Espionage | HIGH | APT, spyware, backdoor, surveillance |
+| 🌐 DDoS | MEDIUM | DDoS, denial of service, offline |
+| 🎨 Defacement | LOW | Defaced, website hacked |
+
+### Target Detection
+
+Automatically identifies whether Israel 🇮🇱 or Iran 🇮🇷 is being targeted based on text analysis + group affiliation fallback.
+
+### Custom Sources
+
+```json
+{
+  "cyber_telegram_channels": ["my_custom_channel"],
+  "cyber_twitter_accounts": ["my_cti_analyst"],
+  "cyber_rss_feeds": [
+    {"name": "My Feed", "url": "https://...", "type": "cyber_news"}
+  ]
+}
+```
+
 ## File Structure
 
 ```
@@ -467,6 +537,7 @@ iran-israel-alerts/
 │   ├── scan-blackout.py         # Iran internet blackout detector
 │   ├── scan-military-flights.py # US military ADS-B tracker
 │   ├── scan-naval.py            # Naval vessel tracker
+│   ├── scan-cyber.py            # Cyber warfare & hacktivist monitor
 │   ├── correlate-strikes.py     # Fire+seismic strike correlation
 │   ├── generate-fire-map.py     # Satellite intel map generator
 │   ├── generate-flight-map.py   # FR24 air traffic map + intel panel
@@ -504,6 +575,7 @@ iran-israel-alerts/
     ├── flight-map.png
     ├── pinned-message-id.txt
     ├── osint-{telegram,twitter,rss,seismic}-seen.json
+    ├── cyber-{telegram,twitter,rss}-seen.json
     └── logs/                     # Rotated watcher logs (max 5)
 ```
 

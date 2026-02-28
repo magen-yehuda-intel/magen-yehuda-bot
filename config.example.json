@@ -21,7 +21,7 @@
         "siren", "siren_standdown", "siren_clear",
         "breaking_news", "threat_change",
         "osint", "fires", "seismic", "strike_correlation",
-        "blackout", "military_flights", "polymarket",
+        "blackout", "military_flights", "polymarket", "cyber",
         "map", "flight_map", "summary_he", "timelapse", "pinned_status"
       ],
       "min_severity": "LOW",

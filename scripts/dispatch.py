@@ -60,8 +60,10 @@ IMAGE_RANK = {"low": 0, "medium": 1, "high": 2, "critical": 3}
 ALL_EVENT_TYPES = {
     "siren", "siren_standdown", "siren_clear", "threat_change",
     "osint", "fires", "seismic", "strike_correlation",
-    "blackout", "military_flights", "polymarket",
+    "blackout", "military_flights", "polymarket", "cyber",
+    "breaking_news",
     "map", "summary_he", "summary_en", "timelapse", "pinned_status",
+    "flight_map",
 }
 
 

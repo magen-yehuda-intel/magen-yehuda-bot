@@ -37,6 +37,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   🌐 Iran internet       every 5-30min (blackout detection)    │
 │   ✈️ Military flights     every 5-30min (OpenSky ADS-B)        │
 │   ✈️ Flight radar map     hourly (FR24 air traffic + intel)    │
+│   🛡️ Cyber warfare       every 5-30min (30+ hacktivist groups) │
 │   🎯 Strike correlation   after every fire/seismic scan        │
 │   📌 Pinned status        edited every 60s (live dashboard)     │
 │                                                                │
@@ -52,10 +53,10 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   📋 2-Hour Full SITREP (Oref + RSS + Poly + Oil + ADS-B)      │
 └──────────────────┬─────────────────────────────────────────────┘
                    │
-            Telegram Channel (@magenyehudaupdates)
+            dispatch.py → EN Channel + HE Channel
 ```
 
-## Sources (30+ channels)
+## Sources (40+ channels)
 
 ### Real-Time Watcher Sources
 
@@ -72,6 +73,9 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 | 9 | 🔍 Direct Probes | Iranian sites | HTTP health check | None |
 | 10 | ✈️ OpenSky ADS-B | ME region | REST API | None |
 | 11 | ✈️ FlightRadar24 | ME region | Public feed | None |
+| 12 | 🛡️ Cyber Hacktivist TG | ~25 channels | Web preview scraping | None |
+| 13 | 🛡️ Cyber CTI Twitter | 8 accounts | Syndication API | None |
+| 14 | 🛡️ Cyber/DarkWeb RSS | 4+ feeds | RSS/XML parsing | None |
 
 ### Telegram OSINT Channels
 - `warmonitors` — War Monitors (fastest English breaking)
@@ -623,6 +627,79 @@ https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=
 - Both are in the `CREDIBLE_SOURCES` set — alerts from Reuters/AP skip "UNVERIFIED" labeling
 - Returns dozens of items per feed, updates frequently
 
+## 🛡️ Cyber Warfare Monitor (`scan-cyber.py`)
+
+Monitors 30+ hacktivist groups, CTI aggregators, and dark web feeds for Iran-Israel cyber operations. Classifies attacks, identifies targets, and dispatches bilingual alerts.
+
+### Sources
+
+**1. Hacktivist Telegram Channels (~25 channels)**
+
+Directly monitors the public preview (`t.me/s/`) of known hacktivist group channels:
+
+| Side | Group | Affiliation | Threat | TTPs |
+|------|-------|-------------|--------|------|
+| 🇮🇷 | **Handala Hack** | IRGC-linked | HIGH | Data leak, wiper, TG hijack |
+| 🇮🇷 | **CyberAv3ngers** | IRGC | CRITICAL | ICS/SCADA, PLC exploit |
+| 🇮🇷 | **Moses Staff** | IRGC | HIGH | Data leak, encryption, extortion |
+| 🇮🇷 | **Cyber Toufan** | Iran-linked | HIGH | Hack-and-leak, data destruction |
+| 🇮🇷 | **DieNet** | Pro-Iran | MEDIUM | DDoS, defacement, psyop |
+| 🇮🇷 | **Dark Storm Team** | Pro-Palestine/Russia | MEDIUM | DDoS-for-hire |
+| 🇮🇷 | **RipperSec** | Pro-Palestine (MY) | MEDIUM | DDoS, SCADA intrusion |
+| 🇮🇷 | **Cyber Fattah** | Pro-Iran | MEDIUM | Data leak, recon |
+| 🇮🇷 | **Arabian Ghosts** | Pro-Iran | MEDIUM | DDoS, defacement |
+| 🇮🇷 | **Fatimion Cyber Team** | Iran proxy | LOW | DDoS |
+| 🇮🇷 | **Cyber Islamic Resistance** | Hezbollah-linked | HIGH | ICS recon, surveillance |
+| 🇮🇱 | **Predatory Sparrow** | Israel-linked | HIGH | ICS attack, financial disruption |
+| 🇮🇱 | **Israeli Elite Force** | Pro-Israel | MEDIUM | Financial, data leak |
+| 🇮🇱 | **WeRedEvils** | Pro-Israel | LOW | DDoS, defacement |
+
+Plus CTI aggregator channels: `FalconFeedsio`, `DarkWebInformer`, `cyaboreh`, `vaboreh`, `Ransomware_gang_report`
+
+**2. Cyber Threat Intel Twitter (8 accounts)**
+
+`@FalconFeedsio` · `@CyberKnow20` · `@DarkWebInformer` · `@HackManac` · `@MonThreat` · `@cybaboreh` · `@BrettCallow` · `@vaboreh`
+
+**3. Dark Web / Breach RSS Feeds (4 default)**
+
+- Darkfeed Ransomware tracker
+- CISA Advisories (US govt)
+- The Hacker News
+- BleepingComputer
+
+### Attack Classification
+
+The scanner automatically classifies attacks using keyword matching:
+
+| Type | Severity | Indicators |
+|------|----------|------------|
+| 🏭 ICS/SCADA | CRITICAL | SCADA, PLC, water system, power grid, gas station |
+| 📂 Data Breach | HIGH | Data leak, exfiltrated, database, credentials |
+| 💀 Ransomware/Wiper | HIGH | Ransomware, wiper, encrypted, destroyed |
+| 🕵️ Espionage | HIGH | APT, spyware, backdoor, surveillance |
+| 🌐 DDoS | MEDIUM | DDoS, denial of service, offline |
+| 🎨 Defacement | LOW | Defaced, website hacked |
+
+### Target Detection
+
+Determines who is being targeted (Israel 🇮🇱 or Iran 🇮🇷) based on:
+1. Entity mentions in text (IDF, Mossad, IRGC, Tehran, etc.)
+2. Group affiliation fallback (Pro-Iran → targets Israel, Pro-Israel → targets Iran)
+
+### Config
+
+Add custom cyber channels/accounts/feeds in `config.json`:
+
+```json
+{
+  "cyber_telegram_channels": ["my_custom_channel"],
+  "cyber_twitter_accounts": ["my_cti_analyst"],
+  "cyber_rss_feeds": [
+    {"name": "My Feed", "url": "https://...", "type": "cyber_news"}
+  ]
+}
+```
+
 ## Pikud HaOref — Israeli IP Requirement
 
 The Oref siren API is **geo-restricted to Israeli IPs**. The script handles this with a fallback chain:
@@ -725,6 +802,7 @@ iran-israel-alerts/
 │   ├── scan-blackout.py        # Iran internet blackout detector (IODA + probes)
 │   ├── scan-military-flights.py # US military ADS-B flight tracker (OpenSky)
 │   ├── scan-naval.py           # Naval vessel tracker (Persian Gulf AIS)
+│   ├── scan-cyber.py           # Cyber warfare & hacktivist monitor (30+ groups)
 │   ├── correlate-strikes.py    # Fire + seismic strike correlation engine
 │   ├── generate-fire-map.py    # Satellite intel map generator
 │   ├── generate-flight-map.py  # FR24 air traffic map + intel panel
@@ -760,6 +838,7 @@ iran-israel-alerts/
     ├── intel-map-latest.png
     ├── pinned-message-id.txt
     ├── osint-{telegram,twitter,rss,seismic}-seen.json
+    ├── cyber-{telegram,twitter,rss}-seen.json
     └── logs/                   # Rotated watcher logs (max 5)
 ```
 
