@@ -98,36 +98,13 @@ def check_ioda(state_dir):
 
 
 def check_cloudflare_radar():
-    """Check Cloudflare Radar for Iran traffic anomalies via connectivity endpoint."""
-    try:
-        url = "https://radar.cloudflare.com/api/v1/annotations/outages?dateRange=1d&format=json"
-        req = urllib.request.Request(url, headers={
-            "User-Agent": "MagenYehudaBot/1.0",
-            "Accept": "application/json",
-        })
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        
-        # Look for Iran-related outages
-        outages = data.get("result", {}).get("annotations", [])
-        iran_outages = []
-        for o in outages:
-            locations = o.get("locations", "")
-            if "IR" in locations or "Iran" in str(o):
-                iran_outages.append({
-                    "start": o.get("startDate", ""),
-                    "end": o.get("endDate", ""),
-                    "description": o.get("description", "")[:200],
-                })
-        
-        return {
-            "source": "cloudflare",
-            "status": "ok",
-            "iran_outages": iran_outages,
-            "total_global_outages": len(outages),
-        }
-    except Exception as e:
-        return {"source": "cloudflare", "status": "error", "detail": str(e)[:200]}
+    """Check Cloudflare Radar for Iran traffic anomalies.
+    
+    NOTE: Cloudflare Radar API is protected by Cloudflare challenge (403).
+    Disabled until a working endpoint or auth method is found.
+    IODA + direct probes provide sufficient coverage.
+    """
+    return {"source": "cloudflare", "status": "skipped", "detail": "API requires browser challenge (403)"}
 
 
 def probe_iranian_endpoints():

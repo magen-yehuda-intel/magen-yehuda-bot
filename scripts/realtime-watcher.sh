@@ -283,6 +283,13 @@ STAND_DOWN_PHRASES = [
     'תרגיל',             # Drill / exercise
 ]
 
+# Pre-alert warnings — not threats, not standdowns
+PRE_ALERT_PHRASES = [
+    'צפויות להתקבל',     # Expected to receive (alerts)
+    'בדקות הקרובות',     # In the coming minutes
+    'היערכות',            # Preparation
+]
+
 # Categories that are real threats vs informational
 THREAT_CATS = {1, 2, 3, 4, 5, 6, 7}  # missiles, earthquake, tsunami, aircraft, hazmat, unconventional
 
@@ -305,8 +312,12 @@ try:
         
         # Check if this is a stand-down message by content
         is_standdown = any(phrase in combined for phrase in STAND_DOWN_PHRASES)
+        is_prealert = any(phrase in combined for phrase in PRE_ALERT_PHRASES)
         
         if is_standdown:
+            has_standdown = True
+        elif is_prealert:
+            has_standdown = True  # Pre-alerts are informational, not threats
             has_standdown = True
         elif cat in THREAT_CATS:
             has_threat = True
@@ -334,9 +345,14 @@ except:
 
   if [ "$alert_type" = "STANDDOWN" ]; then
     # This is an informational/stand-down message — do NOT escalate
-    # But still send to Telegram so people see the update
-    if [ "$alerts" != "$prev" ]; then
+    # Throttle: max 1 standdown message per 5 minutes to avoid spam
+    local now_sd=$(date +%s)
+    local last_sd=$(cat "$STATE_DIR/last-standdown-ts.txt" 2>/dev/null || echo "0")
+    local sd_elapsed=$((now_sd - last_sd))
+    
+    if [ "$alerts" != "$prev" ] && [ $sd_elapsed -ge 300 ]; then
       log "ℹ️ Pikud HaOref stand-down / informational message"
+      echo "$now_sd" > "$STATE_DIR/last-standdown-ts.txt"
       
       local details
       details=$(python3 -c "
@@ -376,7 +392,8 @@ ${details}
 
       log_intel "{\"type\":\"siren_standdown\",\"details\":$(echo "$details" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '\"\"')}"
     fi
-    echo "$alerts" > "$OREF_LAST"
+    # Clear OREF_LAST so evaluate_threat_level doesn't think sirens are active
+    echo "" > "$OREF_LAST"
     return
   fi
 
