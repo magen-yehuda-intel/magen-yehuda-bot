@@ -122,7 +122,7 @@ set_threat_level() {
     log "   Intervals: Oref=${EFFECTIVE_OREF}s OSINT=${EFFECTIVE_OSINT}s Poly=${EFFECTIVE_POLY}s"
 
     # Post threat level change to Telegram
-    send_telegram "$new_emoji <b>THREAT LEVEL: $new_level</b>
+    local threat_msg_en="$new_emoji <b>THREAT LEVEL: $new_level</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
 $old_emoji $old_level → $new_emoji $new_level
@@ -133,8 +133,19 @@ $old_emoji $old_level → $new_emoji $new_level
 • Oref: every ${EFFECTIVE_OREF}s
 • OSINT (TG+X+RSS): every ${EFFECTIVE_OSINT}s
 • Polymarket: every ${EFFECTIVE_POLY}s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    local threat_msg_he="$new_emoji <b>רמת איום: $new_level</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+$old_emoji $old_level → $new_emoji $new_level
+
+📋 <i>$reason</i>
+
+⚡ תדירות סריקה עודכנה
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    
+    emit_alert "threat_change" "HIGH" "$threat_msg_he" "$threat_msg_en"
     
     # Log intel
     log_intel "{\"type\":\"threat_change\",\"from\":\"$old_level\",\"to\":\"$new_level\",\"reason\":$(echo "$reason" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')}"
@@ -230,6 +241,78 @@ send_telegram() {
     --data-urlencode "text=${msg}" >/dev/null 2>&1 || log "⚠️  Telegram send failed"
 }
 
+# ─── MULTI-OUTPUT DISPATCH ───
+# Routes alerts to all configured outputs via dispatch.py
+# Falls back to send_telegram() if dispatch.py is unavailable
+
+emit_alert() {
+  # Usage: emit_alert <type> <severity> [text_he] [text_en] [image_path] [image_importance] [image_caption]
+  local event_type="$1"
+  local severity="${2:-LOW}"
+  local text_he="${3:-}"
+  local text_en="${4:-}"
+  local image_path="${5:-}"
+  local image_importance="${6:-low}"
+  local image_caption="${7:-}"
+  
+  # Build JSON event via heredoc (avoids bash quoting issues with inline python)
+  local json_event
+  json_event=$(python3 - "$event_type" "$severity" "$text_he" "$text_en" "$image_path" "$image_importance" "$image_caption" <<'PYEOF'
+import json, sys
+event = {"type": sys.argv[1], "severity": sys.argv[2]}
+if sys.argv[3]: event["text_he"] = sys.argv[3]
+if sys.argv[4]: event["text_en"] = sys.argv[4]
+if sys.argv[5]: event["image"] = sys.argv[5]
+if sys.argv[6]: event["image_importance"] = sys.argv[6]
+if sys.argv[7]: event["image_caption"] = sys.argv[7]
+print(json.dumps(event, ensure_ascii=False))
+PYEOF
+  )
+  
+  if [ -z "$json_event" ]; then
+    # Fallback: direct send to main channel
+    [ -n "$text_en" ] && send_telegram "$text_en"
+    [ -n "$text_he" ] && [ "$text_he" != "$text_en" ] && send_telegram "$text_he"
+    return
+  fi
+  
+  local result
+  result=$(echo "$json_event" | python3 "$SKILL_DIR/scripts/dispatch.py" "$CONFIG_FILE" 2>/dev/null)
+  
+  if [ $? -ne 0 ] || [ -z "$result" ]; then
+    log "  ⚠️  Dispatch failed, falling back to direct send"
+    [ -n "$text_en" ] && send_telegram "$text_en"
+    [ -n "$text_he" ] && [ "$text_he" != "$text_en" ] && send_telegram "$text_he"
+  fi
+}
+
+emit_alert_gif() {
+  # Usage: emit_alert_gif <type> <severity> <gif_path> [gif_caption] [text_he] [text_en]
+  local event_type="$1"
+  local severity="${2:-LOW}"
+  local gif_path="${3:-}"
+  local gif_caption="${4:-}"
+  local text_he="${5:-}"
+  local text_en="${6:-}"
+  
+  local json_event
+  json_event=$(python3 - "$event_type" "$severity" "$gif_path" "$gif_caption" "$text_he" "$text_en" <<'PYEOF'
+import json, sys
+event = {"type": sys.argv[1], "severity": sys.argv[2]}
+if sys.argv[3]: event["gif"] = sys.argv[3]
+if sys.argv[4]: event["gif_caption"] = sys.argv[4]
+if sys.argv[5]: event["text_he"] = sys.argv[5]
+if sys.argv[6]: event["text_en"] = sys.argv[6]
+print(json.dumps(event, ensure_ascii=False))
+PYEOF
+  )
+  
+  if [ -n "$json_event" ]; then
+    echo "$json_event" | python3 "$SKILL_DIR/scripts/dispatch.py" "$CONFIG_FILE" 2>/dev/null || \
+      log "  ⚠️  GIF dispatch failed"
+  fi
+}
+
 # ══════════════════════════════════════════════════════════════
 # OREF CHECK
 # ══════════════════════════════════════════════════════════════
@@ -251,14 +334,23 @@ check_oref() {
   if [ -z "$alerts" ] || [ "$alerts" = "[]" ]; then
     if [ -n "$prev" ] && [ "$prev" != "" ] && [ "$prev" != "[]" ]; then
       log "ℹ️ No new alerts broadcasting"
-      send_telegram "ℹ️ <b>NO NEW ALERTS BROADCASTING</b>
+      local _ts
+      _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+      local _clear_he="ℹ️ <b>אין התרעות חדשות</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+⏱️ ${_ts}
+
+פיקוד העורף הפסיק לשדר התרעות חדשות.
+⚠️ <b>יש להישאר במרחב מוגן עד להנחיית פיקוד העורף.</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      local _clear_en="ℹ️ <b>NO NEW ALERTS BROADCASTING</b>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️ ${_ts}
 
 Pikud HaOref is no longer broadcasting new alerts.
 ⚠️ <b>Stay in shelter until instructed otherwise by Pikud HaOref.</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      emit_alert "siren_clear" "MEDIUM" "$_clear_he" "$_clear_en"
     fi
     echo "" > "$OREF_LAST"
     return
@@ -380,15 +472,27 @@ except:
     print('  ℹ️ Stand-down message received')
 " <<< "$alerts" 2>/dev/null)
 
-      send_telegram "✅ <b>PIKUD HAOREF — STAND DOWN</b> ✅
+      local _ts
+      _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+      local _te
+      _te=$(threat_emoji "$THREAT_LEVEL")
+      local _sd_he="✅ <b>פיקוד העורף — ניתן לצאת</b> ✅
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z') | $(threat_emoji "$THREAT_LEVEL") $THREAT_LEVEL
+⏱️ ${_ts} | ${_te} $THREAT_LEVEL
 
 ${details}
 
 🔗 https://www.oref.org.il/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      local _sd_en="✅ <b>PIKUD HAOREF — STAND DOWN</b> ✅
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+⏱️ ${_ts} | ${_te} $THREAT_LEVEL
+
+${details}
+
+🔗 https://www.oref.org.il/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+      emit_alert "siren_standdown" "LOW" "$_sd_he" "$_sd_en"
 
       log_intel "{\"type\":\"siren_standdown\",\"details\":$(echo "$details" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '\"\"')}"
     fi
@@ -480,17 +584,29 @@ except Exception as e:
     fi
 
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
+    local _ts
+    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
 
-    send_telegram "🚨🚨🚨 <b>ACTIVE SIRENS — PIKUD HAOREF</b> 🚨🚨🚨
+    # Siren alerts are already in Hebrew from Oref — details contain Hebrew location data
+    local _siren_he="🚨🚨🚨 <b>צבע אדום — פיקוד העורף</b> 🚨🚨🚨
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z') | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+
+${details}
+
+⚡ התרעה בזמן אמת מפיקוד העורף
+🔗 https://www.oref.org.il/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local _siren_en="🚨🚨🚨 <b>ACTIVE SIRENS — PIKUD HAOREF</b> 🚨🚨🚨
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
 
 ${details}
 
 ⚡ Real-time alert from Pikud HaOref
 🔗 https://www.oref.org.il/
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    emit_alert "siren" "CRITICAL" "$_siren_he" "$_siren_en"
     
     # Log intel
     log_intel "{\"type\":\"siren\",\"threat_level\":\"$THREAT_LEVEL\",\"details\":$(echo "$details" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),\"raw\":$(echo "$alerts" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')}"
@@ -564,16 +680,26 @@ except Exception as ex:
     local alert_text
     alert_text=$(cat "$alert_file")
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
+    local _ts
+    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
     log "📊 Polymarket spike detected"
-    send_telegram "📊 <b>MARKET MOVEMENT DETECTED</b>
+    local _poly_he="📊 <b>תנועה בשוקי ההימורים</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z') | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
 
 ${alert_text}
 
 🔗 https://polymarket.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local _poly_en="📊 <b>MARKET MOVEMENT DETECTED</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+
+${alert_text}
+
+🔗 https://polymarket.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    emit_alert "polymarket" "MEDIUM" "$_poly_he" "$_poly_en"
     
     # Log intel
     log_intel "{\"type\":\"polymarket\",\"threat_level\":\"$THREAT_LEVEL\",\"text\":$(echo "$alert_text" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')}"
@@ -608,6 +734,66 @@ check_osint() {
     return
   fi
 
+  # ══ BREAKING NEWS CHECK ══
+  # Extract any alerts flagged as breaking — send immediately as CRITICAL
+  local breaking_json
+  breaking_json=$(python3 - "$raw_json" <<'PYEOF'
+import json, sys, html as h
+alerts = json.loads(sys.argv[1])
+breaking = [a for a in alerts if a.get('breaking')]
+if not breaking:
+    sys.exit(0)
+print(json.dumps(breaking))
+PYEOF
+  )
+  if [ -n "$breaking_json" ] && [ "$breaking_json" != "null" ]; then
+    # Process each breaking alert
+    python3 - "$breaking_json" <<'PYEOF'
+import json, sys, html as h, os
+
+alerts = json.loads(sys.argv[1])
+for a in alerts:
+    text = h.escape(a.get('text', ''))
+    source = a.get('source', '?')
+    channel = a.get('channel', '?')
+    link = a.get('link', '')
+    topic = a.get('breaking_topic', '')
+
+    link_tag = f'\n🔗 <a href="{link}">Source</a>' if link else ''
+
+    # Write to temp files for bash to read
+    with open('/tmp/magen-breaking-he.txt', 'w') as f:
+        f.write(f"""\u200F🚨🚨🚨 <b>ידיעה חדשותית דחופה</b> 🚨🚨🚨
+\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+\u200F⚡ <b>מקור:</b> {channel} ({source})
+
+\u200F{text}{link_tag}
+
+\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+\u200F⚠️ <b>לא מאומת — ממתין לאישור רשמי</b>""")
+
+    with open('/tmp/magen-breaking-en.txt', 'w') as f:
+        f.write(f"""🚨🚨🚨 <b>BREAKING NEWS</b> 🚨🚨🚨
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ <b>Source:</b> {channel} ({source})
+
+{text}{link_tag}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ <b>UNVERIFIED — Awaiting official confirmation</b>""")
+PYEOF
+
+    if [ -f /tmp/magen-breaking-he.txt ] && [ -f /tmp/magen-breaking-en.txt ]; then
+      local _brk_he _brk_en
+      _brk_he=$(cat /tmp/magen-breaking-he.txt)
+      _brk_en=$(cat /tmp/magen-breaking-en.txt)
+      emit_alert "breaking_news" "CRITICAL" "$_brk_he" "$_brk_en"
+      log "🚨🚨🚨 BREAKING NEWS DETECTED — sending CRITICAL alert"
+      log_intel "{\"type\":\"breaking_news\",\"alerts\":$breaking_json}"
+      rm -f /tmp/magen-breaking-he.txt /tmp/magen-breaking-en.txt
+    fi
+  fi
+
   # Send seismic events as separate prominent alerts (like sirens)
   local seismic_alerts
   seismic_alerts=$(python3 -c "
@@ -629,14 +815,23 @@ print(len(seismic), file=sys.stderr)
   seismic_count=$(cat "$STATE_DIR/watcher-seismic-count.txt" 2>/dev/null | tr -d '[:space:]')
   if [ -n "$seismic_count" ] && [ "$seismic_count" -gt 0 ] 2>/dev/null; then
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
-    send_telegram "🌍🌍🌍 <b>SEISMIC ACTIVITY — IRAN REGION</b> 🌍🌍🌍
+    local _ts
+    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    local _seis_he="🌍🌍🌍 <b>פעילות סייסמית — איראן</b> 🌍🌍🌍
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z') | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+
+${seismic_alerts}
+⚠️ רעידות רדודות בעוצמה גבוהה או סוג 'פיצוץ' עלולות להצביע על ניסוי גרעיני תת-קרקעי או תקיפה קונבנציונלית.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local _seis_en="🌍🌍🌍 <b>SEISMIC ACTIVITY — IRAN REGION</b> 🌍🌍🌍
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
 
 ${seismic_alerts}
 ⚠️ Shallow high-magnitude events or 'explosion' type may indicate underground nuclear tests or large conventional strikes.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    emit_alert "seismic" "HIGH" "$_seis_he" "$_seis_en"
     log "🌍 SEISMIC: $seismic_count events in Iran region"
     
     # Log intel
@@ -644,93 +839,39 @@ ${seismic_alerts}
   fi
 
   # Format non-seismic alerts for Telegram
-  local alert_file="$STATE_DIR/watcher-osint-alerts.txt"
-  python3 -c "
-import json, sys, html as h
+  local alert_file="$STATE_DIR/watcher-osint-formatted.json"
+  echo "$raw_json" | python3 "$SKILL_DIR/scripts/format-osint.py" > "$alert_file" 2>/dev/null
 
-alerts = [a for a in json.loads(sys.stdin.read()) if a.get('source') != 'seismic']
-if not alerts:
-    sys.exit(0)
+  local osint_count
+  osint_count=$(python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('count',0))" < "$alert_file" 2>/dev/null || echo "0")
 
-# Source emoji mapping
-emoji = {
-    'telegram': '📢',
-    'twitter': '🐦',
-    'rss': '📰',
-    'seismic': '🌍',
-}
-
-lines = []
-by_source = {}
-for a in alerts:
-    src = a.get('source', '?')
-    by_source.setdefault(src, []).append(a)
-
-# Telegram channels
-for a in by_source.get('telegram', [])[:6]:
-    ch = h.escape(a.get('channel', '?'))
-    text = h.escape(a['text'][:150])
-    link = a.get('link', '')
-    link_tag = f' <a href=\"{link}\">[↗]</a>' if link else ''
-    lines.append(f'{emoji[\"telegram\"]} <b>{ch}</b>: {text}{link_tag}')
-
-# Twitter
-for a in by_source.get('twitter', [])[:4]:
-    ch = h.escape(a.get('channel', '?'))
-    text = h.escape(a['text'][:150])
-    link = a.get('link', '')
-    rt = '🔁' if a.get('is_rt') else emoji['twitter']
-    link_tag = f' <a href=\"{link}\">[↗]</a>' if link else ''
-    lines.append(f'{rt} <b>{ch}</b>: {text}{link_tag}')
-
-# RSS
-for a in by_source.get('rss', [])[:3]:
-    ch = h.escape(a.get('channel', '?'))
-    text = h.escape(a['text'][:120])
-    link = a.get('link', '')
-    link_tag = f' <a href=\"{link}\">[↗]</a>' if link else ''
-    lines.append(f'{emoji[\"rss\"]} <b>{ch}</b>: {text}{link_tag}')
-
-# Cap total at 12 items to stay under 4096 chars
-output = chr(10).join(lines[:12])
-if len(alerts) > 12:
-    output += f'{chr(10)}... +{len(alerts)-12} more updates'
-
-# Write summary counts for logging
-summary_parts = []
-for src, items in by_source.items():
-    summary_parts.append(f'{emoji.get(src,\"?\")} {len(items)} {src}')
-summary = ' | '.join(summary_parts)
-print(f'SUMMARY:{summary}', file=sys.stderr)
-
-print(output)
-" <<< "$raw_json" > "$alert_file" 2>"$STATE_DIR/watcher-osint-summary.txt"
-
-  if [ -f "$alert_file" ] && [ -s "$alert_file" ]; then
-    local alert_text
-    alert_text=$(cat "$alert_file")
-    local summary
-    summary=$(grep '^SUMMARY:' "$STATE_DIR/watcher-osint-summary.txt" 2>/dev/null | sed 's/^SUMMARY://')
-    local alert_count
-    alert_count=$(python3 -c "import json,sys; print(len(json.loads(sys.stdin.read())))" <<< "$raw_json" 2>/dev/null || echo "?")
+  if [ "$osint_count" != "0" ] && [ "$osint_count" != "" ]; then
+    local text_he text_en summary
+    text_he=$(python3 -c "import json,sys; print(json.load(sys.stdin)['text_he'])" < "$alert_file" 2>/dev/null)
+    text_en=$(python3 -c "import json,sys; print(json.load(sys.stdin)['text_en'])" < "$alert_file" 2>/dev/null)
+    summary=$(python3 -c "import json,sys; print(json.load(sys.stdin)['summary'])" < "$alert_file" 2>/dev/null)
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
+    local _ts
+    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
 
-    log "📡 OSINT: $alert_count updates ($summary)"
-    send_telegram "📡 <b>OSINT INTEL UPDATE</b> ($alert_count new)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z') | $level_emoji $THREAT_LEVEL
+    log "📡 OSINT: $osint_count updates ($summary)"
+    local _osint_he="📡 <b>עדכון מודיעין</b> ($osint_count חדשים)
+━━━━━━━━━━━━━━━━━━━━━
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
 
-${alert_text}
+${text_he}
+━━━━━━━━━━━━━━━━━━━━━"
+    local _osint_en="📡 <b>OSINT INTEL</b> ($osint_count new)
+━━━━━━━━━━━━━━━━━━━━━
+⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+${text_en}
+━━━━━━━━━━━━━━━━━━━━━"
+    emit_alert "osint" "MEDIUM" "$_osint_he" "$_osint_en"
     
-    # Log intel — save raw JSON of all alerts
-    log_intel "{\"type\":\"osint\",\"count\":$alert_count,\"summary\":$(echo "$summary" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),\"alerts\":$raw_json}"
-    > "$alert_file"  # Clear after sending
+    log_intel "{\"type\":\"osint\",\"count\":$osint_count,\"summary\":$(echo "$summary" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),\"alerts\":$raw_json}"
   fi
 }
-
 # ══════════════════════════════════════════════════════════════
 # SATELLITE FIRE DETECTION (NASA FIRMS)
 # ══════════════════════════════════════════════════════════════
@@ -777,53 +918,19 @@ check_fires_seismic() {
   
   rm -f "$fire_tmp" "$seismic_tmp"
   
-  # ── Send map image ──
+  # ── Send map via dispatcher ──
   if [ $map_ok -eq 0 ] && [ -f "$map_file" ]; then
     local caption="🛰️ Iran Intel Map"
     [ "${new_fires:-0}" != "0" ] && caption="$caption — ${new_fires} fires"
     [ "${new_quakes:-0}" != "0" ] && caption="$caption — ${new_quakes} quakes"
     
-    local photo_ok
-    photo_ok=$(python3 -c "
-import json, urllib.request, io, uuid
-
-config = json.load(open('$CONFIG_FILE'))
-bot_token = config['telegram_bot_token']
-chat_id = config['telegram_chat_id']
-
-with open('$map_file', 'rb') as f:
-    img_data = f.read()
-
-boundary = uuid.uuid4().hex
-body = io.BytesIO()
-body.write(f'--{boundary}\r\n'.encode())
-body.write(f'Content-Disposition: form-data; name=\"chat_id\"\r\n\r\n{chat_id}\r\n'.encode())
-body.write(f'--{boundary}\r\n'.encode())
-body.write(f'Content-Disposition: form-data; name=\"caption\"\r\n\r\n$caption\r\n'.encode())
-body.write(f'--{boundary}\r\n'.encode())
-body.write(b'Content-Disposition: form-data; name=\"photo\"; filename=\"intel-map.png\"\r\n')
-body.write(b'Content-Type: image/png\r\n\r\n')
-body.write(img_data)
-body.write(b'\r\n')
-body.write(f'--{boundary}--\r\n'.encode())
-
-req = urllib.request.Request(
-    f'https://api.telegram.org/bot{bot_token}/sendPhoto',
-    data=body.getvalue(),
-    headers={'Content-Type': f'multipart/form-data; boundary={boundary}'}
-)
-try:
-    resp = urllib.request.urlopen(req, timeout=30)
-    result = json.loads(resp.read())
-    print('ok' if result.get('ok') else 'fail')
-except Exception as e:
-    print(f'fail: {e}')
-" 2>/dev/null)
-    if [ "$photo_ok" = "ok" ]; then
-      log "  📸 Intel map sent to Telegram"
-    else
-      log "  ⚠️  Map send failed: $photo_ok"
-    fi
+    # Determine image importance based on what was detected
+    local img_importance="medium"
+    [ "${new_fires:-0}" -gt 5 ] 2>/dev/null && img_importance="high"
+    [ "${new_quakes:-0}" -gt 0 ] 2>/dev/null && img_importance="high"
+    
+    emit_alert "map" "MEDIUM" "" "" "$map_file" "$img_importance" "$caption"
+    log "  📸 Intel map dispatched"
   fi
   
   # ── Send fire text alert ──
@@ -831,14 +938,9 @@ except Exception as e:
     local fire_msg
     fire_msg=$(echo "$fire_json" | python3 "$SKILL_DIR/scripts/format-fires.py" 2>/dev/null)
     if [ -n "$fire_msg" ]; then
-      local resp
-      resp=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
-        -d chat_id="$CHAT_ID" -d parse_mode="HTML" -d disable_web_page_preview="true" \
-        --data-urlencode "text=${fire_msg}")
-      local ok=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok',''))" 2>/dev/null)
-      [ "$ok" = "True" ] && log "  ✅ Fire alert sent ($new_fires fires)" || log "  ❌ Fire alert failed"
+      emit_alert "fires" "HIGH" "$fire_msg" "$fire_msg"
+      log "  ✅ Fire alert dispatched ($new_fires fires)"
     fi
-    # Log intel
     log_intel "{\"type\":\"fires\",\"count\":${new_fires},\"data\":$fire_json}"
   fi
   
@@ -847,14 +949,9 @@ except Exception as e:
     local quake_msg
     quake_msg=$(echo "$seismic_json" | python3 "$SKILL_DIR/scripts/format-seismic.py" 2>/dev/null)
     if [ -n "$quake_msg" ]; then
-      local resp
-      resp=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
-        -d chat_id="$CHAT_ID" -d parse_mode="HTML" -d disable_web_page_preview="true" \
-        --data-urlencode "text=${quake_msg}")
-      local ok=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok',''))" 2>/dev/null)
-      [ "$ok" = "True" ] && log "  ✅ Seismic alert sent ($new_quakes quakes)" || log "  ❌ Seismic alert failed"
+      emit_alert "seismic" "HIGH" "$quake_msg" "$quake_msg"
+      log "  ✅ Seismic alert dispatched ($new_quakes quakes)"
     fi
-    # Log intel
     log_intel "{\"type\":\"seismic\",\"count\":${new_quakes},\"data\":$seismic_json}"
   fi
 }
@@ -1004,7 +1101,17 @@ print('\n'.join(lines))
 " 2>/dev/null)
     
     if [ -n "$msg" ]; then
-      send_telegram "$msg"
+      # Determine severity from blackout level
+      local blackout_severity="MEDIUM"
+      [ "$level" = "DEGRADED" ] && blackout_severity="HIGH"
+      [ "$level" = "BLACKOUT" ] && blackout_severity="CRITICAL"
+      
+      # The blackout message contains visual elements (meter/graph) that work in both languages
+      # Add Hebrew header/footer wrapper
+      local msg_he
+      msg_he=$(echo "$msg" | sed 's|IRAN INTERNET BLACKOUT|ניתוק אינטרנט באיראן|g; s|IRAN INTERNET DEGRADED|פגיעה באינטרנט באיראן|g; s|IRAN INTERNET STATUS|סטטוס אינטרנט איראן|g')
+      
+      emit_alert "blackout" "$blackout_severity" "$msg_he" "$msg"
       log_intel "{\"type\":\"blackout\",\"level\":\"$level\",\"changed\":true,\"score\":$(echo "$result" | python3 -c "import sys,json; print(json.load(sys.stdin)['assessment']['score'])" 2>/dev/null || echo 0)}"
       
       # Update last_alert_ts in state file
@@ -1057,15 +1164,25 @@ for c, n in sorted(cats.items()):
     print(f'  {c}: {n}')
 " 2>/dev/null)
     
-    send_telegram "✈️✈️✈️ <b>MILITARY AIRCRAFT — PERSIAN GULF</b> ✈️✈️✈️
+    local _ts
+    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    local _mil_he="✈️✈️✈️ <b>מטוסים צבאיים — המפרץ הפרסי</b> ✈️✈️✈️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z') | $mil_count aircraft tracked
+⏱️ ${_ts} | $mil_count מטוסים במעקב
+
+${details}
+
+<i>⚠️ פעילות מוגברת של מתדלקים/מפציצים עשויה להצביע על גיחת תקיפה</i>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local _mil_en="✈️✈️✈️ <b>MILITARY AIRCRAFT — PERSIAN GULF</b> ✈️✈️✈️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏱️ ${_ts} | $mil_count aircraft tracked
 
 ${details}
 
 <i>⚠️ Heavy tanker/bomber activity may indicate imminent strike sortie</i>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    emit_alert "military_flights" "HIGH" "$_mil_he" "$_mil_en"
     
     log_intel "{\"type\":\"military_flights\",\"total\":$mil_count,\"new\":$new_count}"
   fi
@@ -1085,12 +1202,8 @@ check_strike_correlation() {
     if [ -n "$msg" ]; then
       log "  🎯 STRIKE CORRELATION: $count hit(s)!"
       
-      local resp
-      resp=$(curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
-        -d chat_id="$CHAT_ID" -d parse_mode="HTML" -d disable_web_page_preview="true" \
-        --data-urlencode "text=${msg}")
-      local ok=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('ok',''))" 2>/dev/null)
-      [ "$ok" = "True" ] && log "  ✅ Strike correlation alert sent" || log "  ❌ Strike alert failed"
+      emit_alert "strike_correlation" "CRITICAL" "$msg" "$msg"
+      log "  ✅ Strike correlation alert dispatched"
       
       log_intel "{\"type\":\"strike_correlation\",\"count\":$count}"
     fi

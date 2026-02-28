@@ -3,6 +3,32 @@
   "telegram_bot_token": "",
   "telegram_chat_id": "",
   "telegram_channel_name": "My Alert Channel",
+
+  "outputs": [
+    {
+      "id": "main",
+      "chat_id": "",
+      "language": "en",
+      "content": ["all"],
+      "min_severity": "LOW",
+      "images": "all"
+    },
+    {
+      "id": "hebrew",
+      "chat_id": "",
+      "language": "he",
+      "content": [
+        "siren", "siren_standdown", "siren_clear",
+        "breaking_news", "threat_change",
+        "osint", "fires", "seismic", "strike_correlation",
+        "blackout", "military_flights", "polymarket",
+        "map", "flight_map", "summary_he", "timelapse", "pinned_status"
+      ],
+      "min_severity": "LOW",
+      "images": "high_only"
+    }
+  ],
+
   "oref_poll_interval": 30,
   "polymarket_poll_interval": 300,
   "polymarket_spike_threshold": 5,
@@ -29,13 +55,17 @@
     "idfonline",
     "iranintl_en",
     "BBCPersian",
-    "kann_news"
+    "kann_news",
+    "aharonyediot"
   ],
   "rss_feeds": [
     {"name": "Times of Israel", "url": "https://www.timesofisrael.com/feed/"},
     {"name": "Jerusalem Post", "url": "https://www.jpost.com/rss/rssfeedsfrontpage.aspx"},
     {"name": "Al Jazeera", "url": "https://www.aljazeera.com/xml/rss/all.xml"},
-    {"name": "TASS", "url": "https://tass.com/rss/v2.xml"}
+    {"name": "TASS", "url": "https://tass.com/rss/v2.xml"},
+    {"name": "Ynet", "url": "https://www.ynet.co.il/Integration/StoryRss2.xml"},
+    {"name": "Reuters", "url": "https://news.google.com/rss/search?q=site:reuters.com+iran+OR+israel&hl=en-US&gl=US&ceid=US:en"},
+    {"name": "AP News", "url": "https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=US&ceid=US:en"}
   ],
   "osint_keywords": [
     "iran", "israel", "idf", "hezbollah", "houthi", "irgc",
@@ -43,11 +73,13 @@
     "ballistic", "rocket", "drone", "escalation", "retaliation",
     "tehran", "netanyahu", "gaza", "beirut", "hamas",
     "pentagon", "centcom", "carrier", "nuclear", "enrichment",
+    "natanz", "fordow",
     "iron dome", "arrow", "david's sling", "thaad",
     "war", "ceasefire", "pizza", "delivery",
     "איראן", "טיל", "רקטה", "צבא", "תקיפה", "יירוט",
     "פיקוד העורף", "אזעקה", "חיזבאללה", "חמאס",
-    "צה\"ל", "בליסטי", "מל\"ט", "הסלמה"
+    "צה\"ל", "בליסטי", "מל\"ט", "הסלמה",
+    "khamenei", "חמינאי", "supreme leader", "המנהיג העליון"
   ],
   "usgs_seismic": {
     "enabled": true,

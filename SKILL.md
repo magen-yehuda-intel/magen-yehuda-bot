@@ -5,7 +5,7 @@ description: Monitor Iran-Israel-US military escalation and attack alerts using 
 
 # Iran-Israel Attack Alert Monitor
 
-Multi-source intelligence aggregation for Iran/Israel/US military escalation with adaptive threat-level system, real-time OSINT scanning, NASA satellite fire detection, USGS seismic monitoring, and instant Telegram delivery with auto-generated intel maps.
+Multi-source intelligence aggregation for Iran/Israel/US military escalation with adaptive threat-level system, real-time OSINT scanning, NASA satellite fire detection, USGS seismic monitoring, wire service integration (Reuters/AP), breaking news auto-detection, multi-channel bilingual dispatch, and instant Telegram delivery with auto-generated intel maps.
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   📡 OSINT scanner       every 30s-5min (threat-adaptive)      │
 │     ├─ 📢 10 Telegram channels (t.me/s/ web preview)          │
 │     ├─ 🐦 11 Twitter accounts (syndication API)                │
-│     ├─ 📰 4 RSS feeds (TOI, JPost, Al Jazeera, TASS)          │
+│     ├─ 📰 7 RSS feeds (TOI, JPost, AJ, TASS, Ynet, Reuters, AP)│
 │     └─ 🌍 USGS seismic (Iran region, M3.5+)                   │
 │   📊 Polymarket          every 60s-5min (threat-adaptive)      │
 │   🔥 NASA FIRMS fires    every 3-15min (threat-adaptive)       │
@@ -36,6 +36,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   🗺️ Intel map           auto-generated on fire/quake alerts   │
 │   🌐 Iran internet       every 5-30min (blackout detection)    │
 │   ✈️ Military flights     every 5-30min (OpenSky ADS-B)        │
+│   ✈️ Flight radar map     hourly (FR24 air traffic + intel)    │
 │   🎯 Strike correlation   after every fire/seismic scan        │
 │   📌 Pinned status        edited every 60s (live dashboard)     │
 │                                                                │
@@ -63,13 +64,14 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 | 1 | 🚨 Pikud HaOref (sirens) | 1 | REST API (Israeli IP req.) | None |
 | 2 | 📢 Telegram OSINT | 10 channels | Web preview scraping | None |
 | 3 | 🐦 X/Twitter OSINT | 11 accounts | Syndication API | None |
-| 4 | 📰 RSS News | 4 feeds | RSS/XML parsing | None |
+| 4 | 📰 RSS News | 7 feeds | RSS/XML parsing | None |
 | 5 | 🌍 USGS Seismic | Iran region | REST API (GeoJSON) | None |
 | 6 | 📊 Polymarket | Dynamic | REST API | None |
 | 7 | 🔥 NASA FIRMS | 4 satellites | Area CSV API | MAP_KEY |
 | 8 | 🌐 IODA Internet | Iran ASNs | Georgia Tech API | None |
 | 9 | 🔍 Direct Probes | Iranian sites | HTTP health check | None |
 | 10 | ✈️ OpenSky ADS-B | ME region | REST API | None |
+| 11 | ✈️ FlightRadar24 | ME region | Public feed | None |
 
 ### Telegram OSINT Channels
 - `warmonitors` — War Monitors (fastest English breaking)
@@ -82,6 +84,19 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 - `BBCPersian` — BBC Persian
 - `kann_news` — Kan News
 - `aharonyediot` — Aharon Yediot (HIGH reliability Hebrew OSINT)
+- `aharonyediot` — Aharon Yediot (HIGH reliability Hebrew OSINT)
+
+### RSS Feeds (7)
+- Times of Israel — direct RSS
+- Jerusalem Post — direct RSS
+- Al Jazeera — direct RSS
+- TASS — direct RSS
+- Ynet (Hebrew) — direct RSS
+- **Reuters** — via Google News RSS proxy (`site:reuters.com`)
+- **AP News** — via Google News RSS proxy (`site:apnews.com`)
+
+> **Note:** Direct Reuters/AP RSS feeds are behind Cloudflare/paywalls. Google News RSS filtered to `site:reuters.com` works reliably as a proxy, including `<source>` tags for attribution.
+`@PenPizzaReport`, `@Conflict_Radar`, `@Worldsource24`, `@sentdefender`, `@beholdisrael`, `@Osint613`, `@Osinttechnical`, `@IsraelRadar_`, `@Intel_Sky`, `@ELINTNews`, `@IsraelWarRoom`
 
 ### Twitter OSINT Accounts
 `@PenPizzaReport`, `@Conflict_Radar`, `@Worldsource24`, `@sentdefender`, `@beholdisrael`, `@Osint613`, `@Osinttechnical`, `@IsraelRadar_`, `@Intel_Sky`, `@ELINTNews`, `@IsraelWarRoom`
@@ -302,6 +317,98 @@ python3 scripts/scan-military-flights.py config.json state         # Scan
 python3 scripts/scan-military-flights.py config.json state --seed  # Seed baseline
 ```
 
+## ✈️ Flight Radar Map (Air Traffic Intelligence)
+
+FlightRadar24-style live map of Middle East air traffic, generated hourly as part of the intel report.
+
+### Data Source
+- **Primary**: FlightRadar24 public feed (300-400+ aircraft, full ADS-B coverage)
+- **Fallback**: OpenSky Network API (~80 aircraft, free tier)
+- FR24 provides aircraft type, callsign, origin/dest airports, altitude, speed, airline, registration
+
+### Map Features
+- **Dark Palantir-style map** with country borders from GeoJSON
+- **Aircraft arrows** showing heading direction (yellow=civil, red=over Iran, green=US/IL military)
+- **Iran airspace highlighted** with red border and dark fill
+- **Side intel panel** with:
+  - Traffic count (total + over Iran)
+  - Airport disruption status (Iran/Iraq/Syria/Israel/Lebanon/Jordan)
+  - US / Israeli military aircraft with role descriptions (e.g. "Tactical airlift", "SIGINT reconnaissance", "Strategic bomber")
+  - Top origin airports
+
+### US/Israeli Military Detection
+- **US callsign prefixes**: RCH, REACH, EVAC, FORTE, JAKE, SAM, AF1, AF2, NAVY, CNV, DOOM, BOLT, IRON, LANCE, ETHYL, SHELL, TEXAS, HOMER, SNOOP, EPIC, GHOST, SNTRY, etc.
+- **Israeli callsign prefixes**: IAF, ISF
+- **Aircraft type matching**: C-17, KC-135, E-3, RC-135, B-52, F-35, RQ-4, MQ-9, G550, etc.
+- **Registration heuristics**: N-prefix (US), 4X-prefix (Israel) for unidentified military types
+- Filters out non-US/IL military (Saudi, Omani, RAF, etc.) — only shows relevant assets
+
+### Aircraft Role Descriptions (50+ types mapped)
+| Type | Role |
+|------|------|
+| F-35 | Stealth strike fighter |
+| B-52 | Strategic bomber |
+| KC-135 | Aerial refueling tanker |
+| RC-135 | SIGINT reconnaissance |
+| E-3 | AWACS airborne radar |
+| E-6 | Nuclear command relay |
+| C-17 | Strategic airlift |
+| C-130 | Tactical airlift |
+| RQ-4 | High-alt surveillance drone |
+| MQ-9 | Armed recon drone |
+| P-8A | Maritime patrol / ASW |
+| G550 | SIGINT / early warning |
+
+### Airport Disruption Monitoring
+Tracks live flight counts for airports in conflict zone countries:
+- **Iran**: THR, IKA, MHD, ISF, TBZ, SYZ, KER, AWZ, BND + 20 more
+- **Israel**: TLV, SDV, VDA, ETH, BEV, RPN, HFA
+- **Iraq**: BGW, BSR, EBL, NJF, SDA
+- **Syria**: DAM, ALP, LTK
+- **Lebanon**: BEY
+- **Jordan**: AMM, AQJ
+
+Status: `[X] CLOSED` (0 flights), `[!] Limited` (<5 flights), `[+] Operating` (5+ flights)
+
+### Data Logging
+Two structured logs updated on every scan:
+
+**`state/flight-history.jsonl`** (7-day retention) — Full snapshot:
+```json
+{
+  "ts": 1772305939, "utc": "2026-02-28T19:12:19+00:00",
+  "source": "fr24", "total": 332, "over_iran": 36,
+  "iran_flights": 0, "israel_flights": 1,
+  "airports": {"Iran": {"count": 0, "status": "CLOSED"}, ...},
+  "military": [{"callsign": "CNV3869", "type": "C130", "tag": "US", "role": "Tactical airlift", ...}],
+  "top_origins": {"JED": 33, "IST": 25, ...},
+  "top_dests": {"JED": 38, "CAI": 18, ...}
+}
+```
+
+**`state/intel-log.jsonl`** (`flight_scan` event) — Summary for hourly reports:
+```json
+{
+  "type": "flight_scan",
+  "data": {
+    "total": 332, "over_iran": 36,
+    "military_count": 2, "military_callsigns": ["CNV3869", "C130"],
+    "airports_closed": ["Iran", "Iraq", "Syria"],
+    "airports_limited": ["Israel:1", "Lebanon:3"]
+  }
+}
+```
+
+### Bilingual Captions
+- English channel: `✈️ Air Traffic — 332 aircraft, 36 over Iran`
+- Hebrew channel: `✈️ תנועה אווירית — 332 מטוסים, 36 מעל איראן`
+
+```bash
+python3 scripts/generate-flight-map.py config.json state output.png
+```
+
+Sent automatically with every hourly report. Image dispatched to both channels with language-appropriate captions via `dispatch.py`.
+
 ## 🚢 Naval Vessel Tracking
 
 Monitors military vessel movements in Persian Gulf, Strait of Hormuz, Gulf of Oman.
@@ -357,11 +464,13 @@ Major cities triggering CRITICAL: תל אביב, ירושלים, חיפה, בא�
 
 ## Hourly Status Report
 
-Automated hourly report sent to Telegram via cron — three separate messages:
+Automated hourly report sent to Telegram via cron — five items:
 
 1. 🗺️ **Intel Map** — Fresh satellite map with fires, quakes, borders
-2. 🇮🇱 **Hebrew Summary** (סיכום מצב שעתי — מגן יהודה) — Confident Israeli analyst style, cheers up the audience, references צה״ל, כיפת ברזל, חץ. Motivational sign-offs adjusted by threat level.
-3. 🇺🇸 **English Summary** (HOURLY INTEL SUMMARY — Magen Yehuda) — Professional analyst style with personality. "Am Yisrael Chai!" energy.
+2. ✈️ **Flight Radar Map** — FR24 air traffic with airport disruptions, US/IL military tracker, role descriptions
+3. 🇮🇱 **Hebrew Summary** (סיכום מצב שעתי — מגן יהודה) — Confident Israeli analyst style, cheers up the audience, references צה״ל, כיפת ברזל, חץ. Motivational sign-offs adjusted by threat level.
+4. 🇺🇸 **English Summary** (HOURLY INTEL SUMMARY — Magen Yehuda) — Professional analyst style with personality. "Am Yisrael Chai!" energy.
+5. 🎬 **24h Time-Lapse GIF** — Animated fire + seismic progression
 
 Both summaries include: sirens, OSINT highlights, fire/seismic detections, market moves, threat changes, and an analyst assessment section.
 
@@ -381,6 +490,7 @@ Every alert the watcher sends to Telegram is also saved to `state/intel-log.json
 | `fires` | NASA FIRMS fire detections |
 | `polymarket` | Market spike alerts |
 | `threat_change` | Threat level transitions with reason |
+| `flight_scan` | Air traffic snapshot (total, over Iran, military, airport status) |
 
 ### Usage
 ```bash
@@ -415,6 +525,103 @@ Features:
 - NordVPN proxy support for rate-limited sources
 - Graceful error handling per source
 - JSON output for integration with watcher
+
+## 🚨 Breaking News Detection
+
+The OSINT scanner automatically detects breaking news by matching **topic triggers** against **credibility signals**. Both must match for an alert to be flagged as breaking.
+
+### Topic Categories
+- **Leader elimination** — Khamenei, Nasrallah, Sinwar (Hebrew + English variants, 20+ phrasings)
+- **Nuclear events** — Detonation, nuclear strike, nuclear bomb
+- **Compound matching** — Words appearing anywhere in text (e.g., "khamenei" + "dead")
+
+### Credible Sources
+Reuters, AP News, IDF Official (`idfonline`), Kan News, Flash News IL, Iran International, BBC Persian, Aharonovic (`aharonyediot`), BeholdIsrael, SentDefender, IsraelRadar
+
+### Credible Attribution Keywords
+Netanyahu, Biden, Trump, IDF confirms, Pentagon confirms, Reuters, Associated Press, AFP, BBC confirms, "official statement"
+
+### Flow
+1. OSINT scanner matches text against topic trigger phrases
+2. Checks if source channel is credible OR text contains credible attribution
+3. Both must match → alert flagged `breaking: true` with topic string
+4. Watcher dispatches as `breaking_news` event at `CRITICAL` severity
+
+## 📡 Multi-Channel Dispatch (`dispatch.py`)
+
+Central routing module that sends alerts to multiple Telegram channels with language-specific formatting.
+
+### Config
+
+```json
+{
+  "outputs": [
+    {
+      "id": "main",
+      "chat_id": "@english_channel",
+      "language": "en",
+      "content": ["all"],
+      "min_severity": "LOW",
+      "images": "all"
+    },
+    {
+      "id": "hebrew",
+      "chat_id": "@hebrew_channel",
+      "language": "he",
+      "content": ["siren", "breaking_news", "osint", "fires"],
+      "images": "high_only"
+    }
+  ]
+}
+```
+
+### Output Options
+| Field | Values | Description |
+|-------|--------|-------------|
+| `language` | `"en"`, `"he"`, `"both"` | Which language text to send |
+| `content` | `["all"]` or specific types | Event type filter |
+| `min_severity` | `"LOW"` to `"CRITICAL"` | Minimum severity to send |
+| `images` | `"all"`, `"high_only"`, `"critical_only"`, `"none"` | Image inclusion policy |
+
+### Event Types
+`siren`, `siren_standdown`, `siren_clear`, `breaking_news`, `threat_change`, `osint`, `fires`, `seismic`, `strike_correlation`, `blackout`, `military_flights`, `polymarket`, `map`, `flight_map`, `summary_he`, `summary_en`, `timelapse`, `pinned_status`
+
+### Usage from Python
+```python
+from dispatch import Dispatcher
+d = Dispatcher("config.json")
+d.emit("breaking_news", "CRITICAL", text_he="...", text_en="...",
+       image_path="map.png", image_importance="high", image_caption_he="...")
+```
+
+### Usage from Bash (stdin)
+```bash
+echo '{"type":"fires","severity":"HIGH","text_en":"...","text_he":"..."}' \
+  | python3 scripts/dispatch.py config.json
+```
+
+### Features
+- Backward-compatible: works with single `telegram_chat_id` if no `outputs` array
+- Image importance decided at call site (low/medium/high/critical)
+- Separate `image_caption` vs `image_caption_he` for bilingual captions
+- Supports text, photo, GIF animation, and message editing
+- Dispatch audit log: `state/dispatch-log.jsonl` (7-day retention, auto-rotates at 2MB)
+
+## 📰 Wire Service Integration (Reuters/AP)
+
+Direct Reuters and AP News RSS feeds are behind Cloudflare/paywalls. **Google News RSS** is used as a reliable proxy:
+
+```
+# Reuters filtered to Iran+Israel
+https://news.google.com/rss/search?q=site:reuters.com+iran+OR+israel&hl=en-US&gl=US&ceid=US:en
+
+# AP News filtered to Iran+Israel
+https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=US&ceid=US:en
+```
+
+- Google News RSS items include `<source url="...">Reuters</source>` tags for attribution
+- Both are in the `CREDIBLE_SOURCES` set — alerts from Reuters/AP skip "UNVERIFIED" labeling
+- Returns dozens of items per feed, updates frequently
 
 ## Pikud HaOref — Israeli IP Requirement
 
@@ -520,11 +727,14 @@ iran-israel-alerts/
 │   ├── scan-naval.py           # Naval vessel tracker (Persian Gulf AIS)
 │   ├── correlate-strikes.py    # Fire + seismic strike correlation engine
 │   ├── generate-fire-map.py    # Satellite intel map generator
+│   ├── generate-flight-map.py  # FR24 air traffic map + intel panel
 │   ├── generate-timelapse.py   # 24h animated time-lapse GIF
 │   ├── generate-summary.py     # Hourly Hebrew + English analyst summaries
 │   ├── pinned-status.py        # Live pinned status message (edited every 60s)
+│   ├── dispatch.py             # Multi-channel alert dispatcher (EN/HE routing)
 │   ├── format-fires.py         # Fire data → Telegram HTML formatter
 │   ├── format-seismic.py       # Seismic data → Telegram HTML formatter
+│   ├── format-osint.py         # OSINT bilingual formatter (EN/HE channel names)
 │   ├── log-intel.py            # JSONL intel event logger
 │   └── hourly-report.sh        # Hourly: map + summaries + GIF → Telegram
 ├── references/
@@ -544,6 +754,9 @@ iran-israel-alerts/
     ├── naval-state.json
     ├── strike-correlations.json
     ├── intel-log.jsonl
+    ├── flight-history.jsonl    # Air traffic snapshots (7-day, JSONL)
+    ├── dispatch-log.jsonl      # Dispatch audit trail (7-day)
+    ├── flight-map.png          # Latest flight radar map
     ├── intel-map-latest.png
     ├── pinned-message-id.txt
     ├── osint-{telegram,twitter,rss,seismic}-seen.json

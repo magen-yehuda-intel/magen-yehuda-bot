@@ -74,6 +74,104 @@ def matches_keywords(text, keywords):
     text_lower = text.lower()
     return any(kw in text_lower for kw in keywords)
 
+
+# ── Breaking news detection ──
+# High-value intelligence phrases that should trigger CRITICAL breaking alerts.
+# Must match BOTH a topic trigger AND a credibility signal.
+
+BREAKING_TOPICS = [
+    # Khamenei death/health — various phrasings
+    'khamenei dead', 'khamenei died', 'khamenei killed', 'khamenei death',
+    'khamenei passed', 'khamenei assassinated', 'khamenei eliminated',
+    'khamenei confirmed dead', 'khamenei is dead', 'khamenei has died',
+    'khamenei has been killed', 'khamenei reportedly dead',
+    'חמינאי מת', 'חמינאי נהרג', 'חמינאי חוסל', 'מות חמינאי',
+    'death of khamenei', 'supreme leader dead', 'supreme leader killed',
+    'supreme leader confirmed dead', 'supreme leader has died',
+    'המנהיג העליון מת', 'המנהיג העליון נהרג',
+    # Nuclear strike / detonation
+    'nuclear detonation', 'nuclear strike on', 'nuclear bomb',
+    'פיצוץ גרעיני', 'פצצה גרעינית', 'תקיפה גרעינית',
+    # Major leader assassination
+    'nasrallah dead', 'nasrallah killed', 'נסראללה חוסל', 'נסראללה נהרג',
+    'sinwar dead', 'sinwar killed', 'סינוואר חוסל', 'סינוואר נהרג',
+]
+
+# Compound breaking checks — if ALL words appear in text (any order)
+BREAKING_COMPOUND = [
+    {'words': ['khamenei', 'dead'], 'topic': 'khamenei dead'},
+    {'words': ['khamenei', 'killed'], 'topic': 'khamenei killed'},
+    {'words': ['khamenei', 'died'], 'topic': 'khamenei died'},
+    {'words': ['khamenei', 'eliminated'], 'topic': 'khamenei eliminated'},
+    {'words': ['khamenei', 'assassinated'], 'topic': 'khamenei assassinated'},
+    {'words': ['חמינאי', 'מת'], 'topic': 'חמינאי מת'},
+    {'words': ['חמינאי', 'נהרג'], 'topic': 'חמינאי נהרג'},
+    {'words': ['חמינאי', 'חוסל'], 'topic': 'חמינאי חוסל'},
+    {'words': ['supreme leader', 'dead'], 'topic': 'supreme leader dead'},
+    {'words': ['supreme leader', 'killed'], 'topic': 'supreme leader killed'},
+    {'words': ['nuclear', 'detonation'], 'topic': 'nuclear detonation'},
+    {'words': ['nuclear', 'strike', 'iran'], 'topic': 'nuclear strike iran'},
+]
+
+# Credible sources — channel names and keywords that indicate reliability
+CREDIBLE_SOURCES = {
+    # Telegram channels (high reliability)
+    'idfonline', 'kann_news', 'flash_news_il', 'aharonyediot',
+    'iranintl_en', 'BBCPersian',
+    # Twitter accounts
+    'beholdisrael', 'sentdefender', 'IsraelRadar_',
+    # RSS feeds / wire services
+    'timesofisrael', 'jpost', 'ynet',
+    'reuters', 'ap news', 'apnews', 'associated press',
+}
+
+CREDIBLE_ATTRIBUTION = [
+    # Specific people / orgs whose statements carry weight
+    'netanyahu', 'נתניהו', 'biden', 'ביידן', 'trump', 'טראמפ',
+    'idf confirms', 'צה"ל מאשר', 'idf spokesperson', 'דובר צה"ל',
+    'pentagon confirms', 'white house confirms',
+    'reuters', 'associated press', ' ap ', 'afp',
+    'bbc confirms', 'cnn confirms', 'breaking:',
+    'official statement', 'הודעה רשמית',
+    'confirmed dead', 'אושר כי מת', 'confirmed killed',
+]
+
+
+def check_breaking_news(text, source_channel=""):
+    """
+    Check if an OSINT alert qualifies as breaking news.
+    Returns (is_breaking: bool, topic: str) tuple.
+    Must match a topic trigger AND (credible source OR credible attribution).
+    """
+    text_lower = text.lower()
+    channel_lower = source_channel.lower()
+
+    # Check exact phrase matches first
+    matched_topic = None
+    for topic in BREAKING_TOPICS:
+        if topic in text_lower:
+            matched_topic = topic
+            break
+
+    # Check compound word matches (words anywhere in text)
+    if not matched_topic:
+        for compound in BREAKING_COMPOUND:
+            if all(w in text_lower for w in compound['words']):
+                matched_topic = compound['topic']
+                break
+
+    if not matched_topic:
+        return False, ""
+
+    # Verify credibility: source channel OR text attribution
+    from_credible_source = any(cs in channel_lower for cs in CREDIBLE_SOURCES)
+    has_credible_attribution = any(attr in text_lower for attr in CREDIBLE_ATTRIBUTION)
+
+    if from_credible_source or has_credible_attribution:
+        return True, matched_topic
+
+    return False, ""
+
 # ═══════════════════════════════════════════════════════════
 # TELEGRAM PUBLIC CHANNELS (t.me/s/channelname)
 # ═══════════════════════════════════════════════════════════
@@ -126,6 +224,8 @@ def scan_telegram(config, state_dir, proxy_url=None):
                 if len(text) > 250:
                     display += '...'
                 
+                is_breaking, breaking_topic = check_breaking_news(text, ch)
+                
                 alerts.append({
                     'source': 'telegram',
                     'channel': ch,
@@ -133,6 +233,8 @@ def scan_telegram(config, state_dir, proxy_url=None):
                     'text': display,
                     'time': timestamp,
                     'link': f'https://t.me/{ch}/{msg_id}',
+                    'breaking': is_breaking,
+                    'breaking_topic': breaking_topic,
                 })
             
             # Keep last 30 message IDs per channel
@@ -204,6 +306,8 @@ def scan_twitter(config, state_dir, proxy_url=None):
                     
                     created = src.get('created_at', '')
                     
+                    is_breaking, breaking_topic = check_breaking_news(text, acct)
+                    
                     alerts.append({
                         'source': 'twitter',
                         'channel': f'@{acct}',
@@ -213,6 +317,8 @@ def scan_twitter(config, state_dir, proxy_url=None):
                         'text': display,
                         'time': created,
                         'link': f'https://x.com/{screen}/status/{tid}',
+                        'breaking': is_breaking,
+                        'breaking_topic': breaking_topic,
                     })
                 except (KeyError, TypeError):
                     continue
@@ -284,12 +390,16 @@ def scan_rss(config, state_dir):
                 if not matches_keywords(title, keywords):
                     continue
                 
+                is_breaking, breaking_topic = check_breaking_news(title, name)
+                
                 alerts.append({
                     'source': 'rss',
                     'channel': name,
                     'text': title[:200],
                     'time': pub_date,
                     'link': link,
+                    'breaking': is_breaking,
+                    'breaking_topic': breaking_topic,
                 })
             
             seen[name] = current_links[:30]
