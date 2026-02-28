@@ -1,0 +1,13 @@
+secrets/
+state/
+config.json
+*.log
+*.pid
+
+# Runtime artifacts
+watcher-poly-alerts.txt
+watcher-poly-last.json
+watcher-twitter-alerts.txt
+watcher-twitter-seen.json
+__pycache__/
+*.pyc

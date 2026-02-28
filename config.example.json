@@ -1,0 +1,60 @@
+{
+  "timezone": "Asia/Jerusalem",
+  "telegram_bot_token": "",
+  "telegram_chat_id": "",
+  "telegram_channel_name": "My Alert Channel",
+  "oref_poll_interval": 30,
+  "polymarket_poll_interval": 300,
+  "polymarket_spike_threshold": 5,
+  "twitter_poll_interval": 300,
+  "twitter_accounts": [
+    "PenPizzaReport",
+    "Conflict_Radar",
+    "Worldsource24",
+    "sentdefender",
+    "beholdisrael",
+    "Osint613",
+    "Osinttechnical",
+    "IsraelRadar_",
+    "Intel_Sky",
+    "ELINTNews",
+    "IsraelWarRoom"
+  ],
+  "telegram_osint_channels": [
+    "warmonitors",
+    "intelslava",
+    "liveuamap",
+    "AbuAliExpress",
+    "flash_news_il",
+    "idfonline",
+    "iranintl_en",
+    "BBCPersian",
+    "kann_news"
+  ],
+  "rss_feeds": [
+    {"name": "Times of Israel", "url": "https://www.timesofisrael.com/feed/"},
+    {"name": "Jerusalem Post", "url": "https://www.jpost.com/rss/rssfeedsfrontpage.aspx"},
+    {"name": "Al Jazeera", "url": "https://www.aljazeera.com/xml/rss/all.xml"},
+    {"name": "TASS", "url": "https://tass.com/rss/v2.xml"}
+  ],
+  "osint_keywords": [
+    "iran", "israel", "idf", "hezbollah", "houthi", "irgc",
+    "missile", "strike", "attack", "intercept", "siren",
+    "ballistic", "rocket", "drone", "escalation", "retaliation",
+    "tehran", "netanyahu", "gaza", "beirut", "hamas",
+    "pentagon", "centcom", "carrier", "nuclear", "enrichment",
+    "iron dome", "arrow", "david's sling", "thaad",
+    "war", "ceasefire", "pizza", "delivery",
+    "איראן", "טיל", "רקטה", "צבא", "תקיפה", "יירוט",
+    "פיקוד העורף", "אזעקה", "חיזבאללה", "חמאס",
+    "צה\"ל", "בליסטי", "מל\"ט", "הסלמה"
+  ],
+  "usgs_seismic": {
+    "enabled": true,
+    "min_latitude": 25,
+    "max_latitude": 40,
+    "min_longitude": 44,
+    "max_longitude": 63,
+    "min_magnitude": 3.5
+  }
+}
