@@ -88,7 +88,6 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 - `BBCPersian` — BBC Persian
 - `kann_news` — Kan News
 - `aharonyediot` — Aharon Yediot (HIGH reliability Hebrew OSINT)
-- `aharonyediot` — Aharon Yediot (HIGH reliability Hebrew OSINT)
 
 ### RSS Feeds (7)
 - Times of Israel — direct RSS
@@ -572,7 +571,7 @@ Central routing module that sends alerts to multiple Telegram channels with lang
       "id": "hebrew",
       "chat_id": "@hebrew_channel",
       "language": "he",
-      "content": ["siren", "breaking_news", "osint", "fires"],
+      "content": ["siren", "siren_standdown", "siren_clear", "breaking_news", "threat_change", "osint", "fires", "seismic", "strike_correlation", "blackout", "military_flights", "cyber", "polymarket", "map", "flight_map", "summary_he", "timelapse", "pinned_status"],
       "images": "high_only"
     }
   ]
@@ -588,7 +587,7 @@ Central routing module that sends alerts to multiple Telegram channels with lang
 | `images` | `"all"`, `"high_only"`, `"critical_only"`, `"none"` | Image inclusion policy |
 
 ### Event Types
-`siren`, `siren_standdown`, `siren_clear`, `breaking_news`, `threat_change`, `osint`, `fires`, `seismic`, `strike_correlation`, `blackout`, `military_flights`, `polymarket`, `map`, `flight_map`, `summary_he`, `summary_en`, `timelapse`, `pinned_status`
+`siren`, `siren_standdown`, `siren_clear`, `breaking_news`, `threat_change`, `osint`, `fires`, `seismic`, `strike_correlation`, `blackout`, `military_flights`, `cyber`, `polymarket`, `map`, `flight_map`, `summary_he`, `summary_en`, `timelapse`, `pinned_status`
 
 ### Usage from Python
 ```python
@@ -627,7 +626,7 @@ https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=
 - Both are in the `CREDIBLE_SOURCES` set — alerts from Reuters/AP skip "UNVERIFIED" labeling
 - Returns dozens of items per feed, updates frequently
 
-## 🛡️ Cyber Warfare Monitor (`scan-cyber.py`)
+## 🛡️ Cyber Warfare Monitor (`scan_cyber.py`)
 
 Monitors 30+ hacktivist groups, CTI aggregators, and dark web feeds for Iran-Israel cyber operations. Classifies attacks, identifies targets, and dispatches bilingual alerts.
 
@@ -802,7 +801,7 @@ iran-israel-alerts/
 │   ├── scan-blackout.py        # Iran internet blackout detector (IODA + probes)
 │   ├── scan-military-flights.py # US military ADS-B flight tracker (OpenSky)
 │   ├── scan-naval.py           # Naval vessel tracker (Persian Gulf AIS)
-│   ├── scan-cyber.py           # Cyber warfare & hacktivist monitor (30+ groups)
+│   ├── scan_cyber.py           # Cyber warfare & hacktivist monitor (30+ groups)
 │   ├── correlate-strikes.py    # Fire + seismic strike correlation engine
 │   ├── generate-fire-map.py    # Satellite intel map generator
 │   ├── generate-flight-map.py  # FR24 air traffic map + intel panel
@@ -859,10 +858,60 @@ bash ctl.sh start
 ```
 
 ### Cron Jobs
+
+**Important:** crontab must include Homebrew Python in PATH for Pillow/PIL:
 ```bash
+# First line of crontab:
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
+
 # Hourly status report (auto-installed)
 0 * * * * bash scripts/hourly-report.sh
 
 # 2-hour full SITREP
 0 */2 * * * bash scripts/post-telegram.sh --force
 ```
+
+> ⚠️ Without `PATH=/opt/homebrew/bin`, cron uses macOS system Python (3.9) which lacks Pillow — causing silent failures in fire map / timelapse / flight map generation.
+
+## Troubleshooting
+
+### Known Issues & Fixes (Feb 2026)
+
+| Issue | Root Cause | Fix |
+|-------|-----------|-----|
+| Hourly report cron silently fails | Cron's PATH uses `/usr/bin/python3` (3.9.6) missing Pillow — `set -euo pipefail` kills script | Add `PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin` as first line of crontab |
+| Polymarket tracks 0 markets | `STATE_DIR` bash variable not exported → Python `os.environ.get()` gets `.` → writes state to wrong path | Add `export STATE_DIR` after assignment in `realtime-watcher.sh` |
+| Cyber alerts found but never dispatched | `scan-cyber.py` (hyphen) can't be Python-imported → `from scan_cyber import format_cyber_summary` fails | Renamed to `scan_cyber.py` (underscore); format uses heredoc-based Python |
+| OpenSky returns HTTP 429 | Rate limiting (no API key configured) | Register free OpenSky account for higher limits, or rely on FR24 for hourly flight maps |
+| Darkfeed RSS returns 404 | Feed URL changed or removed | Replace with alternative ransomware feed, or remove from config |
+| OSINT scan "still running" skips | Slow proxy causes scan to exceed cycle interval → lock file blocks next scan | Stale locks auto-break at 120s; check proxy latency if persistent |
+
+### Debugging Tips
+
+```bash
+# Test hourly report under simulated cron environment
+env -i HOME="$HOME" PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin" \
+  bash scripts/hourly-report.sh
+
+# Test single monitor
+python3 scripts/scan_cyber.py config.json state
+python3 scripts/scan-blackout.py config.json state
+python3 scripts/scan-fires.py config.json state
+
+# Check watcher health
+bash ctl.sh dashboard
+
+# Binary search for bash syntax errors
+for end in $(seq 900 1000); do head -$end scripts/realtime-watcher.sh | bash -n 2>&1 && continue; echo "Error at line $end"; break; done
+```
+
+### Environment Variables
+
+The watcher uses these bash variables — **`STATE_DIR` must be exported** for inline Python:
+
+| Variable | Usage | Exported? |
+|----------|-------|-----------|
+| `SKILL_DIR` | Base directory for all paths | No (bash only) |
+| `STATE_DIR` | Runtime state files directory | **Yes** (Python reads via `os.environ`) |
+| `CONFIG_FILE` | Path to config.json | No (passed as arg) |
+| `THREAT_LEVEL` | Current threat level string | No (bash only) |

@@ -6,6 +6,7 @@
 SKILL_DIR="${SKILL_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 CONFIG_FILE="$SKILL_DIR/config.json"
 STATE_DIR="$SKILL_DIR/state"
+export STATE_DIR
 mkdir -p "$STATE_DIR"
 
 # ══════════════════════════════════════════════════════════════
@@ -1225,7 +1226,7 @@ check_strike_correlation() {
 check_cyber() {
   log "🛡️  Scanning cyber threat sources..."
   local raw_alerts
-  raw_alerts=$(python3 "$SKILL_DIR/scripts/scan-cyber.py" "$CONFIG_FILE" "$STATE_DIR" 2>>"$SKILL_DIR/state/watcher.log")
+  raw_alerts=$(python3 "$SKILL_DIR/scripts/scan_cyber.py" "$CONFIG_FILE" "$STATE_DIR" 2>>"$SKILL_DIR/state/watcher.log")
   local exit_code=$?
 
   if [ $exit_code -ne 0 ]; then
@@ -1242,39 +1243,47 @@ check_cyber() {
     return
   fi
 
-  # Format the alerts into bilingual summary
+  # Format the alerts into bilingual summary using heredoc (avoids import issues)
   local formatted
-  formatted=$(echo "$raw_alerts" | python3 -c "
-import sys, json
-sys.path.insert(0, '$SKILL_DIR/scripts')
-from scan_cyber import format_cyber_summary
-alerts = json.load(sys.stdin)
-result = format_cyber_summary(alerts)
-print(json.dumps(result, ensure_ascii=False))
-" 2>/dev/null)
+  formatted=$(echo "$raw_alerts" | python3 - "$SKILL_DIR/scripts" <<'PYEOF'
+import sys, json, os
 
-  if [ -z "$formatted" ]; then
-    # Fallback: use scan-cyber's own formatter via import
-    formatted=$(python3 -c "
-import sys, json
-sys.path.insert(0, '$SKILL_DIR/scripts')
-raw = json.loads('''$raw_alerts''')
+script_dir = sys.argv[1] if len(sys.argv) > 1 else "."
+sys.path.insert(0, script_dir)
 
-# Simple inline formatter
-lines_en = ['🛡️ <b>CYBER INTELLIGENCE</b>', '━━━━━━━━━━━━━━━━━━━━━━━━━━━━']
-lines_he = ['\u200F🛡️ <b>מודיעין סייבר</b>', '\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━']
-for a in raw[:6]:
-    en_line = a.get('attack_label_en','⚡') + ' <b>' + a.get('group_name', a.get('channel','?'))[:30] + '</b>: ' + a.get('text','')[:120]
-    he_line = '\u200F' + a.get('attack_label_he','⚡') + ' <b>' + a.get('group_name', a.get('channel','?'))[:30] + '</b>: ' + a.get('text','')[:120]
-    link = a.get('link','')
-    if link:
-        en_line += ' <a href=\"' + link + '\">[↗]</a>'
-        he_line += ' <a href=\"' + link + '\">[↗]</a>'
-    lines_en.append(en_line)
-    lines_he.append(he_line)
-print(json.dumps({'text_en': '\n'.join(lines_en), 'text_he': '\n'.join(lines_he), 'count': len(raw)}, ensure_ascii=False))
-" 2>/dev/null)
-  fi
+try:
+    from scan_cyber import format_cyber_summary
+    alerts = json.load(sys.stdin)
+    result = format_cyber_summary(alerts)
+    print(json.dumps(result, ensure_ascii=False))
+except Exception as e:
+    # Fallback: inline formatter
+    sys.stdin.seek(0)
+    try:
+        alerts = json.load(sys.stdin)
+    except:
+        alerts = []
+    
+    lines_en = ['\U0001f6e1\ufe0f <b>CYBER INTELLIGENCE</b>', '\u2501' * 28]
+    lines_he = ['\u200F\U0001f6e1\ufe0f <b>\u05de\u05d5\u05d3\u05d9\u05e2\u05d9\u05df \u05e1\u05d9\u05d9\u05d1\u05e8</b>', '\u200F' + '\u2501' * 28]
+    
+    for a in alerts[:6]:
+        name = a.get('group_name', a.get('channel', '?'))[:30]
+        text = a.get('text', '')[:120]
+        label_en = a.get('attack_label_en', '\u26a1')
+        label_he = a.get('attack_label_he', '\u26a1')
+        link = a.get('link', '')
+        link_tag = f' <a href="{link}">[↗]</a>' if link else ''
+        lines_en.append(f"{label_en} <b>{name}</b>: {text}{link_tag}")
+        lines_he.append(f"\u200F{label_he} <b>{name}</b>: {text}{link_tag}")
+    
+    print(json.dumps({
+        'text_en': '\n'.join(lines_en),
+        'text_he': '\n'.join(lines_he),
+        'count': len(alerts)
+    }, ensure_ascii=False))
+PYEOF
+  )
 
   local text_en text_he max_severity
   text_en=$(echo "$formatted" | python3 -c "import sys,json; print(json.load(sys.stdin).get('text_en',''))" 2>/dev/null)

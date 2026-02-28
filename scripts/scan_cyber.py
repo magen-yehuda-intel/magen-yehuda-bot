@@ -370,9 +370,17 @@ def build_proxy_url(config):
     return None
 
 
-def matches_cyber_keywords(text: str) -> bool:
+def matches_cyber_keywords(text: str, config=None) -> bool:
     text_lower = text.lower()
-    return any(kw in text_lower for kw in ALL_CYBER_KEYWORDS)
+    # Check built-in attack keywords
+    if any(kw in text_lower for kw in ALL_CYBER_KEYWORDS):
+        return True
+    # Check config override keywords (broader: includes cyber news terms)
+    if config and "cyber" in config:
+        overrides = config["cyber"].get("keywords_override", [])
+        if any(kw.lower() in text_lower for kw in overrides):
+            return True
+    return False
 
 
 # ═══════════════════════════════════════════════════════════
@@ -392,7 +400,8 @@ def scan_hacktivist_telegram(config, state_dir, proxy_url=None):
     all_groups.update(CTI_CHANNELS)
 
     # Also include user-configured cyber channels
-    extra_channels = config.get("cyber_telegram_channels", [])
+    cyber_cfg = config.get("cyber", {})
+    extra_channels = cyber_cfg.get("telegram_channels", config.get("cyber_telegram_channels", []))
 
     for group_name, info in all_groups.items():
         handles = info.get("handles", [])
@@ -428,7 +437,7 @@ def scan_hacktivist_telegram(config, state_dir, proxy_url=None):
                     text = re.sub(r"<[^>]+>", "", text)
                     text = h.unescape(text).strip()
 
-                    if not text or not matches_cyber_keywords(text):
+                    if not text or not matches_cyber_keywords(text, config):
                         continue
 
                     # Classify the attack
@@ -493,7 +502,7 @@ def scan_hacktivist_telegram(config, state_dir, proxy_url=None):
                 text = re.sub(r"<[^>]+>", "", text)
                 text = h.unescape(text).strip()
 
-                if not text or not matches_cyber_keywords(text):
+                if not text or not matches_cyber_keywords(text, config):
                     continue
 
                 attack = classify_attack(text)
@@ -552,7 +561,7 @@ def scan_cyber_twitter(config, state_dir, proxy_url=None):
 
     # Merge default CTI accounts with user-configured ones
     accounts = list(CTI_TWITTER_ACCOUNTS)
-    accounts.extend(config.get("cyber_twitter_accounts", []))
+    cyber_cfg = config.get("cyber", {}); accounts.extend(cyber_cfg.get("twitter_accounts", config.get("cyber_twitter_accounts", [])))
     accounts = list(dict.fromkeys(accounts))  # dedupe preserving order
 
     for acct in accounts:
@@ -593,7 +602,7 @@ def scan_cyber_twitter(config, state_dir, proxy_url=None):
                         continue
 
                     text = src.get("full_text", "")
-                    if not matches_cyber_keywords(text):
+                    if not matches_cyber_keywords(text, config):
                         continue
 
                     # Must also mention Iran or Israel context
@@ -681,7 +690,7 @@ def scan_cyber_rss(config, state_dir):
     alerts = []
 
     feeds = list(DEFAULT_CYBER_RSS)
-    feeds.extend(config.get("cyber_rss_feeds", []))
+    cyber_cfg = config.get("cyber", {}); feeds.extend(cyber_cfg.get("rss_feeds", config.get("cyber_rss_feeds", [])))
 
     for feed in feeds:
         name = feed.get("name", "?")

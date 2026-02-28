@@ -537,7 +537,7 @@ iran-israel-alerts/
 │   ├── scan-blackout.py         # Iran internet blackout detector
 │   ├── scan-military-flights.py # US military ADS-B tracker
 │   ├── scan-naval.py            # Naval vessel tracker
-│   ├── scan-cyber.py            # Cyber warfare & hacktivist monitor
+│   ├── scan_cyber.py            # Cyber warfare & hacktivist monitor
 │   ├── correlate-strikes.py     # Fire+seismic strike correlation
 │   ├── generate-fire-map.py     # Satellite intel map generator
 │   ├── generate-flight-map.py   # FR24 air traffic map + intel panel
