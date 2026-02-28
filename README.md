@@ -59,6 +59,22 @@ Edit `config.json` with your Telegram bot token and channel:
 }
 ```
 
+### 3. NASA FIRMS API Key (free, 30 seconds)
+
+The satellite fire detection needs a NASA FIRMS MAP_KEY. It's free — no verification required.
+
+1. Go to [mail.tm](https://mail.tm) or any disposable email service
+2. Copy the temp email address
+3. Go to [FIRMS API registration](https://firms.modaps.eosdis.nasa.gov/api/area/) → click **Get MAP_KEY**
+4. Enter the temp email — key arrives in seconds
+5. Save it:
+   ```bash
+   mkdir -p secrets
+   echo "YOUR_KEY" > secrets/firms-map-key.txt
+   ```
+
+The key is permanent with no rate limits on the area CSV endpoint.
+
 See `config.example.json` for all available settings including OSINT sources, keywords, polling intervals, and seismic monitoring.
 
 ### 3. Run

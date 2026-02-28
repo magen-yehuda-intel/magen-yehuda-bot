@@ -117,7 +117,7 @@ python3 scripts/format-fires.py < fires.json               # Format for Telegram
 - **Proximity to 23 known sites** — Nuclear (Natanz, Fordow, Isfahan, Bushehr, Arak), military (Parchin, Shahrud, Bandar Abbas), oil (Kharg Island), capital (Tehran)
 - **Reverse geocoding** — Nominatim converts coordinates to city/province names (cached, 1 req/sec, max 20/scan)
 - **Deduplication** — Tracks seen fires in `state/firms-seen.json`, only alerts on new detections
-- **API key required** — Register at https://firms.modaps.eosdis.nasa.gov/api/area/ and store in `secrets/firms-map-key.txt`
+- **API key required** — Free, see [Getting a FIRMS API Key](#getting-a-firms-api-key) below. Store in `secrets/firms-map-key.txt`
 
 ### Priority Classification
 | Priority | Trigger |
@@ -126,6 +126,27 @@ python3 scripts/format-fires.py < fires.json               # Format for Telegram
 | 🔴 HIGH | Near military/oil site (<30km) OR FRP ≥50 MW |
 | 🟡 MEDIUM | FRP ≥15 MW |
 | ⚪ LOW | FRP <15 MW, no nearby sites |
+
+### Getting a FIRMS API Key
+
+NASA FIRMS requires a free API key (MAP_KEY). The registration form asks for an email — they send the key instantly, no verification needed.
+
+**Quick method using a disposable email:**
+
+1. Go to https://mail.tm or any temp email service
+2. Copy the generated email address
+3. Go to https://firms.modaps.eosdis.nasa.gov/api/area/
+4. Click "Get MAP_KEY" → enter the temp email
+5. Check the temp inbox — key arrives within seconds
+6. Save it:
+   ```bash
+   mkdir -p secrets
+   echo "YOUR_KEY_HERE" > secrets/firms-map-key.txt
+   ```
+
+The key is permanent and has no rate limits for the area CSV endpoint. No real email required — NASA just needs *something* to send the key to.
+
+**Alternative:** Use your real email at the same URL if you prefer. Same instant delivery.
 
 ## 🌍 USGS Seismic Activity Monitoring
 
