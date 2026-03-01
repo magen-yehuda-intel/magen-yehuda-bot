@@ -394,6 +394,10 @@
     <div id="feed"></div>
   </div>
   <div class="section collapsed">
+    <div class="section-title">📊 ANALYTICS</div>
+    <div id="analytics"></div>
+  </div>
+  <div class="section collapsed">
     <div class="section-title">FORCE DISPOSITION</div>
     <div id="forces"></div>
   </div>
@@ -781,6 +785,137 @@ function updateStats() {
   document.getElementById('s-events').textContent = vis.length.toLocaleString();
   document.getElementById('s-kia').textContent = vis.reduce((s,e) => s + (e.fatalities||0), 0).toLocaleString();
   document.getElementById('s-countries').textContent = new Set(vis.map(e=>e.country).filter(Boolean)).size;
+  renderAnalytics();
+}
+
+function renderAnalytics(container) {
+  const el = container || document.getElementById('analytics');
+  if (!el) return;
+  const vis = filteredEvents;
+  const totalKIA = vis.reduce((s,e) => s + (e.fatalities||0), 0);
+  const theaters = new Set(vis.map(e=>e.country).filter(Boolean)).size;
+  const daysSinceOct7 = Math.floor((Date.now() - new Date('2023-10-07').getTime()) / 86400000);
+
+  // Daily event counts for sparkline (last 30 days of filtered data)
+  const dayCounts = {};
+  for (const e of vis) { dayCounts[e.date] = (dayCounts[e.date]||0) + 1; }
+  const sortedDays = Object.keys(dayCounts).sort();
+  const last30 = sortedDays.slice(-30);
+  const maxDay = Math.max(1, ...last30.map(d => dayCounts[d]||0));
+  const sparkW = 200, sparkH = 28;
+  const sparkPoints = last30.map((d,i) => {
+    const x = (i / Math.max(1,last30.length-1)) * sparkW;
+    const y = sparkH - ((dayCounts[d]||0) / maxDay) * sparkH;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ');
+
+  // Escalation index: events per day in last 7d vs 30d average
+  const now = new Date().toISOString().substring(0,10);
+  const d7ago = new Date(Date.now() - 7*86400000).toISOString().substring(0,10);
+  const d30ago = new Date(Date.now() - 30*86400000).toISOString().substring(0,10);
+  const ev7d = vis.filter(e => e.date >= d7ago).length;
+  const ev30d = vis.filter(e => e.date >= d30ago).length;
+  const rate7 = ev7d / 7;
+  const rate30 = ev30d / 30;
+  const escIdx = rate30 > 0 ? (rate7 / rate30) : (rate7 > 0 ? 5 : 0);
+  const escPct = Math.min(100, Math.round(escIdx * 20)); // Scale: 5x = 100%
+  const escColor = escPct > 70 ? '#ff2222' : escPct > 40 ? '#ff8800' : '#00d4ff';
+  const escLabel = escPct > 70 ? 'CRITICAL' : escPct > 40 ? 'ELEVATED' : 'NORMAL';
+
+  // Top actors
+  const actorCounts = {};
+  for (const e of vis) {
+    const a = e.actor1 || 'Unknown';
+    if (a === 'UNKNOWN') continue;
+    actorCounts[a] = (actorCounts[a]||0) + 1;
+  }
+  const topActors = Object.entries(actorCounts).sort((a,b) => b[1]-a[1]).slice(0,8);
+  const actorMax = topActors.length > 0 ? topActors[0][1] : 1;
+
+  // Casualty by side
+  const casualtySide = {};
+  for (const e of vis) {
+    if (e.fatalities > 0) {
+      casualtySide[e.side] = (casualtySide[e.side]||0) + e.fatalities;
+    }
+  }
+  const casSorted = Object.entries(casualtySide).sort((a,b) => b[1]-a[1]);
+  const casMax = casSorted.length > 0 ? casSorted[0][1] : 1;
+
+  el.innerHTML = `
+    <!-- KEY STATS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:4px;padding:6px 8px;text-align:center">
+        <div style="font-size:16px;font-weight:bold;color:var(--accent)">${vis.length.toLocaleString()}</div>
+        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">TOTAL EVENTS</div>
+      </div>
+      <div style="background:rgba(255,34,34,0.08);border:1px solid rgba(255,34,34,0.2);border-radius:4px;padding:6px 8px;text-align:center">
+        <div style="font-size:16px;font-weight:bold;color:#ff4444">${totalKIA.toLocaleString()}</div>
+        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">FATALITIES</div>
+      </div>
+      <div style="background:rgba(255,136,0,0.08);border:1px solid rgba(255,136,0,0.2);border-radius:4px;padding:6px 8px;text-align:center">
+        <div style="font-size:16px;font-weight:bold;color:#ff8800">${theaters}</div>
+        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">THEATERS</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:6px 8px;text-align:center">
+        <div style="font-size:16px;font-weight:bold;color:var(--text)">${daysSinceOct7}</div>
+        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">DAYS SINCE OCT 7</div>
+      </div>
+    </div>
+
+    <!-- ESCALATION INDEX -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">ESCALATION INDEX
+        <span style="float:right;color:${escColor};font-weight:bold">${escLabel}</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:3px;height:8px;overflow:hidden">
+        <div style="width:${escPct}%;height:100%;background:${escColor};border-radius:3px;transition:width 0.5s"></div>
+      </div>
+      <div style="font-size:7px;color:var(--text-dim);margin-top:2px">${rate7.toFixed(1)} evt/day (7d) vs ${rate30.toFixed(1)} (30d) · ${escIdx.toFixed(1)}x</div>
+    </div>
+
+    <!-- DAILY TREND SPARKLINE -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">DAILY TREND (${last30.length}d)</div>
+      <svg width="100%" viewBox="0 0 ${sparkW} ${sparkH}" preserveAspectRatio="none" style="display:block;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <polyline points="${sparkPoints}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"/>
+        <polyline points="0,${sparkH} ${sparkPoints} ${sparkW},${sparkH}" fill="url(#sparkGrad)" stroke="none"/>
+        <defs><linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--accent)" stop-opacity="0.3"/><stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
+      </svg>
+    </div>
+
+    <!-- CASUALTY BY SIDE -->
+    <div style="margin-bottom:8px">
+      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">CASUALTIES BY FORCE</div>
+      ${casSorted.map(([side,count]) => {
+        const c = SIDE_COLORS[side] || '#555';
+        const pct = Math.round((count/casMax)*100);
+        const name = side.replace('_',' ').toUpperCase();
+        return `<div style="display:flex;align-items:center;gap:5px;margin:2px 0">
+          <span style="font-size:8px;color:${c};width:70px;text-align:right">${name}</span>
+          <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:2px;height:5px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${c};border-radius:2px"></div>
+          </div>
+          <span style="font-size:8px;color:var(--text);min-width:35px">${count.toLocaleString()}</span>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- TOP ACTORS -->
+    <div>
+      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">TOP ACTORS</div>
+      ${topActors.map(([actor,count]) => {
+        const pct = Math.round((count/actorMax)*100);
+        return `<div style="display:flex;align-items:center;gap:5px;margin:2px 0;cursor:pointer" onclick="document.getElementById('search-box').value='${actor.replace(/'/g,"\\'")}';initSearch&&initSearch()">
+          <span style="font-size:8px;color:var(--text);width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right" title="${actor}">${actor}</span>
+          <div style="flex:1;background:rgba(255,255,255,0.06);border-radius:2px;height:5px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:var(--accent);opacity:0.7;border-radius:2px"></div>
+          </div>
+          <span style="font-size:8px;color:var(--text-dim);min-width:30px">${count.toLocaleString()}</span>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
 }
 
 // ═══════════════════════════════════════════════════════════
