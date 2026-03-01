@@ -646,20 +646,9 @@ function updatePanelCounts() {
     cell.querySelector('.country-n').textContent = (countryCounts[cell.dataset.country]||0).toLocaleString();
   });
 
-  // Event types — update counts but preserve click state
-  const types = {};
-  for (const e of filteredEvents) { const t = e.sub_event_type||'Other'; types[t]=(types[t]||0)+1; }
-  const max = Math.max(1, ...Object.values(types));
-  const etEl = document.getElementById('event-types');
-  if (etEl) {
-    // Only full re-render if needed; otherwise just update counts
-    etEl.querySelectorAll('.force-row[data-etype]').forEach(row => {
-      const t = row.dataset.etype;
-      const c = types[t] || 0;
-      const cnt = row.querySelector('.force-count');
-      if (cnt) cnt.textContent = c.toLocaleString();
-    });
-  }
+  // Event types — full re-render after filter change
+  renderEventTypes();
+  if (isMobile()) renderEventTypes(document.getElementById('mob-event-types'));
 }
 
 function updateStats() {
@@ -1300,7 +1289,7 @@ window.addEventListener('load', () => {
 
   // Desktop panels
   if (!isMobile()) {
-    renderForces(); renderCountries(); renderIranSites(); renderLayerToggles(); renderEventTypes();
+    renderForces(); renderCountries(); renderIranSites(); renderLayerToggles();
     renderTheaters(); renderPhases();
     initTimelineBrush();
   }
@@ -1320,7 +1309,7 @@ window.addEventListener('load', () => {
   }, 50);
 
   applyFilter();
-  if (!isMobile()) drawTimeline();
+  if (!isMobile()) { renderEventTypes(); drawTimeline(); }
   updateStats();
 
   map.on('zoomend moveend', renderMarkers);
