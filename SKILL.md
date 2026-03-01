@@ -1100,53 +1100,95 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 
 ## V2 CENTCOM Dashboard
 
-Interactive Leaflet map with real-time data layers, deployed to GitHub Pages at `/v2/`.
+Interactive Leaflet map with real-time data layers, deployed to GitHub Pages as the main dashboard.
+
+**URL:** `https://magen-yehuda-intel.github.io/magen-yehuda-bot/`
 
 ### Features
 - US/Iran military bases with MarkerCluster (cyan/orange bubble clusters)
 - Pulsing red siren markers from Pikud HaOref
 - NASA FIRMS fire hotspots
-- OSINT event markers
-- Pikud HaOref live banner (green "no alerts" / red pulsing "ACTIVE")
+- OSINT event markers synced with live feed filters
+- Pikud HaOref live banner (green "no alerts" / red pulsing "ACTIVE", 3-state toggle)
+- Live feed panel with time filters (15M/1H/6H/24H/48H/ALL) and side filters (Iran/Israel/US/Proxy)
+- CNN-style breaking news ticker
+- Click-to-highlight with pulsing cyan ring
+- Source links for Telegram channels and Twitter accounts
 - Mobile bottom toolbar with 6 action buttons
 - Keyboard shortcuts for all layers
+- NASA Black Marble night satellite imagery
 
-### Data Modes
+### Data Pipeline
 
-The dashboard supports two data sources via the `?api=` URL parameter:
-
-| Mode | URL | Oref Latency | FIRMS Latency |
-|------|-----|-------------|---------------|
-| **API mode** | `?api=https://your-backend.io` | ~10-30s | ~5min |
-| **Static mode** | (default, no param) | ~2-5min | ~5min |
-
-Static mode reads `oref-alerts.json` and `intel-feed.json` from the same GitHub Pages origin.
-
-### Optional: API Backend
-
-A lightweight Flask API can serve live data to the dashboard. See the separate `magen-yehuda-api` project for:
-- Azure Container Apps deployment (~$0 on consumption plan)
-- Direct Oref polling with GitHub Pages fallback
-- NASA FIRMS polling
-- Push endpoints for external data sources
-
-**Environment variables for the API:**
-
-| Variable | Description |
-|----------|-------------|
-| `FIRMS_MAP_KEY` | NASA FIRMS API key |
-| `GITHUB_PAGES_URL` | Dashboard repo GitHub Pages URL (Oref fallback) |
-| `PUSH_API_KEY` | Shared secret for POST endpoints (optional) |
-
-**Dashboard config** (in `config.json`, gitignored):
-```json
-{
-  "dashboard": {
-    "api_url": "https://your-app.azurecontainerapps.io",
-    "api_key": "your-push-key"
-  }
-}
 ```
+Watcher (Mac) → log-intel.py → JSONL file + Azure Table DB (best-effort)
+                              ↓
+              export-feed.py (cron 5min) → intel-feed.json + DB sync → git push → GitHub Pages
+                              ↓
+              Watcher → push/oref → Azure API (on siren detect/clear)
+                              ↓
+Dashboard loads: API (DB, real-time) + static JSON (backup) → merged + deduped
+```
+
+The dashboard hardcodes the Azure API URL and merges both data sources for maximum coverage.
+
+### Files
+- `docs/index.html` — Main dashboard (V2, promoted from /v2/)
+- `docs/v2-data.js` — Military bases, nuclear sites, missile sites, energy, IRGC, air defense data (354 lines)
+- `docs/v1/index.html` — Archived V1 dashboard (5.6MB legacy)
+- `docs/v2/index.html` — Redirect to root
+- `docs/intel-feed.json` — Static backup feed (exported every 5min)
+- `docs/oref-alerts.json` — Static Oref backup (exported every 5min)
+
+## Azure Cloud Backend
+
+### Container App API (`magen-yehuda-api`)
+
+Flask/gunicorn API deployed on Azure Container Apps (consumption plan, ~$0/month).
+
+**URL:** `https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io`
+
+**Endpoints:**
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/oref` | GET | Pikud HaOref alerts (from watcher push) |
+| `/api/fires` | GET | NASA FIRMS hotspots (self-polling, 5min) |
+| `/api/intel-feed` | GET | Intel events from Azure Table (`?hours=`, `?side=`, `?limit=`) |
+| `/api/health` | GET | Health check with cache ages |
+| `/api/debug` | GET | Debug info |
+| `/api/push/oref` | POST | Push Oref data (API key auth) |
+| `/api/push/intel` | POST | Push intel events (API key auth) |
+
+**Project:** `~/.openclaw/workspace/projects/magen-yehuda-api/`
+
+### Azure Table Storage
+
+Primary data store for intel events. Practically free (~$0.01/month).
+
+- **Account:** `magenyehudadata` (eastus)
+- **Table:** `intelevents`
+- **Auth:** Entra ID (shared key blocked by tenant policy)
+- **Managed identity:** Container app has `Storage Table Data Contributor` role
+- **Schema:** `PartitionKey=YYYY-MM-DD`, `RowKey=SHA256(src+text+ts)[:32]`
+- **Fields:** `ts`, `src`, `text`, `side`, `type`, `sub_event_type`, `lat`, `lon`, `location`, `breaking`, `confidence`
+
+### Azure Resources
+
+| Resource | Type | Location |
+|----------|------|----------|
+| `magen-yehuda-intel` | Resource Group | eastus |
+| `magenyehudacr` | Container Registry | eastus |
+| `magen-yehuda-env` | Container App Environment | eastus |
+| `magen-yehuda-api` | Container App | eastus |
+| `magenyehudadata` | Storage Account | eastus |
+
+### Key Notes
+- Oref API is geo-blocked outside Israel — watcher pushes siren data from Mac (via NordVPN IL proxy) to the API
+- DB sync happens via `export-feed.py` (compares DB vs static by content key, inserts missing)
+- Empty events are rejected by `db.py` and filtered by dashboard
+- Container builds: `az acr build --registry magenyehudacr --image magen-yehuda-api:latest .`
+- Push API key: set as `PUSH_API_KEY` env var on container
 
 ## Troubleshooting
 
