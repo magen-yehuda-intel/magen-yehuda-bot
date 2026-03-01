@@ -373,6 +373,7 @@ const THEATERS = {
   '🇸🇾 SYRIA': { center: [35, 38.5], zoom: 7 },
   '🇮🇶 IRAQ': { center: [33.5, 44], zoom: 6 },
   '🇾🇪 YEMEN': { center: [15.5, 44], zoom: 7 },
+  '🌊 PERSIAN GULF': { center: [26.5, 52], zoom: 7 },
   '🔴 RED SEA': { center: [18, 40], zoom: 6 },
 };
 
@@ -806,10 +807,20 @@ function renderTheaters(container) {
 
   el.querySelectorAll('.theater-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const t = THEATERS[btn.dataset.theater];
+      const name = btn.dataset.theater;
+      const t = THEATERS[name];
       map.flyTo(t.center, t.zoom, { duration: 1.2 });
       document.querySelectorAll('.theater-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      // Theater select also resets time filter to ALL TIME so events are visible
+      if (name !== 'ALL') {
+        timeStart = null; timeEnd = null;
+        document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+        const allBtn = document.querySelector('.phase-btn');
+        if (allBtn) allBtn.classList.add('active');
+        applyFilter();
+        if (!isMobile()) drawTimeline();
+      }
       if (isMobile()) closeMobileSheet();
     });
   });
