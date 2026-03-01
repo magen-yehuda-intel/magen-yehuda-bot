@@ -396,7 +396,32 @@ def generate_english(events, stats, now_str):
 
 def main():
     now = datetime.now(timezone.utc)
-    now_str = now.strftime("%Y-%m-%d %H:%M UTC")
+
+    # Per-channel timezones: Hebrew gets Israel time, English gets Eastern time
+    try:
+        from zoneinfo import ZoneInfo
+    except ImportError:
+        from backports.zoneinfo import ZoneInfo
+
+    # Read per-output timezone from config
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+    tz_en = "America/New_York"
+    tz_he = "Asia/Jerusalem"
+    try:
+        import json as _json
+        cfg = _json.load(open(config_path))
+        for o in cfg.get("outputs", []):
+            if o.get("id") == "main":
+                tz_en = o.get("timezone", tz_en)
+            elif o.get("id") == "hebrew":
+                tz_he = o.get("timezone", tz_he)
+    except Exception:
+        pass
+
+    now_en = now.astimezone(ZoneInfo(tz_en))
+    now_he = now.astimezone(ZoneInfo(tz_he))
+    now_str_en = now_en.strftime("%Y-%m-%d %H:%M %Z")
+    now_str_he = now_he.strftime("%Y-%m-%d %H:%M %Z")
 
     events = load_intel(hours=1)
     stats = load_stats()
@@ -419,8 +444,8 @@ def main():
                 for line in kept:
                     f.write(line + "\n")
 
-    hebrew = generate_hebrew(events, stats, now_str)
-    english = generate_english(events, stats, now_str)
+    hebrew = generate_hebrew(events, stats, now_str_he)
+    english = generate_english(events, stats, now_str_en)
 
     output = {
         "hebrew": hebrew,

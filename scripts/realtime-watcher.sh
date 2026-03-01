@@ -14,6 +14,22 @@ mkdir -p "$STATE_DIR"
 # ══════════════════════════════════════════════════════════════
 
 DISPLAY_TZ=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('timezone','Asia/Jerusalem'))" 2>/dev/null || echo "Asia/Jerusalem")
+DISPLAY_TZ_EN=$(python3 -c "
+import json; c=json.load(open('$CONFIG_FILE'))
+for o in c.get('outputs',[]):
+    if o.get('id')=='main':
+        print(o.get('timezone','America/New_York')); break
+else:
+    print('America/New_York')
+" 2>/dev/null || echo "America/New_York")
+DISPLAY_TZ_HE=$(python3 -c "
+import json; c=json.load(open('$CONFIG_FILE'))
+for o in c.get('outputs',[]):
+    if o.get('id')=='hebrew':
+        print(o.get('timezone','Asia/Jerusalem')); break
+else:
+    print('Asia/Jerusalem')
+" 2>/dev/null || echo "Asia/Jerusalem")
 BOT_TOKEN=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_bot_token',''))" 2>/dev/null || echo "")
 CHAT_ID=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_chat_id',''))" 2>/dev/null || echo "")
 CHANNEL_NAME=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_channel_name','Alert Monitor'))" 2>/dev/null || echo "Alert Monitor")
@@ -148,7 +164,7 @@ set_threat_level() {
     # Post threat level change to Telegram
     local threat_msg_en="$new_emoji <b>THREAT LEVEL: $new_level</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+⏱️ $(TZ="$DISPLAY_TZ_EN" date '+%H:%M:%S %Z')
 $old_emoji $old_level → $new_emoji $new_level
 
 📋 <i>$reason</i>
@@ -162,7 +178,7 @@ $old_emoji $old_level → $new_emoji $new_level
     local threat_msg_he
     threat_msg_he=$'\u200F'"$new_emoji <b>רמת איום: $new_he</b>
 "$'\u200F'"━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"$'\u200F'"⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+"$'\u200F'"⏱️ $(TZ="$DISPLAY_TZ_HE" date '+%H:%M:%S %Z')
 "$'\u200F'"$old_emoji $old_he → $new_emoji $new_he
 
 "$'\u200F'"📋 <i>$reason_hebrew</i>
@@ -250,6 +266,10 @@ echo "{}" > "$POLY_LAST" 2>/dev/null || true
 log() {
   echo "[$(TZ="$DISPLAY_TZ" date '+%Y-%m-%d %H:%M:%S %Z')] $*"
 }
+
+# Timestamp helpers — EN uses Eastern Time, HE uses Israel Time
+ts_en() { TZ="$DISPLAY_TZ_EN" date '+%H:%M:%S %Z'; }
+ts_he() { TZ="$DISPLAY_TZ_HE" date '+%H:%M:%S %Z'; }
 
 log_intel() {
   # Log a structured intel event to JSONL for hourly summaries
@@ -360,17 +380,18 @@ check_oref() {
     if [ -n "$prev" ] && [ "$prev" != "" ] && [ "$prev" != "[]" ]; then
       log "ℹ️ No new alerts broadcasting"
       local _ts
-      _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+      _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
       local _clear_he="ℹ️ <b>אין התרעות חדשות</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts}
+⏱️ ${_ts_he}
 
 פיקוד העורף הפסיק לשדר התרעות חדשות.
 ⚠️ <b>יש להישאר במרחב מוגן עד להנחיית פיקוד העורף.</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       local _clear_en="ℹ️ <b>NO NEW ALERTS BROADCASTING</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts}
+⏱️ ${_ts_en}
 
 Pikud HaOref is no longer broadcasting new alerts.
 ⚠️ <b>Stay in shelter until instructed otherwise by Pikud HaOref.</b>
@@ -507,12 +528,13 @@ except:
 " <<< "$alerts" 2>/dev/null)
 
       local _ts
-      _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+      _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
       local _te
       _te=$(threat_emoji "$THREAT_LEVEL")
       local _sd_he="✅ <b>פיקוד העורף — ניתן לצאת</b> ✅
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | ${_te} $THREAT_LEVEL
+⏱️ ${_ts_he} | ${_te} $(threat_level_he "$THREAT_LEVEL")
 
 ${details}
 
@@ -520,7 +542,7 @@ ${details}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       local _sd_en="✅ <b>PIKUD HAOREF — STAND DOWN</b> ✅
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | ${_te} $THREAT_LEVEL
+⏱️ ${_ts_en} | ${_te} $THREAT_LEVEL
 
 ${details}
 
@@ -619,12 +641,13 @@ except Exception as e:
 
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
     local _ts
-    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
 
     # Siren alerts are already in Hebrew from Oref — details contain Hebrew location data
     local _siren_he="🚨🚨🚨 <b>צבע אדום — פיקוד העורף</b> 🚨🚨🚨
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${details}
 
@@ -633,7 +656,7 @@ ${details}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     local _siren_en="🚨🚨🚨 <b>ACTIVE SIRENS — PIKUD HAOREF</b> 🚨🚨🚨
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${details}
 
@@ -715,11 +738,12 @@ except Exception as ex:
     alert_text=$(cat "$alert_file")
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
     local _ts
-    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
     log "📊 Polymarket spike detected"
     local _poly_he="📊 <b>תנועה בשוקי ההימורים</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${alert_text}
 
@@ -727,7 +751,7 @@ ${alert_text}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     local _poly_en="📊 <b>MARKET MOVEMENT DETECTED</b>
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${alert_text}
 
@@ -850,17 +874,18 @@ print(len(seismic), file=sys.stderr)
   if [ -n "$seismic_count" ] && [ "$seismic_count" -gt 0 ] 2>/dev/null; then
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
     local _ts
-    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
     local _seis_he="🌍🌍🌍 <b>פעילות סייסמית — איראן</b> 🌍🌍🌍
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${seismic_alerts}
 ⚠️ רעידות רדודות בעוצמה גבוהה או סוג 'פיצוץ' עלולות להצביע על ניסוי גרעיני תת-קרקעי או תקיפה קונבנציונלית.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     local _seis_en="🌍🌍🌍 <b>SEISMIC ACTIVITY — IRAN REGION</b> 🌍🌍🌍
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${seismic_alerts}
 ⚠️ Shallow high-magnitude events or 'explosion' type may indicate underground nuclear tests or large conventional strikes.
@@ -886,18 +911,19 @@ ${seismic_alerts}
     summary=$(python3 -c "import json,sys; print(json.load(sys.stdin)['summary'])" < "$alert_file" 2>/dev/null)
     local level_emoji=$(threat_emoji "$THREAT_LEVEL")
     local _ts
-    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
 
     log "📡 OSINT: $osint_count updates ($summary)"
     local _osint_he="📡 <b>עדכון מודיעין</b> ($osint_count חדשים)
 ━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${text_he}
 ━━━━━━━━━━━━━━━━━━━━━"
     local _osint_en="📡 <b>OSINT INTEL</b> ($osint_count new)
 ━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $level_emoji $THREAT_LEVEL
+⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${text_en}
 ━━━━━━━━━━━━━━━━━━━━━"
@@ -1199,10 +1225,11 @@ for c, n in sorted(cats.items()):
 " 2>/dev/null)
     
     local _ts
-    _ts=$(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+    _ts_en=$(ts_en)
+    _ts_he=$(ts_he)
     local _mil_he="✈️✈️✈️ <b>מטוסים צבאיים — המפרץ הפרסי</b> ✈️✈️✈️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $mil_count מטוסים במעקב
+⏱️ ${_ts_he} | $mil_count מטוסים במעקב
 
 ${details}
 
@@ -1210,7 +1237,7 @@ ${details}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     local _mil_en="✈️✈️✈️ <b>MILITARY AIRCRAFT — PERSIAN GULF</b> ✈️✈️✈️
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ ${_ts} | $mil_count aircraft tracked
+⏱️ ${_ts_en} | $mil_count aircraft tracked
 
 ${details}
 
