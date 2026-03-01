@@ -70,6 +70,13 @@ OSINT_SCANNER="$SKILL_DIR/scripts/scan-osint.py"
 # Oref always polls fast (it's cheap). Twitter/Poly scale with threat.
 
 THREAT_LEVEL="GREEN"     # Current level
+# Restore threat level from last run (prevents duplicate alerts on restart)
+if [ -f "$STATE_DIR/watcher-threat-level.txt" ]; then
+  SAVED_LEVEL=$(cat "$STATE_DIR/watcher-threat-level.txt" 2>/dev/null | tr -d '[:space:]')
+  case "$SAVED_LEVEL" in
+    GREEN|ELEVATED|HIGH|CRITICAL) THREAT_LEVEL="$SAVED_LEVEL" ;;
+  esac
+fi
 THREAT_FILE="$STATE_DIR/watcher-threat-level.txt"
 LAST_SIREN_TIME=0        # epoch of most recent siren
 LAST_SIREN_CRITICAL=0    # epoch of most recent CRITICAL-trigger siren

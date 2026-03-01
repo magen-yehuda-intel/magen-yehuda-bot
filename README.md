@@ -47,6 +47,39 @@ Monitors 75+ intelligence sources across 16 categories, auto-adjusts polling fre
 - **Attack classification** — Auto-categorizes ICS/SCADA, data breach, ransomware, DDoS, espionage with severity scoring
 - **Naval vessel tracking** — US Navy, IRGC Navy, zone classification, naval base proximity
 
+## 🗺️ Interactive Theater Operations Dashboard
+
+**Live Dashboard:** [magen-yehuda-intel.github.io/magen-yehuda-bot](https://magen-yehuda-intel.github.io/magen-yehuda-bot/)
+
+A Leaflet-based interactive web dashboard visualizing **48,000+ geolocated conflict events** across the Middle East since October 7, 2023.
+
+### Features
+
+- **Theater Select** — 9 operational theaters including Persian Gulf, each with tailored map bounds and context
+- **14 Conflict Phase Presets** — Jump to key moments: Oct 7 attack, Iran April strikes, Lebanon ground ops, Houthi naval campaign, and more
+- **Force Disposition** — Filter events by side (Israel, Iran, Iran proxies, US/Coalition, Unknown)
+- **Military Base Overlays** — 29 Iranian military sites + 20 US/Coalition bases with independent layer toggles
+- **Event Type Filtering** — Clickable legend filters by airstrikes, shelling, ground combat, satellite detections, and more
+- **News Feed Panel** — Live headlines from OSINT sources; click any headline to fly to its geolocated position on the map
+- **Resizable Side Panel** — Drag to resize the info/news panel to your preference
+- **Collapsible Timeline** — Temporal density visualization showing event concentration over time; expand/collapse as needed
+- **Mobile-Responsive** — Full mobile support with a 5-tab bottom navigation bar (Map, Theaters, Filters, News, Timeline)
+
+### Dashboard Data Sources
+
+| Source | Events | Coverage | Description |
+|--------|--------|----------|-------------|
+| **ACLED** | 48,000+ | Oct 7, 2023 – Feb 2025 | Analyst-verified conflict events with lat/lon, actors, fatalities, event types |
+| **OSINT** | 50 unique | Real-time | Curated events from 80+ Telegram, Twitter, and RSS sources |
+| **NASA FIRMS** | 379 | Satellite pass intervals | Satellite fire/thermal anomaly detections across the region |
+| **Pikud HaOref** | Live | Real-time | Israeli Home Front Command siren alerts |
+
+### Screenshots
+
+> _Screenshots coming soon. The dashboard is live at the URL above._
+
+---
+
 ## Quick Start
 
 ### 1. Prerequisites
@@ -756,4 +789,6 @@ MIT
 - [FlightRadar24](https://www.flightradar24.com/) — Air traffic data
 - [Polymarket](https://polymarket.com/) — Prediction markets
 - [Google News RSS](https://news.google.com/) — Wire service proxy for Reuters/AP
+- [ACLED](https://acleddata.com/) — Armed Conflict Location & Event Data Project
+- [Leaflet](https://leafletjs.com/) — Interactive map framework
 - OSINT community on X/Twitter and Telegram

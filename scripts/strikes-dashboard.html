@@ -296,6 +296,12 @@
 <!-- DESKTOP RIGHT PANEL -->
 <div id="panel-resize"></div>
 <div id="panel">
+  <div class="section" style="padding:6px 8px">
+    <input type="text" id="search-box" placeholder="🔍 Search location, actor, keyword..." 
+      style="width:100%;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;font-family:inherit;outline:none"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    <div id="search-results" style="display:none;max-height:200px;overflow-y:auto;margin-top:4px"></div>
+  </div>
   <div class="section">
     <div class="section-title">THEATER SELECT</div>
     <div class="theater-btns" id="theater-btns"></div>
@@ -798,12 +804,28 @@ function renderLayerToggles(container) {
   });
 }
 
+const THEATER_COUNTRIES = {
+  '🇮🇷 IRAN': ['Iran'], '🇮🇱🇵🇸 IL/GAZA': ['Palestine','Israel'],
+  '🇱🇧 LEBANON': ['Lebanon'], '🇸🇾 SYRIA': ['Syria'], '🇮🇶 IRAQ': ['Iraq'],
+  '🇾🇪 YEMEN': ['Yemen'], '🌊 PERSIAN GULF': ['Iran','Saudi Arabia'],
+  '🔴 RED SEA': ['Yemen']
+};
+
 function renderTheaters(container) {
   const el = container || document.getElementById('theater-btns');
   if (!el) return;
-  el.innerHTML = Object.keys(THEATERS).map(name =>
-    `<button class="theater-btn${name==='ALL'?' active':''}" data-theater="${name}">${name}</button>`
-  ).join('');
+  // Count events per theater
+  const counts = {};
+  for (const e of EVENTS) {
+    for (const [t, cs] of Object.entries(THEATER_COUNTRIES)) {
+      if (cs.includes(e.country)) { counts[t] = (counts[t]||0)+1; break; }
+    }
+  }
+  el.innerHTML = Object.keys(THEATERS).map(name => {
+    const c = name === 'ALL' ? EVENTS.length : (counts[name]||0);
+    const badge = c > 0 ? ` <span style="font-size:7px;opacity:0.6">${c>=1000?(c/1000).toFixed(1)+'k':c}</span>` : '';
+    return `<button class="theater-btn${name==='ALL'?' active':''}" data-theater="${name}">${name}${badge}</button>`;
+  }).join('');
 
   el.querySelectorAll('.theater-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -854,6 +876,72 @@ function renderPhases(container) {
       }
       if (isMobile()) closeMobileSheet();
     });
+  });
+}
+
+// ═══ SEARCH ═══
+function initSearch() {
+  const box = document.getElementById('search-box');
+  const results = document.getElementById('search-results');
+  if (!box || !results) return;
+  let debounce;
+  box.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      const q = box.value.trim().toLowerCase();
+      if (q.length < 2) { results.style.display = 'none'; return; }
+      const matches = [];
+      const seen = new Set();
+      for (const e of EVENTS) {
+        const text = `${e.location} ${e.actor1} ${e.actor2} ${e.notes||''} ${e.country}`.toLowerCase();
+        if (!text.includes(q)) continue;
+        const key = `${e.date}|${e.location}|${e.actor1}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        matches.push(e);
+        if (matches.length >= 15) break;
+      }
+      if (matches.length === 0) {
+        results.innerHTML = '<div style="font-size:9px;color:var(--text-dim);padding:4px">No results</div>';
+      } else {
+        results.innerHTML = matches.map((ev, i) => {
+          const color = SIDE_COLORS[ev.side] || '#888';
+          return `<div class="feed-item search-result" data-search-idx="${i}" style="cursor:pointer">
+            <span class="feed-ts">${ev.date.substring(5)}</span>
+            <span style="color:${color};font-weight:bold">${ev.actor1||ev.side}</span>
+            → <span class="feed-loc">${ev.location||ev.country}</span>
+            ${ev.fatalities>0?`<span class="feed-fat">☠${ev.fatalities}</span>`:''}
+            ${ev.notes?`<div style="color:#aaa;font-size:7px;margin-top:1px">${ev.notes.substring(0,80)}</div>`:''}
+          </div>`;
+        }).join('');
+        results._searchEvents = matches;
+        results.querySelectorAll('.search-result').forEach(item => {
+          item.addEventListener('click', () => {
+            const ev = results._searchEvents[+item.dataset.searchIdx];
+            if (ev && ev.lat && ev.lon) {
+              map.flyTo([ev.lat, ev.lon], 10, {duration: 0.8});
+              L.popup({maxWidth:320}).setLatLng([ev.lat, ev.lon]).setContent(
+                `<div style="font-size:12px;max-width:300px;line-height:1.4">
+                  <b style="font-size:13px">${ev.sub_event_type||ev.event_type||'Event'}</b><br>
+                  <span style="color:${SIDE_COLORS[ev.side]||'#888'};font-weight:bold">${ev.actor1||''}</span>
+                  ${ev.actor2?' vs <b>'+ev.actor2+'</b>':''}<br>
+                  📍 ${ev.location||ev.country} · 📅 ${ev.date}
+                  ${ev.fatalities>0?' · ☠ <b>'+ev.fatalities+'</b> killed':''}
+                  ${ev.notes?'<div style="margin-top:6px;padding-top:5px;border-top:1px solid #444;color:#ddd;font-size:11px">'+ev.notes+'</div>':''}
+                </div>`
+              ).openOn(map);
+            }
+            results.style.display = 'none';
+            box.value = '';
+          });
+        });
+      }
+      results.style.display = 'block';
+    }, 250);
+  });
+  // Esc to close
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { box.value = ''; results.style.display = 'none'; box.blur(); }
   });
 }
 
@@ -1318,7 +1406,7 @@ window.addEventListener('load', () => {
   // Desktop panels
   if (!isMobile()) {
     renderForces(); renderCountries(); renderIranSites(); renderLayerToggles();
-    renderTheaters(); renderPhases();
+    renderTheaters(); renderPhases(); initSearch();
     initTimelineBrush();
   }
   // Mobile tabs

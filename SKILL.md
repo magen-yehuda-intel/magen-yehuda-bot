@@ -1030,6 +1030,7 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 | Darkfeed RSS returns 404 | Feed URL changed or removed | Replace with alternative ransomware feed, or remove from config |
 | Hourly summary shows "Threat Level: UNKNOWN" | `generate-summary.py` parsed watcher.log for threat level but regex didn't match log format (emoji prefixes, startup lines) | Fixed: reads `state/watcher-threat-level.txt` first (written by watcher), falls back to log parsing |
 | Cyber config has empty source arrays | `config.json` cyber section had no Telegram channels, Twitter accounts, or RSS feeds configured | Add sources to `cyber.telegram_channels`, `cyber.twitter_accounts`, `cyber.rss_feeds` in config.json |
+| Duplicate threat level alerts on restart | Watcher initialized `THREAT_LEVEL=GREEN` on every start, then detected stale `OREF_LAST` → spammed GREEN→CRITICAL | Fixed: watcher reads `watcher-threat-level.txt` on startup to restore last known level |
 | OSINT scan "still running" skips | Slow proxy causes scan to exceed cycle interval → lock file blocks next scan | Stale locks auto-break at 120s; check proxy latency if persistent |
 
 ### Debugging Tips
