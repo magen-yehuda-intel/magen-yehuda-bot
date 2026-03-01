@@ -195,6 +195,11 @@ $old_emoji $old_level → $new_emoji $new_level
     
     emit_alert "threat_change" "HIGH" "$threat_msg_he" "$threat_msg_en"
     
+    # Immediately update pinned status on threat level change
+    log "📌 Immediate pinned status update (threat → $new_level)"
+    python3 "$SKILL_DIR/scripts/pinned-status.py" "$CONFIG_FILE" "$STATE_DIR" 2>/dev/null
+    LAST_PINNED_UPDATE=$(date +%s)
+
     # Log intel
     log_intel "{\"type\":\"threat_change\",\"from\":\"$old_level\",\"to\":\"$new_level\",\"reason\":$(echo "$reason" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')}"
   fi
