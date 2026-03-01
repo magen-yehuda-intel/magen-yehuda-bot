@@ -1,11 +1,11 @@
 ---
 name: iran-israel-alerts
-description: Monitor Iran-Israel-US military escalation and attack alerts using 80+ OSINT sources, satellite fire detection, seismic monitoring, cyber warfare tracking, military flight tracking, and real-time alert APIs. Includes interactive Leaflet strikes dashboard with 48K+ geolocated events, US/Iran military base overlays, and event type filtering. Use when checking for breaking military news, missile alerts, airstrikes, or geopolitical escalation between Iran, Israel, and the US. Triggers on questions about Iran attacks, Israel strikes, Middle East military alerts, OSINT updates, or escalation monitoring.
+description: Monitor Iran-Israel-US military escalation and attack alerts using 85+ OSINT sources, satellite fire detection, seismic monitoring, cyber warfare tracking, military flight tracking, and real-time alert APIs. Includes interactive Leaflet strikes dashboard with 49K+ geolocated events, live feed pipeline, US/Iran military base overlays, PWA mobile support, and event type filtering. Use when checking for breaking military news, missile alerts, airstrikes, or geopolitical escalation between Iran, Israel, and the US. Triggers on questions about Iran attacks, Israel strikes, Middle East military alerts, OSINT updates, or escalation monitoring.
 ---
 
 # Iran-Israel Attack Alert Monitor
 
-Multi-source intelligence aggregation for Iran/Israel/US military escalation with adaptive threat-level system, 80+ source channels, real-time OSINT scanning, NASA satellite fire detection, USGS seismic monitoring, cyber warfare monitoring (19 hacktivist groups), wire service integration (Reuters/AP), multi-source breaking news corroboration, multi-channel bilingual dispatch with per-channel timezones, and instant Telegram delivery with auto-generated intel maps and interactive strikes dashboard.
+Multi-source intelligence aggregation for Iran/Israel/US military escalation with adaptive threat-level system, 85+ source channels, real-time OSINT scanning, NASA satellite fire detection, USGS seismic monitoring, cyber warfare monitoring (19 hacktivist groups), wire service integration (Reuters/AP), multi-source breaking news corroboration, multi-channel bilingual dispatch with per-channel timezones, Hebrew-first OSINT prioritization for Hebrew channel, live feed data pipeline, and instant Telegram delivery with auto-generated intel maps and interactive strikes dashboard (PWA-enabled).
 
 ## Quick Start
 
@@ -28,7 +28,8 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   📡 OSINT scanner       every 30s-5min (threat-adaptive)      │
 │     ├─ 📢 12 Telegram channels (t.me/s/ web preview)          │
 │     ├─ 🐦 13 Twitter accounts (syndication API)                │
-│     ├─ 📰 7 RSS feeds (TOI, JPost, AJ, TASS, Ynet, Reuters, AP)│
+│     ├─ 📰 10 RSS feeds (TOI, JPost, AJ, TASS, Ynet, Reuters,  │
+│     │       AP, Maariv, Walla, Channel 13)                     │
 │     └─ 🌍 USGS seismic (Iran region, M3.5+)                   │
 │   📊 Polymarket          every 60s-5min (threat-adaptive)      │
 │   🔥 NASA FIRMS fires    every 3-15min (threat-adaptive)       │
@@ -45,9 +46,12 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   ⚔️ Strikes map data     every 6h (ACLED + local sensors)     │
 │   🎯 Strike correlation   after every fire/seismic scan        │
 │   📌 Pinned status        edited every 60s (live dashboard)     │
+│   📡 Live feed export     every 5min (intel-feed.json → GitHub) │
 │                                                                │
 │   → Instant Telegram push on changes                           │
 │   → Breaking news corroboration (3+ reputable = CONFIRMED)     │
+│   → Confirmed topics suppressed after first alert               │
+│   → Hebrew-first OSINT prioritization for Hebrew channel        │
 │   → Auto-escalate/deescalate threat level                      │
 │   → Per-channel timezones (EN=ET, HE=IST)                     │
 │   → Pikud HaOref stand-down messages detected (no escalation)  │
@@ -72,7 +76,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 | 1 | 🚨 Pikud HaOref (sirens) | 1 | REST API (Israeli IP req.) | None |
 | 2 | 📢 Telegram OSINT | 12 channels | Web preview scraping | None |
 | 3 | 🐦 X/Twitter OSINT | 13 accounts | Syndication API | None |
-| 4 | 📰 RSS News | 7 feeds | RSS/XML parsing | None |
+| 4 | 📰 RSS News | 10 feeds (4 Hebrew, 6 English) | RSS/XML parsing | None |
 | 5 | 🌍 USGS Seismic | Iran region | REST API (GeoJSON) | None |
 | 6 | 📊 Polymarket | Dynamic | REST API | None |
 | 7 | 🔥 NASA FIRMS | 4 satellites | Area CSV API | MAP_KEY |
@@ -100,7 +104,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 - `kann_news` — Kan News
 - `aharonyediot` — Aharon Yediot (HIGH reliability Hebrew OSINT)
 
-### RSS Feeds (7)
+### RSS Feeds (10)
 - Times of Israel — direct RSS
 - Jerusalem Post — direct RSS
 - Al Jazeera — direct RSS
@@ -108,6 +112,9 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 - Ynet (Hebrew) — direct RSS
 - **Reuters** — via Google News RSS proxy (`site:reuters.com`)
 - **AP News** — via Google News RSS proxy (`site:apnews.com`)
+- **מעריב (Maariv)** — Hebrew RSS (direct)
+- **וואלה (Walla)** — Hebrew RSS (direct)
+- **חדשות 13 (Channel 13)** — Hebrew RSS (direct)
 
 > **Note:** Direct Reuters/AP RSS feeds are behind Cloudflare/paywalls. Google News RSS filtered to `site:reuters.com` works reliably as a proxy, including `<source>` tags for attribution.
 
@@ -582,9 +589,22 @@ Breaking alerts are tracked per topic in `state/breaking-corroboration.json`. Wh
 
 **Rules:**
 - Same outlet doesn't count twice (deduplication by source name)
-- Entries auto-expire after 2 hours
+- Entries auto-expire after 2 hours (24 hours if confirmed)
 - CONFIRMED alerts display the full list of corroborating sources
+- **Confirmed topics suppressed after first alert** — `confirmed_sent` flag prevents re-alerting on new sources matching an already-confirmed topic
 - State persists across scan cycles in `breaking-corroboration.json`
+- Expiry preserves `confirmed_sent` flag via sentinel entries
+
+### Hebrew-First OSINT Prioritization
+
+Both `format-osint.py` (real-time alerts) and `generate-summary.py` (hourly report) filter OSINT by language:
+
+| Channel | Priority | Behavior |
+|---------|----------|----------|
+| Hebrew (@opssheagathaariupdates) | Hebrew sources first | Ynet, Maariv, Walla, Ch13, Kann, IDF, AbuAli, flash_news_il prioritized; English fills remaining slots |
+| English (@magenyehudaupdates) | English sources first | Reuters, AP, TASS, warmonitors, intelslava prioritized; Hebrew fills remaining |
+
+**Hebrew detection:** Channel name match against known Hebrew sources OR Hebrew Unicode chars (\\u0590-\\u05FF) in text.
 
 ## 📡 Multi-Channel Dispatch (`dispatch.py`)
 
@@ -711,17 +731,32 @@ Comprehensive geolocated strikes database and visual map covering the entire Mid
 
 ## 🗺️ Interactive Strikes Dashboard
 
-Standalone Leaflet-based HTML dashboard for theater operations visualization. Gist-hosted for zero-deploy sharing.
+Standalone Leaflet-based HTML dashboard for theater operations visualization. Hosted on GitHub Pages at `https://magen-yehuda-intel.github.io/magen-yehuda-bot/`.
 
 ### Features
-- **48,500+ geolocated events** from ACLED + FIRMS + OSINT + Pikud HaOref
+- **48,900+ geolocated events** from ACLED + FIRMS + OSINT + Pikud HaOref
 - **Dark military theme** — CartoDB dark tiles, Orbitron/JetBrains Mono fonts, scanline overlay
-- **Theater select** — ALL, Iran, IL/Gaza, Lebanon, Syria, Iraq, Yemen, Red Sea
-- **14 conflict phase presets** — Oct 7, Ground Op, True Promise I/II, US→Houthis, Days of Repentance, US+IL→Tehran, etc.
+- **Theater select** — ALL, Iran, IL/Gaza, Lebanon, Syria, Iraq, Yemen, Red Sea, Persian Gulf (with event count badges)
+- **15 conflict phase presets** — Oct 7, Ground Op, True Promise I/II, US→Houthis, Days of Repentance, US+IL→Tehran, Iran-Israel War 2, etc.
 - **Force disposition bars** — Israel (IDF), Iran (IRGC), Iran Proxies, Syria (SAA), US (CENTCOM), Gulf States
 - **Country breakdown grid** with event counts and toggles
-- **Zoomable timeline** — mouse wheel zoom, +/−/FIT buttons, brush selection, 13 annotated key events
+- **Zoomable timeline** — mouse wheel zoom, +/−/FIT buttons, brush selection, 13 annotated key events, starts collapsed
 - **Timeline auto-fits** to active filter range with 15% padding
+- **Search bar** — instant results with fly-to popups
+- **Analytics panel** — stats cards, escalation gauge, sparkline, casualties chart, top actors
+- **Keyboard shortcuts** — 1-9 for theaters, Escape to clear, F for fullscreen, S for search
+- **URL hash state** — shareable URLs preserve map view, filters, and time range
+- **Fullscreen mode** — F11 or F key
+- **Marker/font size controls** — adjustable marker scale (0.5×–3×) and font scale (0.7×–1.5×)
+- **Collapsible panel sections** — click any section title to toggle
+- **PWA support** — add to home screen on mobile with native app feel
+
+### Live Feed Pipeline
+- `scripts/export-feed.py` — cron every 5 min, exports last 48h OSINT → `docs/intel-feed.json`
+- Dashboard fetches `intel-feed.json` on load + polls every 60s
+- Deduplication via date|source|notes[:60] keys
+- 🟢 LIVE indicator shows event count + freshness
+- Only commits+pushes to GitHub if data changed (MD5 hash check)
 
 ### Map Overlays
 - **20 US/Coalition bases** — Al Udeid (CENTCOM HQ), Al Dhafra, NSA Bahrain (5th Fleet), Incirlik, Akrotiri, Nevatim, Diego Garcia, etc. Toggleable ON/OFF
@@ -738,18 +773,26 @@ Standalone Leaflet-based HTML dashboard for theater operations visualization. Gi
 |--------|--------|----------|
 | ACLED | ~48,000 | Oct 7, 2023 → Feb 2025 (analyst-verified, ~1yr lag) |
 | NASA FIRMS | ~380 | Real-time satellite fire detections in Iran |
-| OSINT | ~175 | Intel-log text extraction (location mentions) |
+| OSINT | ~930 | Intel-log OSINT events (48h rolling merge) |
 | Pikud HaOref | 1+ | Siren events with coordinates |
 
 ### Mobile Support
-- Full-screen map with 5-tab bottom bar (Theater, Phase, Forces, Intel, Layers)
+- Full-screen map with 5-tab bottom bar (Map, Phase, Feed, Forces, Layers)
+- Persistent search bar above tabs — accessible from any tab
+- Swipe between tabs (touch gesture left/right)
+- Card-style mobile feed with source, location, headline, timestamp, fly-to-on-tap
 - Slide-up sheets for panel content
+- PWA manifest — add to home screen with native app feel
 - Responsive CSS for ≤768px screens
 
 ### Files
-- **Template:** `scripts/strikes-dashboard.html` (~1,100 lines, no inline data)
-- **Standalone:** `scripts/strikes-dashboard-standalone.html` (~3.3MB, data embedded)
+- **Template:** `scripts/strikes-dashboard.html` (~1,900 lines, no inline data)
+- **Standalone:** `scripts/strikes-dashboard-standalone.html` (~4.6MB, data embedded)
+- **Pages:** `docs/index.html` (copy of standalone for GitHub Pages)
+- **Live feed:** `docs/intel-feed.json` (auto-updated every 5 min by cron)
+- **Feed exporter:** `scripts/export-feed.py` (cron job)
 - **GitHub Gist:** `cce8ab4f861d240f21dc2916e7cd187e`
+- **GitHub Pages:** `https://magen-yehuda-intel.github.io/magen-yehuda-bot/`
 
 ### Rebuild Standalone
 ```bash
