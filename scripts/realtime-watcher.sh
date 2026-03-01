@@ -812,6 +812,7 @@ import json, sys, os, time, html as h
 
 CORROBORATION_THRESHOLD = 3   # unique sources needed to confirm
 CORROBORATION_WINDOW = 7200   # 2 hours
+CONFIRMED_WINDOW = 86400      # 24 hours — once confirmed, stays confirmed longer
 
 # Reputable sources whose reporting counts for confirmation
 REPUTABLE = {
@@ -824,7 +825,8 @@ REPUTABLE = {
     'sky news arabia', 'france24',
     'tass', 'ria novosti', 'iran international', 'iranintl',
     'intel_point', 'intelintel', 'aurora_intel', 'oaboreal',
-    'sentdefender', 'conflicts',
+    'sentdefender', 'conflicts', 'intelslava', 'warmonitors',
+    'liveuamap', 'abualiexpress',
 }
 
 alerts = json.loads(sys.argv[1])
@@ -841,9 +843,11 @@ if os.path.exists(corr_file):
 
 now = time.time()
 
-# Expire old entries
+# Expire old entries (use longer window if topic was ever confirmed)
 for topic in list(corr.keys()):
-    corr[topic] = [e for e in corr[topic] if now - e['ts'] < CORROBORATION_WINDOW]
+    was_confirmed = any(e.get('confirmed_at') for e in corr[topic])
+    window = CONFIRMED_WINDOW if was_confirmed else CORROBORATION_WINDOW
+    corr[topic] = [e for e in corr[topic] if now - e['ts'] < window]
     if not corr[topic]:
         del corr[topic]
 
@@ -880,6 +884,10 @@ for a in alerts:
     n_total = len(all_sources)
 
     is_confirmed = n_reputable >= CORROBORATION_THRESHOLD
+
+    # Stamp confirmation time (persists so topic stays confirmed in longer window)
+    if is_confirmed and not any(e.get('confirmed_at') for e in all_sources):
+        all_sources[0]['confirmed_at'] = now
 
     # Build source list for display
     source_names = [e['channel'] for e in all_sources]
