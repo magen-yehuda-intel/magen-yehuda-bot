@@ -50,7 +50,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .title-iran { color:#f87171; text-shadow: 0 0 20px rgba(239,68,68,0.5), 0 0 40px rgba(239,68,68,0.2); }
 
 /* ═══ MAP ═══ */
-#map { position:fixed; top:44px; left:54px; right:0; bottom:0; z-index:1; background:var(--bg); }
+#map { position:fixed; top:44px; left:54px; right:0; bottom:28px; z-index:1; background:var(--bg); }
 
 /* ═══ TOOLBAR (left) ═══ */
 #toolbar {
@@ -429,6 +429,57 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   display:inline-block; width:1px; height:24px; background:var(--panel-border);
   vertical-align:middle; margin:0 2px; flex-shrink:0;
 }
+
+/* ═══ LIVE NEWS TICKER ═══ */
+#news-ticker {
+  position:fixed; bottom:0; left:54px; right:0; height:28px; z-index:900;
+  background:rgba(5,5,16,0.95);
+  backdrop-filter:blur(8px);
+  border-top:1px solid rgba(6,182,212,0.2);
+  display:flex; align-items:center; overflow:hidden;
+}
+.ticker-label {
+  flex-shrink:0; padding:0 10px; font-family:var(--font-title); font-size:9px;
+  font-weight:700; letter-spacing:1.5px; color:#050510;
+  background:var(--cyan); height:100%; display:flex; align-items:center;
+}
+.ticker-label.alert { background:var(--red); animation: tickerLabelPulse 1s ease-in-out infinite alternate; }
+@keyframes tickerLabelPulse { 0% { opacity:1; } 100% { opacity:0.7; } }
+.ticker-track {
+  flex:1; overflow:hidden; position:relative; height:100%;
+  display:flex; align-items:center;
+  mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 97%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 97%, transparent 100%);
+}
+.ticker-content {
+  display:flex; align-items:center; gap:0;
+  white-space:nowrap;
+  animation: tickerFlow var(--ticker-duration, 60s) linear infinite;
+}
+.ticker-content:hover { animation-play-state:paused; }
+@keyframes tickerFlow {
+  0% { transform:translateX(0); }
+  100% { transform:translateX(-50%); }
+}
+.ticker-item {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:0 20px; font-family:var(--font-data); font-size:11px;
+  color:var(--text); cursor:pointer; transition:color 0.2s;
+}
+.ticker-item:hover { color:var(--cyan); }
+.ticker-item .ti-dot { width:4px; height:4px; border-radius:50%; flex-shrink:0; }
+.ticker-item .ti-src { color:var(--cyan); font-size:9px; opacity:0.7; }
+.ticker-item .ti-time { color:var(--text-dim); font-size:9px; }
+.ticker-sep { color:rgba(6,182,212,0.3); padding:0 4px; font-size:10px; }
+.ticker-item.breaking .ti-dot { background:var(--red) !important; animation: tickerDotPulse 0.6s ease-in-out infinite alternate; }
+@keyframes tickerDotPulse { 0% { box-shadow:0 0 4px var(--red); } 100% { box-shadow:0 0 10px var(--red); } }
+
+@media (max-width:768px) {
+  #news-ticker { left:0; bottom:52px; height:24px; }
+  .ticker-label { font-size:8px; padding:0 6px; }
+  .ticker-item { font-size:10px; padding:0 14px; }
+}
+
 #mobile-bar {
   display:none;
   position:fixed; bottom:0; left:0; right:0; height:52px; z-index:1000;
@@ -456,7 +507,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   #oref-banner { left:0; top:74px; padding:5px 10px; }
   #oref-banner .oref-title { font-size:10px; }
   #oref-banner .oref-status { font-size:11px; }
-  #map { left:0; top:116px; bottom:52px; }
+  #map { left:0; top:116px; bottom:76px; }
   #chips { left:8px; bottom:60px; gap:4px; }
   .chip { padding:4px 8px; }
   .chip-label { font-size:7px; }
@@ -799,6 +850,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <span id="layer-status">Layers: 3 active</span>
   <span style="flex:1"></span>
   <span>MAGEN YEHUDA INTEL v2.0</span>
+</div>
+
+<!-- LIVE NEWS TICKER -->
+<div id="news-ticker">
+  <div class="ticker-label" id="ticker-label">LIVE</div>
+  <div class="ticker-track">
+    <div class="ticker-content" id="ticker-content"></div>
+  </div>
 </div>
 
 <!-- LIVE FEED PANEL -->
@@ -1565,6 +1624,50 @@ updateMobileButtons();
 
 // Auto-open live feed on load
 setTimeout(() => toggleFeed(), 500);
+
+// ═══════════════════════════════════════════════════════════
+// NEWS TICKER
+// ═══════════════════════════════════════════════════════════
+function loadTicker() {
+  const feedUrl = `${STATIC_BASE}/intel-feed.json`;
+  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    const events = (data.events || data || []).sort((a,b) => (b.ts||0) - (a.ts||0));
+    const now = Date.now() / 1000;
+    // Show last 6 hours in ticker
+    const recent = events.filter(e => e.ts && (now - e.ts) < 21600).slice(0, 50);
+    if (recent.length === 0) return;
+
+    const hasBreaking = recent.some(e => e.breaking);
+    const label = document.getElementById('ticker-label');
+    if (hasBreaking) {
+      label.textContent = '🚨 BREAKING';
+      label.classList.add('alert');
+    } else {
+      label.textContent = 'LIVE';
+      label.classList.remove('alert');
+    }
+
+    // Build ticker items — duplicate for seamless loop
+    const items = recent.map(e => {
+      const sideColor = SIDE_COLORS[e.side] || '#6b7280';
+      const ago = e.ts ? formatAgo(now - e.ts) : '';
+      const text = (e.text || '').length > 120 ? e.text.substring(0, 120) + '…' : (e.text || '');
+      const brk = e.breaking ? ' breaking' : '';
+      return `<span class="ticker-item${brk}" onclick="flyToEvent(${e.lat},${e.lon})"><span class="ti-dot" style="background:${sideColor}"></span><span class="ti-src">${e.src||''}</span>${text}<span class="ti-time">${ago}</span></span><span class="ticker-sep">◆</span>`;
+    }).join('');
+
+    const content = document.getElementById('ticker-content');
+    content.innerHTML = items + items; // duplicate for seamless loop
+
+    // Adjust speed based on content width
+    const duration = Math.max(30, recent.length * 4);
+    content.style.setProperty('--ticker-duration', duration + 's');
+  }).catch(() => {});
+}
+
+loadTicker();
+setInterval(loadTicker, 60000); // refresh ticker every 60s
 
 // Show data mode
 document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
