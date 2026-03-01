@@ -822,6 +822,7 @@ REPUTABLE = {
     'sky news', 'fox news', 'nbc', 'abc news', 'nytimes', 'new york times',
     'washington post', 'wall street journal',
     'sky news arabia', 'france24',
+    'tass', 'ria novosti', 'iran international', 'iranintl',
     'intel_point', 'intelintel', 'aurora_intel', 'oaboreal',
     'sentdefender', 'conflicts',
 }

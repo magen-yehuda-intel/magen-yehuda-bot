@@ -113,12 +113,20 @@
     border-top: 1px solid var(--border);
     padding: 6px 12px; z-index: 500;
   }
-  .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+  .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; gap: 6px; }
   .timeline-title { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--accent); }
-  .timeline-range { font-size: 8px; color: var(--text-dim); }
+  .timeline-range { font-size: 8px; color: var(--text-dim); flex: 1; text-align: right; }
+  .tl-controls { display: flex; gap: 3px; align-items: center; }
+  .tl-btn {
+    background: rgba(0,200,255,0.08); border: 1px solid var(--border);
+    color: var(--accent); width: 22px; height: 18px;
+    font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
+    cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center;
+  }
+  .tl-btn:hover { background: rgba(0,200,255,0.2); border-color: var(--accent); }
   .timeline-reset {
     background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3);
-    color: var(--warning); padding: 2px 6px;
+    color: var(--warning); padding: 2px 6px; height: 18px;
     font-family: 'JetBrains Mono', monospace; font-size: 8px;
     cursor: pointer; border-radius: 3px; display: none;
   }
@@ -162,6 +170,8 @@
   }
   .force-row:active { background: rgba(255,255,255,0.06); }
   .force-row.dimmed { opacity: 0.3; }
+  .force-row .toggle-on { color: var(--safe); }
+  .force-row .toggle-off { color: var(--text-dim); }
   .force-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
   .force-name { flex: 1; color: var(--text-dim); font-size: 9px; }
   .force-count { font-family: 'Orbitron', sans-serif; font-weight: 500; font-size: 10px; min-width: 40px; text-align: right; }
@@ -281,6 +291,10 @@
     <div id="iran-sites"></div>
   </div>
   <div class="section">
+    <div class="section-title">🗺️ MAP LAYERS</div>
+    <div id="layer-toggles"></div>
+  </div>
+  <div class="section">
     <div class="section-title">EVENT TYPES</div>
     <div id="event-types"></div>
   </div>
@@ -294,7 +308,12 @@
 <div id="timeline-panel">
   <div class="timeline-header">
     <div class="timeline-title">▸ TEMPORAL DENSITY</div>
-    <button class="timeline-reset" id="tl-reset" onclick="clearTimeFilter()">✕ CLEAR</button>
+    <div class="tl-controls">
+      <button class="tl-btn" id="tl-zoom-in" title="Zoom in timeline">+</button>
+      <button class="tl-btn" id="tl-zoom-out" title="Zoom out timeline">−</button>
+      <button class="tl-btn" id="tl-fit" title="Fit to filter" style="font-size:8px;width:28px">FIT</button>
+      <button class="timeline-reset" id="tl-reset" onclick="clearTimeFilter()">✕ CLEAR</button>
+    </div>
     <div class="timeline-range" id="tl-range">—</div>
   </div>
   <canvas id="timeline-canvas"></canvas>
@@ -307,8 +326,8 @@
     <button class="mob-tab" data-tab="theater"><span class="icon">🗺️</span>Theater</button>
     <button class="mob-tab" data-tab="phase"><span class="icon">⏱</span>Phase</button>
     <button class="mob-tab" data-tab="forces"><span class="icon">⚔️</span>Forces</button>
+    <button class="mob-tab" data-tab="layers"><span class="icon">📍</span>Layers</button>
     <button class="mob-tab" data-tab="intel"><span class="icon">📡</span>Intel</button>
-    <button class="mob-tab" data-tab="sites"><span class="icon">🎯</span>Iran</button>
   </div>
 </div>
 
@@ -330,28 +349,83 @@ const THEATERS = {
 };
 
 const IRAN_SITES = [
-  { name:'Natanz', lat:33.72, lon:51.73, type:'Nuclear enrichment' },
-  { name:'Isfahan', lat:32.65, lon:51.68, type:'Nuclear conversion' },
-  { name:'Fordow', lat:34.88, lon:51.58, type:'Underground enrichment' },
-  { name:'Bushehr', lat:28.97, lon:50.84, type:'Nuclear reactor' },
-  { name:'Arak', lat:34.09, lon:49.70, type:'Heavy water reactor' },
-  { name:'Parchin', lat:35.52, lon:51.77, type:'Military complex' },
-  { name:'Tehran', lat:35.69, lon:51.39, type:'Capital / Command' },
-  { name:'Bandar Abbas', lat:27.19, lon:56.28, type:'Naval base / Hormuz' },
-  { name:'Chabahar', lat:25.29, lon:60.64, type:'Naval / Port' },
-  { name:'Kharg Island', lat:29.24, lon:50.33, type:'Oil terminal (90% exports)' },
-  { name:'Tabriz', lat:38.08, lon:46.29, type:'Military base' },
-  { name:'Dezful', lat:32.38, lon:48.40, type:'Missile base' },
-  { name:'Semnan', lat:35.57, lon:53.39, type:'Space/missile launch' },
-  { name:'Kish Island', lat:26.53, lon:54.02, type:'Strategic island' },
+  // Nuclear
+  { name:'Natanz', lat:33.72, lon:51.73, type:'Nuclear enrichment', cat:'nuclear' },
+  { name:'Isfahan (UCF)', lat:32.65, lon:51.68, type:'Nuclear conversion', cat:'nuclear' },
+  { name:'Fordow', lat:34.88, lon:51.58, type:'Underground enrichment', cat:'nuclear' },
+  { name:'Bushehr', lat:28.97, lon:50.84, type:'Nuclear reactor', cat:'nuclear' },
+  { name:'Arak (IR-40)', lat:34.09, lon:49.70, type:'Heavy water reactor', cat:'nuclear' },
+  // Military / Command
+  { name:'Parchin', lat:35.52, lon:51.77, type:'Military complex / weapons R&D', cat:'military' },
+  { name:'Tehran (MOD)', lat:35.69, lon:51.39, type:'Capital / Supreme Command', cat:'command' },
+  { name:'Kharg Island', lat:29.24, lon:50.33, type:'Oil terminal (90% exports)', cat:'strategic' },
+  { name:'Kish Island', lat:26.53, lon:54.02, type:'Strategic island / intel', cat:'strategic' },
+  // IRGC / Missile
+  { name:'Dezful', lat:32.38, lon:48.40, type:'IRGC missile base', cat:'missile' },
+  { name:'Semnan', lat:35.57, lon:53.39, type:'Space/missile launch center', cat:'missile' },
+  { name:'Tabriz', lat:38.08, lon:46.29, type:'IRGC Aerospace / air defense', cat:'military' },
+  { name:'Shahrud', lat:36.42, lon:55.01, type:'IRGC solid-fuel missile site', cat:'missile' },
+  { name:'Khojir', lat:35.62, lon:51.65, type:'IRGC missile R&D complex', cat:'missile' },
+  { name:'Bid Kaneh', lat:35.47, lon:51.52, type:'IRGC weapons depot', cat:'military' },
+  // Navy
+  { name:'Bandar Abbas', lat:27.19, lon:56.28, type:'IRIN naval HQ / Hormuz', cat:'naval' },
+  { name:'Chabahar', lat:25.29, lon:60.64, type:'Naval / Makran coast base', cat:'naval' },
+  { name:'Jask', lat:25.65, lon:57.77, type:'Naval base / Gulf of Oman', cat:'naval' },
+  { name:'Bandar-e Lengeh', lat:26.56, lon:54.88, type:'IRGCN fast-attack craft base', cat:'naval' },
+  // Air Force
+  { name:'Isfahan (AFB)', lat:32.75, lon:51.86, type:'Khatami Air Base (F-14/Su-24)', cat:'airbase' },
+  { name:'Mehrabad', lat:35.69, lon:51.31, type:'Tehran military airfield', cat:'airbase' },
+  { name:'Shiraz (AFB)', lat:29.54, lon:52.59, type:'Shiraz Air Base (F-4/F-5)', cat:'airbase' },
+  { name:'Bushehr (AFB)', lat:28.95, lon:50.83, type:'Bushehr Air Base', cat:'airbase' },
+  { name:'Hamadan (AFB)', lat:34.87, lon:48.55, type:'Nojeh Air Base (Tu-22M staging)', cat:'airbase' },
+  { name:'Omidiyeh', lat:30.83, lon:49.53, type:'Vahdati Air Base (F-4/MiG-29)', cat:'airbase' },
+  // Air Defense
+  { name:'S-300 Tehran', lat:35.75, lon:51.42, type:'S-300PMU2 / Bavar-373 battery', cat:'airdefense' },
+  { name:'S-300 Isfahan', lat:32.68, lon:51.70, type:'S-300 protecting nuclear site', cat:'airdefense' },
+  { name:'S-300 Bushehr', lat:29.05, lon:50.78, type:'S-300 protecting reactor', cat:'airdefense' },
 ];
+
+const US_BASES = [
+  // Gulf / CENTCOM
+  { name:'Al Udeid', lat:25.12, lon:51.31, type:'CENTCOM forward HQ / air ops', country:'Qatar' },
+  { name:'Al Dhafra', lat:24.25, lon:54.55, type:'USAF F-35/F-22 / tankers / ISR', country:'UAE' },
+  { name:'Muwaffaq Salti', lat:31.83, lon:36.78, type:'USAF F-15E / drone ops', country:'Jordan' },
+  { name:'Camp Arifjan', lat:28.93, lon:48.09, type:'Army forward HQ Kuwait', country:'Kuwait' },
+  { name:'Ali Al Salem', lat:29.35, lon:47.52, type:'USAF airlift hub', country:'Kuwait' },
+  { name:'NSA Bahrain', lat:26.24, lon:50.55, type:'US 5th Fleet HQ / NAVCENT', country:'Bahrain' },
+  { name:'Isa AB', lat:25.92, lon:50.59, type:'USAF fighter wing forward', country:'Bahrain' },
+  { name:'Prince Sultan AB', lat:24.06, lon:47.58, type:'USAF CAOC / Patriot battery', country:'Saudi Arabia' },
+  // Iraq
+  { name:'Al Asad', lat:33.79, lon:42.45, type:'USMC/USAF air base', country:'Iraq' },
+  { name:'Erbil (K1)', lat:36.24, lon:43.96, type:'US SOF / advisory', country:'Iraq' },
+  { name:'Ain al-Asad', lat:33.80, lon:42.44, type:'Combined Joint Task Force', country:'Iraq' },
+  // Eastern Mediterranean / Turkey
+  { name:'Incirlik', lat:37.00, lon:35.43, type:'USAF nuclear-capable / ISR hub', country:'Turkey' },
+  { name:'Akrotiri (RAF)', lat:34.59, lon:32.99, type:'UK/US ISR & strike staging', country:'Cyprus' },
+  { name:'Souda Bay', lat:35.53, lon:24.12, type:'USN forward logistics / P-8', country:'Greece/Crete' },
+  // Israel
+  { name:'Nevatim', lat:31.21, lon:35.01, type:'IAF F-35I / IDF main', country:'Israel' },
+  { name:'Ramon', lat:30.78, lon:34.67, type:'IAF / IDF south', country:'Israel' },
+  { name:'Site 512 (Negev)', lat:30.97, lon:34.78, type:'US radar / THAAD / X-band', country:'Israel' },
+  // Red Sea / Indian Ocean
+  { name:'Camp Lemonnier', lat:11.55, lon:43.15, type:'US AFRICOM / drone ops', country:'Djibouti' },
+  { name:'Diego Garcia', lat:-7.32, lon:72.42, type:'USAF B-2/B-52 staging', country:'BIOT' },
+  // Navy (typical carrier positions)
+  { name:'USS carrier group', lat:25.5, lon:55.0, type:'CVN strike group (Gulf)', country:'At sea' },
+];
+
+// Layer visibility toggles
+let showUSBases = true, showIranBases = true;
+let usBaseLayer, iranBaseLayer;
 
 let map, markerLayer, siteLayer;
 let EVENTS = [], filteredEvents = [];
 let activeSides = new Set(['israel','iran','iran_proxy','syria','us','gulf','unknown']);
 let activeCountry = null;
+let activeEventTypes = null; // null = all, Set = selected types
 let timeStart = null, timeEnd = null;
 let allDaysSorted = [];
+let tlViewStart = null, tlViewEnd = null; // independent timeline viewport
 const isMobile = () => window.innerWidth <= 768;
 
 const CONFLICT_PHASES = [
@@ -396,6 +470,8 @@ function initMap() {
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { maxZoom:18, opacity:0.5 }).addTo(map);
   markerLayer = L.layerGroup().addTo(map);
   siteLayer = L.layerGroup().addTo(map);
+  usBaseLayer = L.layerGroup().addTo(map);
+  iranBaseLayer = L.layerGroup().addTo(map);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -409,11 +485,16 @@ function renderMarkers() {
     if (!activeSides.has(ev.side)) continue;
     if (activeCountry && ev.country !== activeCountry) continue;
 
-    const color = SIDE_COLORS[ev.side] || '#555';
+    const isFirms = (ev.sub_event_type || '').includes('FIRMS');
+    const color = isFirms ? '#ff8800' : (SIDE_COLORS[ev.side] || '#555');
     const fat = ev.fatalities || 0;
-    const r = Math.max(isMobile() ? 3 : 2, Math.min(2.5 + Math.sqrt(fat) * 0.7, 16));
+    const r = isFirms
+      ? (ev.confidence === 'h' ? 5 : ev.confidence === 'm' ? 3.5 : 2.5)
+      : Math.max(isMobile() ? 3 : 2, Math.min(2.5 + Math.sqrt(fat) * 0.7, 16));
     const isRecent = ev.date >= cutoff48h;
-    const opacity = ev.confidence === 'h' ? 0.85 : ev.confidence === 'm' ? 0.6 : 0.35;
+    const opacity = isFirms
+      ? (ev.confidence === 'h' ? 0.9 : ev.confidence === 'm' ? 0.6 : 0.3)
+      : (ev.confidence === 'h' ? 0.85 : ev.confidence === 'm' ? 0.6 : 0.35);
 
     const marker = L.circleMarker([ev.lat, ev.lon], {
       radius: r, fillColor: color, fillOpacity: opacity,
@@ -437,21 +518,44 @@ function renderMarkers() {
     markerLayer.addLayer(marker);
   }
 
-  // Iran sites at zoom 6+
+  // Iran sites at zoom 5+
   siteLayer.clearLayers();
-  if (map.getZoom() >= 6) {
+  if (showIranBases && map.getZoom() >= 5) {
+    const catIcons = { nuclear:'☢️', military:'🏛️', command:'⭐', strategic:'⛽', missile:'🚀', naval:'⚓', airbase:'✈️', airdefense:'🛡️' };
+    const catColors = { nuclear:'#ff4444', military:'#ff8800', command:'#ffdd00', strategic:'#ff6600', missile:'#ff2222', naval:'#4488ff', airbase:'#00ccff', airdefense:'#cc44ff' };
     for (const site of IRAN_SITES) {
       const nearby = filteredEvents.filter(e => Math.abs(e.lat-site.lat)<0.5 && Math.abs(e.lon-site.lon)<0.5).length;
       const sz = isMobile() ? 10 : 8;
+      const clr = catColors[site.cat] || '#ff4444';
+      const ico = catIcons[site.cat] || '◆';
+      const showLabel = map.getZoom() >= 7;
       const icon = L.divIcon({
         className: '',
-        html: `<div style="font-family:'JetBrains Mono';font-size:${sz}px;color:${nearby>0?'#ff4444':'#00d4ff'};text-shadow:0 0 6px ${nearby>0?'rgba(255,0,0,0.5)':'rgba(0,200,255,0.3)'};white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%)">
-          ${nearby>0?'⚠':'◆'} ${site.name} ${nearby>0?`<span style="color:#ff4444">[${nearby}]</span>`:''}
+        html: `<div style="font-family:'JetBrains Mono';font-size:${sz}px;color:${nearby>0?'#ff4444':clr};text-shadow:0 0 6px ${nearby>0?'rgba(255,0,0,0.5)':'rgba(255,100,0,0.3)'};white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%)">
+          ${showLabel ? (nearby>0?'⚠':ico)+' '+site.name+(nearby>0?' <span style="color:#ff4444">['+nearby+']</span>':'') : (nearby>0?'⚠':ico)}
         </div>`, iconSize:[0,0],
       });
       const m = L.marker([site.lat, site.lon], { icon, interactive:true });
-      m.bindPopup(`<div class="popup-title">🎯 ${site.name}</div><div class="popup-type">${site.type}</div><div style="margin-top:4px;font-size:10px">Events nearby: <b style="color:${nearby>0?'#ff4444':'#00d4ff'}">${nearby}</b></div>`);
+      m.bindPopup(`<div class="popup-title">🇮🇷 ${site.name}</div><div class="popup-type">${ico} ${site.type}</div><div style="margin-top:4px;font-size:10px">Events nearby: <b style="color:${nearby>0?'#ff4444':'#00d4ff'}">${nearby}</b></div>`);
       siteLayer.addLayer(m);
+    }
+  }
+
+  // US bases
+  usBaseLayer.clearLayers();
+  if (showUSBases && map.getZoom() >= 4) {
+    for (const base of US_BASES) {
+      const sz = isMobile() ? 10 : 8;
+      const showLabel = map.getZoom() >= 6;
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="font-family:'JetBrains Mono';font-size:${sz}px;color:#4488ff;text-shadow:0 0 8px rgba(50,100,255,0.5);white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%)">
+          ${showLabel ? '🇺🇸 '+base.name : '🇺🇸'}
+        </div>`, iconSize:[0,0],
+      });
+      const m = L.marker([base.lat, base.lon], { icon, interactive:true });
+      m.bindPopup(`<div class="popup-title">🇺🇸 ${base.name}</div><div class="popup-type">${base.type}</div><div style="color:var(--text-dim);font-size:10px;margin-top:2px">${base.country}</div>`);
+      usBaseLayer.addLayer(m);
     }
   }
   updateStats();
@@ -464,12 +568,18 @@ function applyFilter() {
   filteredEvents = EVENTS.filter(e => {
     if (!activeSides.has(e.side)) return false;
     if (activeCountry && e.country !== activeCountry) return false;
+    if (activeEventTypes && !activeEventTypes.has(e.sub_event_type || 'Other')) return false;
     if (timeStart && e.date < timeStart) return false;
     if (timeEnd && e.date > timeEnd) return false;
     return true;
   });
   renderMarkers();
-  if (!isMobile()) drawTimeline();
+  if (!isMobile()) {
+    // Ensure allDaysSorted is populated before fitting
+    buildDayIndex();
+    tlFitToFilter();
+    drawTimeline();
+  }
   renderFeed();
   updatePanelCounts();
 
@@ -487,6 +597,7 @@ function applyFilter() {
 
 function clearTimeFilter() {
   timeStart = null; timeEnd = null;
+  tlViewStart = null; tlViewEnd = null;
   document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
   const all = document.querySelector('.phase-btn');
   if (all) all.classList.add('active');
@@ -507,14 +618,19 @@ function updatePanelCounts() {
     cell.querySelector('.country-n').textContent = (countryCounts[cell.dataset.country]||0).toLocaleString();
   });
 
-  // Event types — full re-render
+  // Event types — update counts but preserve click state
   const types = {};
   for (const e of filteredEvents) { const t = e.sub_event_type||'Other'; types[t]=(types[t]||0)+1; }
   const max = Math.max(1, ...Object.values(types));
   const etEl = document.getElementById('event-types');
   if (etEl) {
-    etEl.innerHTML = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8)
-      .map(([t,c])=>`<div class="force-row"><span class="force-name" style="font-size:9px">${t}</span><span class="force-count" style="color:var(--warning)">${c.toLocaleString()}</span><div class="force-bar-bg"><div class="force-bar-fill" style="width:${(c/max*100).toFixed(0)}%;background:var(--warning)"></div></div></div>`).join('');
+    // Only full re-render if needed; otherwise just update counts
+    etEl.querySelectorAll('.force-row[data-etype]').forEach(row => {
+      const t = row.dataset.etype;
+      const c = types[t] || 0;
+      const cnt = row.querySelector('.force-count');
+      if (cnt) cnt.textContent = c.toLocaleString();
+    });
   }
 }
 
@@ -581,12 +697,14 @@ function renderCountries(container) {
 function renderIranSites(container) {
   const el = container || document.getElementById('iran-sites');
   if (!el) return;
+  const catIcons = { nuclear:'☢️', military:'🏛️', command:'⭐', strategic:'⛽', missile:'🚀', naval:'⚓', airbase:'✈️', airdefense:'🛡️' };
   el.innerHTML = IRAN_SITES.map(s => {
-    const nearby = EVENTS.filter(e => Math.abs(e.lat-s.lat)<0.5 && Math.abs(e.lon-s.lon)<0.5).length;
+    const nearby = filteredEvents.filter(e => Math.abs(e.lat-s.lat)<0.5 && Math.abs(e.lon-s.lon)<0.5).length;
     const hot = nearby > 0;
+    const ico = catIcons[s.cat] || '◆';
     return `<span class="site-tag" data-lat="${s.lat}" data-lon="${s.lon}"
       style="${hot?'background:rgba(255,0,64,0.2);color:#ff4444;border-color:rgba(255,0,64,0.4)':''}"
-      title="${s.type}">${hot?'🔥':'◆'} ${s.name} ${hot?`(${nearby})`:''}</span>`;
+      title="${s.type}">${hot?'🔥':ico} ${s.name} ${hot?`(${nearby})`:''}</span>`;
   }).join('');
 
   el.querySelectorAll('.site-tag').forEach(tag => {
@@ -601,10 +719,65 @@ function renderEventTypes(container) {
   const el = container || document.getElementById('event-types');
   if (!el) return;
   const types = {};
-  for (const e of EVENTS) { const t = e.sub_event_type || 'Other'; types[t]=(types[t]||0)+1; }
-  const max = Math.max(...Object.values(types));
-  el.innerHTML = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8)
-    .map(([t,c])=>`<div class="force-row"><span class="force-name" style="font-size:9px">${t}</span><span class="force-count" style="color:var(--warning)">${c.toLocaleString()}</span><div class="force-bar-bg"><div class="force-bar-fill" style="width:${(c/max*100).toFixed(0)}%;background:var(--warning)"></div></div></div>`).join('');
+  const src = (activeEventTypes ? EVENTS : filteredEvents);
+  for (const e of src) { const t = e.sub_event_type || 'Other'; types[t]=(types[t]||0)+1; }
+  const max = Math.max(1, ...Object.values(types));
+  const allTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]);
+
+  el.innerHTML = '<div style="font-size:8px;color:var(--text-dim);margin-bottom:4px">Click to filter map by event type</div>' +
+    allTypes.map(([t,c]) => {
+    const isActive = !activeEventTypes || activeEventTypes.has(t);
+    return `<div class="force-row${isActive?'':' dimmed'}" data-etype="${t}" style="cursor:pointer">
+      <span class="force-name" style="font-size:9px">${t}</span>
+      <span class="force-count" style="color:var(--warning)">${c.toLocaleString()}</span>
+      <div class="force-bar-bg"><div class="force-bar-fill" style="width:${(c/max*100).toFixed(0)}%;background:var(--warning)"></div></div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.force-row[data-etype]').forEach(row => {
+    row.addEventListener('click', () => {
+      const t = row.dataset.etype;
+      if (!activeEventTypes) {
+        activeEventTypes = new Set([t]);
+      } else if (activeEventTypes.has(t) && activeEventTypes.size === 1) {
+        activeEventTypes = null;
+      } else if (activeEventTypes.has(t)) {
+        activeEventTypes.delete(t);
+        if (activeEventTypes.size === 0) activeEventTypes = null;
+      } else {
+        activeEventTypes.add(t);
+      }
+      applyFilter();
+      renderEventTypes(el);
+    });
+  });
+}
+
+function renderLayerToggles(container) {
+  const el = container || document.getElementById('layer-toggles');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="force-row" id="toggle-us" style="cursor:pointer">
+      <div class="force-dot" style="background:#4488ff"></div>
+      <span class="force-name">🇺🇸 US / Coalition Bases (${US_BASES.length})</span>
+      <span class="force-count" style="color:#4488ff;font-size:10px">${showUSBases?'ON':'OFF'}</span>
+    </div>
+    <div class="force-row" id="toggle-iran" style="cursor:pointer">
+      <div class="force-dot" style="background:#ff4444"></div>
+      <span class="force-name">🇮🇷 Iran Military Sites (${IRAN_SITES.length})</span>
+      <span class="force-count" style="color:#ff4444;font-size:10px">${showIranBases?'ON':'OFF'}</span>
+    </div>
+  `;
+  el.querySelector('#toggle-us').addEventListener('click', () => {
+    showUSBases = !showUSBases;
+    renderMarkers();
+    renderLayerToggles(el);
+  });
+  el.querySelector('#toggle-iran').addEventListener('click', () => {
+    showIranBases = !showIranBases;
+    renderMarkers();
+    renderLayerToggles(el);
+  });
 }
 
 function renderTheaters(container) {
@@ -659,7 +832,7 @@ function renderPhases(container) {
 function renderFeed(container) {
   const el = container || document.getElementById('feed');
   if (!el) return;
-  const recent = filteredEvents.filter(e => (e.fatalities > 0 || e.location) && e.location).slice(0, isMobile() ? 20 : 15);
+  const recent = [...filteredEvents].sort((a,b) => b.date.localeCompare(a.date)).filter(e => e.location).slice(0, isMobile() ? 20 : 15);
   el.innerHTML = recent.map(ev => {
     const color = SIDE_COLORS[ev.side] || '#888';
     return `<div class="feed-item">
@@ -709,12 +882,13 @@ function openMobileSheet(tab) {
     sheet.innerHTML = '<div class="section"><div class="section-title">FORCE DISPOSITION</div><div id="mob-forces"></div></div><div class="section"><div class="section-title">EVENT TYPES</div><div id="mob-event-types"></div></div>';
     renderForces(document.getElementById('mob-forces'));
     renderEventTypes(document.getElementById('mob-event-types'));
+  } else if (tab === 'layers') {
+    sheet.innerHTML = '<div class="section"><div class="section-title">🗺️ MAP LAYERS</div><div id="mob-layers"></div></div><div class="section"><div class="section-title">🇮🇷 IRAN MILITARY SITES</div><div id="mob-sites"></div></div>';
+    renderLayerToggles(document.getElementById('mob-layers'));
+    renderIranSites(document.getElementById('mob-sites'));
   } else if (tab === 'intel') {
     sheet.innerHTML = '<div class="section"><div class="section-title">LIVE INTEL FEED</div><div id="mob-feed"></div></div>';
     renderFeed(document.getElementById('mob-feed'));
-  } else if (tab === 'sites') {
-    sheet.innerHTML = '<div class="section"><div class="section-title">🎯 KEY SITES — IRAN</div><div id="mob-sites"></div></div>';
-    renderIranSites(document.getElementById('mob-sites'));
   }
 
   // Resize map to account for sheet
@@ -728,13 +902,86 @@ function initMobileTabs() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// TIMELINE (desktop only)
+// TIMELINE (desktop only) — with zoom/pan
 // ═══════════════════════════════════════════════════════════
 let tlDragging = false, tlDragStartX = 0, tlDragEndX = 0, tlPad = 30;
+
+function tlSetView(startDate, endDate) {
+  tlViewStart = startDate; tlViewEnd = endDate;
+  drawTimeline();
+}
+
+function tlFitToFilter() {
+  if (timeStart || timeEnd) {
+    // Fit to active filter range with small padding
+    const days = allDaysSorted;
+    if (!days.length) return;
+    const si = timeStart ? Math.max(0, days.findIndex(d => d >= timeStart)) : 0;
+    let ei = timeEnd ? days.findIndex(d => d > timeEnd) : days.length;
+    if (ei < 0) ei = days.length;
+    ei = Math.min(days.length - 1, ei);
+    const range = Math.max(1, ei - si);
+    const pad = Math.max(1, Math.floor(range * 0.15));
+    tlViewStart = days[Math.max(0, si - pad)];
+    tlViewEnd = days[Math.min(days.length - 1, ei + pad)];
+  } else {
+    tlViewStart = null; tlViewEnd = null;
+  }
+  drawTimeline();
+}
+
+function tlZoom(factor) {
+  const days = allDaysSorted;
+  if (!days.length) return;
+  const curStart = tlViewStart ? days.indexOf(tlViewStart) : 0;
+  const curEnd = tlViewEnd ? days.indexOf(tlViewEnd) : days.length - 1;
+  const center = Math.floor((curStart + curEnd) / 2);
+  const halfRange = Math.floor((curEnd - curStart) / 2 * factor);
+  const newHalf = Math.max(3, halfRange); // minimum 7 days visible
+  const si = Math.max(0, center - newHalf);
+  const ei = Math.min(days.length - 1, center + newHalf);
+  tlViewStart = days[si];
+  tlViewEnd = days[ei];
+  drawTimeline();
+}
 
 function initTimelineBrush() {
   if (isMobile()) return;
   const canvas = document.getElementById('timeline-canvas');
+
+  // Zoom buttons
+  document.getElementById('tl-zoom-in').addEventListener('click', () => tlZoom(0.5));
+  document.getElementById('tl-zoom-out').addEventListener('click', () => tlZoom(2));
+  document.getElementById('tl-fit').addEventListener('click', tlFitToFilter);
+
+  // Scroll wheel zoom
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 1.3 : 0.7;
+    // Zoom centered on mouse position
+    const days = allDaysSorted;
+    if (!days.length) return;
+    const rect = canvas.getBoundingClientRect();
+    const usableW = rect.width - tlPad * 2;
+    const viewDays = getViewDays();
+    const mouseIdx = Math.floor((e.clientX - rect.left - tlPad) / usableW * viewDays.length);
+    const mouseDay = viewDays[Math.max(0, Math.min(viewDays.length - 1, mouseIdx))];
+    const mouseDayGlobal = days.indexOf(mouseDay);
+
+    const curStart = tlViewStart ? days.indexOf(tlViewStart) : 0;
+    const curEnd = tlViewEnd ? days.indexOf(tlViewEnd) : days.length - 1;
+    const curRange = curEnd - curStart;
+    const newRange = Math.max(6, Math.min(days.length - 1, Math.floor(curRange * factor)));
+
+    // Keep mouse position proportionally anchored
+    const mouseRatio = viewDays.length > 0 ? mouseIdx / viewDays.length : 0.5;
+    const newStart = Math.max(0, Math.floor(mouseDayGlobal - newRange * mouseRatio));
+    const newEnd = Math.min(days.length - 1, newStart + newRange);
+
+    tlViewStart = days[newStart];
+    tlViewEnd = days[newEnd];
+    drawTimeline();
+  }, { passive: false });
 
   canvas.addEventListener('mousedown', e => {
     const rect = canvas.getBoundingClientRect();
@@ -749,14 +996,15 @@ function initTimelineBrush() {
     if (!tlDragging) return;
     tlDragging = false;
     tlDragEndX = e.clientX - canvas.getBoundingClientRect().left;
-    if (!allDaysSorted.length) return;
+    const viewDays = getViewDays();
+    if (!viewDays.length) return;
     const rect = canvas.getBoundingClientRect();
     const usableW = rect.width - tlPad*2;
     const x1 = Math.min(tlDragStartX, tlDragEndX), x2 = Math.max(tlDragStartX, tlDragEndX);
     if (x2 - x1 < 5) return;
-    const i1 = Math.max(0, Math.floor((x1-tlPad)/usableW*allDaysSorted.length));
-    const i2 = Math.min(allDaysSorted.length-1, Math.floor((x2-tlPad)/usableW*allDaysSorted.length));
-    if (i1>=0 && i2>=0) { timeStart = allDaysSorted[i1]; timeEnd = allDaysSorted[i2]; document.querySelectorAll('.phase-btn').forEach(b=>b.classList.remove('active')); applyFilter(); }
+    const i1 = Math.max(0, Math.floor((x1-tlPad)/usableW*viewDays.length));
+    const i2 = Math.min(viewDays.length-1, Math.floor((x2-tlPad)/usableW*viewDays.length));
+    if (i1>=0 && i2>=0) { timeStart = viewDays[i1]; timeEnd = viewDays[i2]; document.querySelectorAll('.phase-btn').forEach(b=>b.classList.remove('active')); applyFilter(); }
   });
   canvas.addEventListener('dblclick', () => clearTimeFilter());
 
@@ -767,12 +1015,13 @@ function initTimelineBrush() {
 
   canvas.addEventListener('mousemove', e => {
     if (tlDragging) { tip.style.display='none'; return; }
-    if (!allDaysSorted.length) return;
+    const viewDays = getViewDays();
+    if (!viewDays.length) return;
     const rect = canvas.getBoundingClientRect();
     const usableW = rect.width - tlPad*2;
-    const idx = Math.floor((e.clientX-rect.left-tlPad)/usableW*allDaysSorted.length);
-    if (idx<0||idx>=allDaysSorted.length) { tip.style.display='none'; return; }
-    const day = allDaysSorted[idx];
+    const idx = Math.floor((e.clientX-rect.left-tlPad)/usableW*viewDays.length);
+    if (idx<0||idx>=viewDays.length) { tip.style.display='none'; return; }
+    const day = viewDays[idx];
     const de = EVENTS.filter(ev=>ev.date===day);
     const ann = TIMELINE_ANNOTATIONS.find(a=>a.date===day);
     let h = `<b style="color:var(--accent)">${day}</b><br>Events: <b>${de.length}</b>`;
@@ -783,6 +1032,27 @@ function initTimelineBrush() {
     tip.style.left = (e.clientX+12)+'px'; tip.style.top = (e.clientY-40)+'px';
   });
   canvas.addEventListener('mouseleave', () => { tip.style.display='none'; });
+}
+
+function getViewDays() {
+  if (!allDaysSorted.length) return [];
+  if (!tlViewStart && !tlViewEnd) return allDaysSorted;
+  return allDaysSorted.filter(d =>
+    (!tlViewStart || d >= tlViewStart) && (!tlViewEnd || d <= tlViewEnd)
+  );
+}
+
+let _dayMap = {}, _daySideMap = {};
+
+function buildDayIndex() {
+  _dayMap = {}; _daySideMap = {};
+  for (const ev of EVENTS) {
+    if (!ev.date) continue;
+    _dayMap[ev.date] = (_dayMap[ev.date]||0)+1;
+    if (!_daySideMap[ev.date]) _daySideMap[ev.date] = {};
+    _daySideMap[ev.date][ev.side] = (_daySideMap[ev.date][ev.side]||0)+1;
+  }
+  allDaysSorted = Object.keys(_dayMap).sort();
 }
 
 function drawTimeline() {
@@ -796,20 +1066,14 @@ function drawTimeline() {
   canvas.style.height = '165px';
   ctx.clearRect(0, 0, W, H);
 
-  const dayMap = {}, daySideMap = {};
-  for (const ev of EVENTS) {
-    if (!ev.date) continue;
-    dayMap[ev.date] = (dayMap[ev.date]||0)+1;
-    if (!daySideMap[ev.date]) daySideMap[ev.date] = {};
-    daySideMap[ev.date][ev.side] = (daySideMap[ev.date][ev.side]||0)+1;
-  }
+  if (!allDaysSorted.length) return;
 
-  const days = Object.keys(dayMap).sort();
-  allDaysSorted = days;
+  // Visible days (may be a subset when zoomed)
+  const days = getViewDays();
   if (!days.length) return;
 
   document.getElementById('tl-range').textContent = `${days[0]} → ${days[days.length-1]} (${days.length}d)`;
-  const maxCount = Math.max(...Object.values(dayMap));
+  const maxCount = Math.max(...days.map(d => _dayMap[d] || 0));
   const pad = tlPad * dpr;
   const barW = Math.max(1, (W - pad*2) / days.length);
   const chartH = H - 22 * dpr;
@@ -817,7 +1081,7 @@ function drawTimeline() {
 
   for (let i = 0; i < days.length; i++) {
     const x = pad + i * barW;
-    const sides = daySideMap[days[i]] || {};
+    const sides = _daySideMap[days[i]] || {};
     const inRange = (!timeStart || days[i] >= timeStart) && (!timeEnd || days[i] <= timeEnd);
     let yOff = 0;
     for (const side of stackOrder) {
@@ -850,12 +1114,12 @@ function drawTimeline() {
     ctx.strokeStyle = 'rgba(255,0,64,0.5)'; ctx.lineWidth = 1*dpr; ctx.strokeRect(x1,0,x2-x1,chartH);
   }
 
-  // Annotation flags
+  // Annotation flags (only if within visible view range)
   const flagH = 13*dpr;
   const flagPositions = [];
   for (const ann of TIMELINE_ANNOTATIONS) {
-    let di = days.indexOf(ann.date);
-    if (di < 0) { di = days.findIndex(d => d >= ann.date); if (di < 0) continue; }
+    const di = days.indexOf(ann.date);
+    if (di < 0) continue; // not visible in current view — skip entirely
     const x = pad + di*barW + barW/2;
 
     ctx.strokeStyle = ann.color; ctx.lineWidth = 1.5*dpr; ctx.globalAlpha = 0.5;
@@ -878,7 +1142,7 @@ function drawTimeline() {
     ctx.fillStyle = ann.color; ctx.textAlign = 'center'; ctx.fillText(ann.label, x, ly+flagH-3*dpr);
   }
 
-  // Date labels
+  // Date labels — adapt to zoom level
   ctx.font = `${7*dpr}px 'JetBrains Mono'`; ctx.fillStyle = 'rgba(100,130,180,0.4)'; ctx.textAlign = 'center';
   const labelEvery = Math.max(1, Math.floor(days.length / 14));
   for (let i = 0; i < days.length; i += labelEvery) ctx.fillText(days[i].substring(2,10), pad+i*barW+barW/2, H-2*dpr);
@@ -924,7 +1188,7 @@ window.addEventListener('load', () => {
 
   // Desktop panels
   if (!isMobile()) {
-    renderForces(); renderCountries(); renderIranSites(); renderEventTypes();
+    renderForces(); renderCountries(); renderIranSites(); renderLayerToggles(); renderEventTypes();
     renderTheaters(); renderPhases();
     initTimelineBrush();
   }
