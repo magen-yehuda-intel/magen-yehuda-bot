@@ -942,7 +942,7 @@ iran-israel-alerts/
 │   ├── generate-strikes-map.py # Dark-themed ME strikes map
 │   ├── strikes-dashboard.html  # Interactive Leaflet dashboard (template)
 │   ├── strikes-dashboard-standalone.html # Standalone (~3.3MB, Gist-hosted)
-│   ├── pinned-status.py        # Live pinned status message (edited every 60s)
+│   ├── pinned-status.py        # Live pinned status message (edited every 60s, includes dashboard link)
 │   ├── dispatch.py             # Multi-channel alert dispatcher (EN/HE routing)
 │   ├── format-fires.py         # Fire data → Telegram HTML formatter
 │   ├── format-seismic.py       # Seismic data → Telegram HTML formatter
@@ -1031,6 +1031,7 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 | Hourly summary shows "Threat Level: UNKNOWN" | `generate-summary.py` parsed watcher.log for threat level but regex didn't match log format (emoji prefixes, startup lines) | Fixed: reads `state/watcher-threat-level.txt` first (written by watcher), falls back to log parsing |
 | Cyber config has empty source arrays | `config.json` cyber section had no Telegram channels, Twitter accounts, or RSS feeds configured | Add sources to `cyber.telegram_channels`, `cyber.twitter_accounts`, `cyber.rss_feeds` in config.json |
 | Duplicate threat level alerts on restart | Watcher initialized `THREAT_LEVEL=GREEN` on every start, then detected stale `OREF_LAST` → spammed GREEN→CRITICAL | Fixed: watcher reads `watcher-threat-level.txt` on startup to restore last known level |
+| Hebrew channel missing some content types | Hebrew output had explicit content allowlist — new event types silently dropped | Switched to `content: ["all"]` + `content_exclude: ["summary_en"]`; added `content_exclude` support to `dispatch.py` |
 | OSINT scan "still running" skips | Slow proxy causes scan to exceed cycle interval → lock file blocks next scan | Stale locks auto-break at 120s; check proxy latency if persistent |
 
 ### Debugging Tips

@@ -6,7 +6,7 @@ function svgDataUrl(svg) {
 }
 
 const MARKER_ICONS = {
-  'Shelling/Artill./tic attack': svgDataUrl(`
+  'Shelling/artillery/missile attack': svgDataUrl(`
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
       <polygon points="12,1 14,8 21,8 15.5,12.5 17.5,20 12,15.5 6.5,20 8.5,12.5 3,8 10,8" fill="#ff2d2d" stroke="#fff" stroke-width="0.8"/>
       <circle cx="12" cy="12" r="3" fill="#ffaa00" opacity="0.9"/>
@@ -44,7 +44,7 @@ const MARKER_ICONS = {
       <line x1="10" y1="2" x2="14" y2="2" stroke="#ff6600" stroke-width="1.5" stroke-linecap="round"/>
     </svg>`),
 
-  'Location': svgDataUrl(`
+  'Location mention in OSINT': svgDataUrl(`
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
       <ellipse cx="12" cy="18" rx="8" ry="3" fill="none" stroke="#00e5ff" stroke-width="1"/>
       <ellipse cx="12" cy="18" rx="5" ry="2" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
@@ -82,12 +82,12 @@ const MARKER_ICONS = {
 };
 
 const MARKER_LEGEND = [
-  { type: 'Shelling/Artill./tic attack', icon: MARKER_ICONS['Shelling/Artill./tic attack'], label: 'Shelling / Artillery / Missile', color: '#ff2d2d' },
+  { type: 'Shelling/artillery/missile attack', icon: MARKER_ICONS['Shelling/artillery/missile attack'], label: 'Shelling / Artillery / Missile', color: '#ff2d2d' },
   { type: 'Air/drone strike',            icon: MARKER_ICONS['Air/drone strike'],            label: 'Air / Drone Strike',          color: '#2d9cff' },
   { type: 'Armed clash',                 icon: MARKER_ICONS['Armed clash'],                 label: 'Armed Clash',                 color: '#ff8c00' },
   { type: 'Attack',                      icon: MARKER_ICONS['Attack'],                      label: 'Attack',                      color: '#ff2d2d' },
   { type: 'Remote explosive/landmine/IED', icon: MARKER_ICONS['Remote explosive/landmine/IED'], label: 'IED / Landmine / Explosive', color: '#ffd600' },
-  { type: 'Location',                    icon: MARKER_ICONS['Location'],                    label: 'OSINT Location Mention',      color: '#00e5ff' },
+  { type: 'Location mention in OSINT',    icon: MARKER_ICONS['Location mention in OSINT'],    label: 'OSINT Location Mention',      color: '#00e5ff' },
   { type: 'Suicide bomb',                icon: MARKER_ICONS['Suicide bomb'],                label: 'Suicide Bomb',                color: '#8b0000' },
   { type: 'FIRMS',                       icon: MARKER_ICONS['FIRMS'],                       label: 'FIRMS Fire Detection',        color: '#ff8c00' },
   { type: 'Siren',                       icon: MARKER_ICONS['Siren'],                       label: 'Siren (Pikud HaOref)',        color: '#ff2d2d' }

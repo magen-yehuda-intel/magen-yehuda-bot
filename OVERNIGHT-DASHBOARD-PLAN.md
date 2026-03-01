@@ -3,18 +3,13 @@
 
 ## Iteration Schedule
 
-### Hour 1 (01:45-02:45) — DATA ENRICHMENT
-**Goal:** Surface the rich ACLED data that's buried
-
-- [ ] Extract `actor1_display` and `actor2_display` from ACLED for ALL events (not just recent)
-  - ACLED has detailed actor names: "Islamic State (IS)", "Israeli Air Force", "Hezbollah"
-  - Currently showing generic "ISRAEL (IDF)" etc.
-- [ ] Add `notes` for ALL ACLED events to compact data (not just last 90 days)
-  - Truncate to 100 chars, only for events with notes
-  - This gives every marker a story when clicked
-- [ ] Add event count badges to theater buttons (e.g., "🇱🇧 LEBANON (4,609)")
-- [ ] Search bar — type location/actor/keyword → filter + fly to results
-- [ ] Push + commit + test
+### Hour 1 (01:45-02:45) — DATA ENRICHMENT ✅ DONE
+**Shipped:**
+- [x] Search bar — type location/actor/keyword → instant results with fly-to + popup
+- [x] Event count badges on theater buttons (ALL 48.1k, IL/GAZA 21.5k, LEBANON 4.6k, etc.)
+- [x] Notes enriched for 10,703 events (all fatality events + recent OSINT)
+- [x] Actor display names preserved in compact format (30 char)
+- [x] Push + commit + test ✅ (`a912b33`)
 
 ### Hour 2 (02:45-03:45) — VISUAL UPGRADE  
 **Goal:** Military-grade icons and markers

@@ -90,4 +90,36 @@ if [ -f "$TIMELAPSE_FILE" ]; then
 fi
 
 EVENT_COUNT=$(echo "$SUMMARY_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['event_count'])" 2>/dev/null || echo "0")
+
+# ── Post interactive dashboard link ──
+DASHBOARD_URL="https://magen-yehuda-intel.github.io/magen-yehuda-bot/"
+python3 - "$DASHBOARD_URL" "$CONFIG_FILE" <<'PYEOF'
+import json, sys, subprocess
+url = sys.argv[1]
+config_file = sys.argv[2]
+
+en = (
+    f'🗺️ <b>INTERACTIVE STRIKES DASHBOARD</b>\n'
+    f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+    f'48,500+ geolocated events since Oct 7, 2023\n'
+    f'📍 US/Coalition bases · Iran military sites · Event filters\n'
+    f'📰 Live news feed · Zoomable timeline · Conflict phase presets\n\n'
+    f'🔗 <a href="{url}">Open Dashboard</a>'
+)
+he = (
+    f'\u200F🗺️ <b>לוח מבצעים אינטראקטיבי</b>\n'
+    f'\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+    f'\u200F48,500+ אירועים ממופים מאז 7 באוקטובר 2023\n'
+    f'\u200F📍 בסיסי ברית · אתרים צבאיים איראניים · סינון אירועים\n'
+    f'\u200F📰 פיד חדשות · ציר זמן · שלבי עימות\n\n'
+    f'\u200F🔗 <a href="{url}">פתח לוח מבצעים</a>'
+)
+event = json.dumps({"type": "dashboard_link", "severity": "LOW", "text_en": en, "text_he": he}, ensure_ascii=False)
+proc = subprocess.run(
+    ["python3", "scripts/dispatch.py", config_file],
+    input=event, capture_output=True, text=True
+)
+print("  🗺️ Dashboard link sent" if proc.returncode == 0 else f"  ⚠️ Dashboard link send failed: {proc.stderr}", flush=True)
+PYEOF
+
 echo "✅ Hourly report sent at $NOW_UTC ($EVENT_COUNT events summarized)"

@@ -880,6 +880,14 @@ function renderPhases(container) {
 }
 
 // ═══ SEARCH ═══
+function fmtFeedTime(ev) {
+  if (ev.timestamp) {
+    const d = new Date(ev.timestamp * 1000);
+    return d.toISOString().substring(5,16).replace('T',' ');
+  }
+  return ev.date.substring(5);
+}
+
 function initSearch() {
   const box = document.getElementById('search-box');
   const results = document.getElementById('search-results');
@@ -907,7 +915,7 @@ function initSearch() {
         results.innerHTML = matches.map((ev, i) => {
           const color = SIDE_COLORS[ev.side] || '#888';
           return `<div class="feed-item search-result" data-search-idx="${i}" style="cursor:pointer">
-            <span class="feed-ts">${ev.date.substring(5)}</span>
+            <span class="feed-ts">${fmtFeedTime(ev)}</span>
             <span style="color:${color};font-weight:bold">${ev.actor1||ev.side}</span>
             → <span class="feed-loc">${ev.location||ev.country}</span>
             ${ev.fatalities>0?`<span class="feed-fat">☠${ev.fatalities}</span>`:''}
@@ -971,7 +979,7 @@ function renderFeed(container) {
         → <span class="feed-loc">${ev.location || ev.country}</span></span>
         <span style="flex-shrink:0;margin-left:6px">
           ${ev.fatalities > 0 ? `<span class="feed-fat">☠${ev.fatalities}</span>` : ''}
-          <span class="feed-ts">${ev.date.substring(5)}</span>
+          <span class="feed-ts">${fmtFeedTime(ev)}</span>
         </span>
       </div>
       ${headline}
@@ -1381,8 +1389,10 @@ function loadData() {
   const baseDate = new Date(C.base);
   EVENTS = C.rows.map(r => {
     const d = new Date(baseDate.getTime() + r[0] * 86400000);
+    const ts = r[12] || 0; // unix timestamp (0 = no time info)
     return {
       date: d.toISOString().substring(0,10),
+      timestamp: ts,
       lat: r[1]/1000, lon: r[2]/1000,
       country: C.countries[r[3]] || '',
       location: '', // compact format

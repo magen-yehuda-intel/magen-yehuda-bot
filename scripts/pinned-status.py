@@ -241,6 +241,8 @@ def generate_status_en(config, state):
 
 ━━━━━━━━━━━━━━━━━
 
+🗺️ <a href="https://magen-yehuda-intel.github.io/magen-yehuda-bot/">Interactive Strikes Dashboard</a>
+
 🤖 <i>24/7 Automated Intelligence</i>
 ⏱ <i>{now.strftime("%Y-%m-%d %H:%M:%S")} UTC</i>
 🇮🇱 <b>Am Yisrael Chai</b> 🇮🇱"""
@@ -319,6 +321,8 @@ def generate_status_he(config, state):
 {R}🛰 לוויין: כל <b>{f['sat']}</b>
 
 {R}━━━━━━━━━━━━━━━━━
+
+{R}🗺️ <a href="https://magen-yehuda-intel.github.io/magen-yehuda-bot/">לוח מבצעים אינטראקטיבי</a>
 
 {R}🤖 <i>מודיעין אוטומטי 24/7</i>
 {R}⏱ <i>{now.strftime("%Y-%m-%d %H:%M:%S")} UTC</i>

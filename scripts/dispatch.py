@@ -220,6 +220,11 @@ def should_send(output: dict, event_type: str, severity: str) -> bool:
     if "all" not in content_filter and event_type not in content_filter:
         return False
 
+    # Content exclude list
+    content_exclude = output.get("content_exclude", [])
+    if event_type in content_exclude:
+        return False
+
     # Severity filter
     min_sev = output.get("min_severity", "LOW")
     if severity_rank(severity) < severity_rank(min_sev):
