@@ -33,6 +33,7 @@ else:
 BOT_TOKEN=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_bot_token',''))" 2>/dev/null || echo "")
 CHAT_ID=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_chat_id',''))" 2>/dev/null || echo "")
 CHANNEL_NAME=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_channel_name','Alert Monitor'))" 2>/dev/null || echo "Alert Monitor")
+PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('push_api_key','myi-fcf15b5484f76e9b'))" 2>/dev/null || echo "myi-fcf15b5484f76e9b")
 
 # Proxy for Oref (priority: override > nordvpn > direct)
 NORD_AUTH_FILE="$SKILL_DIR/secrets/nordvpn-auth.txt"
@@ -411,6 +412,8 @@ Pikud HaOref is no longer broadcasting new alerts.
       emit_alert "siren_clear" "MEDIUM" "$_clear_he" "$_clear_en"
     fi
     echo "" > "$OREF_LAST"
+    # Push clear to API
+    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d "{"alerts":[]}" >/dev/null 2>&1 &
     return
   fi
 
@@ -566,6 +569,8 @@ ${details}
     fi
     # Clear OREF_LAST so evaluate_threat_level doesn't think sirens are active
     echo "" > "$OREF_LAST"
+    # Push clear to API
+    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d "{"alerts":[]}" >/dev/null 2>&1 &
     return
   fi
 
@@ -682,6 +687,24 @@ ${details}
   fi
 
   echo "$alerts" > "$OREF_LAST"
+
+  # Push siren data to cloud API (best-effort, non-blocking)
+  local push_payload
+  push_payload=$(python3 -c "
+import json, sys
+raw = sys.stdin.read().strip()
+try:
+    alerts = json.loads(raw) if raw and raw != '[]' else []
+    if not isinstance(alerts, list): alerts = [alerts]
+    print(json.dumps({'alerts': alerts}))
+except:
+    print(json.dumps({'alerts': []}))
+" <<< "$alerts" 2>/dev/null)
+  curl -sf --max-time 5 -X POST \
+    "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" \
+    -H "Content-Type: application/json" \
+    -H "X-API-Key: $PUSH_API_KEY" \
+    -d "$push_payload" >/dev/null 2>&1 &
 }
 
 # ══════════════════════════════════════════════════════════════
