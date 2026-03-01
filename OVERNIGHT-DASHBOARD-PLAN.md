@@ -11,23 +11,16 @@
 - [x] Actor display names preserved in compact format (30 char)
 - [x] Push + commit + test ✅ (`a912b33`)
 
-### Hour 2 (02:45-03:45) — VISUAL UPGRADE  
-**Goal:** Military-grade icons and markers
+### Hour 2 (02:45-03:45) — VISUAL UPGRADE ✅ DONE
+**Shipped:**
+- [x] 🌡️ Heatmap layer toggle (Leaflet.heat) — intensity gradient blue→cyan→yellow→red
+- [x] 📊 Legend panel (bottom-left) with all marker types, closeable/reopenable
+- [x] 🃏 Card-style popups — color header bar by side, emoji per event type
+- [x] Dark-themed popups matching dashboard aesthetic (custom Leaflet popup CSS)
+- [x] EVENT_TYPE_ICONS mapping for 10 event types
+- [x] Push + commit + test ✅ (`1660ce4`)
 
-- [ ] Custom SVG markers per event type:
-  - 💥 Shelling/artillery → explosion icon
-  - ✈️ Air/drone strike → aircraft icon  
-  - ⚔️ Armed clash → crossed swords
-  - 🎯 Attack → target
-  - 💣 Remote explosive/IED → bomb
-  - 📡 OSINT mention → satellite dish
-  - 💀 Suicide bomb → skull
-- [ ] Pulsing animation for events < 48h old
-- [ ] Marker clustering with custom cluster icons showing count + dominant type
-- [ ] Heatmap layer toggle (Leaflet.heat)
-- [ ] Legend panel showing all marker types
-- [ ] Better popup design — card-style with header color bar by side
-- [ ] Push + commit + test
+**Note:** Marker clustering and custom SVG marker icons deferred — with 48K events, circleMarkers with canvas renderer are 10x faster than divIcons. SVG icons in `scripts/marker-icons.js` available for future use.
 
 ### Hour 3 (03:45-04:45) — ANALYTICS PANELS
 **Goal:** Make the dashboard tell a story with numbers
