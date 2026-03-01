@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>⚔️ MAGEN YEHUDA — Theater Operations</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -10,7 +10,7 @@
 <style>
   :root {
     --bg: #0a0e17;
-    --panel: rgba(8, 12, 22, 0.94);
+    --panel: rgba(8, 12, 22, 0.96);
     --border: rgba(0, 200, 255, 0.12);
     --accent: #00d4ff;
     --israel: #0099ff;
@@ -28,363 +28,215 @@
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', monospace;
-    overflow: hidden;
-    height: 100vh;
-  }
+  html, body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; overflow: hidden; height: 100%; touch-action: manipulation; }
 
   /* ══ SCANLINES ══ */
   body::after {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,180,255,0.012) 2px, rgba(0,180,255,0.012) 4px);
-    pointer-events: none;
-    z-index: 10000;
+    pointer-events: none; z-index: 10000;
   }
 
   /* ══ TOP HUD ══ */
   #hud {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 44px;
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 40px;
     background: linear-gradient(180deg, rgba(6,10,18,0.97), rgba(6,10,18,0.85));
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    z-index: 1000;
-    backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 10px; z-index: 1000; backdrop-filter: blur(12px);
   }
-
   .logo {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 900;
-    font-size: 14px;
-    letter-spacing: 2px;
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 1.5px;
     background: linear-gradient(90deg, var(--accent), #fff, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    white-space: nowrap;
   }
-
-  .hud-stats {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-  }
-
-  .stat { font-size: 10px; color: var(--text-dim); }
-  .stat b {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 13px;
-    margin-left: 4px;
-  }
+  .hud-stats { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+  .stat { font-size: 9px; color: var(--text-dim); white-space: nowrap; }
+  .stat b { font-family: 'Orbitron', sans-serif; font-size: 11px; margin-left: 2px; }
   .stat b.cyan { color: var(--accent); }
   .stat b.red { color: var(--critical); }
-
   .threat-badge {
-    padding: 3px 10px;
-    border: 1px solid var(--critical);
-    border-radius: 3px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--critical);
-    animation: pulse 2s infinite;
+    padding: 2px 6px; border: 1px solid var(--critical); border-radius: 3px;
+    font-family: 'Orbitron', sans-serif; font-size: 7px; letter-spacing: 1.5px;
+    color: var(--critical); animation: pulse 2s infinite;
   }
-  @keyframes pulse {
-    0%,100% { box-shadow: 0 0 8px rgba(255,0,64,0.2); }
-    50% { box-shadow: 0 0 20px rgba(255,0,64,0.5); }
-  }
-
-  .clock {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 1px;
-  }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 6px rgba(255,0,64,0.2)} 50%{box-shadow:0 0 16px rgba(255,0,64,0.5)} }
+  .clock { font-family: 'Orbitron', sans-serif; font-size: 9px; color: var(--accent); letter-spacing: 0.5px; }
 
   /* ══ MAP ══ */
-  #map {
-    position: fixed;
-    top: 44px; left: 0;
-    right: 340px;
-    bottom: 220px;
-    z-index: 1;
-  }
-
-  /* Dark leaflet overrides */
+  #map { position: fixed; top: 40px; left: 0; right: 0; bottom: 0; z-index: 1; }
   .leaflet-container { background: #080c14 !important; }
-  .leaflet-control-zoom a {
-    background: var(--panel) !important;
-    color: var(--accent) !important;
-    border-color: var(--border) !important;
-  }
+  .leaflet-control-zoom a { background: var(--panel) !important; color: var(--accent) !important; border-color: var(--border) !important; }
   .leaflet-control-attribution { display: none !important; }
 
-  /* ══ RIGHT PANEL ══ */
+  /* ══ MOBILE BOTTOM CONTROLS ══ */
+  #mobile-controls {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    z-index: 800; display: none;
+  }
+  #mobile-tabs {
+    display: flex; height: 44px;
+    background: var(--panel); border-top: 1px solid var(--border);
+  }
+  .mob-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 8px; color: var(--text-dim); cursor: pointer; border: none; background: none;
+    font-family: 'JetBrains Mono', monospace; gap: 1px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mob-tab .icon { font-size: 16px; }
+  .mob-tab.active { color: var(--accent); }
+  .mob-tab:active { background: rgba(0,200,255,0.08); }
+
+  #mobile-sheet {
+    max-height: 55vh; overflow-y: auto;
+    background: var(--panel); border-top: 1px solid var(--accent);
+    padding: 10px; display: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  #mobile-sheet.open { display: block; }
+
+  /* ══ DESKTOP RIGHT PANEL ══ */
   #panel {
-    position: fixed;
-    top: 44px; right: 0;
-    width: 340px; bottom: 0;
-    background: var(--panel);
-    border-left: 1px solid var(--border);
-    overflow-y: auto;
-    z-index: 500;
+    position: fixed; top: 40px; right: 0; width: 320px; bottom: 200px;
+    background: var(--panel); border-left: 1px solid var(--border);
+    overflow-y: auto; z-index: 500;
   }
 
-  .section {
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
+  /* ══ DESKTOP BOTTOM TIMELINE ══ */
+  #timeline-panel {
+    position: fixed; left: 0; right: 320px; bottom: 0;
+    height: 200px; background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 6px 12px; z-index: 500;
   }
+  .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+  .timeline-title { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--accent); }
+  .timeline-range { font-size: 8px; color: var(--text-dim); }
+  .timeline-reset {
+    background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3);
+    color: var(--warning); padding: 2px 6px;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    cursor: pointer; border-radius: 3px; display: none;
+  }
+  .timeline-reset.visible { display: inline-block; }
+  #timeline-canvas { width: 100%; height: 165px; cursor: crosshair; }
 
+  /* ══ PANEL SECTIONS ══ */
+  .section { padding: 10px 12px; border-bottom: 1px solid var(--border); }
   .section-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: var(--accent);
-    margin-bottom: 8px;
+    font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
+    letter-spacing: 2.5px; color: var(--accent); margin-bottom: 6px;
   }
   .section-title::before { content: '▸ '; }
 
-  /* Theater buttons */
-  .theater-btns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-bottom: 8px;
+  /* Theater + phase buttons */
+  .theater-btns, .phase-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+  .theater-btn, .phase-btn {
+    background: rgba(0,200,255,0.06); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 5px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    cursor: pointer; border-radius: 3px; transition: all 0.15s; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
+  .theater-btn:hover, .theater-btn.active { background: rgba(0,200,255,0.18); color: var(--accent); border-color: var(--accent); }
+  .theater-btn.active { box-shadow: 0 0 8px rgba(0,200,255,0.2); }
+  .phase-btn { background: rgba(255,0,64,0.06); border-color: rgba(255,0,64,0.15); }
+  .phase-btn:hover, .phase-btn.active { background: rgba(255,0,64,0.2); color: #ff4444; border-color: #ff4444; }
+  .phase-btn.active { box-shadow: 0 0 8px rgba(255,0,64,0.2); }
 
-  .theater-btn {
-    background: rgba(0,200,255,0.06);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    padding: 5px 10px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.15s;
+  .time-filter-label {
+    font-family: 'Orbitron', sans-serif; font-size: 8px;
+    color: var(--warning); letter-spacing: 1px; margin-bottom: 3px; display: none;
   }
-  .theater-btn:hover, .theater-btn.active {
-    background: rgba(0,200,255,0.18);
-    color: var(--accent);
-    border-color: var(--accent);
-  }
-  .theater-btn.active {
-    box-shadow: 0 0 10px rgba(0,200,255,0.2);
-  }
+  .time-filter-label.active { display: block; }
 
-  /* Force bars */
+  /* Force rows */
   .force-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 5px;
-    font-size: 10px;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 3px;
-    transition: background 0.15s;
+    display: flex; align-items: center; gap: 5px; margin-bottom: 4px;
+    font-size: 10px; cursor: pointer; padding: 3px 4px; border-radius: 3px;
+    -webkit-tap-highlight-color: transparent;
   }
-  .force-row:hover { background: rgba(255,255,255,0.04); }
+  .force-row:active { background: rgba(255,255,255,0.06); }
   .force-row.dimmed { opacity: 0.3; }
-
   .force-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .force-name { flex: 1; color: var(--text-dim); }
-  .force-count {
-    font-family: 'Orbitron', sans-serif;
-    font-weight: 500;
-    font-size: 10px;
-    min-width: 45px;
-    text-align: right;
-  }
-  .force-bar-bg {
-    width: 50px; height: 3px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 2px;
-    overflow: hidden;
-  }
+  .force-name { flex: 1; color: var(--text-dim); font-size: 9px; }
+  .force-count { font-family: 'Orbitron', sans-serif; font-weight: 500; font-size: 10px; min-width: 40px; text-align: right; }
+  .force-bar-bg { width: 40px; height: 3px; background: rgba(255,255,255,0.04); border-radius: 2px; overflow: hidden; }
   .force-bar-fill { height: 100%; border-radius: 2px; }
 
   /* Country grid */
-  .country-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3px;
-  }
+  .country-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
   .country-cell {
-    background: rgba(255,255,255,0.02);
-    padding: 5px 7px;
-    border-radius: 3px;
-    font-size: 10px;
-    cursor: pointer;
-    transition: background 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: rgba(255,255,255,0.02); padding: 5px 6px; border-radius: 3px;
+    font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    -webkit-tap-highlight-color: transparent;
   }
-  .country-cell:hover { background: rgba(0,200,255,0.08); }
+  .country-cell:active { background: rgba(0,200,255,0.08); }
   .country-cell.active { background: rgba(0,200,255,0.15); border: 1px solid var(--accent); }
-  .country-n {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    color: var(--accent);
-  }
+  .country-n { font-family: 'Orbitron', sans-serif; font-size: 10px; color: var(--accent); }
 
   /* Kill feed */
-  .feed-item {
-    font-size: 9px;
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.02);
-    line-height: 1.3;
-  }
+  .feed-item { font-size: 9px; padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.02); line-height: 1.3; }
   .feed-ts { color: var(--text-dim); }
   .feed-loc { color: var(--accent); }
   .feed-fat { color: var(--critical); font-weight: 700; }
 
-  /* Key sites panel */
+  /* Key sites */
   .site-tag {
-    display: inline-block;
-    background: rgba(255,0,64,0.1);
-    border: 1px solid rgba(255,0,64,0.2);
-    border-radius: 3px;
-    padding: 2px 7px;
-    font-size: 9px;
-    margin: 2px;
-    cursor: pointer;
-    transition: all 0.15s;
-    color: var(--text-dim);
+    display: inline-block; background: rgba(255,0,64,0.1); border: 1px solid rgba(255,0,64,0.2);
+    border-radius: 3px; padding: 3px 7px; font-size: 9px; margin: 2px;
+    cursor: pointer; color: var(--text-dim);
+    -webkit-tap-highlight-color: transparent;
   }
-  .site-tag:hover {
-    background: rgba(255,0,64,0.25);
-    color: var(--critical);
-    border-color: var(--critical);
-  }
+  .site-tag:active { background: rgba(255,0,64,0.25); color: var(--critical); border-color: var(--critical); }
 
-  /* ══ CONFLICT PHASE BUTTONS ══ */
-  .phase-btns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 3px;
-    margin-bottom: 6px;
-  }
-  .phase-btn {
-    background: rgba(255,0,64,0.06);
-    border: 1px solid rgba(255,0,64,0.15);
-    color: var(--text-dim);
-    padding: 4px 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .phase-btn:hover {
-    background: rgba(255,0,64,0.15);
-    color: var(--critical);
-    border-color: var(--critical);
-  }
-  .phase-btn.active {
-    background: rgba(255,0,64,0.2);
-    color: #ff4444;
-    border-color: #ff4444;
-    box-shadow: 0 0 10px rgba(255,0,64,0.2);
-  }
-
-  .time-filter-label {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    color: var(--warning);
-    letter-spacing: 1px;
-    margin-bottom: 3px;
-    display: none;
-  }
-  .time-filter-label.active { display: block; }
-
-  /* ══ BOTTOM TIMELINE ══ */
-  #timeline-panel {
-    position: fixed;
-    left: 0;
-    right: 340px;
-    bottom: 0;
-    height: 220px;
-    background: var(--panel);
-    border-top: 1px solid var(--border);
-    padding: 8px 16px;
-    z-index: 500;
-  }
-
-  .timeline-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2px;
-  }
-
-  .timeline-title {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: var(--accent);
-  }
-
-  .timeline-range {
-    font-size: 9px;
-    color: var(--text-dim);
-  }
-
-  .timeline-reset {
-    background: rgba(255,170,0,0.1);
-    border: 1px solid rgba(255,170,0,0.3);
-    color: var(--warning);
-    padding: 2px 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px;
-    cursor: pointer;
-    border-radius: 3px;
-    display: none;
-  }
-  .timeline-reset.visible { display: inline-block; }
-  .timeline-reset:hover { background: rgba(255,170,0,0.2); }
-
-  #timeline-canvas {
-    width: 100%;
-    height: 180px;
-    cursor: crosshair;
-  }
-
-  /* Custom popups */
+  /* Leaflet popup */
   .leaflet-popup-content-wrapper {
-    background: rgba(8,12,22,0.95) !important;
-    color: var(--text) !important;
-    border: 1px solid var(--accent) !important;
-    border-radius: 4px !important;
-    box-shadow: 0 0 30px rgba(0,200,255,0.15) !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    backdrop-filter: blur(10px);
+    background: rgba(8,12,22,0.95) !important; color: var(--text) !important;
+    border: 1px solid var(--accent) !important; border-radius: 4px !important;
+    box-shadow: 0 0 20px rgba(0,200,255,0.15) !important;
+    font-family: 'JetBrains Mono', monospace !important; backdrop-filter: blur(10px);
   }
-  .leaflet-popup-tip { background: rgba(8,12,22,0.95) !important; border-color: var(--accent) !important; }
-  .leaflet-popup-content { font-size: 11px !important; margin: 10px !important; }
-  .popup-title { font-family: 'Orbitron'; font-size: 12px; color: #fff; margin-bottom: 4px; }
+  .leaflet-popup-tip { background: rgba(8,12,22,0.95) !important; }
+  .leaflet-popup-content { font-size: 11px !important; margin: 8px !important; }
+  .popup-title { font-family: 'Orbitron'; font-size: 11px; color: #fff; margin-bottom: 3px; }
   .popup-date { color: var(--text-dim); font-size: 9px; }
-  .popup-type { color: var(--warning); margin-top: 3px; }
-  .popup-actors { margin-top: 3px; }
-  .popup-fat { color: var(--critical); font-weight: 700; margin-top: 3px; }
-  .popup-notes { color: var(--text-dim); font-size: 9px; margin-top: 5px; max-width: 250px; }
+  .popup-type { color: var(--warning); margin-top: 2px; }
+  .popup-actors { margin-top: 2px; }
+  .popup-fat { color: var(--critical); font-weight: 700; margin-top: 2px; }
+  .popup-notes { color: var(--text-dim); font-size: 9px; margin-top: 4px; max-width: 240px; }
 
-  /* Responsive */
-  @media (max-width: 900px) {
+  /* ══ DESKTOP LAYOUT ══ */
+  @media (min-width: 769px) {
+    #map { right: 320px; bottom: 200px; }
+    #mobile-controls { display: none !important; }
+  }
+
+  /* ══ MOBILE LAYOUT ══ */
+  @media (max-width: 768px) {
+    #hud { height: 36px; padding: 0 8px; }
+    .logo { font-size: 9px; letter-spacing: 1px; }
+    .hud-stats { gap: 6px; }
+    .stat { font-size: 8px; }
+    .stat b { font-size: 10px; }
+    .threat-badge { font-size: 6px; padding: 1px 4px; letter-spacing: 1px; }
+    .clock { display: none; }
+
+    #map { top: 36px; bottom: 44px; right: 0; }
     #panel { display: none; }
-    #map { right: 0; }
-    #timeline-panel { right: 0; }
+    #timeline-panel { display: none; }
+    #mobile-controls { display: block; }
+
+    .theater-btn, .phase-btn { padding: 6px 10px; font-size: 10px; }
+    .force-row { padding: 5px 4px; }
+    .force-name { font-size: 10px; }
+
+    .leaflet-popup-content { font-size: 12px !important; }
+    .popup-title { font-size: 13px; }
   }
 </style>
 </head>
@@ -392,20 +244,20 @@
 
 <!-- HUD -->
 <div id="hud">
-  <div class="logo">⚔️ MAGEN YEHUDA — THEATER OPS</div>
+  <div class="logo">⚔️ MAGEN YEHUDA</div>
   <div class="hud-stats">
-    <div class="stat">EVENTS <b class="cyan" id="s-events">—</b></div>
+    <div class="stat">EVT <b class="cyan" id="s-events">—</b></div>
     <div class="stat">KIA <b class="red" id="s-kia">—</b></div>
-    <div class="stat">THEATERS <b class="cyan" id="s-countries">—</b></div>
-    <div class="threat-badge">● ACTIVE CONFLICT</div>
+    <div class="stat">THR <b class="cyan" id="s-countries">—</b></div>
+    <div class="threat-badge">● ACTIVE</div>
     <div class="clock" id="clock">—</div>
   </div>
 </div>
 
-<!-- MAP -->
+<!-- MAP (always visible) -->
 <div id="map"></div>
 
-<!-- RIGHT PANEL -->
+<!-- DESKTOP RIGHT PANEL -->
 <div id="panel">
   <div class="section">
     <div class="section-title">THEATER SELECT</div>
@@ -413,7 +265,7 @@
   </div>
   <div class="section">
     <div class="section-title">⏱ CONFLICT PHASE</div>
-    <div class="time-filter-label" id="time-label">SHOWING: ALL TIME</div>
+    <div class="time-filter-label" id="time-label"></div>
     <div class="phase-btns" id="phase-btns"></div>
   </div>
   <div class="section">
@@ -438,38 +290,38 @@
   </div>
 </div>
 
-<!-- TIMELINE -->
+<!-- DESKTOP TIMELINE -->
 <div id="timeline-panel">
   <div class="timeline-header">
-    <div class="timeline-title">▸ TEMPORAL DENSITY — DAILY EVENTS</div>
-    <button class="timeline-reset" id="tl-reset" onclick="clearTimeFilter()">✕ CLEAR FILTER</button>
+    <div class="timeline-title">▸ TEMPORAL DENSITY</div>
+    <button class="timeline-reset" id="tl-reset" onclick="clearTimeFilter()">✕ CLEAR</button>
     <div class="timeline-range" id="tl-range">—</div>
   </div>
   <canvas id="timeline-canvas"></canvas>
 </div>
 
+<!-- MOBILE BOTTOM CONTROLS -->
+<div id="mobile-controls">
+  <div id="mobile-sheet"></div>
+  <div id="mobile-tabs">
+    <button class="mob-tab" data-tab="theater"><span class="icon">🗺️</span>Theater</button>
+    <button class="mob-tab" data-tab="phase"><span class="icon">⏱</span>Phase</button>
+    <button class="mob-tab" data-tab="forces"><span class="icon">⚔️</span>Forces</button>
+    <button class="mob-tab" data-tab="intel"><span class="icon">📡</span>Intel</button>
+    <button class="mob-tab" data-tab="sites"><span class="icon">🎯</span>Iran</button>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════
-// CONFIG & CONSTANTS
-// ═══════════════════════════════════════════════════════════
-const SIDE_COLORS = {
-  israel:'#0099ff', iran:'#ff2222', iran_proxy:'#ff8800',
-  syria:'#777', us:'#3355cc', gulf:'#00cc66', unknown:'#555'
-};
-const SIDE_NAMES = {
-  israel:'ISRAEL (IDF)', iran:'IRAN (IRGC)', iran_proxy:'IRAN PROXIES',
-  syria:'SYRIA (SAA)', us:'USA (CENTCOM)', gulf:'GULF STATES', unknown:'UNATTRIBUTED'
-};
-const COUNTRY_FLAGS = {
-  Palestine:'🇵🇸', Israel:'🇮🇱', Lebanon:'🇱🇧', Syria:'🇸🇾',
-  Iraq:'🇮🇶', Yemen:'🇾🇪', Iran:'🇮🇷', Jordan:'🇯🇴', 'Saudi Arabia':'🇸🇦'
-};
+const SIDE_COLORS = { israel:'#0099ff', iran:'#ff2222', iran_proxy:'#ff8800', syria:'#777', us:'#3355cc', gulf:'#00cc66', unknown:'#555' };
+const SIDE_NAMES = { israel:'ISRAEL (IDF)', iran:'IRAN (IRGC)', iran_proxy:'IRAN PROXIES', syria:'SYRIA (SAA)', us:'USA (CENTCOM)', gulf:'GULF STATES', unknown:'UNATTRIBUTED' };
+const COUNTRY_FLAGS = { Palestine:'🇵🇸', Israel:'🇮🇱', Lebanon:'🇱🇧', Syria:'🇸🇾', Iraq:'🇮🇶', Yemen:'🇾🇪', Iran:'🇮🇷', Jordan:'🇯🇴', 'Saudi Arabia':'🇸🇦' };
 
-// Theater presets (zoom views)
 const THEATERS = {
   'ALL': { center: [30, 46], zoom: 5 },
   '🇮🇷 IRAN': { center: [32.5, 53], zoom: 6 },
-  '🇮🇱🇵🇸 ISRAEL/GAZA': { center: [31.5, 34.8], zoom: 8 },
+  '🇮🇱🇵🇸 IL/GAZA': { center: [31.5, 34.8], zoom: 8 },
   '🇱🇧 LEBANON': { center: [33.8, 35.8], zoom: 9 },
   '🇸🇾 SYRIA': { center: [35, 38.5], zoom: 7 },
   '🇮🇶 IRAQ': { center: [33.5, 44], zoom: 6 },
@@ -477,124 +329,99 @@ const THEATERS = {
   '🔴 RED SEA': { center: [18, 40], zoom: 6 },
 };
 
-// Key sites in Iran (nuclear, military, strategic)
 const IRAN_SITES = [
-  { name: 'Natanz', lat: 33.72, lon: 51.73, type: 'Nuclear enrichment' },
-  { name: 'Isfahan', lat: 32.65, lon: 51.68, type: 'Nuclear conversion' },
-  { name: 'Fordow', lat: 34.88, lon: 51.58, type: 'Underground enrichment' },
-  { name: 'Bushehr', lat: 28.97, lon: 50.84, type: 'Nuclear reactor' },
-  { name: 'Arak', lat: 34.09, lon: 49.70, type: 'Heavy water reactor' },
-  { name: 'Parchin', lat: 35.52, lon: 51.77, type: 'Military complex' },
-  { name: 'Tehran', lat: 35.69, lon: 51.39, type: 'Capital / Command' },
-  { name: 'Bandar Abbas', lat: 27.19, lon: 56.28, type: 'Naval base / Hormuz' },
-  { name: 'Chabahar', lat: 25.29, lon: 60.64, type: 'Naval / Port' },
-  { name: 'Kharg Island', lat: 29.24, lon: 50.33, type: 'Oil terminal (90% exports)' },
-  { name: 'Tabriz', lat: 38.08, lon: 46.29, type: 'Military base' },
-  { name: 'Dezful', lat: 32.38, lon: 48.40, type: 'Missile base' },
-  { name: 'Semnan', lat: 35.57, lon: 53.39, type: 'Space/missile launch' },
-  { name: 'Kish Island', lat: 26.53, lon: 54.02, type: 'Strategic island' },
+  { name:'Natanz', lat:33.72, lon:51.73, type:'Nuclear enrichment' },
+  { name:'Isfahan', lat:32.65, lon:51.68, type:'Nuclear conversion' },
+  { name:'Fordow', lat:34.88, lon:51.58, type:'Underground enrichment' },
+  { name:'Bushehr', lat:28.97, lon:50.84, type:'Nuclear reactor' },
+  { name:'Arak', lat:34.09, lon:49.70, type:'Heavy water reactor' },
+  { name:'Parchin', lat:35.52, lon:51.77, type:'Military complex' },
+  { name:'Tehran', lat:35.69, lon:51.39, type:'Capital / Command' },
+  { name:'Bandar Abbas', lat:27.19, lon:56.28, type:'Naval base / Hormuz' },
+  { name:'Chabahar', lat:25.29, lon:60.64, type:'Naval / Port' },
+  { name:'Kharg Island', lat:29.24, lon:50.33, type:'Oil terminal (90% exports)' },
+  { name:'Tabriz', lat:38.08, lon:46.29, type:'Military base' },
+  { name:'Dezful', lat:32.38, lon:48.40, type:'Missile base' },
+  { name:'Semnan', lat:35.57, lon:53.39, type:'Space/missile launch' },
+  { name:'Kish Island', lat:26.53, lon:54.02, type:'Strategic island' },
 ];
 
 let map, markerLayer, siteLayer;
-let EVENTS = [];
-let filteredEvents = [];
+let EVENTS = [], filteredEvents = [];
 let activeSides = new Set(['israel','iran','iran_proxy','syria','us','gulf','unknown']);
 let activeCountry = null;
-let timeStart = null;  // date string filter
-let timeEnd = null;
-let allDaysSorted = []; // for timeline brush
+let timeStart = null, timeEnd = null;
+let allDaysSorted = [];
+const isMobile = () => window.innerWidth <= 768;
 
-// Conflict phases (key operations in the Iran-Israel war)
 const CONFLICT_PHASES = [
-  { name: 'ALL TIME', start: null, end: null, icon: '🌐' },
-  { name: 'Oct 7 Attack', start: '2023-10-07', end: '2023-10-08', icon: '🔥', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
-  { name: 'Gaza Ground Op', start: '2023-10-27', end: '2024-01-31', icon: '⚔️', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
-  { name: 'True Promise I', start: '2024-04-13', end: '2024-04-14', icon: '🚀', desc: 'Iran → Israel (300+ drones/missiles)', theater: '🇮🇷 IRAN' },
-  { name: 'Israel → Isfahan', start: '2024-04-19', end: '2024-04-19', icon: '✈️', desc: 'Israel retaliates on Isfahan', theater: '🇮🇷 IRAN' },
-  { name: 'Haniyeh Kill', start: '2024-07-31', end: '2024-07-31', icon: '🎯', desc: 'Tehran — Remote explosive', theater: '🇮🇷 IRAN' },
-  { name: 'Pager Attacks', start: '2024-09-17', end: '2024-09-18', icon: '💥', desc: 'Hezbollah pager/radio explosions', theater: '🇱🇧 LEBANON' },
-  { name: 'Nasrallah Kill', start: '2024-09-27', end: '2024-09-28', icon: '💀', desc: 'Beirut — Dahieh bunker buster strike', theater: '🇱🇧 LEBANON' },
-  { name: 'True Promise II', start: '2024-10-01', end: '2024-10-01', icon: '🚀', desc: 'Iran → Israel (180+ ballistic missiles)', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
-  { name: 'Days of Repentance', start: '2024-10-26', end: '2024-10-26', icon: '🇮🇱', desc: 'Israel → Iran (massive multi-site strike)', theater: '🇮🇷 IRAN' },
-  { name: 'US-Israel → Tehran', start: '2026-02-28', end: '2026-03-01', icon: '🇺🇸🇮🇱', desc: 'Joint US-Israel strikes on Iranian nuclear/military sites', theater: '🇮🇷 IRAN' },
-  { name: 'Iran-Israel War', start: '2024-04-13', end: null, icon: '⚔️🇮🇷', desc: 'From True Promise I to present' },
-  { name: 'Last 30 days', start: '__LAST30__', end: null, icon: '📅' },
-  { name: 'Last 7 days', start: '__LAST7__', end: null, icon: '📅' },
+  { name:'ALL TIME', start:null, end:null, icon:'🌐' },
+  { name:'Oct 7', start:'2023-10-07', end:'2023-10-08', icon:'🔥', theater:'🇮🇱🇵🇸 IL/GAZA' },
+  { name:'Gaza Ground', start:'2023-10-27', end:'2024-01-31', icon:'⚔️', theater:'🇮🇱🇵🇸 IL/GAZA' },
+  { name:'True Promise I', start:'2024-04-13', end:'2024-04-14', icon:'🚀', desc:'Iran → Israel (300+ drones/missiles)', theater:'🇮🇷 IRAN' },
+  { name:'IL→Isfahan', start:'2024-04-19', end:'2024-04-19', icon:'✈️', desc:'Israel retaliates on Isfahan', theater:'🇮🇷 IRAN' },
+  { name:'Haniyeh Kill', start:'2024-07-31', end:'2024-07-31', icon:'🎯', desc:'Tehran — Remote explosive', theater:'🇮🇷 IRAN' },
+  { name:'Pagers', start:'2024-09-17', end:'2024-09-18', icon:'💥', desc:'Hezbollah pager explosions', theater:'🇱🇧 LEBANON' },
+  { name:'Nasrallah Kill', start:'2024-09-27', end:'2024-09-28', icon:'💀', desc:'Beirut bunker buster strike', theater:'🇱🇧 LEBANON' },
+  { name:'True Promise II', start:'2024-10-01', end:'2024-10-01', icon:'🚀', desc:'Iran → Israel (180+ ballistic)', theater:'🇮🇱🇵🇸 IL/GAZA' },
+  { name:'Days of Repentance', start:'2024-10-26', end:'2024-10-26', icon:'🇮🇱', desc:'Israel → Iran multi-site', theater:'🇮🇷 IRAN' },
+  { name:'US+IL→Tehran', start:'2026-02-28', end:'2026-03-01', icon:'🇺🇸🇮🇱', desc:'Joint strikes on Iran nuclear/military', theater:'🇮🇷 IRAN' },
+  { name:'Iran-Israel War', start:'2024-04-13', end:null, icon:'⚔️🇮🇷', desc:'True Promise I to present' },
+  { name:'Last 30d', start:'__LAST30__', end:null, icon:'📅' },
+  { name:'Last 7d', start:'__LAST7__', end:null, icon:'📅' },
 ];
 
-// Timeline annotations — labeled flags on specific dates
 const TIMELINE_ANNOTATIONS = [
-  { date: '2023-10-07', label: 'OCT 7', color: '#ff0040', desc: 'Hamas attack on Israel' },
-  { date: '2023-10-27', label: 'GROUND OP', color: '#0099ff', desc: 'IDF enters Gaza' },
-  { date: '2024-01-12', label: 'US→HOUTHIS', color: '#3355cc', desc: 'US/UK strike Houthi targets in Yemen' },
-  { date: '2024-02-02', label: 'US→IRAQ/SYR', color: '#3355cc', desc: 'US strikes 85 targets across Iraq & Syria' },
-  { date: '2024-04-13', label: 'TRUE PROMISE I', color: '#ff2222', desc: 'Iran launches 300+ drones & missiles at Israel' },
-  { date: '2024-04-19', label: 'IL→ISFAHAN', color: '#0099ff', desc: 'Israel strikes Isfahan' },
-  { date: '2024-07-31', label: 'HANIYEH', color: '#ff8800', desc: 'Hamas leader assassinated in Tehran' },
-  { date: '2024-09-17', label: 'PAGERS', color: '#ff8800', desc: 'Hezbollah pager/radio explosions' },
-  { date: '2024-09-27', label: 'NASRALLAH', color: '#ff8800', desc: 'Hezbollah leader killed — Beirut bunker buster' },
-  { date: '2024-10-01', label: 'TRUE PROMISE II', color: '#ff2222', desc: 'Iran launches 180+ ballistic missiles at Israel' },
-  { date: '2024-10-26', label: 'DAYS OF REPENTANCE', color: '#0099ff', desc: 'Israel strikes Iran — Parchin, Tehran, S-300s' },
-  { date: '2024-12-08', label: 'ASSAD FALLS', color: '#777', desc: 'Syrian regime collapses' },
-  { date: '2026-02-28', label: 'US+IL→TEHRAN', color: '#ffdd00', desc: 'Joint US-Israel strikes on Iran nuclear & military sites' },
+  { date:'2023-10-07', label:'OCT 7', color:'#ff0040', desc:'Hamas attack on Israel' },
+  { date:'2023-10-27', label:'GROUND OP', color:'#0099ff', desc:'IDF enters Gaza' },
+  { date:'2024-01-12', label:'US→HOUTHIS', color:'#3355cc', desc:'US/UK strike Houthi targets' },
+  { date:'2024-02-02', label:'US→IRAQ/SYR', color:'#3355cc', desc:'US strikes 85 targets' },
+  { date:'2024-04-13', label:'TRUE PROMISE I', color:'#ff2222', desc:'Iran 300+ drones/missiles' },
+  { date:'2024-04-19', label:'IL→ISFAHAN', color:'#0099ff', desc:'Israel strikes Isfahan' },
+  { date:'2024-07-31', label:'HANIYEH', color:'#ff8800', desc:'Hamas leader killed in Tehran' },
+  { date:'2024-09-17', label:'PAGERS', color:'#ff8800', desc:'Hezbollah pager explosions' },
+  { date:'2024-09-27', label:'NASRALLAH', color:'#ff8800', desc:'Hezbollah leader killed' },
+  { date:'2024-10-01', label:'TRUE PROMISE II', color:'#ff2222', desc:'Iran 180+ ballistic missiles' },
+  { date:'2024-10-26', label:'DAYS OF REPENTANCE', color:'#0099ff', desc:'Israel strikes Iran' },
+  { date:'2024-12-08', label:'ASSAD FALLS', color:'#777', desc:'Syrian regime collapses' },
+  { date:'2026-02-28', label:'US+IL→TEHRAN', color:'#ffdd00', desc:'Joint US-Israel strikes on Iran' },
 ];
 
 // ═══════════════════════════════════════════════════════════
-// INIT MAP
+// MAP
 // ═══════════════════════════════════════════════════════════
 function initMap() {
-  map = L.map('map', {
-    center: [30, 46],
-    zoom: 5,
-    zoomControl: true,
-    preferCanvas: true,
-  });
-
-  // Dark military tile layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-    opacity: 0.7,
-  }).addTo(map);
-
-  // Labels layer (separate, on top)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
-    maxZoom: 18,
-    opacity: 0.5,
-  }).addTo(map);
-
+  map = L.map('map', { center:[30,46], zoom:5, zoomControl:!isMobile(), preferCanvas:true });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { maxZoom:18, opacity:0.7 }).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', { maxZoom:18, opacity:0.5 }).addTo(map);
   markerLayer = L.layerGroup().addTo(map);
   siteLayer = L.layerGroup().addTo(map);
 }
 
 // ═══════════════════════════════════════════════════════════
-// RENDER MARKERS
+// MARKERS
 // ═══════════════════════════════════════════════════════════
 function renderMarkers() {
   markerLayer.clearLayers();
-
-  const now = Date.now();
-  const cutoff48h = new Date(now - 48*3600*1000).toISOString().substring(0,10);
+  const cutoff48h = new Date(Date.now() - 48*3600000).toISOString().substring(0,10);
 
   for (const ev of filteredEvents) {
     if (!activeSides.has(ev.side)) continue;
     if (activeCountry && ev.country !== activeCountry) continue;
 
-    const color = SIDE_COLORS[ev.side] || SIDE_COLORS.unknown;
+    const color = SIDE_COLORS[ev.side] || '#555';
     const fat = ev.fatalities || 0;
-    const radius = Math.max(2, Math.min(2.5 + Math.sqrt(fat) * 0.7, 16));
+    const r = Math.max(isMobile() ? 3 : 2, Math.min(2.5 + Math.sqrt(fat) * 0.7, 16));
     const isRecent = ev.date >= cutoff48h;
     const opacity = ev.confidence === 'h' ? 0.85 : ev.confidence === 'm' ? 0.6 : 0.35;
 
     const marker = L.circleMarker([ev.lat, ev.lon], {
-      radius: radius,
-      fillColor: color,
-      fillOpacity: opacity,
+      radius: r, fillColor: color, fillOpacity: opacity,
       color: isRecent ? '#ffff00' : color,
       weight: isRecent ? 2 : 0.5,
       opacity: isRecent ? 0.9 : 0.4,
     });
 
-    // Popup
     marker.bindPopup(`
       <div class="popup-title">📍 ${ev.location || ev.country || 'Unknown'}</div>
       <div class="popup-date">📅 ${ev.date}</div>
@@ -605,51 +432,33 @@ function renderMarkers() {
       </div>
       ${fat > 0 ? `<div class="popup-fat">☠ ${fat} fatalities</div>` : ''}
       ${ev.notes ? `<div class="popup-notes">${ev.notes}</div>` : ''}
-    `, { maxWidth: 300 });
+    `, { maxWidth: isMobile() ? 240 : 300 });
 
     markerLayer.addLayer(marker);
   }
 
-  // Iran key sites (always visible)
+  // Iran sites at zoom 6+
   siteLayer.clearLayers();
   if (map.getZoom() >= 6) {
     for (const site of IRAN_SITES) {
-      // Check if there are events near this site
-      const nearby = filteredEvents.filter(e =>
-        Math.abs(e.lat - site.lat) < 0.5 && Math.abs(e.lon - site.lon) < 0.5
-      ).length;
-
+      const nearby = filteredEvents.filter(e => Math.abs(e.lat-site.lat)<0.5 && Math.abs(e.lon-site.lon)<0.5).length;
+      const sz = isMobile() ? 10 : 8;
       const icon = L.divIcon({
         className: '',
-        html: `<div style="
-          font-family:'JetBrains Mono';font-size:8px;color:${nearby > 0 ? '#ff4444' : '#00d4ff'};
-          text-shadow:0 0 6px ${nearby > 0 ? 'rgba(255,0,0,0.5)' : 'rgba(0,200,255,0.3)'};
-          white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%);
-        ">
-          ${nearby > 0 ? '⚠' : '◆'} ${site.name}
-          ${nearby > 0 ? `<span style="color:#ff4444">[${nearby}]</span>` : ''}
-        </div>`,
-        iconSize: [0, 0],
+        html: `<div style="font-family:'JetBrains Mono';font-size:${sz}px;color:${nearby>0?'#ff4444':'#00d4ff'};text-shadow:0 0 6px ${nearby>0?'rgba(255,0,0,0.5)':'rgba(0,200,255,0.3)'};white-space:nowrap;pointer-events:none;transform:translate(-50%,-100%)">
+          ${nearby>0?'⚠':'◆'} ${site.name} ${nearby>0?`<span style="color:#ff4444">[${nearby}]</span>`:''}
+        </div>`, iconSize:[0,0],
       });
-
-      const siteMarker = L.marker([site.lat, site.lon], { icon, interactive: true });
-      siteMarker.bindPopup(`
-        <div class="popup-title">🎯 ${site.name}</div>
-        <div class="popup-type">${site.type}</div>
-        <div style="margin-top:4px;font-size:10px;">
-          Events nearby: <b style="color:${nearby > 0 ? '#ff4444' : '#00d4ff'}">${nearby}</b>
-        </div>
-        <div class="popup-date">${site.lat.toFixed(2)}°N ${site.lon.toFixed(2)}°E</div>
-      `);
-      siteLayer.addLayer(siteMarker);
+      const m = L.marker([site.lat, site.lon], { icon, interactive:true });
+      m.bindPopup(`<div class="popup-title">🎯 ${site.name}</div><div class="popup-type">${site.type}</div><div style="margin-top:4px;font-size:10px">Events nearby: <b style="color:${nearby>0?'#ff4444':'#00d4ff'}">${nearby}</b></div>`);
+      siteLayer.addLayer(m);
     }
   }
-
   updateStats();
 }
 
 // ═══════════════════════════════════════════════════════════
-// FILTER & PANELS
+// FILTERING
 // ═══════════════════════════════════════════════════════════
 function applyFilter() {
   filteredEvents = EVENTS.filter(e => {
@@ -660,356 +469,198 @@ function applyFilter() {
     return true;
   });
   renderMarkers();
-  drawTimeline();
+  if (!isMobile()) drawTimeline();
   renderFeed();
-  renderForcesCounts();
-  renderCountriesCounts();
-  renderEventTypesCounts();
-  renderIranSitesCounts();
+  updatePanelCounts();
 
-  // Update time label
   const label = document.getElementById('time-label');
   const resetBtn = document.getElementById('tl-reset');
   if (timeStart || timeEnd) {
     label.classList.add('active');
-    label.textContent = `⏱ ${timeStart || 'START'} → ${timeEnd || 'PRESENT'}  (${filteredEvents.length.toLocaleString()} events)`;
-    resetBtn.classList.add('visible');
+    label.textContent = `⏱ ${timeStart||'START'} → ${timeEnd||'NOW'}  (${filteredEvents.length.toLocaleString()})`;
+    if (resetBtn) resetBtn.classList.add('visible');
   } else {
     label.classList.remove('active');
-    resetBtn.classList.remove('visible');
+    if (resetBtn) resetBtn.classList.remove('visible');
   }
 }
 
 function clearTimeFilter() {
-  timeStart = null;
-  timeEnd = null;
+  timeStart = null; timeEnd = null;
   document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.phase-btn').classList.add('active'); // "ALL TIME"
+  const all = document.querySelector('.phase-btn');
+  if (all) all.classList.add('active');
   applyFilter();
 }
 
-// Update counts in side panels without re-rendering the full DOM (for time filter responsiveness)
-function renderForcesCounts() {
-  const counts = {};
-  for (const e of filteredEvents) counts[e.side] = (counts[e.side]||0) + 1;
+function updatePanelCounts() {
+  const counts = {}; const countryCounts = {};
+  for (const e of filteredEvents) {
+    counts[e.side] = (counts[e.side]||0)+1;
+    if (e.country) countryCounts[e.country] = (countryCounts[e.country]||0)+1;
+  }
   document.querySelectorAll('.force-row[data-side]').forEach(row => {
-    const side = row.dataset.side;
-    const c = counts[side] || 0;
+    const c = counts[row.dataset.side] || 0;
     row.querySelector('.force-count').textContent = c.toLocaleString();
   });
-}
-function renderCountriesCounts() {
-  const counts = {};
-  for (const e of filteredEvents) if (e.country) counts[e.country] = (counts[e.country]||0) + 1;
   document.querySelectorAll('.country-cell[data-country]').forEach(cell => {
-    const c = counts[cell.dataset.country] || 0;
-    cell.querySelector('.country-n').textContent = c.toLocaleString();
+    cell.querySelector('.country-n').textContent = (countryCounts[cell.dataset.country]||0).toLocaleString();
   });
-}
-function renderEventTypesCounts() {
-  // Will be re-rendered fully since types change with time
+
+  // Event types — full re-render
   const types = {};
-  for (const e of filteredEvents) {
-    const t = e.sub_event_type || 'Other';
-    types[t] = (types[t]||0) + 1;
-  }
+  for (const e of filteredEvents) { const t = e.sub_event_type||'Other'; types[t]=(types[t]||0)+1; }
   const max = Math.max(1, ...Object.values(types));
-  document.getElementById('event-types').innerHTML = Object.entries(types)
-    .sort((a,b) => b[1]-a[1]).slice(0, 8)
-    .map(([type, count]) => `
-      <div class="force-row">
-        <span class="force-name" style="font-size:9px">${type}</span>
-        <span class="force-count" style="color:var(--warning)">${count.toLocaleString()}</span>
-        <div class="force-bar-bg">
-          <div class="force-bar-fill" style="width:${(count/max*100).toFixed(0)}%;background:var(--warning)"></div>
-        </div>
-      </div>
-    `).join('');
-}
-function renderIranSitesCounts() {
-  document.querySelectorAll('.site-tag[data-lat]').forEach(tag => {
-    const lat = +tag.dataset.lat, lon = +tag.dataset.lon;
-    const nearby = filteredEvents.filter(e => Math.abs(e.lat-lat)<0.5 && Math.abs(e.lon-lon)<0.5).length;
-    const name = tag.dataset.name || tag.textContent.replace(/[🔥◆\d\(\)]/g,'').trim();
-    const hot = nearby > 0;
-    tag.style.background = hot ? 'rgba(255,0,64,0.2)' : '';
-    tag.style.color = hot ? '#ff4444' : '';
-    tag.style.borderColor = hot ? 'rgba(255,0,64,0.4)' : '';
-  });
+  const etEl = document.getElementById('event-types');
+  if (etEl) {
+    etEl.innerHTML = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8)
+      .map(([t,c])=>`<div class="force-row"><span class="force-name" style="font-size:9px">${t}</span><span class="force-count" style="color:var(--warning)">${c.toLocaleString()}</span><div class="force-bar-bg"><div class="force-bar-fill" style="width:${(c/max*100).toFixed(0)}%;background:var(--warning)"></div></div></div>`).join('');
+  }
 }
 
 function updateStats() {
-  const visible = filteredEvents.filter(e => activeSides.has(e.side) && (!activeCountry || e.country === activeCountry));
-  document.getElementById('s-events').textContent = visible.length.toLocaleString();
-  document.getElementById('s-kia').textContent = visible.reduce((s,e) => s + (e.fatalities||0), 0).toLocaleString();
-  document.getElementById('s-countries').textContent = new Set(visible.map(e => e.country).filter(Boolean)).size;
+  const vis = filteredEvents.filter(e => activeSides.has(e.side) && (!activeCountry || e.country === activeCountry));
+  document.getElementById('s-events').textContent = vis.length.toLocaleString();
+  document.getElementById('s-kia').textContent = vis.reduce((s,e) => s + (e.fatalities||0), 0).toLocaleString();
+  document.getElementById('s-countries').textContent = new Set(vis.map(e=>e.country).filter(Boolean)).size;
 }
 
-function renderForces() {
+// ═══════════════════════════════════════════════════════════
+// PANEL RENDERS (shared desktop + mobile)
+// ═══════════════════════════════════════════════════════════
+function renderForces(container) {
+  const el = container || document.getElementById('forces');
+  if (!el) return;
   const counts = {};
   for (const e of EVENTS) counts[e.side] = (counts[e.side]||0) + 1;
   const max = Math.max(...Object.values(counts));
 
-  document.getElementById('forces').innerHTML = Object.entries(counts)
-    .sort((a,b) => b[1]-a[1])
-    .map(([side, count]) => {
-      const dimmed = !activeSides.has(side) ? 'dimmed' : '';
-      return `<div class="force-row ${dimmed}" data-side="${side}">
+  el.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1])
+    .map(([side,count]) => {
+      const dim = !activeSides.has(side) ? 'dimmed' : '';
+      return `<div class="force-row ${dim}" data-side="${side}">
         <div class="force-dot" style="background:${SIDE_COLORS[side]||'#555'}"></div>
         <span class="force-name">${SIDE_NAMES[side]||side}</span>
         <span class="force-count" style="color:${SIDE_COLORS[side]||'#888'}">${count.toLocaleString()}</span>
-        <div class="force-bar-bg">
-          <div class="force-bar-fill" style="width:${(count/max*100).toFixed(0)}%;background:${SIDE_COLORS[side]||'#555'}"></div>
-        </div>
+        <div class="force-bar-bg"><div class="force-bar-fill" style="width:${(count/max*100).toFixed(0)}%;background:${SIDE_COLORS[side]||'#555'}"></div></div>
       </div>`;
     }).join('');
 
-  // Click to toggle
-  document.querySelectorAll('.force-row').forEach(row => {
+  el.querySelectorAll('.force-row').forEach(row => {
     row.addEventListener('click', () => {
       const side = row.dataset.side;
-      if (activeSides.has(side)) activeSides.delete(side);
-      else activeSides.add(side);
+      if (activeSides.has(side)) activeSides.delete(side); else activeSides.add(side);
       row.classList.toggle('dimmed', !activeSides.has(side));
       applyFilter();
     });
   });
 }
 
-function renderCountries() {
+function renderCountries(container) {
+  const el = container || document.getElementById('countries');
+  if (!el) return;
   const counts = {};
   for (const e of EVENTS) if (e.country) counts[e.country] = (counts[e.country]||0) + 1;
 
-  document.getElementById('countries').innerHTML = Object.entries(counts)
-    .sort((a,b) => b[1]-a[1])
-    .map(([country, count]) => {
-      const active = activeCountry === country ? 'active' : '';
-      return `<div class="country-cell ${active}" data-country="${country}">
-        <span>${COUNTRY_FLAGS[country]||'🌍'} ${country}</span>
-        <span class="country-n">${count.toLocaleString()}</span>
-      </div>`;
-    }).join('');
+  el.innerHTML = Object.entries(counts).sort((a,b)=>b[1]-a[1])
+    .map(([c,n]) => `<div class="country-cell${activeCountry===c?' active':''}" data-country="${c}">
+      <span>${COUNTRY_FLAGS[c]||'🌍'} ${c}</span><span class="country-n">${n.toLocaleString()}</span>
+    </div>`).join('');
 
-  document.querySelectorAll('.country-cell').forEach(cell => {
+  el.querySelectorAll('.country-cell').forEach(cell => {
     cell.addEventListener('click', () => {
       const c = cell.dataset.country;
       activeCountry = activeCountry === c ? null : c;
-      document.querySelectorAll('.country-cell').forEach(x => x.classList.remove('active'));
+      el.querySelectorAll('.country-cell').forEach(x => x.classList.remove('active'));
       if (activeCountry) cell.classList.add('active');
       applyFilter();
     });
   });
 }
 
-function renderIranSites() {
-  document.getElementById('iran-sites').innerHTML = IRAN_SITES.map(s => {
-    const nearby = EVENTS.filter(e =>
-      Math.abs(e.lat - s.lat) < 0.5 && Math.abs(e.lon - s.lon) < 0.5
-    ).length;
+function renderIranSites(container) {
+  const el = container || document.getElementById('iran-sites');
+  if (!el) return;
+  el.innerHTML = IRAN_SITES.map(s => {
+    const nearby = EVENTS.filter(e => Math.abs(e.lat-s.lat)<0.5 && Math.abs(e.lon-s.lon)<0.5).length;
     const hot = nearby > 0;
     return `<span class="site-tag" data-lat="${s.lat}" data-lon="${s.lon}"
-      style="${hot ? 'background:rgba(255,0,64,0.2);color:#ff4444;border-color:rgba(255,0,64,0.4)' : ''}"
-      title="${s.type} — ${nearby} events nearby">
-      ${hot ? '🔥' : '◆'} ${s.name} ${hot ? `(${nearby})` : ''}
-    </span>`;
+      style="${hot?'background:rgba(255,0,64,0.2);color:#ff4444;border-color:rgba(255,0,64,0.4)':''}"
+      title="${s.type}">${hot?'🔥':'◆'} ${s.name} ${hot?`(${nearby})`:''}</span>`;
   }).join('');
 
-  document.querySelectorAll('.site-tag').forEach(tag => {
+  el.querySelectorAll('.site-tag').forEach(tag => {
     tag.addEventListener('click', () => {
       map.flyTo([+tag.dataset.lat, +tag.dataset.lon], 10, { duration: 1 });
+      if (isMobile()) closeMobileSheet();
     });
   });
 }
 
-function renderEventTypes() {
+function renderEventTypes(container) {
+  const el = container || document.getElementById('event-types');
+  if (!el) return;
   const types = {};
-  for (const e of EVENTS) {
-    const t = e.sub_event_type || 'Other';
-    types[t] = (types[t]||0) + 1;
-  }
+  for (const e of EVENTS) { const t = e.sub_event_type || 'Other'; types[t]=(types[t]||0)+1; }
   const max = Math.max(...Object.values(types));
-
-  document.getElementById('event-types').innerHTML = Object.entries(types)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0, 8)
-    .map(([type, count]) => `
-      <div class="force-row">
-        <span class="force-name" style="font-size:9px">${type}</span>
-        <span class="force-count" style="color:var(--warning)">${count.toLocaleString()}</span>
-        <div class="force-bar-bg">
-          <div class="force-bar-fill" style="width:${(count/max*100).toFixed(0)}%;background:var(--warning)"></div>
-        </div>
-      </div>
-    `).join('');
+  el.innerHTML = Object.entries(types).sort((a,b)=>b[1]-a[1]).slice(0,8)
+    .map(([t,c])=>`<div class="force-row"><span class="force-name" style="font-size:9px">${t}</span><span class="force-count" style="color:var(--warning)">${c.toLocaleString()}</span><div class="force-bar-bg"><div class="force-bar-fill" style="width:${(c/max*100).toFixed(0)}%;background:var(--warning)"></div></div></div>`).join('');
 }
 
-function renderTheaters() {
-  document.getElementById('theater-btns').innerHTML = Object.keys(THEATERS).map(name =>
-    `<button class="theater-btn${name === 'ALL' ? ' active' : ''}" data-theater="${name}">${name}</button>`
+function renderTheaters(container) {
+  const el = container || document.getElementById('theater-btns');
+  if (!el) return;
+  el.innerHTML = Object.keys(THEATERS).map(name =>
+    `<button class="theater-btn${name==='ALL'?' active':''}" data-theater="${name}">${name}</button>`
   ).join('');
 
-  document.querySelectorAll('.theater-btn').forEach(btn => {
+  el.querySelectorAll('.theater-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const t = THEATERS[btn.dataset.theater];
       map.flyTo(t.center, t.zoom, { duration: 1.2 });
       document.querySelectorAll('.theater-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      if (isMobile()) closeMobileSheet();
     });
   });
 }
 
-function renderPhases() {
-  document.getElementById('phase-btns').innerHTML = CONFLICT_PHASES.map((p, i) =>
-    `<button class="phase-btn${i === 0 ? ' active' : ''}" data-idx="${i}" title="${p.desc || p.name}">
-      ${p.icon} ${p.name}
-    </button>`
+function renderPhases(container) {
+  const el = container || document.getElementById('phase-btns');
+  if (!el) return;
+  el.innerHTML = CONFLICT_PHASES.map((p, i) =>
+    `<button class="phase-btn" data-idx="${i}" title="${p.desc||p.name}">${p.icon} ${p.name}</button>`
   ).join('');
 
-  document.querySelectorAll('.phase-btn').forEach(btn => {
+  el.querySelectorAll('.phase-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const idx = +btn.dataset.idx;
       const phase = CONFLICT_PHASES[idx];
-
       document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Handle dynamic dates
-      let start = phase.start;
-      let end = phase.end;
-      if (start === '__LAST30__') {
-        const d = new Date(); d.setDate(d.getDate() - 30);
-        start = d.toISOString().substring(0, 10);
-        end = null;
-      } else if (start === '__LAST7__') {
-        const d = new Date(); d.setDate(d.getDate() - 7);
-        start = d.toISOString().substring(0, 10);
-        end = null;
-      }
+      let start = phase.start, end = phase.end;
+      if (start === '__LAST30__') { const d = new Date(); d.setDate(d.getDate()-30); start = d.toISOString().substring(0,10); end = null; }
+      else if (start === '__LAST7__') { const d = new Date(); d.setDate(d.getDate()-7); start = d.toISOString().substring(0,10); end = null; }
 
-      timeStart = start;
-      timeEnd = end;
+      timeStart = start; timeEnd = end;
       applyFilter();
 
-      // Fly to associated theater if specified
       if (phase.theater && THEATERS[phase.theater]) {
         const t = THEATERS[phase.theater];
         map.flyTo(t.center, t.zoom, { duration: 1.5 });
-        document.querySelectorAll('.theater-btn').forEach(b => {
-          b.classList.toggle('active', b.dataset.theater === phase.theater);
-        });
+        document.querySelectorAll('.theater-btn').forEach(b => b.classList.toggle('active', b.dataset.theater === phase.theater));
       }
+      if (isMobile()) closeMobileSheet();
     });
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// TIMELINE BRUSH (click+drag to select date range)
-// ═══════════════════════════════════════════════════════════
-let tlDragging = false;
-let tlDragStartX = 0;
-let tlDragEndX = 0;
-let tlPad = 30;
-
-function initTimelineBrush() {
-  const canvas = document.getElementById('timeline-canvas');
-
-  canvas.addEventListener('mousedown', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    tlDragging = true;
-    tlDragStartX = e.clientX - rect.left;
-    tlDragEndX = tlDragStartX;
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    if (!tlDragging) return;
-    const rect = canvas.getBoundingClientRect();
-    tlDragEndX = e.clientX - rect.left;
-    drawTimeline(); // redraw with selection overlay
-  });
-
-  canvas.addEventListener('mouseup', (e) => {
-    if (!tlDragging) return;
-    tlDragging = false;
-    const rect = canvas.getBoundingClientRect();
-    tlDragEndX = e.clientX - rect.left;
-
-    // Convert pixel positions to day indices
-    if (!allDaysSorted.length) return;
-    const cw = rect.width;
-    const usableW = cw - tlPad * 2;
-    const x1 = Math.min(tlDragStartX, tlDragEndX);
-    const x2 = Math.max(tlDragStartX, tlDragEndX);
-
-    // Minimum drag distance (5px) to avoid single clicks
-    if (x2 - x1 < 5) return;
-
-    const i1 = Math.max(0, Math.floor((x1 - tlPad) / usableW * allDaysSorted.length));
-    const i2 = Math.min(allDaysSorted.length - 1, Math.floor((x2 - tlPad) / usableW * allDaysSorted.length));
-
-    if (i1 >= 0 && i2 >= 0 && i1 < allDaysSorted.length && i2 < allDaysSorted.length) {
-      timeStart = allDaysSorted[i1];
-      timeEnd = allDaysSorted[i2];
-
-      // Deactivate phase buttons, show custom
-      document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
-      applyFilter();
-    }
-  });
-
-  // Double-click to reset
-  canvas.addEventListener('dblclick', () => {
-    clearTimeFilter();
-  });
-
-  // Hover tooltip on timeline
-  const tooltip = document.createElement('div');
-  tooltip.style.cssText = `
-    position:fixed; pointer-events:none; z-index:9999;
-    background:rgba(8,12,22,0.95); border:1px solid var(--accent);
-    padding:5px 8px; border-radius:3px;
-    font-family:'JetBrains Mono'; font-size:10px; color:#c0c8d8;
-    display:none; white-space:nowrap; backdrop-filter:blur(8px);
-  `;
-  document.body.appendChild(tooltip);
-
-  canvas.addEventListener('mousemove', (e) => {
-    if (tlDragging) { tooltip.style.display = 'none'; return; }
-    if (!allDaysSorted.length) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const usableW = rect.width - tlPad * 2;
-    const idx = Math.floor((x - tlPad) / usableW * allDaysSorted.length);
-    if (idx < 0 || idx >= allDaysSorted.length) { tooltip.style.display = 'none'; return; }
-
-    const day = allDaysSorted[idx];
-    const dayEvents = EVENTS.filter(ev => ev.date === day);
-    const dayFat = dayEvents.reduce((s,ev) => s + (ev.fatalities||0), 0);
-
-    // Check if any annotation on this date
-    const ann = TIMELINE_ANNOTATIONS.find(a => a.date === day);
-
-    let html = `<b style="color:var(--accent)">${day}</b><br>`;
-    html += `Events: <b>${dayEvents.length}</b>`;
-    if (dayFat > 0) html += ` · KIA: <b style="color:var(--critical)">${dayFat}</b>`;
-    if (ann) html += `<br><span style="color:${ann.color}">⚡ ${ann.desc}</span>`;
-
-    tooltip.innerHTML = html;
-    tooltip.style.display = 'block';
-    tooltip.style.left = (e.clientX + 12) + 'px';
-    tooltip.style.top = (e.clientY - 40) + 'px';
-  });
-
-  canvas.addEventListener('mouseleave', () => {
-    tooltip.style.display = 'none';
-  });
-}
-
-function renderFeed() {
-  const recent = filteredEvents
-    .filter(e => e.fatalities > 0 && e.location)
-    .slice(0, 15);
-
-  document.getElementById('feed').innerHTML = recent.map(ev => {
+function renderFeed(container) {
+  const el = container || document.getElementById('feed');
+  if (!el) return;
+  const recent = filteredEvents.filter(e => (e.fatalities > 0 || e.location) && e.location).slice(0, isMobile() ? 20 : 15);
+  el.innerHTML = recent.map(ev => {
     const color = SIDE_COLORS[ev.side] || '#888';
     return `<div class="feed-item">
       <span class="feed-ts">${ev.date}</span>
@@ -1021,50 +672,156 @@ function renderFeed() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// TIMELINE
+// MOBILE BOTTOM SHEET
 // ═══════════════════════════════════════════════════════════
+let activeTab = null;
+
+function closeMobileSheet() {
+  const sheet = document.getElementById('mobile-sheet');
+  sheet.classList.remove('open');
+  sheet.innerHTML = '';
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  activeTab = null;
+}
+
+function openMobileSheet(tab) {
+  const sheet = document.getElementById('mobile-sheet');
+  if (activeTab === tab) { closeMobileSheet(); return; }
+  activeTab = tab;
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  sheet.innerHTML = '';
+  sheet.classList.add('open');
+
+  if (tab === 'theater') {
+    sheet.innerHTML = '<div class="section"><div class="section-title">THEATER SELECT</div><div class="theater-btns" id="mob-theaters"></div></div><div class="section"><div class="section-title">THEATER BREAKDOWN</div><div id="mob-countries" class="country-grid"></div></div>';
+    renderTheaters(document.getElementById('mob-theaters'));
+    renderCountries(document.getElementById('mob-countries'));
+  } else if (tab === 'phase') {
+    sheet.innerHTML = '<div class="section"><div class="section-title">⏱ CONFLICT PHASE</div><div class="time-filter-label" id="mob-time-label"></div><div class="phase-btns" id="mob-phases"></div></div>';
+    renderPhases(document.getElementById('mob-phases'));
+    // Sync active state
+    const label = document.getElementById('mob-time-label');
+    if (timeStart || timeEnd) {
+      label.classList.add('active');
+      label.textContent = `⏱ ${timeStart||'START'} → ${timeEnd||'NOW'}  (${filteredEvents.length.toLocaleString()})`;
+    }
+  } else if (tab === 'forces') {
+    sheet.innerHTML = '<div class="section"><div class="section-title">FORCE DISPOSITION</div><div id="mob-forces"></div></div><div class="section"><div class="section-title">EVENT TYPES</div><div id="mob-event-types"></div></div>';
+    renderForces(document.getElementById('mob-forces'));
+    renderEventTypes(document.getElementById('mob-event-types'));
+  } else if (tab === 'intel') {
+    sheet.innerHTML = '<div class="section"><div class="section-title">LIVE INTEL FEED</div><div id="mob-feed"></div></div>';
+    renderFeed(document.getElementById('mob-feed'));
+  } else if (tab === 'sites') {
+    sheet.innerHTML = '<div class="section"><div class="section-title">🎯 KEY SITES — IRAN</div><div id="mob-sites"></div></div>';
+    renderIranSites(document.getElementById('mob-sites'));
+  }
+
+  // Resize map to account for sheet
+  setTimeout(() => map.invalidateSize(), 100);
+}
+
+function initMobileTabs() {
+  document.querySelectorAll('.mob-tab').forEach(btn => {
+    btn.addEventListener('click', () => openMobileSheet(btn.dataset.tab));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIMELINE (desktop only)
+// ═══════════════════════════════════════════════════════════
+let tlDragging = false, tlDragStartX = 0, tlDragEndX = 0, tlPad = 30;
+
+function initTimelineBrush() {
+  if (isMobile()) return;
+  const canvas = document.getElementById('timeline-canvas');
+
+  canvas.addEventListener('mousedown', e => {
+    const rect = canvas.getBoundingClientRect();
+    tlDragging = true; tlDragStartX = e.clientX - rect.left; tlDragEndX = tlDragStartX;
+  });
+  canvas.addEventListener('mousemove', e => {
+    if (!tlDragging) return;
+    tlDragEndX = e.clientX - canvas.getBoundingClientRect().left;
+    drawTimeline();
+  });
+  canvas.addEventListener('mouseup', e => {
+    if (!tlDragging) return;
+    tlDragging = false;
+    tlDragEndX = e.clientX - canvas.getBoundingClientRect().left;
+    if (!allDaysSorted.length) return;
+    const rect = canvas.getBoundingClientRect();
+    const usableW = rect.width - tlPad*2;
+    const x1 = Math.min(tlDragStartX, tlDragEndX), x2 = Math.max(tlDragStartX, tlDragEndX);
+    if (x2 - x1 < 5) return;
+    const i1 = Math.max(0, Math.floor((x1-tlPad)/usableW*allDaysSorted.length));
+    const i2 = Math.min(allDaysSorted.length-1, Math.floor((x2-tlPad)/usableW*allDaysSorted.length));
+    if (i1>=0 && i2>=0) { timeStart = allDaysSorted[i1]; timeEnd = allDaysSorted[i2]; document.querySelectorAll('.phase-btn').forEach(b=>b.classList.remove('active')); applyFilter(); }
+  });
+  canvas.addEventListener('dblclick', () => clearTimeFilter());
+
+  // Hover tooltip
+  const tip = document.createElement('div');
+  tip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:rgba(8,12,22,0.95);border:1px solid var(--accent);padding:5px 8px;border-radius:3px;font-family:"JetBrains Mono";font-size:10px;color:#c0c8d8;display:none;white-space:nowrap;backdrop-filter:blur(8px)';
+  document.body.appendChild(tip);
+
+  canvas.addEventListener('mousemove', e => {
+    if (tlDragging) { tip.style.display='none'; return; }
+    if (!allDaysSorted.length) return;
+    const rect = canvas.getBoundingClientRect();
+    const usableW = rect.width - tlPad*2;
+    const idx = Math.floor((e.clientX-rect.left-tlPad)/usableW*allDaysSorted.length);
+    if (idx<0||idx>=allDaysSorted.length) { tip.style.display='none'; return; }
+    const day = allDaysSorted[idx];
+    const de = EVENTS.filter(ev=>ev.date===day);
+    const ann = TIMELINE_ANNOTATIONS.find(a=>a.date===day);
+    let h = `<b style="color:var(--accent)">${day}</b><br>Events: <b>${de.length}</b>`;
+    const fat = de.reduce((s,ev)=>s+(ev.fatalities||0),0);
+    if (fat>0) h += ` · KIA: <b style="color:var(--critical)">${fat}</b>`;
+    if (ann) h += `<br><span style="color:${ann.color}">⚡ ${ann.desc}</span>`;
+    tip.innerHTML = h; tip.style.display='block';
+    tip.style.left = (e.clientX+12)+'px'; tip.style.top = (e.clientY-40)+'px';
+  });
+  canvas.addEventListener('mouseleave', () => { tip.style.display='none'; });
+}
+
 function drawTimeline() {
+  if (isMobile()) return;
   const canvas = document.getElementById('timeline-canvas');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
   const W = canvas.width = canvas.parentElement.clientWidth * dpr;
-  const H = canvas.height = 180 * dpr;
+  const H = canvas.height = 165 * dpr;
   canvas.style.width = canvas.parentElement.clientWidth + 'px';
-  canvas.style.height = '180px';
+  canvas.style.height = '165px';
   ctx.clearRect(0, 0, W, H);
 
-  // Always use ALL events for timeline (so you can see what you're filtering within)
-  const dayMap = {};
-  const daySideMap = {};
+  const dayMap = {}, daySideMap = {};
   for (const ev of EVENTS) {
     if (!ev.date) continue;
-    dayMap[ev.date] = (dayMap[ev.date]||0) + 1;
+    dayMap[ev.date] = (dayMap[ev.date]||0)+1;
     if (!daySideMap[ev.date]) daySideMap[ev.date] = {};
-    daySideMap[ev.date][ev.side] = (daySideMap[ev.date][ev.side]||0) + 1;
+    daySideMap[ev.date][ev.side] = (daySideMap[ev.date][ev.side]||0)+1;
   }
 
   const days = Object.keys(dayMap).sort();
   allDaysSorted = days;
   if (!days.length) return;
 
-  document.getElementById('tl-range').textContent = `${days[0]} → ${days[days.length-1]} (${days.length} days)`;
-
+  document.getElementById('tl-range').textContent = `${days[0]} → ${days[days.length-1]} (${days.length}d)`;
   const maxCount = Math.max(...Object.values(dayMap));
   const pad = tlPad * dpr;
   const barW = Math.max(1, (W - pad*2) / days.length);
-  const chartH = H - 25 * dpr;
-
+  const chartH = H - 22 * dpr;
   const stackOrder = ['israel','iran_proxy','unknown','syria','iran','us','gulf'];
 
-  // Draw bars — dim ones outside time range
   for (let i = 0; i < days.length; i++) {
     const x = pad + i * barW;
     const sides = daySideMap[days[i]] || {};
     const inRange = (!timeStart || days[i] >= timeStart) && (!timeEnd || days[i] <= timeEnd);
     let yOff = 0;
-
     for (const side of stackOrder) {
-      const count = sides[side] || 0;
+      const count = sides[side]||0;
       if (!count) continue;
       const h = (count / maxCount) * chartH;
       ctx.fillStyle = SIDE_COLORS[side] || '#555';
@@ -1075,134 +832,68 @@ function drawTimeline() {
   }
   ctx.globalAlpha = 1;
 
-  // Draw time range selection edges
+  // Range edges
   if (timeStart || timeEnd) {
-    const startIdx = timeStart ? days.indexOf(timeStart) : 0;
-    const endIdx = timeEnd ? days.indexOf(timeEnd) : days.length - 1;
-    if (startIdx >= 0) {
-      const x = pad + startIdx * barW;
-      ctx.strokeStyle = '#ff4444';
-      ctx.lineWidth = 2 * dpr;
-      ctx.setLineDash([4 * dpr, 3 * dpr]);
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, chartH); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    if (endIdx >= 0 && endIdx < days.length) {
-      const x = pad + (endIdx + 1) * barW;
-      ctx.strokeStyle = '#ff4444';
-      ctx.lineWidth = 2 * dpr;
-      ctx.setLineDash([4 * dpr, 3 * dpr]);
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, chartH); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-  }
-
-  // Draw brush overlay while dragging
-  if (tlDragging) {
-    const x1 = Math.min(tlDragStartX, tlDragEndX) * dpr;
-    const x2 = Math.max(tlDragStartX, tlDragEndX) * dpr;
-    ctx.fillStyle = 'rgba(255, 0, 64, 0.12)';
-    ctx.fillRect(x1, 0, x2 - x1, chartH);
-    ctx.strokeStyle = 'rgba(255, 0, 64, 0.5)';
-    ctx.lineWidth = 1 * dpr;
-    ctx.strokeRect(x1, 0, x2 - x1, chartH);
-  }
-
-  // Conflict phase markers on timeline — labeled flags
-  const flagH = 14 * dpr;
-  let lastFlagX = -999; // prevent overlapping labels
-  let flagRow = 0;
-  const flagPositions = []; // track for stacking
-
-  for (const ann of TIMELINE_ANNOTATIONS) {
-    const idx = days.indexOf(ann.date);
-    // If exact date not found, find closest
-    let drawIdx = idx;
-    if (drawIdx < 0) {
-      drawIdx = days.findIndex(d => d >= ann.date);
-      if (drawIdx < 0) continue;
-    }
-
-    const x = pad + drawIdx * barW + barW / 2;
-
-    // Vertical line from top to bottom of chart
-    ctx.strokeStyle = ann.color;
-    ctx.lineWidth = 1.5 * dpr;
-    ctx.globalAlpha = 0.5;
-    ctx.setLineDash([3 * dpr, 3 * dpr]);
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, chartH);
-    ctx.stroke();
+    const si = timeStart ? days.indexOf(timeStart) : 0;
+    const ei = timeEnd ? days.indexOf(timeEnd) : days.length-1;
+    ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 2*dpr;
+    ctx.setLineDash([4*dpr, 3*dpr]);
+    if (si >= 0) { ctx.beginPath(); ctx.moveTo(pad+si*barW,0); ctx.lineTo(pad+si*barW,chartH); ctx.stroke(); }
+    if (ei >= 0 && ei < days.length) { ctx.beginPath(); ctx.moveTo(pad+(ei+1)*barW,0); ctx.lineTo(pad+(ei+1)*barW,chartH); ctx.stroke(); }
     ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
+  }
 
-    // Small diamond at the top
+  // Brush drag overlay
+  if (tlDragging) {
+    const x1 = Math.min(tlDragStartX,tlDragEndX)*dpr, x2 = Math.max(tlDragStartX,tlDragEndX)*dpr;
+    ctx.fillStyle = 'rgba(255,0,64,0.12)'; ctx.fillRect(x1,0,x2-x1,chartH);
+    ctx.strokeStyle = 'rgba(255,0,64,0.5)'; ctx.lineWidth = 1*dpr; ctx.strokeRect(x1,0,x2-x1,chartH);
+  }
+
+  // Annotation flags
+  const flagH = 13*dpr;
+  const flagPositions = [];
+  for (const ann of TIMELINE_ANNOTATIONS) {
+    let di = days.indexOf(ann.date);
+    if (di < 0) { di = days.findIndex(d => d >= ann.date); if (di < 0) continue; }
+    const x = pad + di*barW + barW/2;
+
+    ctx.strokeStyle = ann.color; ctx.lineWidth = 1.5*dpr; ctx.globalAlpha = 0.5;
+    ctx.setLineDash([3*dpr,3*dpr]); ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,chartH); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+
     ctx.fillStyle = ann.color;
-    ctx.beginPath();
-    ctx.moveTo(x, 3 * dpr);
-    ctx.lineTo(x + 4 * dpr, 7 * dpr);
-    ctx.lineTo(x, 11 * dpr);
-    ctx.lineTo(x - 4 * dpr, 7 * dpr);
-    ctx.closePath();
-    ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x,3*dpr); ctx.lineTo(x+3*dpr,6*dpr); ctx.lineTo(x,9*dpr); ctx.lineTo(x-3*dpr,6*dpr); ctx.closePath(); ctx.fill();
 
-    // Label — stagger vertically if too close to previous
-    const labelW = ctx.measureText(ann.label).width + 8 * dpr;
-    let labelY = 0;
-
-    // Check overlap with previous flag positions
+    ctx.font = `bold ${7*dpr}px 'JetBrains Mono'`;
+    const labelW = ctx.measureText(ann.label).width + 6*dpr;
     let row = 0;
-    for (const prev of flagPositions) {
-      if (Math.abs(x - prev.x) < Math.max(prev.w, labelW) * 0.6) {
-        row = Math.max(row, prev.row + 1);
-      }
-    }
-    flagPositions.push({ x, w: labelW, row });
+    for (const prev of flagPositions) { if (Math.abs(x-prev.x) < Math.max(prev.w,labelW)*0.6) row = Math.max(row, prev.row+1); }
+    flagPositions.push({ x, w:labelW, row });
+    const ly = row * (flagH + 2*dpr);
+    const lx = x - labelW/2;
 
-    labelY = (row * (flagH + 2 * dpr));
-
-    // Label background
-    const lx = x - labelW / 2;
-    const ly = labelY;
-    ctx.fillStyle = 'rgba(8,12,22,0.85)';
-    ctx.fillRect(lx, ly, labelW, flagH);
-    ctx.strokeStyle = ann.color;
-    ctx.lineWidth = 1 * dpr;
-    ctx.globalAlpha = 0.7;
-    ctx.strokeRect(lx, ly, labelW, flagH);
-    ctx.globalAlpha = 1;
-
-    // Label text
-    ctx.fillStyle = ann.color;
-    ctx.font = `bold ${7 * dpr}px 'JetBrains Mono'`;
-    ctx.textAlign = 'center';
-    ctx.fillText(ann.label, x, ly + flagH - 3 * dpr);
+    ctx.fillStyle = 'rgba(8,12,22,0.85)'; ctx.fillRect(lx,ly,labelW,flagH);
+    ctx.strokeStyle = ann.color; ctx.lineWidth = 1*dpr; ctx.globalAlpha = 0.7; ctx.strokeRect(lx,ly,labelW,flagH); ctx.globalAlpha = 1;
+    ctx.fillStyle = ann.color; ctx.textAlign = 'center'; ctx.fillText(ann.label, x, ly+flagH-3*dpr);
   }
 
   // Date labels
-  ctx.font = `${8*dpr}px 'JetBrains Mono'`;
-  ctx.fillStyle = 'rgba(100,130,180,0.4)';
-  ctx.textAlign = 'center';
+  ctx.font = `${7*dpr}px 'JetBrains Mono'`; ctx.fillStyle = 'rgba(100,130,180,0.4)'; ctx.textAlign = 'center';
   const labelEvery = Math.max(1, Math.floor(days.length / 14));
-  for (let i = 0; i < days.length; i += labelEvery) {
-    const x = pad + i * barW + barW/2;
-    ctx.fillText(days[i].substring(2,10), x, H - 2*dpr);
-  }
-  ctx.textAlign = 'right';
-  ctx.fillText(maxCount.toString(), pad - 4*dpr, 12*dpr);
+  for (let i = 0; i < days.length; i += labelEvery) ctx.fillText(days[i].substring(2,10), pad+i*barW+barW/2, H-2*dpr);
+  ctx.textAlign = 'right'; ctx.fillText(maxCount.toString(), pad-3*dpr, 10*dpr);
 }
 
 // ═══════════════════════════════════════════════════════════
 // CLOCK
 // ═══════════════════════════════════════════════════════════
 setInterval(() => {
-  document.getElementById('clock').textContent =
-    new Date().toISOString().replace('T',' ').substring(0,19) + ' UTC';
+  document.getElementById('clock').textContent = new Date().toISOString().replace('T',' ').substring(0,19)+' UTC';
 }, 1000);
 
 // ═══════════════════════════════════════════════════════════
-// DATA LOAD & INIT
+// DATA + INIT
 // ═══════════════════════════════════════════════════════════
 function loadData() {
   const C = COMPACT_DATA;
@@ -1230,36 +921,37 @@ function loadData() {
 window.addEventListener('load', () => {
   loadData();
   initMap();
-  renderForces();
-  renderCountries();
-  renderIranSites();
-  renderEventTypes();
-  renderTheaters();
-  renderPhases();
-  initTimelineBrush();
 
-  // Default: "Iran-Israel War" phase (index 11) — from True Promise I to present
-  const iranWarIdx = CONFLICT_PHASES.findIndex(p => p.name === 'Iran-Israel War');
-  const iranWarPhase = CONFLICT_PHASES[iranWarIdx];
-  timeStart = iranWarPhase.start;
-  timeEnd = iranWarPhase.end;
-  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.phase-btn')[iranWarIdx].classList.add('active');
+  // Desktop panels
+  if (!isMobile()) {
+    renderForces(); renderCountries(); renderIranSites(); renderEventTypes();
+    renderTheaters(); renderPhases();
+    initTimelineBrush();
+  }
+  // Mobile tabs
+  initMobileTabs();
+
+  // Default: Last 7 days
+  const last7idx = CONFLICT_PHASES.findIndex(p => p.name === 'Last 7d');
+  const d7 = new Date(); d7.setDate(d7.getDate() - 7);
+  timeStart = d7.toISOString().substring(0, 10);
+  timeEnd = null;
+  // Highlight the button
+  setTimeout(() => {
+    document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+    const btn = document.querySelectorAll('.phase-btn')[last7idx];
+    if (btn) btn.classList.add('active');
+  }, 50);
 
   applyFilter();
-  drawTimeline();
+  if (!isMobile()) drawTimeline();
   updateStats();
 
-  map.on('zoomend moveend', () => {
-    renderMarkers();
-  });
+  map.on('zoomend moveend', renderMarkers);
+  window.addEventListener('resize', () => { if (!isMobile()) drawTimeline(); map.invalidateSize(); });
 
-  window.addEventListener('resize', drawTimeline);
-
-  // Auto-fly to Iran theater after 2s
-  setTimeout(() => {
-    map.flyTo([32.5, 53], 6, { duration: 2 });
-  }, 2000);
+  // Auto-fly to ALL theater (zoom 5, centered on Middle East)
+  setTimeout(() => map.flyTo([30, 46], 5, { duration: 1.5 }), 1500);
 });
 </script>
 </body>
