@@ -851,12 +851,26 @@ if os.path.exists(corr_file):
 now = time.time()
 
 # Expire old entries (use longer window if topic was ever confirmed)
+# NOTE: confirmed_at/confirmed_sent stored as top-level keys on the topic list
+# to survive individual entry expiry
 for topic in list(corr.keys()):
-    was_confirmed = any(e.get('confirmed_at') for e in corr[topic])
+    entries = corr[topic]
+    # Preserve topic-level flags (stored on first entry or as _meta)
+    was_confirmed = any(e.get('confirmed_at') for e in entries) if isinstance(entries, list) else False
+    was_sent = any(e.get('confirmed_sent') for e in entries) if isinstance(entries, list) else False
     window = CONFIRMED_WINDOW if was_confirmed else CORROBORATION_WINDOW
-    corr[topic] = [e for e in corr[topic] if now - e['ts'] < window]
+    corr[topic] = [e for e in entries if now - e['ts'] < window]
     if not corr[topic]:
-        del corr[topic]
+        # Keep topic if it was confirmed+sent (so we never re-alert)
+        if was_sent:
+            corr[topic] = [{'source': '_expired', 'ts': now, 'confirmed_at': now, 'confirmed_sent': True}]
+        else:
+            del corr[topic]
+    elif was_sent and not any(e.get('confirmed_sent') for e in corr[topic]):
+        # Re-stamp the flag if it was lost during expiry
+        corr[topic][0]['confirmed_sent'] = True
+    if topic in corr and was_confirmed and not any(e.get('confirmed_at') for e in corr[topic]):
+        corr[topic][0]['confirmed_at'] = now
 
 for a in alerts:
     text = h.escape(a.get('text', ''))
