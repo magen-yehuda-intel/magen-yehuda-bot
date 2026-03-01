@@ -156,7 +156,7 @@ def extract_market_moves(events):
 def extract_threat_changes(events, hebrew=False):
     """Extract threat level transitions."""
     changes = []
-    he_map = {"GREEN": "שגרה", "ELEVATED": "מוגבר", "HIGH": "גבוה", "CRITICAL": "קריטי"}
+    he_map = {"GREEN": "שגרה", "ELEVATED": "כוננות מוגברת", "HIGH": "גבוה", "CRITICAL": "קריטי"}
     for ev in events:
         if ev.get("type") == "threat_change":
             f = ev.get('from', '?')
@@ -184,7 +184,7 @@ def threat_emoji(level):
 
 THREAT_LEVEL_HE = {
     "GREEN": "שגרה",
-    "ELEVATED": "מוגבר",
+    "ELEVATED": "כוננות מוגברת",
     "HIGH": "גבוה",
     "CRITICAL": "קריטי",
 }

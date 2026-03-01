@@ -126,7 +126,7 @@ threat_emoji() {
 threat_level_he() {
   case "$1" in
     GREEN)    echo "שגרה" ;;
-    ELEVATED) echo "מוגבר" ;;
+    ELEVATED) echo "כוננות מוגברת" ;;
     HIGH)     echo "גבוה" ;;
     CRITICAL) echo "קריטי" ;;
     *)        echo "$1" ;;

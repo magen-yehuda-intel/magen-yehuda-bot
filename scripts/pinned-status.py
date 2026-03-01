@@ -145,7 +145,7 @@ def load_state(state_dir):
 
 THREAT_DATA = {
     "GREEN":    {"emoji": "🟢", "en": "NOMINAL",  "he": "שגרה",   "bar": "🟩🟩⬜⬜⬜⬜⬜⬜⬜⬜"},
-    "ELEVATED": {"emoji": "🟠", "en": "ELEVATED", "he": "מוגבר",  "bar": "🟧🟧🟧🟧⬜⬜⬜⬜⬜⬜"},
+    "ELEVATED": {"emoji": "🟠", "en": "ELEVATED", "he": "כוננות מוגברת",  "bar": "🟧🟧🟧🟧⬜⬜⬜⬜⬜⬜"},
     "HIGH":     {"emoji": "🔴", "en": "HIGH",     "he": "גבוה",   "bar": "🟥🟥🟥🟥🟥🟥🟥⬜⬜⬜"},
     "CRITICAL": {"emoji": "⚫", "en": "CRITICAL",  "he": "קריטי",  "bar": "⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛"},
 }

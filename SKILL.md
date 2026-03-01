@@ -1,11 +1,11 @@
 ---
 name: iran-israel-alerts
-description: Monitor Iran-Israel-US military escalation and attack alerts using 75+ OSINT sources, satellite fire detection, seismic monitoring, cyber warfare tracking, military flight tracking, and real-time alert APIs. Use when checking for breaking military news, missile alerts, airstrikes, or geopolitical escalation between Iran, Israel, and the US. Triggers on questions about Iran attacks, Israel strikes, Middle East military alerts, OSINT updates, or escalation monitoring.
+description: Monitor Iran-Israel-US military escalation and attack alerts using 80+ OSINT sources, satellite fire detection, seismic monitoring, cyber warfare tracking, military flight tracking, and real-time alert APIs. Includes interactive Leaflet strikes dashboard with 48K+ geolocated events, US/Iran military base overlays, and event type filtering. Use when checking for breaking military news, missile alerts, airstrikes, or geopolitical escalation between Iran, Israel, and the US. Triggers on questions about Iran attacks, Israel strikes, Middle East military alerts, OSINT updates, or escalation monitoring.
 ---
 
 # Iran-Israel Attack Alert Monitor
 
-Multi-source intelligence aggregation for Iran/Israel/US military escalation with adaptive threat-level system, 75+ source channels, real-time OSINT scanning, NASA satellite fire detection, USGS seismic monitoring, cyber warfare monitoring (19 hacktivist groups), wire service integration (Reuters/AP), multi-source breaking news corroboration, multi-channel bilingual dispatch with per-channel timezones, and instant Telegram delivery with auto-generated intel maps.
+Multi-source intelligence aggregation for Iran/Israel/US military escalation with adaptive threat-level system, 80+ source channels, real-time OSINT scanning, NASA satellite fire detection, USGS seismic monitoring, cyber warfare monitoring (19 hacktivist groups), wire service integration (Reuters/AP), multi-source breaking news corroboration, multi-channel bilingual dispatch with per-channel timezones, and instant Telegram delivery with auto-generated intel maps and interactive strikes dashboard.
 
 ## Quick Start
 
@@ -26,8 +26,8 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │                                                                │
 │   🚨 Oref sirens        every 10-30s (threat-adaptive)        │
 │   📡 OSINT scanner       every 30s-5min (threat-adaptive)      │
-│     ├─ 📢 10 Telegram channels (t.me/s/ web preview)          │
-│     ├─ 🐦 11 Twitter accounts (syndication API)                │
+│     ├─ 📢 12 Telegram channels (t.me/s/ web preview)          │
+│     ├─ 🐦 13 Twitter accounts (syndication API)                │
 │     ├─ 📰 7 RSS feeds (TOI, JPost, AJ, TASS, Ynet, Reuters, AP)│
 │     └─ 🌍 USGS seismic (Iran region, M3.5+)                   │
 │   📊 Polymarket          every 60s-5min (threat-adaptive)      │
@@ -63,15 +63,15 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
             dispatch.py → EN Channel (ET) + HE Channel (IST)
 ```
 
-## Sources (75+ channels)
+## Sources (80+ channels)
 
 ### Real-Time Watcher Sources
 
 | # | Source | Channels | Method | Auth |
 |---|--------|----------|--------|------|
 | 1 | 🚨 Pikud HaOref (sirens) | 1 | REST API (Israeli IP req.) | None |
-| 2 | 📢 Telegram OSINT | 10 channels | Web preview scraping | None |
-| 3 | 🐦 X/Twitter OSINT | 11 accounts | Syndication API | None |
+| 2 | 📢 Telegram OSINT | 12 channels | Web preview scraping | None |
+| 3 | 🐦 X/Twitter OSINT | 13 accounts | Syndication API | None |
 | 4 | 📰 RSS News | 7 feeds | RSS/XML parsing | None |
 | 5 | 🌍 USGS Seismic | Iran region | REST API (GeoJSON) | None |
 | 6 | 📊 Polymarket | Dynamic | REST API | None |
@@ -92,7 +92,9 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 - `liveuamap` — Liveuamap (mapped conflict updates)
 - `AbuAliExpress` — Abu Ali Express (Hebrew OSINT king)
 - `flash_news_il` — Flash News IL (Hebrew breaking)
-- `idfonline` — IDF Official
+- `idfonline` — IDF Online (English)
+- `idfofficial` — IDF Spokesman / דובר צה״ל (Hebrew, official)
+- `IDFarabic` — IDF Arabic Spokesperson
 - `iranintl_en` — Iran International English
 - `BBCPersian` — BBC Persian
 - `kann_news` — Kan News
@@ -108,10 +110,9 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 - **AP News** — via Google News RSS proxy (`site:apnews.com`)
 
 > **Note:** Direct Reuters/AP RSS feeds are behind Cloudflare/paywalls. Google News RSS filtered to `site:reuters.com` works reliably as a proxy, including `<source>` tags for attribution.
-`@PenPizzaReport`, `@Conflict_Radar`, `@Worldsource24`, `@sentdefender`, `@beholdisrael`, `@Osint613`, `@Osinttechnical`, `@IsraelRadar_`, `@Intel_Sky`, `@ELINTNews`, `@IsraelWarRoom`
 
 ### Twitter OSINT Accounts
-`@PenPizzaReport`, `@Conflict_Radar`, `@Worldsource24`, `@sentdefender`, `@beholdisrael`, `@Osint613`, `@Osinttechnical`, `@IsraelRadar_`, `@Intel_Sky`, `@ELINTNews`, `@IsraelWarRoom`
+`@PenPizzaReport`, `@Conflict_Radar`, `@Worldsource24`, `@sentdefender`, `@beholdisrael`, `@Osint613`, `@Osinttechnical`, `@IsraelRadar_`, `@Intel_Sky`, `@ELINTNews`, `@IsraelWarRoom`, `@IDF`, `@IDFSpokesperson`
 
 ### SITREP-Only Sources (2-hour cron)
 | # | Source | Method | Auth |
@@ -708,6 +709,55 @@ Comprehensive geolocated strikes database and visual map covering the entire Mid
 - Hourly report: `--backfill` refresh + map generation + dispatch as `strikes_map` event
 - State files: `strikes-data.json`, `strikes-last-fetch.json`, `strikes-map.png`, `acled-token.json`
 
+## 🗺️ Interactive Strikes Dashboard
+
+Standalone Leaflet-based HTML dashboard for theater operations visualization. Gist-hosted for zero-deploy sharing.
+
+### Features
+- **48,500+ geolocated events** from ACLED + FIRMS + OSINT + Pikud HaOref
+- **Dark military theme** — CartoDB dark tiles, Orbitron/JetBrains Mono fonts, scanline overlay
+- **Theater select** — ALL, Iran, IL/Gaza, Lebanon, Syria, Iraq, Yemen, Red Sea
+- **14 conflict phase presets** — Oct 7, Ground Op, True Promise I/II, US→Houthis, Days of Repentance, US+IL→Tehran, etc.
+- **Force disposition bars** — Israel (IDF), Iran (IRGC), Iran Proxies, Syria (SAA), US (CENTCOM), Gulf States
+- **Country breakdown grid** with event counts and toggles
+- **Zoomable timeline** — mouse wheel zoom, +/−/FIT buttons, brush selection, 13 annotated key events
+- **Timeline auto-fits** to active filter range with 15% padding
+
+### Map Overlays
+- **20 US/Coalition bases** — Al Udeid (CENTCOM HQ), Al Dhafra, NSA Bahrain (5th Fleet), Incirlik, Akrotiri, Nevatim, Diego Garcia, etc. Toggleable ON/OFF
+- **28 Iran military sites** — nuclear (☢️ Natanz, Isfahan, Fordow, Bushehr, Arak), missile (🚀 Dezful, Semnan, Khojir, Bid Kaneh), naval (⚓ Bandar Abbas, Chabahar, Jask), airbases (✈️ Mehrabad, Isfahan, Bushehr, Hamadan), air defense (🛡️ S-300 Tehran, Isfahan, Bushehr). Toggleable ON/OFF
+- **14 Iran key sites** with proximity event counts — click to fly-to
+
+### Event Type Filtering
+- 9 event subtypes: Air/drone strike, Shelling/artillery/missile, Armed clash, Attack, Remote explosive/IED, Possible strike (FIRMS), Thermal anomaly (FIRMS), Location mention in OSINT, Suicide bomb
+- Click any type to isolate on map; click again to clear; multi-select supported
+- FIRMS markers: orange (#ff8800), confidence-based radius (high=5, medium=3.5, low=2.5)
+
+### Data Sources
+| Source | Events | Coverage |
+|--------|--------|----------|
+| ACLED | ~48,000 | Oct 7, 2023 → Feb 2025 (analyst-verified, ~1yr lag) |
+| NASA FIRMS | ~380 | Real-time satellite fire detections in Iran |
+| OSINT | ~175 | Intel-log text extraction (location mentions) |
+| Pikud HaOref | 1+ | Siren events with coordinates |
+
+### Mobile Support
+- Full-screen map with 5-tab bottom bar (Theater, Phase, Forces, Intel, Layers)
+- Slide-up sheets for panel content
+- Responsive CSS for ≤768px screens
+
+### Files
+- **Template:** `scripts/strikes-dashboard.html` (~1,100 lines, no inline data)
+- **Standalone:** `scripts/strikes-dashboard-standalone.html` (~3.3MB, data embedded)
+- **GitHub Gist:** `cce8ab4f861d240f21dc2916e7cd187e`
+
+### Rebuild Standalone
+```bash
+python3 scripts/build-dashboard-standalone.py  # Or inline build script
+```
+
+The build script injects `strikes-data.json` as `COMPACT_DATA` (ultra-compact array format: day_num, lat×1000, lon×1000, country_idx, side_idx, fatalities, subtype_idx, location_idx, actor1, actor2, confidence).
+
 ## 🛡️ Cyber Warfare Monitor (`scan_cyber.py`)
 
 Monitors 19 hacktivist groups (25 TG handles), 8 CTI Twitter accounts, and 4 dark web/breach RSS feeds for Iran-Israel cyber operations. Classifies attacks, identifies targets, and dispatches bilingual alerts.
@@ -889,6 +939,9 @@ iran-israel-alerts/
 │   ├── generate-flight-map.py  # FR24 air traffic map + intel panel
 │   ├── generate-timelapse.py   # 24h animated time-lapse GIF
 │   ├── generate-summary.py     # Hourly Hebrew + English analyst summaries
+│   ├── generate-strikes-map.py # Dark-themed ME strikes map
+│   ├── strikes-dashboard.html  # Interactive Leaflet dashboard (template)
+│   ├── strikes-dashboard-standalone.html # Standalone (~3.3MB, Gist-hosted)
 │   ├── pinned-status.py        # Live pinned status message (edited every 60s)
 │   ├── dispatch.py             # Multi-channel alert dispatcher (EN/HE routing)
 │   ├── format-fires.py         # Fire data → Telegram HTML formatter

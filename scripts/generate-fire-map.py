@@ -274,7 +274,7 @@ def draw_borders(img, zoom, ox, oy):
 
     # First pass: draw all borders as thin lines
     for feature in geo["features"]:
-        name = feature["properties"].get("ADMIN", "")
+        name = feature["properties"].get("ADMIN", feature["properties"].get("name", ""))
         geom = feature["geometry"]
 
         is_iran = (name == "Iran")
@@ -299,7 +299,7 @@ def draw_borders(img, zoom, ox, oy):
 
     # Second pass: draw Iran fill (very subtle tint)
     for feature in geo["features"]:
-        name = feature["properties"].get("ADMIN", "")
+        name = feature["properties"].get("ADMIN", feature["properties"].get("name", ""))
         if name != "Iran":
             continue
         geom = feature["geometry"]

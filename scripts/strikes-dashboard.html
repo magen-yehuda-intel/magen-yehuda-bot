@@ -103,7 +103,7 @@
   #panel {
     position: fixed; top: 40px; right: 0; width: 320px; bottom: 200px;
     background: var(--panel); border-left: 1px solid var(--border);
-    overflow-y: auto; z-index: 500;
+    overflow-y: auto; z-index: 500; transition: bottom 0.25s ease;
   }
 
   /* ══ DESKTOP BOTTOM TIMELINE ══ */
@@ -112,7 +112,19 @@
     height: 200px; background: var(--panel);
     border-top: 1px solid var(--border);
     padding: 6px 12px; z-index: 500;
+    transition: height 0.25s ease, padding 0.25s ease;
   }
+  #timeline-panel.collapsed {
+    height: 24px; padding: 3px 12px; overflow: hidden;
+  }
+  #timeline-panel.collapsed #timeline-canvas { display: none; }
+  .tl-collapse {
+    background: rgba(0,200,255,0.08); border: 1px solid var(--border);
+    color: var(--accent); width: 22px; height: 18px;
+    font-size: 12px; cursor: pointer; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tl-collapse:hover { background: rgba(0,200,255,0.2); border-color: var(--accent); }
   .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; gap: 6px; }
   .timeline-title { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--accent); }
   .timeline-range { font-size: 8px; color: var(--text-dim); flex: 1; text-align: right; }
@@ -222,7 +234,7 @@
 
   /* ══ DESKTOP LAYOUT ══ */
   @media (min-width: 769px) {
-    #map { right: 320px; bottom: 200px; }
+    #map { right: 320px; bottom: 200px; transition: bottom 0.25s ease; }
     #mobile-controls { display: none !important; }
   }
 
@@ -299,7 +311,7 @@
     <div id="event-types"></div>
   </div>
   <div class="section">
-    <div class="section-title">LIVE INTEL FEED</div>
+    <div class="section-title">▸ FEED</div>
     <div id="feed"></div>
   </div>
 </div>
@@ -307,6 +319,7 @@
 <!-- DESKTOP TIMELINE -->
 <div id="timeline-panel">
   <div class="timeline-header">
+    <button class="tl-collapse" id="tl-collapse" title="Collapse/expand timeline">▼</button>
     <div class="timeline-title">▸ TEMPORAL DENSITY</div>
     <div class="tl-controls">
       <button class="tl-btn" id="tl-zoom-in" title="Zoom in timeline">+</button>
@@ -887,7 +900,7 @@ function openMobileSheet(tab) {
     renderLayerToggles(document.getElementById('mob-layers'));
     renderIranSites(document.getElementById('mob-sites'));
   } else if (tab === 'intel') {
-    sheet.innerHTML = '<div class="section"><div class="section-title">LIVE INTEL FEED</div><div id="mob-feed"></div></div>';
+    sheet.innerHTML = '<div class="section"><div class="section-title">▸ FEED</div><div id="mob-feed"></div></div>';
     renderFeed(document.getElementById('mob-feed'));
   }
 
@@ -953,6 +966,21 @@ function initTimelineBrush() {
   document.getElementById('tl-zoom-in').addEventListener('click', () => tlZoom(0.5));
   document.getElementById('tl-zoom-out').addEventListener('click', () => tlZoom(2));
   document.getElementById('tl-fit').addEventListener('click', tlFitToFilter);
+
+  // Collapse/expand timeline
+  document.getElementById('tl-collapse').addEventListener('click', () => {
+    const panel = document.getElementById('timeline-panel');
+    const btn = document.getElementById('tl-collapse');
+    const collapsed = panel.classList.toggle('collapsed');
+    btn.textContent = collapsed ? '▲' : '▼';
+    // Resize map + side panel
+    if (window.innerWidth > 768) {
+      const b = collapsed ? '24px' : '200px';
+      document.getElementById('map').style.bottom = b;
+      document.getElementById('panel').style.bottom = b;
+      setTimeout(() => map.invalidateSize(), 300);
+    }
+  });
 
   // Scroll wheel zoom
   canvas.addEventListener('wheel', e => {
