@@ -114,7 +114,7 @@
     position: fixed;
     top: 44px; left: 0;
     right: 340px;
-    bottom: 170px;
+    bottom: 190px;
     z-index: 1;
   }
 
@@ -268,13 +268,54 @@
     border-color: var(--critical);
   }
 
+  /* ══ CONFLICT PHASE BUTTONS ══ */
+  .phase-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 6px;
+  }
+  .phase-btn {
+    background: rgba(255,0,64,0.06);
+    border: 1px solid rgba(255,0,64,0.15);
+    color: var(--text-dim);
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .phase-btn:hover {
+    background: rgba(255,0,64,0.15);
+    color: var(--critical);
+    border-color: var(--critical);
+  }
+  .phase-btn.active {
+    background: rgba(255,0,64,0.2);
+    color: #ff4444;
+    border-color: #ff4444;
+    box-shadow: 0 0 10px rgba(255,0,64,0.2);
+  }
+
+  .time-filter-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 9px;
+    color: var(--warning);
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+    display: none;
+  }
+  .time-filter-label.active { display: block; }
+
   /* ══ BOTTOM TIMELINE ══ */
   #timeline-panel {
     position: fixed;
     left: 0;
     right: 340px;
     bottom: 0;
-    height: 170px;
+    height: 190px;
     background: var(--panel);
     border-top: 1px solid var(--border);
     padding: 8px 16px;
@@ -285,7 +326,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .timeline-title {
@@ -300,9 +341,23 @@
     color: var(--text-dim);
   }
 
+  .timeline-reset {
+    background: rgba(255,170,0,0.1);
+    border: 1px solid rgba(255,170,0,0.3);
+    color: var(--warning);
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    display: none;
+  }
+  .timeline-reset.visible { display: inline-block; }
+  .timeline-reset:hover { background: rgba(255,170,0,0.2); }
+
   #timeline-canvas {
     width: 100%;
-    height: 130px;
+    height: 120px;
     cursor: crosshair;
   }
 
@@ -357,6 +412,11 @@
     <div class="theater-btns" id="theater-btns"></div>
   </div>
   <div class="section">
+    <div class="section-title">⏱ CONFLICT PHASE</div>
+    <div class="time-filter-label" id="time-label">SHOWING: ALL TIME</div>
+    <div class="phase-btns" id="phase-btns"></div>
+  </div>
+  <div class="section">
     <div class="section-title">FORCE DISPOSITION</div>
     <div id="forces"></div>
   </div>
@@ -382,6 +442,7 @@
 <div id="timeline-panel">
   <div class="timeline-header">
     <div class="timeline-title">▸ TEMPORAL DENSITY — DAILY EVENTS</div>
+    <button class="timeline-reset" id="tl-reset" onclick="clearTimeFilter()">✕ CLEAR FILTER</button>
     <div class="timeline-range" id="tl-range">—</div>
   </div>
   <canvas id="timeline-canvas"></canvas>
@@ -439,6 +500,25 @@ let EVENTS = [];
 let filteredEvents = [];
 let activeSides = new Set(['israel','iran','iran_proxy','syria','us','gulf','unknown']);
 let activeCountry = null;
+let timeStart = null;  // date string filter
+let timeEnd = null;
+let allDaysSorted = []; // for timeline brush
+
+// Conflict phases (key operations in the Iran-Israel war)
+const CONFLICT_PHASES = [
+  { name: 'ALL TIME', start: null, end: null, icon: '🌐' },
+  { name: 'Oct 7 Attack', start: '2023-10-07', end: '2023-10-08', icon: '🔥', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
+  { name: 'Gaza Ground Op', start: '2023-10-27', end: '2024-01-31', icon: '⚔️', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
+  { name: 'True Promise I', start: '2024-04-13', end: '2024-04-14', icon: '🚀', desc: 'Iran → Israel (300+ drones/missiles)', theater: '🇮🇷 IRAN' },
+  { name: 'Israel → Isfahan', start: '2024-04-19', end: '2024-04-19', icon: '✈️', desc: 'Israel retaliates on Isfahan', theater: '🇮🇷 IRAN' },
+  { name: 'Haniyeh Assassination', start: '2024-07-31', end: '2024-07-31', icon: '🎯', desc: 'Tehran — Remote explosive', theater: '🇮🇷 IRAN' },
+  { name: 'Pager Attacks', start: '2024-09-17', end: '2024-09-18', icon: '💥', desc: 'Hezbollah pager/radio explosions', theater: '🇱🇧 LEBANON' },
+  { name: 'True Promise II', start: '2024-10-01', end: '2024-10-01', icon: '🚀', desc: 'Iran → Israel (180+ ballistic missiles)', theater: '🇮🇷 IRAN' },
+  { name: 'Days of Repentance', start: '2024-10-26', end: '2024-10-26', icon: '🇮🇱', desc: 'Israel → Iran (massive multi-site strike)', theater: '🇮🇷 IRAN' },
+  { name: 'Iran-Israel War', start: '2024-04-13', end: null, icon: '⚔️🇮🇷', desc: 'From True Promise I to present' },
+  { name: 'Last 30 days', start: '__LAST30__', end: null, icon: '📅' },
+  { name: 'Last 7 days', start: '__LAST7__', end: null, icon: '📅' },
+];
 
 // ═══════════════════════════════════════════════════════════
 // INIT MAP
@@ -556,11 +636,87 @@ function applyFilter() {
   filteredEvents = EVENTS.filter(e => {
     if (!activeSides.has(e.side)) return false;
     if (activeCountry && e.country !== activeCountry) return false;
+    if (timeStart && e.date < timeStart) return false;
+    if (timeEnd && e.date > timeEnd) return false;
     return true;
   });
   renderMarkers();
   drawTimeline();
   renderFeed();
+  renderForcesCounts();
+  renderCountriesCounts();
+  renderEventTypesCounts();
+  renderIranSitesCounts();
+
+  // Update time label
+  const label = document.getElementById('time-label');
+  const resetBtn = document.getElementById('tl-reset');
+  if (timeStart || timeEnd) {
+    label.classList.add('active');
+    label.textContent = `⏱ ${timeStart || 'START'} → ${timeEnd || 'PRESENT'}  (${filteredEvents.length.toLocaleString()} events)`;
+    resetBtn.classList.add('visible');
+  } else {
+    label.classList.remove('active');
+    resetBtn.classList.remove('visible');
+  }
+}
+
+function clearTimeFilter() {
+  timeStart = null;
+  timeEnd = null;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.phase-btn').classList.add('active'); // "ALL TIME"
+  applyFilter();
+}
+
+// Update counts in side panels without re-rendering the full DOM (for time filter responsiveness)
+function renderForcesCounts() {
+  const counts = {};
+  for (const e of filteredEvents) counts[e.side] = (counts[e.side]||0) + 1;
+  document.querySelectorAll('.force-row[data-side]').forEach(row => {
+    const side = row.dataset.side;
+    const c = counts[side] || 0;
+    row.querySelector('.force-count').textContent = c.toLocaleString();
+  });
+}
+function renderCountriesCounts() {
+  const counts = {};
+  for (const e of filteredEvents) if (e.country) counts[e.country] = (counts[e.country]||0) + 1;
+  document.querySelectorAll('.country-cell[data-country]').forEach(cell => {
+    const c = counts[cell.dataset.country] || 0;
+    cell.querySelector('.country-n').textContent = c.toLocaleString();
+  });
+}
+function renderEventTypesCounts() {
+  // Will be re-rendered fully since types change with time
+  const types = {};
+  for (const e of filteredEvents) {
+    const t = e.sub_event_type || 'Other';
+    types[t] = (types[t]||0) + 1;
+  }
+  const max = Math.max(1, ...Object.values(types));
+  document.getElementById('event-types').innerHTML = Object.entries(types)
+    .sort((a,b) => b[1]-a[1]).slice(0, 8)
+    .map(([type, count]) => `
+      <div class="force-row">
+        <span class="force-name" style="font-size:9px">${type}</span>
+        <span class="force-count" style="color:var(--warning)">${count.toLocaleString()}</span>
+        <div class="force-bar-bg">
+          <div class="force-bar-fill" style="width:${(count/max*100).toFixed(0)}%;background:var(--warning)"></div>
+        </div>
+      </div>
+    `).join('');
+}
+function renderIranSitesCounts() {
+  document.querySelectorAll('.site-tag[data-lat]').forEach(tag => {
+    const lat = +tag.dataset.lat, lon = +tag.dataset.lon;
+    const nearby = filteredEvents.filter(e => Math.abs(e.lat-lat)<0.5 && Math.abs(e.lon-lon)<0.5).length;
+    const name = tag.dataset.name || tag.textContent.replace(/[🔥◆\d\(\)]/g,'').trim();
+    const hot = nearby > 0;
+    tag.style.background = hot ? 'rgba(255,0,64,0.2)' : '';
+    tag.style.color = hot ? '#ff4444' : '';
+    tag.style.borderColor = hot ? 'rgba(255,0,64,0.4)' : '';
+  });
 }
 
 function updateStats() {
@@ -683,6 +839,110 @@ function renderTheaters() {
   });
 }
 
+function renderPhases() {
+  document.getElementById('phase-btns').innerHTML = CONFLICT_PHASES.map((p, i) =>
+    `<button class="phase-btn${i === 0 ? ' active' : ''}" data-idx="${i}" title="${p.desc || p.name}">
+      ${p.icon} ${p.name}
+    </button>`
+  ).join('');
+
+  document.querySelectorAll('.phase-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = +btn.dataset.idx;
+      const phase = CONFLICT_PHASES[idx];
+
+      document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Handle dynamic dates
+      let start = phase.start;
+      let end = phase.end;
+      if (start === '__LAST30__') {
+        const d = new Date(); d.setDate(d.getDate() - 30);
+        start = d.toISOString().substring(0, 10);
+        end = null;
+      } else if (start === '__LAST7__') {
+        const d = new Date(); d.setDate(d.getDate() - 7);
+        start = d.toISOString().substring(0, 10);
+        end = null;
+      }
+
+      timeStart = start;
+      timeEnd = end;
+      applyFilter();
+
+      // Fly to associated theater if specified
+      if (phase.theater && THEATERS[phase.theater]) {
+        const t = THEATERS[phase.theater];
+        map.flyTo(t.center, t.zoom, { duration: 1.5 });
+        document.querySelectorAll('.theater-btn').forEach(b => {
+          b.classList.toggle('active', b.dataset.theater === phase.theater);
+        });
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// TIMELINE BRUSH (click+drag to select date range)
+// ═══════════════════════════════════════════════════════════
+let tlDragging = false;
+let tlDragStartX = 0;
+let tlDragEndX = 0;
+let tlPad = 30;
+
+function initTimelineBrush() {
+  const canvas = document.getElementById('timeline-canvas');
+
+  canvas.addEventListener('mousedown', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    tlDragging = true;
+    tlDragStartX = e.clientX - rect.left;
+    tlDragEndX = tlDragStartX;
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (!tlDragging) return;
+    const rect = canvas.getBoundingClientRect();
+    tlDragEndX = e.clientX - rect.left;
+    drawTimeline(); // redraw with selection overlay
+  });
+
+  canvas.addEventListener('mouseup', (e) => {
+    if (!tlDragging) return;
+    tlDragging = false;
+    const rect = canvas.getBoundingClientRect();
+    tlDragEndX = e.clientX - rect.left;
+
+    // Convert pixel positions to day indices
+    if (!allDaysSorted.length) return;
+    const cw = rect.width;
+    const usableW = cw - tlPad * 2;
+    const x1 = Math.min(tlDragStartX, tlDragEndX);
+    const x2 = Math.max(tlDragStartX, tlDragEndX);
+
+    // Minimum drag distance (5px) to avoid single clicks
+    if (x2 - x1 < 5) return;
+
+    const i1 = Math.max(0, Math.floor((x1 - tlPad) / usableW * allDaysSorted.length));
+    const i2 = Math.min(allDaysSorted.length - 1, Math.floor((x2 - tlPad) / usableW * allDaysSorted.length));
+
+    if (i1 >= 0 && i2 >= 0 && i1 < allDaysSorted.length && i2 < allDaysSorted.length) {
+      timeStart = allDaysSorted[i1];
+      timeEnd = allDaysSorted[i2];
+
+      // Deactivate phase buttons, show custom
+      document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+      applyFilter();
+    }
+  });
+
+  // Double-click to reset
+  canvas.addEventListener('dblclick', () => {
+    clearTimeFilter();
+  });
+}
+
 function renderFeed() {
   const recent = filteredEvents
     .filter(e => e.fatalities > 0 && e.location)
@@ -707,14 +967,15 @@ function drawTimeline() {
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
   const W = canvas.width = canvas.parentElement.clientWidth * dpr;
-  const H = canvas.height = 130 * dpr;
+  const H = canvas.height = 120 * dpr;
   canvas.style.width = canvas.parentElement.clientWidth + 'px';
-  canvas.style.height = '130px';
+  canvas.style.height = '120px';
   ctx.clearRect(0, 0, W, H);
 
+  // Always use ALL events for timeline (so you can see what you're filtering within)
   const dayMap = {};
   const daySideMap = {};
-  for (const ev of filteredEvents) {
+  for (const ev of EVENTS) {
     if (!ev.date) continue;
     dayMap[ev.date] = (dayMap[ev.date]||0) + 1;
     if (!daySideMap[ev.date]) daySideMap[ev.date] = {};
@@ -722,20 +983,23 @@ function drawTimeline() {
   }
 
   const days = Object.keys(dayMap).sort();
+  allDaysSorted = days;
   if (!days.length) return;
 
   document.getElementById('tl-range').textContent = `${days[0]} → ${days[days.length-1]} (${days.length} days)`;
 
   const maxCount = Math.max(...Object.values(dayMap));
-  const pad = 30 * dpr;
+  const pad = tlPad * dpr;
   const barW = Math.max(1, (W - pad*2) / days.length);
   const chartH = H - 25 * dpr;
 
   const stackOrder = ['israel','iran_proxy','unknown','syria','iran','us','gulf'];
 
+  // Draw bars — dim ones outside time range
   for (let i = 0; i < days.length; i++) {
     const x = pad + i * barW;
     const sides = daySideMap[days[i]] || {};
+    const inRange = (!timeStart || days[i] >= timeStart) && (!timeEnd || days[i] <= timeEnd);
     let yOff = 0;
 
     for (const side of stackOrder) {
@@ -743,14 +1007,65 @@ function drawTimeline() {
       if (!count) continue;
       const h = (count / maxCount) * chartH;
       ctx.fillStyle = SIDE_COLORS[side] || '#555';
-      ctx.globalAlpha = 0.75;
+      ctx.globalAlpha = inRange ? 0.8 : 0.12;
       ctx.fillRect(x, chartH - yOff - h, Math.max(barW - 0.3, 0.5), h);
       yOff += h;
     }
   }
   ctx.globalAlpha = 1;
 
-  // Labels
+  // Draw time range selection edges
+  if (timeStart || timeEnd) {
+    const startIdx = timeStart ? days.indexOf(timeStart) : 0;
+    const endIdx = timeEnd ? days.indexOf(timeEnd) : days.length - 1;
+    if (startIdx >= 0) {
+      const x = pad + startIdx * barW;
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2 * dpr;
+      ctx.setLineDash([4 * dpr, 3 * dpr]);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, chartH); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if (endIdx >= 0 && endIdx < days.length) {
+      const x = pad + (endIdx + 1) * barW;
+      ctx.strokeStyle = '#ff4444';
+      ctx.lineWidth = 2 * dpr;
+      ctx.setLineDash([4 * dpr, 3 * dpr]);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, chartH); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  // Draw brush overlay while dragging
+  if (tlDragging) {
+    const x1 = Math.min(tlDragStartX, tlDragEndX) * dpr;
+    const x2 = Math.max(tlDragStartX, tlDragEndX) * dpr;
+    ctx.fillStyle = 'rgba(255, 0, 64, 0.12)';
+    ctx.fillRect(x1, 0, x2 - x1, chartH);
+    ctx.strokeStyle = 'rgba(255, 0, 64, 0.5)';
+    ctx.lineWidth = 1 * dpr;
+    ctx.strokeRect(x1, 0, x2 - x1, chartH);
+  }
+
+  // Conflict phase markers on timeline
+  for (const phase of CONFLICT_PHASES) {
+    if (!phase.start || phase.start.startsWith('__')) continue;
+    const idx = days.indexOf(phase.start);
+    if (idx < 0) continue;
+    const x = pad + idx * barW + barW / 2;
+    // Small triangle marker
+    ctx.fillStyle = '#ff4444';
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(x - 4*dpr, chartH + 3*dpr);
+    ctx.lineTo(x + 4*dpr, chartH + 3*dpr);
+    ctx.lineTo(x, chartH - 3*dpr);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Date labels
   ctx.font = `${8*dpr}px 'JetBrains Mono'`;
   ctx.fillStyle = 'rgba(100,130,180,0.4)';
   ctx.textAlign = 'center';
@@ -800,18 +1115,26 @@ function loadData() {
 window.addEventListener('load', () => {
   loadData();
   initMap();
-  renderMarkers();
   renderForces();
   renderCountries();
   renderIranSites();
   renderEventTypes();
   renderTheaters();
-  renderFeed();
+  renderPhases();
+  initTimelineBrush();
+
+  // Default: "Iran-Israel War" phase (index 9) — from True Promise I to present
+  const iranWarPhase = CONFLICT_PHASES[9]; // "Iran-Israel War"
+  timeStart = iranWarPhase.start;
+  timeEnd = iranWarPhase.end;
+  document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.phase-btn')[9].classList.add('active');
+
+  applyFilter();
   drawTimeline();
   updateStats();
 
   map.on('zoomend moveend', () => {
-    // Re-render site labels based on zoom
     renderMarkers();
   });
 

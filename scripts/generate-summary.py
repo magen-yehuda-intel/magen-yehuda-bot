@@ -56,20 +56,29 @@ def load_stats():
             stats["osint_channels"] = len(cfg.get("telegram_osint_channels", []))
     except: pass
     try:
-        # Get from watcher log
-        log_path = os.path.join(STATE_DIR, "watcher.log")
-        if os.path.exists(log_path):
-            with open(log_path) as f:
-                lines = f.readlines()
-            for line in reversed(lines[-100:]):
-                if "THREAT LEVEL:" in line:
+        # Primary: read threat level file (most reliable)
+        tl_path = os.path.join(STATE_DIR, "watcher-threat-level.txt")
+        if os.path.exists(tl_path):
+            with open(tl_path) as f:
+                lvl = f.read().strip().upper()
+                if lvl in ("CRITICAL", "HIGH", "ELEVATED", "GREEN"):
+                    stats["threat"] = lvl
+    except: pass
+    if stats["threat"] == "UNKNOWN":
+        try:
+            # Fallback: parse watcher log
+            log_path = os.path.join(STATE_DIR, "watcher.log")
+            if os.path.exists(log_path):
+                with open(log_path) as f:
+                    lines = f.readlines()
+                for line in reversed(lines[-200:]):
                     for lvl in ["CRITICAL", "HIGH", "ELEVATED", "GREEN"]:
-                        if f"→ {lvl}" in line or f"→ ⚫ {lvl}" in line or f"→ 🔴 {lvl}" in line or f"→ 🟠 {lvl}" in line or f"→ 🟢 {lvl}" in line:
+                        if lvl in line and ("THREAT LEVEL:" in line or "Threat level:" in line):
                             stats["threat"] = lvl
                             break
                     if stats["threat"] != "UNKNOWN":
                         break
-    except: pass
+        except: pass
     return stats
 
 
