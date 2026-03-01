@@ -429,7 +429,7 @@
     <div class="phase-btns" id="phase-btns"></div>
   </div>
   <div class="section">
-    <div class="section-title">NEWS FEED</div>
+    <div class="section-title">NEWS FEED <span id="feed-live-indicator" style="font-family:'JetBrains Mono';font-size:7px;color:var(--text-dim);letter-spacing:0;float:right;margin-top:2px">⏳ connecting...</span></div>
     <div id="feed"></div>
   </div>
   <div class="section collapsed">
@@ -2017,6 +2017,74 @@ function initHashSync() {
   setInterval(saveHashState, 5000);
 }
 
+// ═══════════════════════════════════════════════════════════
+// LIVE FEED — fetch intel-feed.json and merge into dashboard
+// ═══════════════════════════════════════════════════════════
+let feedLastUpdate = null;
+let feedSeenKeys = new Set();
+
+function initFeedKeys() {
+  // Build dedup keys from existing OSINT events
+  for (const ev of EVENTS) {
+    if (ev.source === 'osint' || ev.sub_event_type === 'Location mention in OSINT') {
+      feedSeenKeys.add(ev.date + '|' + (ev.actor1||'') + '|' + (ev.notes||'').substring(0,60));
+    }
+  }
+}
+
+async function fetchLiveFeed() {
+  try {
+    const baseUrl = document.location.pathname.replace(/\/[^/]*$/, '/');
+    const url = baseUrl + 'intel-feed.json?t=' + Date.now();
+    const resp = await fetch(url);
+    if (!resp.ok) return;
+    const feed = await resp.json();
+    if (!feed.events || !feed.events.length) return;
+    if (feed.updated === feedLastUpdate) return;
+    feedLastUpdate = feed.updated;
+
+    let added = 0;
+    for (const fe of feed.events) {
+      const key = fe.date + '|' + (fe.src||'') + '|' + (fe.text||'').substring(0,60);
+      if (feedSeenKeys.has(key)) continue;
+      feedSeenKeys.add(key);
+
+      EVENTS.push({
+        date: fe.date,
+        lat: fe.lat,
+        lon: fe.lon,
+        country: '',
+        side: fe.side || 'unknown',
+        actor1: fe.src || 'OSINT',
+        actor2: '',
+        fatalities: 0,
+        sub_event_type: 'Location mention in OSINT',
+        event_type: 'OSINT',
+        location: fe.loc || '',
+        notes: fe.text || '',
+        confidence: 'm',
+        source: 'osint',
+        timestamp: fe.ts || 0,
+      });
+      added++;
+    }
+
+    if (added > 0) {
+      // Re-apply current filter and re-render feed only (lightweight)
+      applyFilter();
+      // Update the feed status indicator
+      const ind = document.getElementById('feed-live-indicator');
+      if (ind) {
+        const ago = Math.floor((Date.now() - new Date(feed.updated).getTime()) / 60000);
+        ind.textContent = `🟢 LIVE · ${feed.count} events · ${ago < 1 ? 'just now' : ago + 'm ago'}`;
+        ind.style.color = ago < 10 ? '#00ff88' : '#ffaa00';
+      }
+    }
+  } catch (e) {
+    // Silently fail — feed may not exist yet
+  }
+}
+
 window.addEventListener('load', () => {
   loadData();
   initMap();
@@ -2057,6 +2125,11 @@ window.addEventListener('load', () => {
   // Hour 4: Interactivity
   initKeyboard();
   initHashSync();
+
+  // Live feed: fetch + poll every 60s
+  initFeedKeys();
+  fetchLiveFeed();
+  setInterval(fetchLiveFeed, 60000);
 
   // Auto-fly to ALL theater (zoom 5, centered on Middle East)
   if (!hasHash) setTimeout(() => map.flyTo([30, 46], 5, { duration: 1.5 }), 1500);
