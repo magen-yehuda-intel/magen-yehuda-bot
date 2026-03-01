@@ -65,6 +65,26 @@
 - [ ] Update MEMORY.md with overnight work summary
 - [ ] Update memory/2026-03-01.md with detailed log
 
+### Hour 6 (06:45+) — LIVE FEED PIPELINE
+**Goal:** Make the dashboard update automatically with real-time intel
+
+- [ ] **Design feed sync approach** — research options:
+  - GitHub Actions cron pushing `docs/intel-feed.json` every hour
+  - Watcher script exports last 24h `intel-log.jsonl` → `docs/intel-feed.json`
+  - Dashboard JS fetches feed on load + polls every 5 min
+  - Consider: GitHub Pages CDN cache (~10 min), commit frequency limits, file size
+- [ ] **Build watcher export** — add feed export step to `realtime-watcher.sh` hourly cycle
+  - Read `intel-log.jsonl`, filter last 24h, format as JSON array
+  - Write to `docs/intel-feed.json`
+  - Auto-commit + push to trigger GitHub Pages rebuild
+- [ ] **Update dashboard to fetch live feed** — on load + setInterval polling
+  - Merge fetched feed events into existing COMPACT_DATA events
+  - Re-render feed panel with fresh data
+  - Show "Last synced: X min ago" indicator
+- [ ] **Handle deduplication** — feed events vs embedded COMPACT_DATA
+- [ ] **Test end-to-end** — watcher → json → git push → Pages CDN → dashboard fetch
+- [ ] Push + commit + test
+
 ## Subagent Tasks (parallel)
 These can run independently:
 
