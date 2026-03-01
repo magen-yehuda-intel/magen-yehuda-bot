@@ -28,9 +28,44 @@ def append_event(state_dir, event):
     # DB write (best-effort, never blocks)
     try:
         from db import insert_event as db_insert
-        db_insert(event)
+        # Batch events (osint/rss/telegram) contain alerts[] — extract individual events
+        alerts = event.get("alerts", [])
+        if alerts:
+            for alert in alerts:
+                db_event = {
+                    "src": alert.get("channel", alert.get("source", "")),
+                    "text": alert.get("text", ""),
+                    "ts": _parse_alert_ts(alert),
+                    "type": event.get("type", "osint"),
+                    "side": alert.get("side", "unknown"),
+                    "breaking": alert.get("breaking", False),
+                    "breaking_topic": alert.get("breaking_topic", ""),
+                    "lat": alert.get("lat", 0),
+                    "lon": alert.get("lon", 0),
+                    "location": alert.get("location", ""),
+                }
+                db_insert(db_event)
+        else:
+            # Single event (siren, threat_change, etc.)
+            db_insert(event)
     except Exception:
         pass  # DB is optional; file is the backup
+
+
+def _parse_alert_ts(alert):
+    """Extract timestamp from an OSINT alert, fallback to now."""
+    t = alert.get("ts") or alert.get("timestamp")
+    if t:
+        return float(t) if isinstance(t, (int, float)) else time.time()
+    # Try parsing RSS-style time string
+    time_str = alert.get("time", "")
+    if time_str:
+        try:
+            from email.utils import parsedate_to_datetime
+            return parsedate_to_datetime(time_str).timestamp()
+        except Exception:
+            pass
+    return time.time()
 
 def read_events(state_dir, since_hours=1, event_type=None):
     """Read events from the log, filtered by time and type."""
