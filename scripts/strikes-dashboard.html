@@ -168,6 +168,12 @@
   .section-title::before { content: '▾ '; }
   .section.collapsed > .section-title::before { content: '▸ '; }
   .section.collapsed > *:not(.section-title) { display: none !important; }
+  .sz-btn {
+    background: rgba(0,200,255,0.08); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--accent); font-size: 9px; font-family: 'Orbitron', sans-serif;
+    padding: 2px 6px; cursor: pointer; line-height: 1;
+  }
+  .sz-btn:hover { background: rgba(0,200,255,0.2); border-color: var(--accent); }
 
   /* Theater + phase buttons */
   .theater-btns, .phase-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
@@ -304,6 +310,17 @@
       style="width:100%;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;font-family:inherit;outline:none"
       onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     <div id="search-results" style="display:none;max-height:200px;overflow-y:auto;margin-top:4px"></div>
+  </div>
+  <div style="display:flex;gap:8px;padding:4px 8px;align-items:center;border-bottom:1px solid var(--border)">
+    <span style="font-size:7px;color:var(--text-dim);letter-spacing:1px">MARKERS</span>
+    <button class="sz-btn" id="marker-down" title="Smaller markers">−</button>
+    <span id="marker-sz-label" style="font-size:8px;color:var(--text);min-width:20px;text-align:center">1×</span>
+    <button class="sz-btn" id="marker-up" title="Larger markers">+</button>
+    <span style="width:1px;height:12px;background:var(--border);margin:0 4px"></span>
+    <span style="font-size:7px;color:var(--text-dim);letter-spacing:1px">FONT</span>
+    <button class="sz-btn" id="font-down" title="Smaller text">A−</button>
+    <span id="font-sz-label" style="font-size:8px;color:var(--text);min-width:20px;text-align:center">1×</span>
+    <button class="sz-btn" id="font-up" title="Larger text">A+</button>
   </div>
   <div class="section">
     <div class="section-title">THEATER SELECT</div>
@@ -464,6 +481,10 @@ let activeEventTypes = null; // null = all, Set = selected types
 let timeStart = null, timeEnd = null;
 let allDaysSorted = [];
 let tlViewStart = null, tlViewEnd = null; // independent timeline viewport
+let markerScale = 1;  // 0.5x to 3x
+let fontScale = 1;    // 0.5x to 2x
+const MARKER_STEPS = [0.5, 0.75, 1, 1.5, 2, 3];
+const FONT_STEPS = [0.7, 0.85, 1, 1.15, 1.3, 1.5];
 const isMobile = () => window.innerWidth <= 768;
 
 const CONFLICT_PHASES = [
@@ -526,9 +547,10 @@ function renderMarkers() {
     const isFirms = (ev.sub_event_type || '').includes('FIRMS');
     const color = isFirms ? '#ff8800' : (SIDE_COLORS[ev.side] || '#555');
     const fat = ev.fatalities || 0;
-    const r = isFirms
+    const r0 = isFirms
       ? (ev.confidence === 'h' ? 5 : ev.confidence === 'm' ? 3.5 : 2.5)
       : Math.max(isMobile() ? 3 : 2, Math.min(2.5 + Math.sqrt(fat) * 0.7, 16));
+    const r = r0 * markerScale;
     const isRecent = ev.date >= cutoff48h;
     const opacity = isFirms
       ? (ev.confidence === 'h' ? 0.9 : ev.confidence === 'm' ? 0.6 : 0.3)
@@ -962,6 +984,36 @@ function initCollapsible() {
     title.addEventListener('click', () => {
       title.parentElement.classList.toggle('collapsed');
     });
+  });
+}
+
+// ═══ SIZE CONTROLS ═══
+function initSizeControls() {
+  const mLabel = document.getElementById('marker-sz-label');
+  const fLabel = document.getElementById('font-sz-label');
+  function stepIdx(steps, val) { return steps.indexOf(steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a)); }
+
+  document.getElementById('marker-up')?.addEventListener('click', () => {
+    const i = stepIdx(MARKER_STEPS, markerScale);
+    if (i < MARKER_STEPS.length - 1) { markerScale = MARKER_STEPS[i+1]; mLabel.textContent = markerScale + '×'; renderMarkers(); }
+  });
+  document.getElementById('marker-down')?.addEventListener('click', () => {
+    const i = stepIdx(MARKER_STEPS, markerScale);
+    if (i > 0) { markerScale = MARKER_STEPS[i-1]; mLabel.textContent = markerScale + '×'; renderMarkers(); }
+  });
+  document.getElementById('font-up')?.addEventListener('click', () => {
+    const i = stepIdx(FONT_STEPS, fontScale);
+    if (i < FONT_STEPS.length - 1) {
+      fontScale = FONT_STEPS[i+1]; fLabel.textContent = fontScale + '×';
+      document.getElementById('panel').style.fontSize = (fontScale * 100) + '%';
+    }
+  });
+  document.getElementById('font-down')?.addEventListener('click', () => {
+    const i = stepIdx(FONT_STEPS, fontScale);
+    if (i > 0) {
+      fontScale = FONT_STEPS[i-1]; fLabel.textContent = fontScale + '×';
+      document.getElementById('panel').style.fontSize = (fontScale * 100) + '%';
+    }
   });
 }
 
@@ -1428,7 +1480,7 @@ window.addEventListener('load', () => {
   // Desktop panels
   if (!isMobile()) {
     renderForces(); renderCountries(); renderIranSites(); renderLayerToggles();
-    renderTheaters(); renderPhases(); initSearch(); initCollapsible();
+    renderTheaters(); renderPhases(); initSearch(); initCollapsible(); initSizeControls();
     initTimelineBrush();
   }
   // Mobile tabs
