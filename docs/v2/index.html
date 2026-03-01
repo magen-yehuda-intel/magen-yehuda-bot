@@ -898,8 +898,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     </div>
     <div class="feed-updated" id="feed-updated"><span class="refresh-spin" id="feed-spinner">↻</span> <span id="feed-age">connecting...</span></div>
     <div class="feed-time-bar" id="feed-time-bar">
-      <span class="feed-time-chip active" data-hours="0.25">15M</span>
-      <span class="feed-time-chip" data-hours="1">1H</span>
+      <span class="feed-time-chip" data-hours="0.25">15M</span>
+      <span class="feed-time-chip active" data-hours="1">1H</span>
       <span class="feed-time-chip" data-hours="6">6H</span>
       <span class="feed-time-chip" data-hours="24">24H</span>
       <span class="feed-time-chip" data-hours="48">48H</span>
@@ -1068,7 +1068,7 @@ function toggleLegend() {
 // LIVE FEED
 // ═══════════════════════════════════════════════════════════
 let feedEvents = [];
-let feedTimeHours = 0.25;
+let feedTimeHours = 1;
 let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
@@ -1204,7 +1204,7 @@ function renderFeed() {
 
   const list = document.getElementById('feed-list');
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="feed-empty">No events in this time range</div>';
+    list.innerHTML = '<div class="feed-empty">No events in this timeframe<br><span style="font-size:9px;opacity:0.6;margin-top:4px;display:block">Try expanding to 1H or 6H</span></div>';
     return;
   }
 
