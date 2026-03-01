@@ -207,6 +207,18 @@ $old_emoji $old_level → $new_emoji $new_level
     python3 "$SKILL_DIR/scripts/pinned-status.py" "$CONFIG_FILE" "$STATE_DIR" 2>/dev/null
     LAST_PINNED_UPDATE=$(date +%s)
 
+    # Push threat level to cloud API
+    if [ -n "$PUSH_API_KEY" ]; then
+      local reason_json
+      reason_json=$(echo "$reason" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')
+      curl -sf --max-time 5 -X POST \
+        "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+        -H "Content-Type: application/json" \
+        -H "X-API-Key: $PUSH_API_KEY" \
+        -d "{\"level\":\"$new_level\",\"score\":$THREAT_SCORE,\"reason\":$reason_json}" \
+        >/dev/null 2>&1 &
+    fi
+
     # Log intel
     log_intel "{\"type\":\"threat_change\",\"from\":\"$old_level\",\"to\":\"$new_level\",\"reason\":$(echo "$reason" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')}"
   fi
@@ -1592,6 +1604,16 @@ log "   Sources: $OSINT_SOURCES"
 log "   Telegram: $CHAT_ID"
 log "   Proxy: ${NORD_PROXY:+Israel 🇮🇱}"
 log "   Escalation: GREEN→ELEVATED→HIGH→CRITICAL (auto-scales on sirens)"
+
+# Push initial threat level to API
+if [ -n "$PUSH_API_KEY" ]; then
+  curl -sf --max-time 5 -X POST \
+    "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+    -H "Content-Type: application/json" \
+    -H "X-API-Key: $PUSH_API_KEY" \
+    -d "{\"level\":\"$THREAT_LEVEL\",\"score\":${THREAT_SCORE:-0},\"reason\":\"watcher startup\"}" \
+    >/dev/null 2>&1 &
+fi
 
 LAST_POLY_CHECK=0
 LAST_OSINT_CHECK=0

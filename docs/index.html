@@ -393,6 +393,29 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .oref-status.danger { color:var(--red); font-weight:700; animation:siren-pulse 0.8s ease-in-out infinite alternate; }
 .oref-meta { font-size:9px; color:rgba(6,182,212,0.7); margin-top:2px; }
 
+/* Threat Level Indicator */
+#threat-indicator {
+  position:fixed; top:44px; right:12px; z-index:860;
+  display:flex; align-items:center; gap:6px;
+  background:rgba(5,5,16,0.92); backdrop-filter:blur(8px);
+  border:1px solid var(--panel-border); border-radius:6px;
+  padding:5px 12px; font-family:var(--font-data);
+  transition:all 0.4s ease;
+}
+#threat-indicator.threat-green { border-color:rgba(34,197,94,0.4); }
+#threat-indicator.threat-elevated { border-color:rgba(234,179,8,0.5); background:rgba(30,25,5,0.92); }
+#threat-indicator.threat-high { border-color:rgba(239,68,68,0.5); background:rgba(40,10,10,0.92); animation:threat-glow-high 2s ease infinite; }
+#threat-indicator.threat-critical { border-color:rgba(239,68,68,0.8); background:rgba(80,5,5,0.95); animation:threat-glow-crit 1s ease infinite; }
+#threat-icon { font-size:16px; }
+#threat-label { font-size:12px; font-weight:700; letter-spacing:1.5px; font-family:var(--font-mil); }
+#threat-indicator.threat-green #threat-label { color:var(--green); }
+#threat-indicator.threat-elevated #threat-label { color:#eab308; }
+#threat-indicator.threat-high #threat-label { color:var(--red); }
+#threat-indicator.threat-critical #threat-label { color:#ff3333; text-shadow:0 0 8px rgba(255,50,50,0.6); }
+.threat-meta { font-size:9px; color:var(--text-dim); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@keyframes threat-glow-high { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.2)} 50%{box-shadow:0 0 16px rgba(239,68,68,0.4)} }
+@keyframes threat-glow-crit { 0%,100%{box-shadow:0 0 10px rgba(255,50,50,0.3)} 50%{box-shadow:0 0 24px rgba(255,50,50,0.6)} }
+
 /* Oref ticker mode (collapsed) */
 #oref-banner.ticker-mode {
   padding:3px 12px; overflow:hidden;
@@ -526,6 +549,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   #oref-banner { left:0; top:74px; padding:5px 10px; }
   #oref-banner .oref-title { font-size:10px; }
   #oref-banner .oref-status { font-size:11px; }
+  #threat-indicator { top:74px; right:6px; padding:3px 8px; }
+  #threat-icon { font-size:12px; }
+  #threat-label { font-size:10px; }
+  .threat-meta { display:none; }
   #map { left:0; top:116px; bottom:76px; }
   #chips { left:8px; bottom:60px; gap:4px; }
   .chip { padding:4px 8px; }
@@ -740,6 +767,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   </div>
   <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
   <div class="oref-meta">Source: Red Alert · Pikud Haoref · <span id="oref-mode"></span> · <span id="oref-interval">~30s</span> refresh</div>
+</div>
+
+<div id="threat-indicator">
+  <span id="threat-icon">🟢</span>
+  <span id="threat-label">GREEN</span>
+  <span id="threat-reason" class="threat-meta"></span>
+  <span id="threat-age" class="threat-meta"></span>
 </div>
 
 <!-- TOOLBAR -->
@@ -1887,6 +1921,38 @@ function updateSirensFromOref(alerts) {
 
 // Poll Oref — faster with API, slower with static
 setInterval(pollOref, API_URL ? 10000 : 30000);
+
+// ═══════ THREAT LEVEL INDICATOR ═══════
+const THREAT_ICONS = { GREEN:'🟢', ELEVATED:'🟡', HIGH:'🔴', CRITICAL:'⚫', UNKNOWN:'⚪' };
+function pollThreat() {
+  if (!API_URL) return;
+  fetch(`${API_URL}/api/threat`).then(r=>r.json()).then(d => {
+    const el = document.getElementById('threat-indicator');
+    const level = (d.level || 'UNKNOWN').toUpperCase();
+    const icon = THREAT_ICONS[level] || '⚪';
+    document.getElementById('threat-icon').textContent = icon;
+    document.getElementById('threat-label').textContent = level;
+    // Update class for styling
+    el.className = 'threat-' + level.toLowerCase();
+    // Reason
+    const reasonEl = document.getElementById('threat-reason');
+    if (d.reason && d.reason !== 'watcher startup') {
+      reasonEl.textContent = d.reason;
+      reasonEl.style.display = '';
+    } else { reasonEl.style.display = 'none'; }
+    // Age
+    const ageEl = document.getElementById('threat-age');
+    if (d.ts) {
+      const ageSec = (Date.now()/1000) - d.ts;
+      if (ageSec < 120) ageEl.textContent = `${Math.round(ageSec)}s ago`;
+      else if (ageSec < 7200) ageEl.textContent = `${Math.round(ageSec/60)}m ago`;
+      else ageEl.textContent = `${Math.round(ageSec/3600)}h ago`;
+      ageEl.style.color = ageSec > 600 ? '#f59e0b' : '';
+    }
+  }).catch(()=>{});
+}
+pollThreat();
+setInterval(pollThreat, 30000);
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
