@@ -101,12 +101,12 @@
 
   /* ══ DESKTOP RIGHT PANEL ══ */
   #panel {
-    position: fixed; top: 40px; right: 0; width: 320px; bottom: 200px;
+    position: fixed; top: 40px; right: 0; width: 320px; bottom: 24px;
     background: var(--panel); border-left: 1px solid var(--border);
     overflow-y: auto; z-index: 500; transition: bottom 0.25s ease;
   }
   #panel-resize {
-    position: fixed; top: 40px; width: 8px; bottom: 200px;
+    position: fixed; top: 40px; width: 8px; bottom: 24px;
     cursor: col-resize; z-index: 501; background: transparent;
     transition: bottom 0.25s ease;
   }
@@ -248,7 +248,7 @@
 
   /* ══ DESKTOP LAYOUT ══ */
   @media (min-width: 769px) {
-    #map { right: 320px; bottom: 200px; transition: bottom 0.25s ease; }
+    #map { right: 320px; bottom: 24px; transition: bottom 0.25s ease; }
     #mobile-controls { display: none !important; }
   }
 
@@ -332,9 +332,9 @@
 </div>
 
 <!-- DESKTOP TIMELINE -->
-<div id="timeline-panel">
+<div id="timeline-panel" class="collapsed">
   <div class="timeline-header">
-    <button class="tl-collapse" id="tl-collapse" title="Collapse/expand timeline">▼</button>
+    <button class="tl-collapse" id="tl-collapse" title="Collapse/expand timeline">▲</button>
     <div class="timeline-title">▸ TEMPORAL DENSITY</div>
     <div class="tl-controls">
       <button class="tl-btn" id="tl-zoom-in" title="Zoom in timeline">+</button>
