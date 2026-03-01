@@ -334,6 +334,7 @@
     <div class="stat">KIA <b class="red" id="s-kia">—</b></div>
     <div class="stat">THR <b class="cyan" id="s-countries">—</b></div>
     <div class="threat-badge">● ACTIVE</div>
+    <button id="fullscreen-btn" title="Fullscreen [F]" style="background:none;border:1px solid var(--border);color:var(--text-dim);font-size:10px;padding:2px 6px;cursor:pointer;border-radius:3px;font-family:inherit" onclick="toggleFullscreen()">⛶</button>
     <div class="clock" id="clock">—</div>
   </div>
 </div>
@@ -1714,6 +1715,145 @@ function loadData() {
   filteredEvents = [...EVENTS];
 }
 
+// ═══════════════════════════════════════════════════════════
+// FULLSCREEN
+// ═══════════════════════════════════════════════════════════
+let isFullscreen = false;
+function toggleFullscreen() {
+  isFullscreen = !isFullscreen;
+  document.getElementById('hud').style.display = isFullscreen ? 'none' : '';
+  if (!isMobile()) {
+    document.getElementById('panel').style.display = isFullscreen ? 'none' : '';
+    document.getElementById('panel-resize').style.display = isFullscreen ? 'none' : '';
+  } else {
+    document.getElementById('mobile-tabs').style.display = isFullscreen ? 'none' : '';
+    document.getElementById('mobile-sheet').style.display = isFullscreen ? 'none' : '';
+  }
+  document.getElementById('fullscreen-btn')?.style && (document.getElementById('fullscreen-btn').style.display = isFullscreen ? 'none' : '');
+  // Show a small exit button on map when fullscreen
+  let exitBtn = document.getElementById('fs-exit');
+  if (isFullscreen) {
+    if (!exitBtn) {
+      exitBtn = document.createElement('button');
+      exitBtn.id = 'fs-exit';
+      exitBtn.innerHTML = '✕ EXIT';
+      exitBtn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:999;background:rgba(0,0,0,0.8);border:1px solid var(--accent);color:var(--accent);padding:4px 10px;cursor:pointer;border-radius:3px;font-size:10px;font-family:Orbitron,sans-serif;letter-spacing:1px';
+      exitBtn.onclick = toggleFullscreen;
+      document.body.appendChild(exitBtn);
+    }
+    exitBtn.style.display = '';
+  } else if (exitBtn) {
+    exitBtn.style.display = 'none';
+  }
+  // Resize map
+  const mapEl = document.getElementById('map');
+  if (isFullscreen) {
+    mapEl.style.left = '0'; mapEl.style.right = '0'; mapEl.style.top = '0'; mapEl.style.bottom = '0';
+  } else {
+    mapEl.style.left = ''; mapEl.style.right = ''; mapEl.style.top = ''; mapEl.style.bottom = '';
+  }
+  map.invalidateSize();
+}
+
+// ═══════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════
+function initKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    // Skip if typing in input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    switch(e.key.toLowerCase()) {
+      case 'f':
+        toggleFullscreen();
+        break;
+      case 's':
+        e.preventDefault();
+        const sb = document.getElementById('search-box');
+        if (sb) { sb.focus(); sb.select(); }
+        break;
+      case 'escape':
+        // Reset all filters
+        activeSides = new Set(SIDE_KEYS);
+        activeCountry = null;
+        activeEventTypes = null;
+        timeStart = null; timeEnd = null;
+        applyFilter();
+        if (!isMobile()) { renderEventTypes(); drawTimeline(); renderForces(); renderPhases(); }
+        updateStats();
+        // Clear search
+        const box = document.getElementById('search-box');
+        if (box) box.value = '';
+        document.getElementById('search-results').style.display = 'none';
+        break;
+      case 'h':
+        // Toggle heatmap
+        showHeatmap = !showHeatmap;
+        renderMarkers();
+        renderLayerToggles();
+        break;
+      case '=': case '+':
+        map.zoomIn();
+        break;
+      case '-':
+        map.zoomOut();
+        break;
+      case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+        // Quick theater select (1-9)
+        const btns = document.querySelectorAll('.theater-btn');
+        const idx = parseInt(e.key) - 1;
+        if (btns[idx]) btns[idx].click();
+        break;
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// URL HASH STATE
+// ═══════════════════════════════════════════════════════════
+function saveHashState() {
+  const state = {};
+  if (timeStart) state.from = timeStart;
+  if (timeEnd) state.to = timeEnd;
+  if (activeCountry) state.c = activeCountry;
+  if (activeEventTypes) state.et = [...activeEventTypes].join(',');
+  // Current map center/zoom
+  const center = map.getCenter();
+  state.lat = center.lat.toFixed(2);
+  state.lon = center.lng.toFixed(2);
+  state.z = map.getZoom();
+  if (showHeatmap) state.heat = 1;
+  const hash = Object.entries(state).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  history.replaceState(null, '', '#' + hash);
+}
+
+function loadHashState() {
+  if (!location.hash || location.hash.length < 2) return false;
+  const params = {};
+  location.hash.substring(1).split('&').forEach(p => {
+    const [k, v] = p.split('=');
+    if (k && v) params[k] = decodeURIComponent(v);
+  });
+  if (params.from) timeStart = params.from;
+  if (params.to) timeEnd = params.to;
+  if (params.c) activeCountry = params.c;
+  if (params.et) activeEventTypes = new Set(params.et.split(','));
+  if (params.heat === '1') showHeatmap = true;
+  if (params.lat && params.lon && params.z) {
+    setTimeout(() => map.setView([parseFloat(params.lat), parseFloat(params.lon)], parseInt(params.z)), 500);
+  }
+  return !!(params.from || params.to || params.c);
+}
+
+function initHashSync() {
+  // Save state on map move and filter change
+  map.on('moveend', () => { if (!isFullscreen) saveHashState(); });
+  // Override applyFilter to save hash
+  const origApply = applyFilter;
+  // We'll save hash after each render cycle instead of wrapping
+  setInterval(saveHashState, 5000);
+}
+
 window.addEventListener('load', () => {
   loadData();
   initMap();
@@ -1727,17 +1867,20 @@ window.addEventListener('load', () => {
   // Mobile tabs
   initMobileTabs();
 
-  // Default: Last 7 days
-  const last7idx = CONFLICT_PHASES.findIndex(p => p.name === 'Last 7d');
-  const d7 = new Date(); d7.setDate(d7.getDate() - 7);
-  timeStart = d7.toISOString().substring(0, 10);
-  timeEnd = null;
-  // Highlight the button
-  setTimeout(() => {
-    document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
-    const btn = document.querySelectorAll('.phase-btn')[last7idx];
-    if (btn) btn.classList.add('active');
-  }, 50);
+  // Default: Last 7 days (unless hash state overrides)
+  const hasHash = loadHashState();
+  if (!hasHash) {
+    const last7idx = CONFLICT_PHASES.findIndex(p => p.name === 'Last 7d');
+    const d7 = new Date(); d7.setDate(d7.getDate() - 7);
+    timeStart = d7.toISOString().substring(0, 10);
+    timeEnd = null;
+    // Highlight the button
+    setTimeout(() => {
+      document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelectorAll('.phase-btn')[last7idx];
+      if (btn) btn.classList.add('active');
+    }, 50);
+  }
 
   applyFilter();
   if (!isMobile()) { renderEventTypes(); drawTimeline(); }
@@ -1746,8 +1889,12 @@ window.addEventListener('load', () => {
   map.on('zoomend moveend', renderMarkers);
   window.addEventListener('resize', () => { if (!isMobile()) drawTimeline(); map.invalidateSize(); });
 
+  // Hour 4: Interactivity
+  initKeyboard();
+  initHashSync();
+
   // Auto-fly to ALL theater (zoom 5, centered on Middle East)
-  setTimeout(() => map.flyTo([30, 46], 5, { duration: 1.5 }), 1500);
+  if (!hasHash) setTimeout(() => map.flyTo([30, 46], 5, { duration: 1.5 }), 1500);
 });
 </script>
 </body>

@@ -22,19 +22,15 @@
 
 **Note:** Marker clustering and custom SVG marker icons deferred — with 48K events, circleMarkers with canvas renderer are 10x faster than divIcons. SVG icons in `scripts/marker-icons.js` available for future use.
 
-### Hour 3 (03:45-04:45) — ANALYTICS PANELS
-**Goal:** Make the dashboard tell a story with numbers
-
-- [ ] **Casualty Tracker** — running total by side, country, time period
-  - Bar chart or sparkline showing daily fatalities
-- [ ] **Escalation Index** — computed score based on event frequency + severity
-  - Visual meter/gauge in header bar
-- [ ] **Top Actors Panel** — most active groups with event counts
-  - Clickable → filter map to that actor
-- [ ] **Daily Event Trend** — mini sparkline chart in header showing last 30 days
-- [ ] **Key Statistics Cards** — prominent numbers at top:
-  - Total strikes, Total KIA, Active theaters, Days since Oct 7
-- [ ] Push + commit + test
+### Hour 3 (03:45-04:45) — ANALYTICS PANELS ✅ DONE
+**Shipped:**
+- [x] Key Statistics Cards — 2x2 grid: total events, fatalities, theaters, days since Oct 7
+- [x] Escalation Index gauge — 7d vs 30d event rate ratio (CRITICAL/ELEVATED/NORMAL)
+- [x] Daily Trend Sparkline — SVG polyline with gradient fill, last 30 days
+- [x] Casualties by Force — horizontal bar chart by side with color coding
+- [x] Top Actors Panel — 8 most active groups, clickable to search
+- [x] Dynamically updates with filter changes
+- [x] Push + commit + test ✅ (`170174b`)
 
 ### Hour 4 (04:45-05:45) — INTERACTIVITY & UX
 **Goal:** Polish to production quality
