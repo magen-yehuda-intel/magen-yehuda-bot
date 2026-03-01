@@ -35,18 +35,24 @@ CHAT_ID=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.ge
 CHANNEL_NAME=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_channel_name','Alert Monitor'))" 2>/dev/null || echo "Alert Monitor")
 PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('push_api_key','myi-fcf15b5484f76e9b'))" 2>/dev/null || echo "myi-fcf15b5484f76e9b")
 
-# Proxy for Oref (priority: override > nordvpn > direct)
+# Proxy for Oref: try direct first, fall back to VPN proxy if configured
+# Azure/cloud IPs can reach Oref directly. Residential IPs outside Israel need proxy.
 NORD_AUTH_FILE="$SKILL_DIR/secrets/nordvpn-auth.txt"
 PROXY_OVERRIDE="$SKILL_DIR/secrets/proxy-override.txt"
-NORD_PROXY=""
+OREF_PROXY_ARGS=""
 if [ -f "$PROXY_OVERRIDE" ]; then
   CUSTOM_PROXY=$(head -1 "$PROXY_OVERRIDE" | tr -d '[:space:]')
-  [ -n "$CUSTOM_PROXY" ] && NORD_PROXY="--proxy $CUSTOM_PROXY"
+  [ -n "$CUSTOM_PROXY" ] && OREF_PROXY_ARGS="--proxy $CUSTOM_PROXY"
 elif [ -f "$NORD_AUTH_FILE" ]; then
   NORD_USER=$(sed -n '1p' "$NORD_AUTH_FILE")
   NORD_PASS=$(sed -n '2p' "$NORD_AUTH_FILE")
-  NORD_PROXY="--proxy https://${NORD_USER}:${NORD_PASS}@il66.nordvpn.com:89"
+  OREF_PROXY_ARGS="--proxy https://${NORD_USER}:${NORD_PASS}@il66.nordvpn.com:89"
+elif [ -n "${OREF_PROXY:-}" ]; then
+  # Support generic OREF_PROXY env var (any HTTPS proxy with Israel IP)
+  OREF_PROXY_ARGS="--proxy $OREF_PROXY"
 fi
+# NORD_PROXY kept for backward compat (used by other scan scripts)
+NORD_PROXY="$OREF_PROXY_ARGS"
 
 # Base intervals from config (used at GREEN level)
 OREF_INTERVAL=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('oref_poll_interval',30))" 2>/dev/null || echo "30")
@@ -377,10 +383,16 @@ PYEOF
 
 check_oref() {
   local alerts
-  alerts=$(curl -sf --max-time 10 $NORD_PROXY \
-    "https://www.oref.org.il/WarningMessages/alert/alerts.json" \
-    -H "X-Requested-With: XMLHttpRequest" \
-    -H "Referer: https://www.oref.org.il/" 2>/dev/null || echo "")
+  local oref_url="https://www.oref.org.il/WarningMessages/alert/alerts.json"
+  local oref_headers=(-H "X-Requested-With: XMLHttpRequest" -H "Referer: https://www.oref.org.il/")
+
+  # Strategy: try direct first (works from Azure/cloud), fall back to proxy if configured
+  alerts=$(curl -sf --max-time 8 "$oref_url" "${oref_headers[@]}" 2>/dev/null || echo "")
+
+  # If direct failed and proxy is configured, try via proxy
+  if [ -z "$alerts" ] && [ -n "$OREF_PROXY_ARGS" ]; then
+    alerts=$(curl -sf --max-time 10 $OREF_PROXY_ARGS "$oref_url" "${oref_headers[@]}" 2>/dev/null || echo "")
+  fi
 
   # Strip BOM and whitespace
   alerts=$(echo "$alerts" | tr -d '\r\n' | sed 's/^\xEF\xBB\xBF//' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
