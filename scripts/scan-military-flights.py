@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-US Military Flight Tracker for Persian Gulf / Middle East.
-Uses OpenSky Network API to detect military aircraft.
+US/Israeli Military Flight Tracker for Middle East.
+Uses FlightRadar24 public API (no auth needed, ~400 aircraft).
+Falls back to OpenSky if FR24 fails.
 
-Tracks: tankers (KC-135, KC-46), bombers (B-2, B-52, B-1B), 
-AWACS (E-3), surveillance (RQ-4, RC-135, E-8, P-8), 
-fighters (F-15E, F-35, F-22)
+Detects: tankers, bombers, AWACS, ISR, airlift, fighters by callsign + type + registration.
 
 Usage:
     python3 scan-military-flights.py <config.json> <state_dir> [--seed]
@@ -18,259 +17,248 @@ import time
 import urllib.request
 from datetime import datetime, timezone
 
-# Middle East / Persian Gulf bounding box
-ME_BBOX = {
-    "lamin": 20, "lomin": 40, "lamax": 42, "lomax": 65,
-}
+# Middle East bounding box: N,S,W,E
+ME_BOUNDS = {"n": 42, "s": 12, "w": 24, "e": 65}
 
-# Military aircraft identifiers
-# ICAO type designators for known military platforms
-MILITARY_TYPES = {
-    # Tankers
-    "K35R": "KC-135R Stratotanker",
-    "K135": "KC-135 Stratotanker",
-    "KC46": "KC-46A Pegasus",
-    "KC10": "KC-10 Extender",
-    # Bombers
-    "B2": "B-2A Spirit",
-    "B52": "B-52H Stratofortress",
-    "B1": "B-1B Lancer",
-    # AWACS / C2
-    "E3CF": "E-3 Sentry AWACS",
-    "E3TF": "E-3 Sentry AWACS",
-    "E6B": "E-6B Mercury (C2)",
-    "E8": "E-8C JSTARS",
-    # ISR
-    "GLHK": "RQ-4 Global Hawk",
-    "RQ4": "RQ-4 Global Hawk",
-    "RC35": "RC-135 Rivet Joint",
-    "P8": "P-8A Poseidon",
-    "EP3": "EP-3E Aries",
-    "U2": "U-2 Dragon Lady",
-    "MQ9": "MQ-9 Reaper",
-    # Fighters (less likely on ADS-B)
-    "F15": "F-15 Eagle/Strike Eagle",
-    "F16": "F-16 Fighting Falcon",
-    "F35": "F-35 Lightning II",
-    "F22": "F-22 Raptor",
-    "FA18": "F/A-18 Hornet/Super Hornet",
-}
-
-# Military callsign prefixes (US + coalition)
-MILITARY_CALLSIGNS = [
-    "RCH",    # AMC strategic airlift
-    "REACH",
-    "JAKE",   # Tankers
-    "ETHYL",  # Tankers
-    "SHELL",  # Tankers
-    "DOOM",   # B-2
-    "BONE",   # B-1B
-    "BUFF",   # B-52
-    "FURY",   # Strike fighters
-    "VIPER",  # F-16
-    "RAPER",  # MQ-9
-    "HAWK",   # Global Hawk variants
-    "FORTE",  # RQ-4 Global Hawk (famous callsign)
-    "GORDO",  # RC-135
-    "OLIVE",  # RC-135
-    "GIANT",  # AWACS
-    "DRAGN",  # Dragon Lady
-    "NUKE",   # Nuclear-capable
-    "NAVY",   # US Navy
-    "TOPCT",  # USAF special ops
-    "IRON",   # Various
-    "COBRA",  # Various
-    "ATLAS",  # C-17
-    "SNTRY",  # E-3
-    "SENTRY",
-    "TROUT",  # P-8
-    "RED",    # Red Flag exercises
-    "SIAP",   # Various USAF
-    "CAIRO",  # CENTCOM airlift
-    "QUID",   # RAF tankers
-    "NATO",
-    "IAF",    # Israeli Air Force
+# US military callsign prefixes
+US_MIL_CALLSIGNS = [
+    'RCH', 'REACH', 'EVAC', 'FORTE', 'JAKE', 'NCHO', 'LAGR',
+    'SAM', 'AF1', 'AF2', 'EXEC', 'NAVY', 'CNV', 'TOPCT',
+    'ORDER', 'GOLD', 'TITAN', 'VIPER', 'HAWK', 'STORM',
+    'QID', 'DUKE', 'SNTRY', 'DOOM', 'KNIFE', 'ANGRY',
+    'WRATH', 'BOLT', 'RAID', 'HAVOC', 'OMNI', 'COBRA',
+    'TEAL', 'NEON', 'IRIS', 'AERO', 'ETHYL', 'SHELL',
+    'BONE', 'BUFF', 'GIANT', 'SENTRY', 'TROUT', 'ATLAS',
+    'GORDO', 'OLIVE', 'DRAGN', 'IRON', 'NATO',
 ]
 
-# Military hex registration ranges (ICAO 24-bit addresses)
-# US military: AE0000-AE0FFF (and others)
-US_MIL_HEX_PREFIXES = ["AE", "AF", "A0"]
+IAF_CALLSIGNS = ['IAF', 'ISF']
+
+US_MIL_TYPES = {
+    'C17', 'C5M', 'C130', 'C130J', 'KC135', 'KC46', 'KC10',
+    'E3TF', 'E3CF', 'E6B', 'E8C', 'RC135', 'EP3', 'P8',
+    'B1B', 'B2', 'B52', 'F15', 'F16', 'F18', 'F22', 'F35',
+    'V22', 'CV22', 'MV22', 'MQ9', 'RQ4', 'U2',
+    'C40', 'C32', 'C37', 'C20', 'VC25', 'K35R', 'K135',
+}
+
+IAF_TYPES = {'F35', 'F15', 'F16', 'C130', 'C130J', 'G550', 'B762', 'B763', 'GLEX'}
+
+# Role descriptions for notable callsigns/types
+ROLE_MAP = {
+    'FORTE': '🛰️ RQ-4 Global Hawk (ISR)',
+    'HAWK': '🛰️ Global Hawk variant',
+    'GORDO': '🔍 RC-135 Rivet Joint (SIGINT)',
+    'OLIVE': '🔍 RC-135 Rivet Joint (SIGINT)',
+    'GIANT': '📡 E-3 AWACS',
+    'SNTRY': '📡 E-3 AWACS',
+    'SENTRY': '📡 E-3 AWACS',
+    'DOOM': '💣 B-2 Spirit',
+    'BONE': '💣 B-1B Lancer',
+    'BUFF': '💣 B-52 Stratofortress',
+    'ETHYL': '⛽ KC-135/KC-46 Tanker',
+    'SHELL': '⛽ Tanker',
+    'JAKE': '⛽ Tanker',
+    'TROUT': '🔍 P-8 Poseidon (ASW)',
+    'DRAGN': '🛰️ U-2 Dragon Lady',
+    'RCH': '✈️ C-17 Globemaster (Airlift)',
+    'REACH': '✈️ Strategic Airlift',
+    'ATLAS': '✈️ Strategic Airlift',
+    'SAM': '🏛️ VIP Transport',
+    'AF1': '🏛️ Air Force One',
+    'NAVY': '⚓ US Navy',
+    'CNV': '⚓ US Navy',
+}
+
+TYPE_ROLE = {
+    'C17': '✈️ C-17 Globemaster III',
+    'C5M': '✈️ C-5M Super Galaxy',
+    'KC135': '⛽ KC-135 Stratotanker',
+    'KC46': '⛽ KC-46A Pegasus',
+    'KC10': '⛽ KC-10 Extender',
+    'E3TF': '📡 E-3 Sentry AWACS',
+    'E3CF': '📡 E-3 Sentry AWACS',
+    'E6B': '📡 E-6B Mercury (TACAMO)',
+    'E8C': '📡 E-8C JSTARS',
+    'RC135': '🔍 RC-135 (SIGINT)',
+    'P8': '🔍 P-8A Poseidon',
+    'B1B': '💣 B-1B Lancer',
+    'B2': '💣 B-2A Spirit',
+    'B52': '💣 B-52H Stratofortress',
+    'MQ9': '🛰️ MQ-9 Reaper (UAV)',
+    'RQ4': '🛰️ RQ-4 Global Hawk',
+    'U2': '🛰️ U-2 Dragon Lady',
+    'F35': '🔥 F-35 Lightning II',
+    'F22': '🔥 F-22 Raptor',
+    'F15': '🔥 F-15 Eagle/Strike Eagle',
+    'F16': '🔥 F-16 Fighting Falcon',
+}
 
 
-def is_military(callsign, icao24, category=None):
-    """Determine if an aircraft is likely military."""
-    callsign = (callsign or "").strip().upper()
-    icao24 = (icao24 or "").strip().upper()
-    
-    # Check callsign prefixes
-    for prefix in MILITARY_CALLSIGNS:
-        if callsign.startswith(prefix):
-            return True, f"Callsign: {callsign} ({prefix}*)"
-    
-    # Check ICAO hex prefix (US military)
-    for prefix in US_MIL_HEX_PREFIXES:
-        if icao24.startswith(prefix):
-            return True, f"ICAO24: {icao24} (US MIL range)"
-    
-    # No commercial-sounding callsigns
-    commercial_prefixes = ["UAL", "AAL", "DAL", "SWA", "ETH", "THY", "SVA", "UAE", "QTR", "IRA", "KLM", "BAW", "AFR", "DLH", "ELY"]
-    for cp in commercial_prefixes:
-        if callsign.startswith(cp):
-            return False, None
-    
-    # Check if no callsign + military hex = suspicious
-    if not callsign and icao24.startswith("AE"):
-        return True, f"Dark target (no callsign, military hex {icao24})"
-    
-    return False, None
+def classify(callsign, atype, reg):
+    """Returns (side, category, description) or None."""
+    cs = (callsign or '').strip().upper()
+    at = (atype or '').strip().upper()
+    rg = (reg or '').strip().upper()
+
+    side = None
+    # US military
+    for p in US_MIL_CALLSIGNS:
+        if cs.startswith(p):
+            side = 'us'
+            # Find role from callsign prefix
+            for rp, desc in ROLE_MAP.items():
+                if cs.startswith(rp):
+                    return side, desc
+            return side, TYPE_ROLE.get(at, '✈️ US Military')
+
+    # Israeli
+    for p in IAF_CALLSIGNS:
+        if cs.startswith(p):
+            return 'il', TYPE_ROLE.get(at, '🇮🇱 Israeli Air Force')
+    if rg.startswith('4X-') and at in IAF_TYPES:
+        return 'il', TYPE_ROLE.get(at, '🇮🇱 IAF')
+
+    # US type + US-ish reg without callsign
+    if at in US_MIL_TYPES and rg.startswith('N') and not cs:
+        return 'us', TYPE_ROLE.get(at, '✈️ US Military (dark)')
+
+    return None, None
 
 
-def classify_aircraft(callsign, icao24):
-    """Classify military aircraft type from callsign/icao."""
-    callsign = (callsign or "").strip().upper()
-    
-    if "FORTE" in callsign or "HAWK" in callsign:
-        return "ISR", "🛰️ RQ-4 Global Hawk"
-    if "GORDO" in callsign or "OLIVE" in callsign:
-        return "ISR", "🔍 RC-135 Rivet Joint"
-    if "GIANT" in callsign or "SNTRY" in callsign or "SENTRY" in callsign:
-        return "C2", "📡 E-3 AWACS"
-    if "DOOM" in callsign:
-        return "BOMBER", "💣 B-2 Spirit"
-    if "BONE" in callsign:
-        return "BOMBER", "💣 B-1B Lancer"
-    if "BUFF" in callsign:
-        return "BOMBER", "💣 B-52 Stratofortress"
-    if "ETHYL" in callsign or "SHELL" in callsign or "JAKE" in callsign:
-        return "TANKER", "⛽ KC-135/KC-46 Tanker"
-    if "TROUT" in callsign:
-        return "ISR", "🔍 P-8 Poseidon"
-    if "RAPER" in callsign or "REAP" in callsign:
-        return "ISR", "🛰️ MQ-9 Reaper"
-    if "RCH" in callsign or "REACH" in callsign or "ATLAS" in callsign:
-        return "AIRLIFT", "✈️ Strategic Airlift"
-    if "NUKE" in callsign:
-        return "NUCLEAR", "☢️ Nuclear-capable"
-    
-    return "UNKNOWN", "✈️ Military Aircraft"
+def fetch_fr24(proxy=None):
+    """Fetch aircraft from FR24 public feed."""
+    b = ME_BOUNDS
+    url = (f"https://data-cloud.flightradar24.com/zones/fcgi/feed.js?"
+           f"faa=1&satellite=1&mlat=1&flarm=1&adsb=1&gnd=0&air=1"
+           f"&vehicles=0&estimated=0&maxage=14400&gliders=0&stats=0"
+           f"&bounds={b['n']},{b['s']},{b['w']},{b['e']}")
+    headers = {"User-Agent": "Mozilla/5.0"}
+    if proxy:
+        handler = urllib.request.ProxyHandler({"https": proxy, "http": proxy})
+        opener = urllib.request.build_opener(handler)
+    else:
+        opener = urllib.request.build_opener()
+    req = urllib.request.Request(url, headers=headers)
+    with opener.open(req, timeout=15) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    aircraft = []
+    for k, v in data.items():
+        if not isinstance(v, list) or len(v) < 14:
+            continue
+        aircraft.append({
+            "lat": v[1], "lon": v[2], "heading": v[3],
+            "alt": v[4], "speed": v[5], "type": v[8] or "",
+            "reg": v[9] or "", "callsign": (v[16] if len(v) > 16 else "") or "",
+            "from": v[11] or "", "to": v[12] or "",
+        })
+    return aircraft
 
 
 def fetch_opensky():
-    """Fetch aircraft from OpenSky Network."""
-    try:
-        bbox = ME_BBOX
-        url = (f"https://opensky-network.org/api/states/all?"
-               f"lamin={bbox['lamin']}&lomin={bbox['lomin']}"
-               f"&lamax={bbox['lamax']}&lomax={bbox['lomax']}")
-        
-        req = urllib.request.Request(url, headers={"User-Agent": "MagenYehudaBot/1.0"})
-        with urllib.request.urlopen(req, timeout=20) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        
-        states = data.get("states", [])
-        return states or []
-    except Exception as e:
-        print(f"  ⚠️ OpenSky error: {e}", file=sys.stderr)
-        return []
+    """Fallback: OpenSky Network."""
+    b = ME_BOUNDS
+    url = (f"https://opensky-network.org/api/states/all?"
+           f"lamin={b['s']}&lomin={b['w']}&lamax={b['n']}&lomax={b['e']}")
+    req = urllib.request.Request(url, headers={"User-Agent": "MagenYehudaBot/1.0"})
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    aircraft = []
+    for s in (data.get("states") or []):
+        if not s or len(s) < 8 or s[8]:  # skip ground
+            continue
+        if s[6] is None or s[5] is None:
+            continue
+        aircraft.append({
+            "lat": s[6], "lon": s[5], "heading": s[10] or 0,
+            "alt": int((s[7] or s[13] or 0) * 3.281),
+            "speed": int((s[9] or 0) * 1.944),
+            "type": "", "reg": "",
+            "callsign": (s[1] or "").strip(),
+            "from": "", "to": "", "icao24": s[0],
+        })
+    return aircraft
 
 
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python3 scan-military-flights.py <config.json> <state_dir> [--seed]", file=sys.stderr)
+        print("Usage: scan-military-flights.py <config.json> <state_dir> [--seed]", file=sys.stderr)
         sys.exit(1)
-    
+
     config_path = sys.argv[1]
     state_dir = sys.argv[2]
     seed_mode = "--seed" in sys.argv
-    
     os.makedirs(state_dir, exist_ok=True)
-    
-    states = fetch_opensky()
-    print(f"  OpenSky: {len(states)} aircraft in Middle East", file=sys.stderr)
-    
+
+    # Fetch aircraft: FR24 primary, OpenSky fallback
+    source = "fr24"
+    try:
+        all_ac = fetch_fr24()
+        print(f"  FR24: {len(all_ac)} aircraft in Middle East", file=sys.stderr)
+    except Exception as e:
+        print(f"  ⚠️ FR24 error: {e}", file=sys.stderr)
+        source = "opensky"
+        try:
+            all_ac = fetch_opensky()
+            print(f"  OpenSky: {len(all_ac)} aircraft in Middle East", file=sys.stderr)
+        except Exception as e2:
+            print(f"  ⚠️ OpenSky error: {e2}", file=sys.stderr)
+            all_ac = []
+
+    # Classify military
     military = []
-    for s in states:
-        if not s or len(s) < 8:
-            continue
-        icao24 = s[0] or ""
-        callsign = s[1] or ""
-        lon = s[5]
-        lat = s[6]
-        alt = s[7] or s[13]  # baro or geo altitude
-        velocity = s[9]
-        on_ground = s[8]
-        
-        if on_ground:
-            continue
-        if lat is None or lon is None:
-            continue
-        
-        is_mil, reason = is_military(callsign, icao24)
-        if not is_mil:
-            continue
-        
-        category, description = classify_aircraft(callsign, icao24)
-        
-        aircraft = {
-            "icao24": icao24,
-            "callsign": callsign.strip(),
-            "lat": lat,
-            "lon": lon,
-            "altitude_m": alt,
-            "altitude_ft": int(alt * 3.281) if alt else None,
-            "velocity_kts": int(velocity * 1.944) if velocity else None,
-            "category": category,
-            "description": description,
-            "reason": reason,
-        }
-        military.append(aircraft)
-    
-    # Deduplicate by icao24
-    seen_icao = set()
-    unique = []
-    for ac in military:
-        if ac["icao24"] not in seen_icao:
-            seen_icao.add(ac["icao24"])
-            unique.append(ac)
-    military = unique
-    
+    for ac in all_ac:
+        side, desc = classify(ac["callsign"], ac["type"], ac["reg"])
+        if side:
+            ac["side"] = side
+            ac["description"] = desc
+            military.append(ac)
+
     print(f"  Military aircraft: {len(military)}", file=sys.stderr)
-    
-    # Load previous state for change detection
+
+    # Load previous state
     state_file = os.path.join(state_dir, "military-flights.json")
-    prev_icaos = set()
+    prev_keys = set()
     try:
         with open(state_file) as f:
             prev = json.load(f)
-            prev_icaos = set(a["icao24"] for a in prev.get("aircraft", []))
+            prev_keys = set(
+                a.get("icao24") or f'{a["callsign"]}_{a["type"]}'
+                for a in prev.get("aircraft", [])
+            )
     except:
         pass
-    
-    new_aircraft = [a for a in military if a["icao24"] not in prev_icaos]
-    
-    # Save state
+
+    new_aircraft = []
+    for ac in military:
+        key = ac.get("icao24") or f'{ac["callsign"]}_{ac["type"]}'
+        if key not in prev_keys:
+            new_aircraft.append(ac)
+
+    # Categorize
+    by_cat = {}
+    for ac in military:
+        cat = ac["description"].split("(")[0].strip() if ac.get("description") else "Unknown"
+        by_cat[cat] = by_cat.get(cat, 0) + 1
+
     result = {
         "scan_time": datetime.now(timezone.utc).isoformat(),
-        "total_in_zone": len(states),
+        "source": source,
+        "total_in_zone": len(all_ac),
         "military_count": len(military),
-        "new_count": len(new_aircraft),
+        "new_count": 0 if seed_mode else len(new_aircraft),
         "aircraft": military,
         "new_aircraft": [] if seed_mode else new_aircraft,
         "seed_mode": seed_mode,
-        "by_category": {},
+        "by_category": by_cat,
     }
-    
-    for ac in military:
-        cat = ac["category"]
-        result["by_category"][cat] = result["by_category"].get(cat, 0) + 1
-    
+
     with open(state_file, "w") as f:
         json.dump(result, f, indent=2)
-    
-    # Summary
-    for cat, count in sorted(result["by_category"].items()):
+
+    for cat, count in sorted(by_cat.items()):
         print(f"    {cat}: {count}", file=sys.stderr)
-    
+
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
