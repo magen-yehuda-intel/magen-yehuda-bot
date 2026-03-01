@@ -209,5 +209,12 @@
     "map_height": 1000,
     "highlight_recent_hours": 48,
     "show_legend": true
+  },
+  "dashboard": {
+    "api_url": "",
+    "api_url_comment": "Optional: base URL of the Magen Yehuda API backend (e.g. https://your-app.azurecontainerapps.io). Leave empty to use static JSON files from GitHub Pages.",
+    "oref_poll_interval_ms": 30000,
+    "fires_poll_interval_ms": 60000,
+    "osint_poll_interval_ms": 60000
   }
 }

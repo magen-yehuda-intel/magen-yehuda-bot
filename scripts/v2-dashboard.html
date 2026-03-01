@@ -504,7 +504,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim)" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
-  <div class="oref-meta">Source: Red Alert · Pikud Haoref · via GitHub Actions · <span id="oref-interval">~2min</span> refresh</div>
+  <div class="oref-meta">Source: Red Alert · Pikud Haoref · <span id="oref-mode"></span> · <span id="oref-interval">~30s</span> refresh</div>
 </div>
 
 <!-- TOOLBAR -->
@@ -677,6 +677,23 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script src="v2-data.js"></script>
 <script>
+// ═══════════════════════════════════════════════════════════
+// DATA SOURCE CONFIGURATION
+// Supports two modes:
+//   1. API mode:    Live backend (Azure Container Apps, etc.)
+//   2. Static mode: GitHub Pages JSON files (fallback)
+// Set API_URL to your backend, or leave empty for static mode.
+// ═══════════════════════════════════════════════════════════
+const API_URL = (new URLSearchParams(window.location.search).get('api') || '').replace(/\/+$/, '');
+const STATIC_BASE = window.location.pathname.includes('/v2') ? '..' : '.';
+
+function dataUrl(endpoint) {
+  if (API_URL) return `${API_URL}/api/${endpoint}`;
+  // Static fallback: map endpoint to file
+  const staticMap = { 'oref': 'oref-alerts.json', 'fires': 'intel-feed.json', 'intel-feed': 'intel-feed.json' };
+  return `${STATIC_BASE}/${staticMap[endpoint] || endpoint + '.json'}`;
+}
+
 // ═══════════════════════════════════════════════════════════
 // MAP INITIALIZATION
 // ═══════════════════════════════════════════════════════════
@@ -1010,7 +1027,7 @@ function renderAllLayers() {
 // ═══════════════════════════════════════════════════════════
 function loadOSINT() {
   // intel-feed.json is at the repo root, V2 is in /v2/ subdir
-  const feedUrl = window.location.pathname.includes('/v2') ? '../intel-feed.json' : 'intel-feed.json';
+  const feedUrl = dataUrl('intel-feed');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no feed'))
   .then(data => {
     const events = data.events || data || [];
@@ -1035,7 +1052,7 @@ function loadOSINT() {
 }
 
 function loadFIRMS() {
-  const feedUrl = window.location.pathname.includes('/v2') ? '../intel-feed.json' : 'intel-feed.json';
+  const feedUrl = dataUrl('intel-feed');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const fires = (data.events || data || []).filter(e => (e.sub_event_type || e.type || '').toLowerCase().includes('fire') || (e.sub_event_type || '').includes('FIRMS'));
@@ -1052,7 +1069,7 @@ function loadFIRMS() {
 }
 
 function loadSirens() {
-  const feedUrl = window.location.pathname.includes('/v2') ? '../intel-feed.json' : 'intel-feed.json';
+  const feedUrl = dataUrl('intel-feed');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const events = data.events || data || [];
@@ -1132,6 +1149,10 @@ pollOref();
 updateLayerCount();
 updateMobileButtons();
 
+// Show data mode
+document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
+document.getElementById('oref-interval').textContent = API_URL ? '~10s' : '~2min';
+
 // Auto-refresh live data every 60s
 setInterval(() => {
   layers.osint.clearLayers();
@@ -1157,9 +1178,8 @@ function mtToggle(name, el) {
 // ═══════════════════════════════════════════════════════════
 let orefAlerts = [];
 function pollOref() {
-  // Read from GitHub Pages-served oref-alerts.json (committed by GitHub Action every 2min)
-  const feedUrl = window.location.pathname.includes('/v2') ? '../oref-alerts.json' : 'oref-alerts.json';
-  fetch(feedUrl + '?t=' + Date.now(), { cache: 'no-store' }).then(r => r.ok ? r.json() : Promise.reject('no'))
+  fetch(dataUrl('oref') + (API_URL ? '' : '?t=' + Date.now()), { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const alerts = data.alerts || [];
     orefAlerts = alerts;
@@ -1206,8 +1226,8 @@ function updateSirensFromOref(alerts) {
   // For now, rely on intel-feed.json which is geocoded by the watcher
 }
 
-// Poll Oref feed every 30s (data is ~2min stale from GitHub Actions)
-setInterval(pollOref, 30000);
+// Poll Oref — faster with API, slower with static
+setInterval(pollOref, API_URL ? 10000 : 30000);
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
