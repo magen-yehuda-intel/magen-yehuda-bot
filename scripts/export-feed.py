@@ -142,6 +142,22 @@ def main():
     size_kb = len(feed_json) / 1024
     print(f"Exported {len(events)} events ({size_kb:.0f}KB) → {FEED_FILE}")
 
+    # Sync recent events to Azure Table Storage (best-effort)
+    try:
+        from db import insert_events, query_events
+        # Get what's already in DB for last 48h
+        db_events = query_events(hours=48, limit=10000)
+        db_keys = set(f"{e.get('src','')}{e.get('text','')[:40]}{e.get('ts',0)}" for e in db_events)
+        # Find events in export that are missing from DB
+        missing = [e for e in events if f"{e.get('src','')}{e.get('text','')[:40]}{e.get('ts',0)}" not in db_keys]
+        if missing:
+            ok, fail = insert_events(missing)
+            print(f"DB sync: {ok} new, {fail} failed (was missing {len(missing)} of {len(events)})")
+        else:
+            print(f"DB sync: up to date ({len(db_events)} in DB)")
+    except Exception as ex:
+        print(f"DB sync error: {ex}")
+
     # Git commit + push
     try:
         subprocess.run(['git', 'add', 'docs/intel-feed.json', 'docs/oref-alerts.json'], cwd=SKILL_DIR, check=True,
