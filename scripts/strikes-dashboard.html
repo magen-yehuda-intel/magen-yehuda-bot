@@ -6,6 +6,7 @@
 <title>⚔️ MAGEN YEHUDA — Theater Operations</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -179,6 +180,40 @@
   }
   .sz-btn:hover { background: rgba(0,200,255,0.2); border-color: var(--accent); }
 
+  /* ══ LEGEND ══ */
+  #legend {
+    position: fixed; bottom: 32px; left: 8px; z-index: 600;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+    padding: 6px 8px; font-size: 8px; max-width: 180px;
+  }
+  #legend .leg-title { font-family: 'Orbitron', sans-serif; font-size: 7px; color: var(--accent); letter-spacing: 1.5px; margin-bottom: 4px; }
+  #legend .leg-row { display: flex; align-items: center; gap: 5px; margin: 2px 0; color: var(--text); }
+  #legend .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  #legend .leg-bar { width: 12px; height: 3px; border-radius: 1px; flex-shrink: 0; }
+  #legend-toggle {
+    position: fixed; bottom: 32px; left: 8px; z-index: 601;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 3px;
+    color: var(--accent); font-size: 8px; padding: 3px 6px; cursor: pointer;
+    font-family: 'Orbitron', sans-serif; letter-spacing: 1px; display: none;
+  }
+
+  /* ══ PULSING RECENT MARKERS ══ */
+  @keyframes marker-pulse {
+    0% { box-shadow: 0 0 4px 1px rgba(255,255,0,0.6); }
+    50% { box-shadow: 0 0 10px 4px rgba(255,255,0,0.3); }
+    100% { box-shadow: 0 0 4px 1px rgba(255,255,0,0.6); }
+  }
+
+  /* ══ POPUP CARD STYLE ══ */
+  .leaflet-popup-content-wrapper {
+    background: var(--panel) !important; color: var(--text) !important;
+    border: 1px solid var(--border) !important; border-radius: 6px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
+  }
+  .leaflet-popup-tip { background: var(--panel) !important; border: 1px solid var(--border) !important; }
+  .leaflet-popup-close-button { color: var(--text-dim) !important; }
+  .leaflet-popup-close-button:hover { color: var(--accent) !important; }
+
   /* Theater + phase buttons */
   .theater-btns, .phase-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
   .theater-btn, .phase-btn {
@@ -305,6 +340,25 @@
 
 <!-- MAP (always visible) -->
 <div id="map"></div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="leg-title" style="cursor:pointer" onclick="this.parentElement.style.display='none';document.getElementById('legend-toggle').style.display=''">LEGEND ✕</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--israel)"></div>Israel (IDF)</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--iran)"></div>Iran (IRGC)</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--proxy)"></div>Iran Proxies</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--us)"></div>USA (CENTCOM)</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--syria)"></div>Syria (SAA)</div>
+  <div style="margin:4px 0;border-top:1px solid var(--border)"></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#ffff00;border:1px solid #aa0"></div>Recent (&lt;48h)</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#ff8800"></div>FIRMS fire detect</div>
+  <div class="leg-row"><span style="font-size:10px">🇺🇸</span> US/Coalition base</div>
+  <div class="leg-row"><span style="font-size:10px">☢️</span> Iran nuclear site</div>
+  <div class="leg-row"><span style="font-size:10px">🚀</span> Iran missile site</div>
+  <div style="margin:4px 0;border-top:1px solid var(--border)"></div>
+  <div class="leg-row" style="color:var(--text-dim);font-size:7px">⬤ size = fatalities</div>
+</div>
+<button id="legend-toggle" onclick="const l=document.getElementById('legend');if(l.style.display==='none'){l.style.display='';this.style.display='none'}">◉ LEGEND</button>
 
 <!-- DESKTOP RIGHT PANEL -->
 <div id="panel-resize"></div>
@@ -477,7 +531,8 @@ const US_BASES = [
 let showUSBases = true, showIranBases = true;
 let usBaseLayer, iranBaseLayer;
 
-let map, markerLayer, siteLayer;
+let map, markerLayer, siteLayer, heatLayer;
+let showHeatmap = false;
 let EVENTS = [], filteredEvents = [];
 let activeSides = new Set(['israel','iran','iran_proxy','syria','us','gulf','unknown']);
 let activeCountry = null;
@@ -540,9 +595,24 @@ function initMap() {
 // ═══════════════════════════════════════════════════════════
 // MARKERS
 // ═══════════════════════════════════════════════════════════
+const EVENT_TYPE_ICONS = {
+  'Shelling/artillery/missile attack': { emoji: '💥', color: '#ff2d2d' },
+  'Air/drone strike': { emoji: '✈️', color: '#2d9cff' },
+  'Armed clash': { emoji: '⚔️', color: '#ff8c00' },
+  'Attack': { emoji: '🎯', color: '#ff2d2d' },
+  'Remote explosive/landmine/IED': { emoji: '💣', color: '#ffd600' },
+  'Location mention in OSINT': { emoji: '📡', color: '#00e5ff' },
+  'Suicide bomb': { emoji: '💀', color: '#8b0000' },
+  'Possible strike (FIRMS)': { emoji: '🔥', color: '#ff8800' },
+  'Thermal anomaly (FIRMS)': { emoji: '🌡️', color: '#ff8800' },
+  'Siren alert': { emoji: '🚨', color: '#ff2d2d' },
+};
+
 function renderMarkers() {
   markerLayer.clearLayers();
+  if (heatLayer) map.removeLayer(heatLayer);
   const cutoff48h = new Date(Date.now() - 48*3600000).toISOString().substring(0,10);
+  const heatPoints = [];
 
   for (const ev of filteredEvents) {
     if (!activeSides.has(ev.side)) continue;
@@ -560,26 +630,44 @@ function renderMarkers() {
       ? (ev.confidence === 'h' ? 0.9 : ev.confidence === 'm' ? 0.6 : 0.3)
       : (ev.confidence === 'h' ? 0.85 : ev.confidence === 'm' ? 0.6 : 0.35);
 
+    // Heatmap data
+    heatPoints.push([ev.lat, ev.lon, fat > 0 ? Math.min(fat, 50) / 50 : 0.2]);
+
     const marker = L.circleMarker([ev.lat, ev.lon], {
       radius: r, fillColor: color, fillOpacity: opacity,
       color: isRecent ? '#ffff00' : color,
       weight: isRecent ? 2 : 0.5,
       opacity: isRecent ? 0.9 : 0.4,
+      className: isRecent ? 'marker-recent' : '',
     });
 
+    // Enhanced popup with color header bar
+    const typeInfo = EVENT_TYPE_ICONS[ev.sub_event_type] || { emoji: '⚡', color: '#888' };
+    const sideColor = SIDE_COLORS[ev.side] || '#888';
     marker.bindPopup(`
-      <div class="popup-title">📍 ${ev.location || ev.country || 'Unknown'}</div>
-      <div class="popup-date">📅 ${ev.date}</div>
-      <div class="popup-type">⚡ ${ev.sub_event_type || ''}</div>
-      <div class="popup-actors">
-        <span style="color:${color}">${ev.actor1 || ev.side.toUpperCase()}</span>
-        ${ev.actor2 ? ' ⚔️ ' + ev.actor2 : ''}
+      <div style="min-width:200px;max-width:${isMobile()?240:300}px">
+        <div style="background:${sideColor};margin:-7px -11px 8px;padding:6px 10px;border-radius:4px 4px 0 0">
+          <b style="color:#fff;font-size:13px">${typeInfo.emoji} ${ev.sub_event_type || 'Event'}</b>
+        </div>
+        <div style="font-size:12px;line-height:1.5">
+          <span style="color:${sideColor};font-weight:bold">${ev.actor1 || ev.side.toUpperCase()}</span>
+          ${ev.actor2 ? ' ⚔️ <b>' + ev.actor2 + '</b>' : ''}<br>
+          📍 ${ev.location || ev.country || 'Unknown'} · 📅 ${ev.date}
+          ${fat > 0 ? '<br>☠ <b style="color:#ff4444">' + fat + '</b> fatalities' : ''}
+        </div>
+        ${ev.notes ? '<div style="margin-top:6px;padding-top:5px;border-top:1px solid #444;color:#ddd;font-size:11px;line-height:1.4">' + ev.notes + '</div>' : ''}
       </div>
-      ${fat > 0 ? `<div class="popup-fat">☠ ${fat} fatalities</div>` : ''}
-      ${ev.notes ? `<div class="popup-notes">${ev.notes}</div>` : ''}
-    `, { maxWidth: isMobile() ? 240 : 300 });
+    `, { maxWidth: isMobile() ? 260 : 320 });
 
     markerLayer.addLayer(marker);
+  }
+
+  // Heatmap layer
+  if (showHeatmap && heatPoints.length > 0) {
+    heatLayer = L.heatLayer(heatPoints, {
+      radius: 18, blur: 22, maxZoom: 10,
+      gradient: { 0.2: '#0044ff', 0.4: '#00ddff', 0.6: '#ffff00', 0.8: '#ff8800', 1.0: '#ff0040' }
+    }).addTo(map);
   }
 
   // Iran sites at zoom 5+
@@ -820,6 +908,11 @@ function renderLayerToggles(container) {
       <span class="force-name">🇮🇷 Iran Military Sites (${IRAN_SITES.length})</span>
       <span class="force-count" style="color:#ff4444;font-size:10px">${showIranBases?'ON':'OFF'}</span>
     </div>
+    <div class="force-row" id="toggle-heat" style="cursor:pointer">
+      <div class="force-dot" style="background:linear-gradient(135deg,#0044ff,#ff0040)"></div>
+      <span class="force-name">🌡️ Heatmap Overlay</span>
+      <span class="force-count" style="color:#ff8800;font-size:10px">${showHeatmap?'ON':'OFF'}</span>
+    </div>
   `;
   el.querySelector('#toggle-us').addEventListener('click', () => {
     showUSBases = !showUSBases;
@@ -828,6 +921,11 @@ function renderLayerToggles(container) {
   });
   el.querySelector('#toggle-iran').addEventListener('click', () => {
     showIranBases = !showIranBases;
+    renderMarkers();
+    renderLayerToggles(el);
+  });
+  el.querySelector('#toggle-heat').addEventListener('click', () => {
+    showHeatmap = !showHeatmap;
     renderMarkers();
     renderLayerToggles(el);
   });
