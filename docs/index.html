@@ -1185,11 +1185,11 @@ function loadFeed() {
   ]).then(([apiData, staticData]) => {
     const apiEvents = apiData ? (apiData.events || []) : [];
     const staticEvents = staticData ? (staticData.events || staticData || []) : [];
-    // Merge: dedup by src+ts
+    // Merge: dedup by src+text (ignore ts to catch re-scraped items)
     const seen = new Set();
     const merged = [];
     for (const e of [...apiEvents, ...staticEvents]) {
-      const key = `${e.src||e.source||''}|${e.ts||e.timestamp||0}|${(e.text||'').slice(0,40)}`;
+      const key = `${e.src||e.source||''}|${(e.text||'').slice(0,60)}`;
       if (!seen.has(key)) { seen.add(key); merged.push(e); }
     }
     return { events: merged };
@@ -1302,9 +1302,9 @@ function renderFeed() {
     const fullText = (e.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const needsTooltip = (e.text || '').length > 100;
     const timeStr = ts > 0 ? `${localTime(ts)} · ${ago}` : ago;
-    const srcLink = getSrcLink(e.src || '');
+    const srcLink = e.link || getSrcLink(e.src || '');
     const srcHtml = srcLink
-      ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${e.src || ''}</a>`
+      ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)" onclick="event.stopPropagation()">${e.src || ''}</a>`
       : (e.src || '');
     return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="">
       <div class="feed-item-header">
@@ -1687,7 +1687,7 @@ function renderOSINTMarkers(events) {
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
     const srcName = ev.actor1 || ev.source || ev.src || '';
-    const srcUrl = getSrcLink(srcName);
+    const srcUrl = ev.link || getSrcLink(srcName);
     const srcHtml = srcUrl
       ? `<a href="${srcUrl}" target="_blank" rel="noopener" style="color:#06b6d4;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${srcName}</a>`
       : srcName;

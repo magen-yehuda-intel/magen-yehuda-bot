@@ -73,6 +73,7 @@ def insert_event(event):
             "location": event.get("location", event.get("loc", "")),
             "breaking": event.get("breaking", False),
             "confidence": event.get("confidence", ""),
+            "link": event.get("link", ""),
             "raw_json": json.dumps(event)[:8000],  # full event as backup
         }
         client.upsert_entity(entity)

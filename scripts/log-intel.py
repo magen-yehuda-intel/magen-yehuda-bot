@@ -43,6 +43,7 @@ def append_event(state_dir, event):
                     "lat": alert.get("lat", 0),
                     "lon": alert.get("lon", 0),
                     "location": alert.get("location", ""),
+                    "link": alert.get("link", ""),
                 }
                 db_insert(db_event)
         else:
