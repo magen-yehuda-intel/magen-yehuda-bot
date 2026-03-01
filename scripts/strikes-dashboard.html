@@ -163,9 +163,13 @@
   .section-title {
     font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
     letter-spacing: 2.5px; color: var(--accent); margin-bottom: 6px;
-    cursor: pointer; user-select: none;
+    cursor: pointer; user-select: none; padding: 4px 0;
+    transition: color 0.15s;
   }
+  .section-title:hover { color: #fff; }
   .section-title::before { content: '▾ '; }
+  .section.collapsed > .section-title { margin-bottom: 0; color: var(--text-dim); }
+  .section.collapsed > .section-title:hover { color: var(--accent); }
   .section.collapsed > .section-title::before { content: '▸ '; }
   .section.collapsed > *:not(.section-title) { display: none !important; }
   .sz-btn {
@@ -352,7 +356,7 @@
     <div id="event-types"></div>
   </div>
   <div class="section">
-    <div class="section-title">▸ NEWS FEED</div>
+    <div class="section-title">NEWS FEED</div>
     <div id="feed"></div>
   </div>
 </div>
@@ -980,10 +984,13 @@ function initSearch() {
 
 // ═══ COLLAPSIBLE SECTIONS ═══
 function initCollapsible() {
-  document.querySelectorAll('#panel .section-title').forEach(title => {
-    title.addEventListener('click', () => {
-      title.parentElement.classList.toggle('collapsed');
-    });
+  // Bind on all section-titles, not just #panel (covers mobile sheets too)
+  document.addEventListener('click', (e) => {
+    const title = e.target.closest('.section-title');
+    if (!title) return;
+    // Don't collapse on mobile tab sheets (too small)
+    if (isMobile() && title.closest('#mobile-sheet')) return;
+    title.parentElement.classList.toggle('collapsed');
   });
 }
 
