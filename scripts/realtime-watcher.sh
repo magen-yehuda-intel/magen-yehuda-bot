@@ -915,11 +915,19 @@ for a in alerts:
     if is_confirmed and not any(e.get('confirmed_at') for e in all_sources):
         all_sources[0]['confirmed_at'] = now
 
-    # SUPPRESS: once confirmed alert has been sent, don't send it again
-    # Only send the FIRST confirmation. After that, skip silently.
+    # SUPPRESS: once confirmed alert has been sent, don't send ANY more alerts for this topic
+    # (not confirmed re-alerts, not unverified re-alerts — nothing)
     already_sent = any(e.get('confirmed_sent') for e in all_sources)
-    if is_confirmed and already_sent:
-        # Already announced — don't spam
+    if already_sent:
+        # Already announced as confirmed — absorb silently
+        with open(corr_file, 'w') as f:
+            json.dump(corr, f)
+        continue
+
+    # Also suppress if we already sent an UNVERIFIED alert with same source count
+    # (prevents re-alerting "4 sources" every scan cycle)
+    last_alert_count = max((e.get('alerted_at_count', 0) for e in all_sources), default=0)
+    if not is_confirmed and n_total <= last_alert_count:
         with open(corr_file, 'w') as f:
             json.dump(corr, f)
         continue
@@ -927,6 +935,9 @@ for a in alerts:
     # Mark that we're about to send the confirmed alert
     if is_confirmed:
         all_sources[0]['confirmed_sent'] = True
+    
+    # Track how many sources we've alerted at (for unverified dedup)
+    all_sources[0]['alerted_at_count'] = n_total
 
     # Build source list for display
     source_names = [e['channel'] for e in all_sources]

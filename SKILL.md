@@ -45,7 +45,8 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │   🚢 Naval tracking      every 5-30min (AIS vessel data)      │
 │   ⚔️ Strikes map data     every 6h (ACLED + local sensors)     │
 │   🎯 Strike correlation   after every fire/seismic scan        │
-│   📌 Pinned status        edited every 60s (live dashboard)     │
+│   📌 Pinned status        edited every 60s + instant on threat  │
+│   │                       level change                          │
 │   📡 Live feed export     every 5min (intel-feed.json → GitHub) │
 │                                                                │
 │   → Instant Telegram push on changes                           │
@@ -985,7 +986,7 @@ iran-israel-alerts/
 │   ├── generate-strikes-map.py # Dark-themed ME strikes map
 │   ├── strikes-dashboard.html  # Interactive Leaflet dashboard (template)
 │   ├── strikes-dashboard-standalone.html # Standalone (~3.3MB, Gist-hosted)
-│   ├── pinned-status.py        # Live pinned status message (edited every 60s, includes dashboard link)
+│   ├── pinned-status.py        # Live pinned status message (every 60s + immediate on threat change)
 │   ├── dispatch.py             # Multi-channel alert dispatcher (EN/HE routing)
 │   ├── format-fires.py         # Fire data → Telegram HTML formatter
 │   ├── format-seismic.py       # Seismic data → Telegram HTML formatter
