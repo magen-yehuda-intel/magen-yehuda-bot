@@ -317,26 +317,99 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   100% { box-shadow:0 0 24px rgba(239,68,68,0.9), 0 0 48px rgba(239,68,68,0.4); transform:scale(1.15); }
 }
 
-/* ═══ CLUSTER OVERRIDES ═══ */
+/* ═══ CLUSTER OVERRIDES (usvsiran-style) ═══ */
 .marker-cluster {
   background:transparent !important;
 }
 .marker-cluster div {
-  background:rgba(5,5,16,0.85) !important;
-  border:2px solid rgba(255,255,255,0.2) !important;
-  color:var(--text) !important;
+  background:rgba(6,182,212,0.15) !important;
+  border:2px solid rgba(6,182,212,0.6) !important;
+  color:#fff !important;
   font-family:var(--font-data) !important;
-  font-size:12px !important;
+  font-size:13px !important;
   font-weight:700 !important;
-  backdrop-filter:blur(4px);
   border-radius:50% !important;
   display:flex !important; align-items:center !important; justify-content:center !important;
+  text-shadow: 0 0 6px rgba(0,0,0,0.8);
+  box-shadow: 0 0 15px rgba(6,182,212,0.3), inset 0 0 8px rgba(6,182,212,0.1) !important;
 }
-.marker-cluster-small div { border-color:rgba(59,130,246,0.5) !important; box-shadow:0 0 12px rgba(59,130,246,0.3); }
-.marker-cluster-medium div { border-color:rgba(245,158,11,0.5) !important; box-shadow:0 0 12px rgba(245,158,11,0.3); }
-.marker-cluster-large div { border-color:rgba(239,68,68,0.5) !important; box-shadow:0 0 12px rgba(239,68,68,0.3); }
+.marker-cluster-small { margin-left:-15px !important; margin-top:-15px !important; }
+.marker-cluster-small div { width:30px !important; height:30px !important; line-height:30px !important; }
+.marker-cluster-medium { margin-left:-20px !important; margin-top:-20px !important; }
+.marker-cluster-medium div { width:40px !important; height:40px !important; line-height:40px !important; font-size:14px !important; }
+.marker-cluster-large { margin-left:-25px !important; margin-top:-25px !important; }
+.marker-cluster-large div { width:50px !important; height:50px !important; line-height:50px !important; font-size:16px !important; }
+/* Iran layers get orange clusters */
+.cluster-iran div {
+  background:rgba(249,115,22,0.15) !important;
+  border-color:rgba(249,115,22,0.6) !important;
+  box-shadow: 0 0 15px rgba(249,115,22,0.3), inset 0 0 8px rgba(249,115,22,0.1) !important;
+}
+/* Siren clusters get red */
+.cluster-siren div {
+  background:rgba(239,68,68,0.2) !important;
+  border-color:rgba(239,68,68,0.7) !important;
+  box-shadow: 0 0 18px rgba(239,68,68,0.4), inset 0 0 8px rgba(239,68,68,0.15) !important;
+  animation: siren-pulse 0.8s ease-in-out infinite alternate;
+}
 
-/* ═══ MOBILE BOTTOM BAR ═══ */
+/* ═══ PIKUD HAOREF BANNER ═══ */
+#oref-banner {
+  position:fixed; top:44px; left:54px; right:0; z-index:850;
+  background:rgba(5,5,16,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--panel-border);
+  padding:6px 12px; transition:all 0.3s;
+  font-family:var(--font-data);
+}
+#oref-banner.alert-active {
+  background:rgba(127,29,29,0.95);
+  border-bottom-color:rgba(239,68,68,0.5);
+}
+.oref-title {
+  font-family:var(--font-mil); font-size:11px; font-weight:600;
+  letter-spacing:1px; color:var(--text-dim);
+  display:flex; align-items:center; gap:6px;
+}
+.oref-title .oref-shield { font-size:14px; }
+.oref-status {
+  font-size:12px; margin-top:2px;
+}
+.oref-status.safe { color:var(--green); }
+.oref-status.danger { color:var(--red); font-weight:700; animation:siren-pulse 0.8s ease-in-out infinite alternate; }
+.oref-meta { font-size:9px; color:rgba(6,182,212,0.7); margin-top:2px; }
+
+/* ═══ MOBILE HORIZONTAL TOOLBAR ═══ */
+#mobile-toolbar {
+  display:none;
+  position:fixed; top:40px; left:0; right:0; z-index:900;
+  background:rgba(5,5,16,0.92);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--panel-border);
+  overflow-x:auto; white-space:nowrap;
+  -webkit-overflow-scrolling:touch;
+  padding:4px 6px; gap:4px;
+  scrollbar-width:none;
+}
+#mobile-toolbar::-webkit-scrollbar { display:none; }
+.mt-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.02);
+  font-size:15px; cursor:pointer;
+  flex-shrink:0; transition:all 0.2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.mt-btn.active { border-color:rgba(6,182,212,0.5); background:rgba(6,182,212,0.1); box-shadow:0 0 10px rgba(6,182,212,0.2); }
+.mt-btn.active-red { border-color:rgba(239,68,68,0.5); background:rgba(239,68,68,0.1); box-shadow:0 0 10px rgba(239,68,68,0.2); }
+.mt-btn.active-orange { border-color:rgba(249,115,22,0.5); background:rgba(249,115,22,0.1); box-shadow:0 0 10px rgba(249,115,22,0.2); }
+.mt-btn.active-amber { border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.1); box-shadow:0 0 10px rgba(245,158,11,0.2); }
+.mt-btn.active-green { border-color:rgba(34,197,94,0.5); background:rgba(34,197,94,0.1); box-shadow:0 0 10px rgba(34,197,94,0.2); }
+.mt-sep {
+  display:inline-block; width:1px; height:24px; background:var(--panel-border);
+  vertical-align:middle; margin:0 2px; flex-shrink:0;
+}
 #mobile-bar {
   display:none;
   position:fixed; bottom:0; left:0; right:0; height:52px; z-index:1000;
@@ -360,21 +433,28 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 /* ═══ MOBILE ═══ */
 @media (max-width:768px) {
   #toolbar { display:none; }
-  #map { left:0; top:44px; bottom:52px; }
+  #mobile-toolbar { display:flex; }
+  #oref-banner { left:0; top:74px; padding:5px 10px; }
+  #oref-banner .oref-title { font-size:10px; }
+  #oref-banner .oref-status { font-size:11px; }
+  #map { left:0; top:116px; bottom:52px; }
   #chips { left:8px; bottom:60px; gap:4px; }
   .chip { padding:4px 8px; }
   .chip-label { font-size:7px; }
   .chip-value { font-size:11px; }
-  #sidebar { left:0; width:100%; top:44px; bottom:52px; }
-  #basemap-toggle { top:50px; right:8px; }
+  #sidebar { left:0; width:100%; top:74px; bottom:52px; }
+  #basemap-toggle { top:120px; right:8px; }
   #statusbar { display:none; }
   #mobile-bar { display:flex; }
   .title-text { font-size:10px; letter-spacing:1px; }
   .title-flag { font-size:18px; }
   #titlebar { height:40px; }
-  #map { top:40px; }
-  #sidebar { top:40px; }
   .leaflet-popup-content-wrapper { max-width:280px !important; }
+  #legend { bottom:60px; right:8px; max-width:220px; }
+}
+@media (min-width:769px) {
+  #oref-banner { top:44px; }
+  #map { top:80px; }
 }
 </style>
 </head>
@@ -392,6 +472,39 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span class="title-iran">ISLAMIC REPUBLIC OF IRAN</span>
   </span>
   <span class="title-flag">🇮🇷</span>
+</div>
+
+<!-- MOBILE HORIZONTAL TOOLBAR -->
+<div id="mobile-toolbar">
+  <div class="mt-btn" onclick="toggleSidebar()">☰</div>
+  <div class="mt-sep"></div>
+  <div class="mt-btn active" data-mt="borders" onclick="mtToggle('borders',this)">🗺</div>
+  <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">⭐</div>
+  <div class="mt-btn" data-mt="infra" onclick="mtToggle('infra',this)">🏗</div>
+  <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
+  <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
+  <div class="mt-btn" data-mt="sam" onclick="mtToggle('sam',this)">🛡</div>
+  <div class="mt-btn" data-mt="patrol" onclick="mtToggle('patrol',this)">↻</div>
+  <div class="mt-btn" data-mt="waterways" onclick="mtToggle('waterways',this)">🌊</div>
+  <div class="mt-sep"></div>
+  <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
+  <div class="mt-btn active-orange" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
+  <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
+  <div class="mt-sep"></div>
+  <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
+  <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
+  <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
+</div>
+
+<!-- PIKUD HAOREF BANNER -->
+<div id="oref-banner">
+  <div class="oref-title">
+    <span class="oref-shield">🛡</span>
+    PIKUD HAOREF
+    <span style="margin-left:auto;font-size:9px;color:var(--text-dim)" id="oref-updated"></span>
+  </div>
+  <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
+  <div class="oref-meta">Source: Red Alert · Pikud Haoref · <span id="oref-interval">10s</span> refresh</div>
 </div>
 
 <!-- TOOLBAR -->
@@ -595,23 +708,35 @@ function setBasemap(name) {
 // ═══════════════════════════════════════════════════════════
 // LAYER GROUPS
 // ═══════════════════════════════════════════════════════════
+// Custom cluster icon factory
+function iranClusterIcon(cluster) {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 'small' : count < 50 ? 'medium' : 'large';
+  return L.divIcon({ html: '<div>' + count + '</div>', className: 'marker-cluster marker-cluster-' + size + ' cluster-iran', iconSize: L.point(40,40) });
+}
+function sirenClusterIcon(cluster) {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 'small' : count < 50 ? 'medium' : 'large';
+  return L.divIcon({ html: '<div>' + count + '</div>', className: 'marker-cluster marker-cluster-' + size + ' cluster-siren', iconSize: L.point(40,40) });
+}
+
 const layers = {
   borders: L.layerGroup(),
   military: L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 9 }),
   infra: L.layerGroup(),
-  nuclear: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
-  missiles: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
-  naval: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
-  ad: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
-  airbases: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
-  irgc: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
-  energy: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8 }),
+  nuclear: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
+  missiles: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
+  naval: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
+  ad: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
+  airbases: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
+  irgc: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
+  energy: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
   sam: L.layerGroup(),
   waterways: L.layerGroup(),
   patrol: L.layerGroup(),
-  fires: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7 }),
+  fires: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, iconCreateFunction: iranClusterIcon }),
   osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7 }),
-  sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7 }),
+  sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7, iconCreateFunction: sirenClusterIcon }),
   labels: L.layerGroup(),
   aircraft: L.layerGroup(),
   ships: L.layerGroup(),
@@ -1003,6 +1128,7 @@ updateClock();
 renderAllLayers();
 loadFIRMS();
 loadSirens();
+pollOref();
 updateLayerCount();
 updateMobileButtons();
 
@@ -1015,6 +1141,75 @@ setInterval(() => {
   loadFIRMS();
   loadSirens();
 }, 60000);
+
+// Mobile toolbar toggle helper
+function mtToggle(name, el) {
+  toggleLayer(name);
+  // Update mobile toolbar button styling
+  if (!el) return;
+  const colorMap = { sirens:'active-red', fires:'active-orange', osint:'active-red', military:'active', borders:'active', sam:'active-amber', patrol:'active-green', waterways:'active', aircraft:'active-green', ships:'active', infra:'active-orange', gpsjam:'active-red' };
+  const cls = colorMap[name] || 'active';
+  if (activeState[name]) { el.classList.add(cls); } else { el.classList.remove(cls,'active','active-red','active-orange','active-amber','active-green'); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// PIKUD HAOREF LIVE POLLING
+// ═══════════════════════════════════════════════════════════
+let orefAlerts = [];
+function pollOref() {
+  // Try our proxied feed first, fallback to direct
+  const feedUrl = window.location.pathname.includes('/v2') ? '../oref-alerts.json' : 'oref-alerts.json';
+  fetch(feedUrl, { cache: 'no-store' }).then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    const alerts = Array.isArray(data) ? data : (data.alerts || []);
+    orefAlerts = alerts;
+    updateOrefBanner(alerts);
+    updateSirensFromOref(alerts);
+  }).catch(() => {
+    // No local proxy — try direct Oref API (may be blocked outside IL)
+    fetch('https://www.oref.org.il/WarningMessages/alert/alerts.json', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Referer': 'https://www.oref.org.il/' },
+      cache: 'no-store'
+    }).then(r => r.ok ? r.json() : Promise.reject('blocked'))
+    .then(data => {
+      const alerts = Array.isArray(data) ? data : (data.alerts || []);
+      orefAlerts = alerts;
+      updateOrefBanner(alerts);
+    }).catch(() => {
+      // Can't reach Oref — leave banner as-is
+    });
+  });
+}
+
+function updateOrefBanner(alerts) {
+  const banner = document.getElementById('oref-banner');
+  const status = document.getElementById('oref-status');
+  const updated = document.getElementById('oref-updated');
+  const now = new Date();
+  updated.textContent = 'Updated ' + now.toLocaleTimeString('en-US', { hour12: true });
+
+  if (alerts.length === 0) {
+    banner.classList.remove('alert-active');
+    status.className = 'oref-status safe';
+    status.textContent = 'No active alerts in Israel.';
+    document.getElementById('chip-alert').textContent = '0';
+  } else {
+    banner.classList.add('alert-active');
+    status.className = 'oref-status danger';
+    const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
+    status.textContent = `🚨 ACTIVE: ${alerts.length} alert${alerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
+    document.getElementById('chip-alert').textContent = alerts.length;
+  }
+}
+
+function updateSirensFromOref(alerts) {
+  // Clear and re-add siren markers from Oref data
+  // This requires geocoding Oref area names — use a basic lookup
+  // For now, rely on intel-feed.json which is geocoded by the watcher
+}
+
+// Poll Oref every 10s
+setInterval(pollOref, 10000);
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
