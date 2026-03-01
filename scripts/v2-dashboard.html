@@ -688,8 +688,9 @@ const API_URL = (new URLSearchParams(window.location.search).get('api') || '').r
 const STATIC_BASE = window.location.pathname.includes('/v2') ? '..' : '.';
 
 function dataUrl(endpoint) {
-  if (API_URL) return `${API_URL}/api/${endpoint}`;
-  // Static fallback: map endpoint to file
+  // Oref: always use API if available (real-time 10s)
+  if (API_URL && endpoint === 'oref') return `${API_URL}/api/oref`;
+  // OSINT + FIRMS: always use static intel-feed.json (rich data from watcher export)
   const staticMap = { 'oref': 'oref-alerts.json', 'fires': 'intel-feed.json', 'intel-feed': 'intel-feed.json' };
   return `${STATIC_BASE}/${staticMap[endpoint] || endpoint + '.json'}`;
 }
@@ -1026,7 +1027,6 @@ function renderAllLayers() {
 // LIVE DATA LOADERS
 // ═══════════════════════════════════════════════════════════
 function loadOSINT() {
-  // intel-feed.json is at the repo root, V2 is in /v2/ subdir
   const feedUrl = dataUrl('intel-feed');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no feed'))
   .then(data => {
@@ -1035,11 +1035,12 @@ function loadOSINT() {
     events.forEach(ev => {
       if (!ev.lat || !ev.lon) return;
       count++;
-      const recent = ev.timestamp && (Date.now()/1000 - ev.timestamp) < 86400;
+      const ts = ev.timestamp || ev.ts || 0;
+      const recent = ts && (Date.now()/1000 - ts) < 86400;
       const popup = mkPopup(
         `📌 ${ev.sub_event_type || ev.type || 'OSINT Event'}`,
-        ev.actor1 || ev.source || '',
-        `📍 ${ev.location || ''}<br>📅 ${ev.date || ''}<br>${ev.notes || ev.text || ''}`,
+        ev.actor1 || ev.source || ev.src || '',
+        `📍 ${ev.location || ev.loc || ''}<br>📅 ${ev.date || ''}<br>${ev.notes || ev.text || ''}`,
         recent ? '#ef4444' : '#888'
       );
       mkMarker(ev.lat, ev.lon, '📌', recent ? 'marker-osint' : 'marker-osint', recent ? 22 : 18, popup)
@@ -1055,13 +1056,17 @@ function loadFIRMS() {
   const feedUrl = dataUrl('intel-feed');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
-    const fires = (data.events || data || []).filter(e => (e.sub_event_type || e.type || '').toLowerCase().includes('fire') || (e.sub_event_type || '').includes('FIRMS'));
+    const all = data.events || data || [];
+    const fires = all.filter(e => {
+      const t = (e.sub_event_type || e.type || '').toLowerCase();
+      return t.includes('fire') || t.includes('firms');
+    });
     let count = 0;
     fires.forEach(f => {
       if (!f.lat || !f.lon) return;
       count++;
       mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
-        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || ''}<br>📅 ${f.date || ''}`, '#ff8800')
+        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>📅 ${f.date || ''}`, '#ff8800')
       ).addTo(layers.fires);
     });
     document.getElementById('cnt-fires').textContent = count;
