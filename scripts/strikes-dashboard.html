@@ -163,8 +163,11 @@
   .section-title {
     font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
     letter-spacing: 2.5px; color: var(--accent); margin-bottom: 6px;
+    cursor: pointer; user-select: none;
   }
-  .section-title::before { content: '▸ '; }
+  .section-title::before { content: '▾ '; }
+  .section.collapsed > .section-title::before { content: '▸ '; }
+  .section.collapsed > *:not(.section-title) { display: none !important; }
 
   /* Theater + phase buttons */
   .theater-btns, .phase-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
@@ -953,6 +956,15 @@ function initSearch() {
   });
 }
 
+// ═══ COLLAPSIBLE SECTIONS ═══
+function initCollapsible() {
+  document.querySelectorAll('#panel .section-title').forEach(title => {
+    title.addEventListener('click', () => {
+      title.parentElement.classList.toggle('collapsed');
+    });
+  });
+}
+
 function renderFeed(container) {
   const el = container || document.getElementById('feed');
   if (!el) return;
@@ -1416,7 +1428,7 @@ window.addEventListener('load', () => {
   // Desktop panels
   if (!isMobile()) {
     renderForces(); renderCountries(); renderIranSites(); renderLayerToggles();
-    renderTheaters(); renderPhases(); initSearch();
+    renderTheaters(); renderPhases(); initSearch(); initCollapsible();
     initTimelineBrush();
   }
   // Mobile tabs
