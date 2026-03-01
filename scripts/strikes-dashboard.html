@@ -114,7 +114,7 @@
     position: fixed;
     top: 44px; left: 0;
     right: 340px;
-    bottom: 190px;
+    bottom: 220px;
     z-index: 1;
   }
 
@@ -315,7 +315,7 @@
     left: 0;
     right: 340px;
     bottom: 0;
-    height: 190px;
+    height: 220px;
     background: var(--panel);
     border-top: 1px solid var(--border);
     padding: 8px 16px;
@@ -357,7 +357,7 @@
 
   #timeline-canvas {
     width: 100%;
-    height: 120px;
+    height: 180px;
     cursor: crosshair;
   }
 
@@ -511,13 +511,32 @@ const CONFLICT_PHASES = [
   { name: 'Gaza Ground Op', start: '2023-10-27', end: '2024-01-31', icon: '⚔️', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
   { name: 'True Promise I', start: '2024-04-13', end: '2024-04-14', icon: '🚀', desc: 'Iran → Israel (300+ drones/missiles)', theater: '🇮🇷 IRAN' },
   { name: 'Israel → Isfahan', start: '2024-04-19', end: '2024-04-19', icon: '✈️', desc: 'Israel retaliates on Isfahan', theater: '🇮🇷 IRAN' },
-  { name: 'Haniyeh Assassination', start: '2024-07-31', end: '2024-07-31', icon: '🎯', desc: 'Tehran — Remote explosive', theater: '🇮🇷 IRAN' },
+  { name: 'Haniyeh Kill', start: '2024-07-31', end: '2024-07-31', icon: '🎯', desc: 'Tehran — Remote explosive', theater: '🇮🇷 IRAN' },
   { name: 'Pager Attacks', start: '2024-09-17', end: '2024-09-18', icon: '💥', desc: 'Hezbollah pager/radio explosions', theater: '🇱🇧 LEBANON' },
-  { name: 'True Promise II', start: '2024-10-01', end: '2024-10-01', icon: '🚀', desc: 'Iran → Israel (180+ ballistic missiles)', theater: '🇮🇷 IRAN' },
+  { name: 'Nasrallah Kill', start: '2024-09-27', end: '2024-09-28', icon: '💀', desc: 'Beirut — Dahieh bunker buster strike', theater: '🇱🇧 LEBANON' },
+  { name: 'True Promise II', start: '2024-10-01', end: '2024-10-01', icon: '🚀', desc: 'Iran → Israel (180+ ballistic missiles)', theater: '🇮🇱🇵🇸 ISRAEL/GAZA' },
   { name: 'Days of Repentance', start: '2024-10-26', end: '2024-10-26', icon: '🇮🇱', desc: 'Israel → Iran (massive multi-site strike)', theater: '🇮🇷 IRAN' },
+  { name: 'US-Israel → Tehran', start: '2026-02-28', end: '2026-03-01', icon: '🇺🇸🇮🇱', desc: 'Joint US-Israel strikes on Iranian nuclear/military sites', theater: '🇮🇷 IRAN' },
   { name: 'Iran-Israel War', start: '2024-04-13', end: null, icon: '⚔️🇮🇷', desc: 'From True Promise I to present' },
   { name: 'Last 30 days', start: '__LAST30__', end: null, icon: '📅' },
   { name: 'Last 7 days', start: '__LAST7__', end: null, icon: '📅' },
+];
+
+// Timeline annotations — labeled flags on specific dates
+const TIMELINE_ANNOTATIONS = [
+  { date: '2023-10-07', label: 'OCT 7', color: '#ff0040', desc: 'Hamas attack on Israel' },
+  { date: '2023-10-27', label: 'GROUND OP', color: '#0099ff', desc: 'IDF enters Gaza' },
+  { date: '2024-01-12', label: 'US→HOUTHIS', color: '#3355cc', desc: 'US/UK strike Houthi targets in Yemen' },
+  { date: '2024-02-02', label: 'US→IRAQ/SYR', color: '#3355cc', desc: 'US strikes 85 targets across Iraq & Syria' },
+  { date: '2024-04-13', label: 'TRUE PROMISE I', color: '#ff2222', desc: 'Iran launches 300+ drones & missiles at Israel' },
+  { date: '2024-04-19', label: 'IL→ISFAHAN', color: '#0099ff', desc: 'Israel strikes Isfahan' },
+  { date: '2024-07-31', label: 'HANIYEH', color: '#ff8800', desc: 'Hamas leader assassinated in Tehran' },
+  { date: '2024-09-17', label: 'PAGERS', color: '#ff8800', desc: 'Hezbollah pager/radio explosions' },
+  { date: '2024-09-27', label: 'NASRALLAH', color: '#ff8800', desc: 'Hezbollah leader killed — Beirut bunker buster' },
+  { date: '2024-10-01', label: 'TRUE PROMISE II', color: '#ff2222', desc: 'Iran launches 180+ ballistic missiles at Israel' },
+  { date: '2024-10-26', label: 'DAYS OF REPENTANCE', color: '#0099ff', desc: 'Israel strikes Iran — Parchin, Tehran, S-300s' },
+  { date: '2024-12-08', label: 'ASSAD FALLS', color: '#777', desc: 'Syrian regime collapses' },
+  { date: '2026-02-28', label: 'US+IL→TEHRAN', color: '#ffdd00', desc: 'Joint US-Israel strikes on Iran nuclear & military sites' },
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -941,6 +960,48 @@ function initTimelineBrush() {
   canvas.addEventListener('dblclick', () => {
     clearTimeFilter();
   });
+
+  // Hover tooltip on timeline
+  const tooltip = document.createElement('div');
+  tooltip.style.cssText = `
+    position:fixed; pointer-events:none; z-index:9999;
+    background:rgba(8,12,22,0.95); border:1px solid var(--accent);
+    padding:5px 8px; border-radius:3px;
+    font-family:'JetBrains Mono'; font-size:10px; color:#c0c8d8;
+    display:none; white-space:nowrap; backdrop-filter:blur(8px);
+  `;
+  document.body.appendChild(tooltip);
+
+  canvas.addEventListener('mousemove', (e) => {
+    if (tlDragging) { tooltip.style.display = 'none'; return; }
+    if (!allDaysSorted.length) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const usableW = rect.width - tlPad * 2;
+    const idx = Math.floor((x - tlPad) / usableW * allDaysSorted.length);
+    if (idx < 0 || idx >= allDaysSorted.length) { tooltip.style.display = 'none'; return; }
+
+    const day = allDaysSorted[idx];
+    const dayEvents = EVENTS.filter(ev => ev.date === day);
+    const dayFat = dayEvents.reduce((s,ev) => s + (ev.fatalities||0), 0);
+
+    // Check if any annotation on this date
+    const ann = TIMELINE_ANNOTATIONS.find(a => a.date === day);
+
+    let html = `<b style="color:var(--accent)">${day}</b><br>`;
+    html += `Events: <b>${dayEvents.length}</b>`;
+    if (dayFat > 0) html += ` · KIA: <b style="color:var(--critical)">${dayFat}</b>`;
+    if (ann) html += `<br><span style="color:${ann.color}">⚡ ${ann.desc}</span>`;
+
+    tooltip.innerHTML = html;
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 12) + 'px';
+    tooltip.style.top = (e.clientY - 40) + 'px';
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
 }
 
 function renderFeed() {
@@ -967,9 +1028,9 @@ function drawTimeline() {
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
   const W = canvas.width = canvas.parentElement.clientWidth * dpr;
-  const H = canvas.height = 120 * dpr;
+  const H = canvas.height = 180 * dpr;
   canvas.style.width = canvas.parentElement.clientWidth + 'px';
-  canvas.style.height = '120px';
+  canvas.style.height = '180px';
   ctx.clearRect(0, 0, W, H);
 
   // Always use ALL events for timeline (so you can see what you're filtering within)
@@ -1047,22 +1108,76 @@ function drawTimeline() {
     ctx.strokeRect(x1, 0, x2 - x1, chartH);
   }
 
-  // Conflict phase markers on timeline
-  for (const phase of CONFLICT_PHASES) {
-    if (!phase.start || phase.start.startsWith('__')) continue;
-    const idx = days.indexOf(phase.start);
-    if (idx < 0) continue;
-    const x = pad + idx * barW + barW / 2;
-    // Small triangle marker
-    ctx.fillStyle = '#ff4444';
-    ctx.globalAlpha = 0.7;
+  // Conflict phase markers on timeline — labeled flags
+  const flagH = 14 * dpr;
+  let lastFlagX = -999; // prevent overlapping labels
+  let flagRow = 0;
+  const flagPositions = []; // track for stacking
+
+  for (const ann of TIMELINE_ANNOTATIONS) {
+    const idx = days.indexOf(ann.date);
+    // If exact date not found, find closest
+    let drawIdx = idx;
+    if (drawIdx < 0) {
+      drawIdx = days.findIndex(d => d >= ann.date);
+      if (drawIdx < 0) continue;
+    }
+
+    const x = pad + drawIdx * barW + barW / 2;
+
+    // Vertical line from top to bottom of chart
+    ctx.strokeStyle = ann.color;
+    ctx.lineWidth = 1.5 * dpr;
+    ctx.globalAlpha = 0.5;
+    ctx.setLineDash([3 * dpr, 3 * dpr]);
     ctx.beginPath();
-    ctx.moveTo(x - 4*dpr, chartH + 3*dpr);
-    ctx.lineTo(x + 4*dpr, chartH + 3*dpr);
-    ctx.lineTo(x, chartH - 3*dpr);
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, chartH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // Small diamond at the top
+    ctx.fillStyle = ann.color;
+    ctx.beginPath();
+    ctx.moveTo(x, 3 * dpr);
+    ctx.lineTo(x + 4 * dpr, 7 * dpr);
+    ctx.lineTo(x, 11 * dpr);
+    ctx.lineTo(x - 4 * dpr, 7 * dpr);
     ctx.closePath();
     ctx.fill();
+
+    // Label — stagger vertically if too close to previous
+    const labelW = ctx.measureText(ann.label).width + 8 * dpr;
+    let labelY = 0;
+
+    // Check overlap with previous flag positions
+    let row = 0;
+    for (const prev of flagPositions) {
+      if (Math.abs(x - prev.x) < Math.max(prev.w, labelW) * 0.6) {
+        row = Math.max(row, prev.row + 1);
+      }
+    }
+    flagPositions.push({ x, w: labelW, row });
+
+    labelY = (row * (flagH + 2 * dpr));
+
+    // Label background
+    const lx = x - labelW / 2;
+    const ly = labelY;
+    ctx.fillStyle = 'rgba(8,12,22,0.85)';
+    ctx.fillRect(lx, ly, labelW, flagH);
+    ctx.strokeStyle = ann.color;
+    ctx.lineWidth = 1 * dpr;
+    ctx.globalAlpha = 0.7;
+    ctx.strokeRect(lx, ly, labelW, flagH);
     ctx.globalAlpha = 1;
+
+    // Label text
+    ctx.fillStyle = ann.color;
+    ctx.font = `bold ${7 * dpr}px 'JetBrains Mono'`;
+    ctx.textAlign = 'center';
+    ctx.fillText(ann.label, x, ly + flagH - 3 * dpr);
   }
 
   // Date labels
@@ -1123,12 +1238,13 @@ window.addEventListener('load', () => {
   renderPhases();
   initTimelineBrush();
 
-  // Default: "Iran-Israel War" phase (index 9) — from True Promise I to present
-  const iranWarPhase = CONFLICT_PHASES[9]; // "Iran-Israel War"
+  // Default: "Iran-Israel War" phase (index 11) — from True Promise I to present
+  const iranWarIdx = CONFLICT_PHASES.findIndex(p => p.name === 'Iran-Israel War');
+  const iranWarPhase = CONFLICT_PHASES[iranWarIdx];
   timeStart = iranWarPhase.start;
   timeEnd = iranWarPhase.end;
   document.querySelectorAll('.phase-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.phase-btn')[9].classList.add('active');
+  document.querySelectorAll('.phase-btn')[iranWarIdx].classList.add('active');
 
   applyFilter();
   drawTimeline();
