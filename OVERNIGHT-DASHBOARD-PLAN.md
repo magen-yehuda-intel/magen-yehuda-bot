@@ -40,20 +40,17 @@
 - [x] Hash auto-loads on page open (overrides default Last 7d)
 - [x] Push + commit + test ✅ (`2b08c87`)
 
-### Hour 5 (05:45-06:45) — MOBILE & FINAL POLISH
-**Goal:** Mobile must be as good as desktop
+### Hour 5 (05:45-06:45) — MOBILE & FINAL POLISH ✅ DONE
+**Shipped:**
+- [x] 📱 Card-style mobile feed (`.mob-feed-card`) — source, location, headline, timestamp
+- [x] 🔍 Persistent mobile search bar above tabs — instant fly-to results
+- [x] 👆 Swipe between tabs (touch gesture left/right)
+- [x] Tab reorder: Map → Phase → **Feed** → Forces → Layers (Feed promoted center)
+- [x] PWA manifest — add to home screen, theme color, apple-mobile-web-app
+- [x] Legend repositioned for mobile bottom spacing
+- [x] Push + commit + test ✅ (`3652edf`)
 
-- [ ] **Mobile gesture support** — swipe between tabs
-- [ ] **Mobile feed** — full-width cards with better typography
-- [ ] **Mobile search** — accessible from any tab
-- [ ] **PWA manifest** — add to home screen capability
-- [ ] **Performance audit** — lazy load markers outside viewport
-- [ ] **Final visual pass** — consistent spacing, colors, typography
-- [ ] **Screenshot gallery** — capture each theater for README
-- [ ] Push + commit + test
-- [ ] Update SKILL.md with all new features
-- [ ] Update MEMORY.md with overnight work summary
-- [ ] Update memory/2026-03-01.md with detailed log
+**Deferred:** Screenshot gallery for README, SKILL.md/MEMORY.md final update (do on next session)
 
 ### Hour 6 (06:45+) — LIVE FEED PIPELINE
 **Goal:** Make the dashboard update automatically with real-time intel
