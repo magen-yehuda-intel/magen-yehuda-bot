@@ -35,11 +35,10 @@ Config fields (in config.json):
 
 import json
 import os
+import subprocess
 import sys
 import time
-import urllib.request
 import urllib.parse
-import urllib.error
 from datetime import datetime, timedelta, timezone
 
 # ═══════════════════════════════════════════════════════════
@@ -185,21 +184,30 @@ class ACLEDClient:
             }, f)
 
     def _request_token(self):
-        """Get new OAuth token using credentials."""
+        """Get new OAuth token using credentials (curl for Cloudflare bypass)."""
         data = urllib.parse.urlencode({
             "username": self.email,
             "password": self.password,
             "grant_type": "password",
             "client_id": self.CLIENT_ID,
-        }).encode()
-        req = urllib.request.Request(self.TOKEN_URL, data=data, method="POST")
-        req.add_header("Content-Type", "application/x-www-form-urlencoded")
+        })
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                token_data = json.loads(resp.read())
-                self._save_token(token_data)
-                print(f"  [ACLED] New token obtained, expires in {token_data.get('expires_in', '?')}s", file=sys.stderr)
-                return True
+            result = subprocess.run(
+                ["curl", "-s", "-X", "POST", self.TOKEN_URL,
+                 "-H", "Content-Type: application/x-www-form-urlencoded",
+                 "-d", data],
+                capture_output=True, text=True, timeout=30,
+            )
+            if result.returncode != 0:
+                print(f"  [ACLED] curl token request failed: {result.stderr[:200]}", file=sys.stderr)
+                return False
+            token_data = json.loads(result.stdout)
+            if "access_token" not in token_data:
+                print(f"  [ACLED] Token response missing access_token: {result.stdout[:200]}", file=sys.stderr)
+                return False
+            self._save_token(token_data)
+            print(f"  [ACLED] New token obtained, expires in {token_data.get('expires_in', '?')}s", file=sys.stderr)
+            return True
         except Exception as e:
             print(f"  [ACLED] Token request failed: {e}", file=sys.stderr)
             return False
@@ -212,18 +220,24 @@ class ACLEDClient:
             "refresh_token": self.refresh_token,
             "grant_type": "refresh_token",
             "client_id": self.CLIENT_ID,
-        }).encode()
-        req = urllib.request.Request(self.TOKEN_URL, data=data, method="POST")
-        req.add_header("Content-Type", "application/x-www-form-urlencoded")
+        })
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                token_data = json.loads(resp.read())
-                self._save_token(token_data)
-                print(f"  [ACLED] Token refreshed", file=sys.stderr)
-                return True
+            result = subprocess.run(
+                ["curl", "-s", "-X", "POST", self.TOKEN_URL,
+                 "-H", "Content-Type: application/x-www-form-urlencoded",
+                 "-d", data],
+                capture_output=True, text=True, timeout=30,
+            )
+            if result.returncode == 0:
+                token_data = json.loads(result.stdout)
+                if "access_token" in token_data:
+                    self._save_token(token_data)
+                    print(f"  [ACLED] Token refreshed", file=sys.stderr)
+                    return True
         except Exception:
-            # Refresh failed, try full auth
-            return self._request_token()
+            pass
+        # Refresh failed, try full auth
+        return self._request_token()
 
     def _ensure_token(self):
         """Ensure we have a valid token."""
@@ -260,30 +274,44 @@ class ACLEDClient:
             params["fatalities_where"] = ">"
 
         url = f"{self.API_BASE}?" + urllib.parse.urlencode(params)
-        req = urllib.request.Request(url)
-        req.add_header("Authorization", f"Bearer {self.access_token}")
 
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp:
-                data = json.loads(resp.read())
-                events = data.get("data", [])
-                count = data.get("count", len(events))
-                print(f"  [ACLED] Fetched {len(events)} events (total: {count})", file=sys.stderr)
-                return events
-        except urllib.error.HTTPError as e:
-            if e.code == 401:
-                # Token expired during request — retry once
-                if self._request_token():
-                    req.remove_header("Authorization")
-                    req.add_header("Authorization", f"Bearer {self.access_token}")
-                    try:
-                        with urllib.request.urlopen(req, timeout=120) as resp:
-                            data = json.loads(resp.read())
-                            return data.get("data", [])
-                    except Exception as e2:
-                        print(f"  [ACLED] Retry failed: {e2}", file=sys.stderr)
-            else:
-                print(f"  [ACLED] API error {e.code}: {e.read().decode()[:200]}", file=sys.stderr)
+            result = subprocess.run(
+                ["curl", "-s", "-H", f"Authorization: Bearer {self.access_token}", url],
+                capture_output=True, text=True, timeout=120,
+            )
+            if result.returncode != 0:
+                print(f"  [ACLED] curl fetch failed: {result.stderr[:200]}", file=sys.stderr)
+                return []
+
+            data = json.loads(result.stdout)
+
+            # Check for auth error
+            if "error" in data or "message" in data:
+                msg = data.get("error", data.get("message", ""))
+                if "401" in str(msg) or "unauthorized" in str(msg).lower() or "denied" in str(msg).lower():
+                    print(f"  [ACLED] Auth error, refreshing token...", file=sys.stderr)
+                    if self._request_token():
+                        result2 = subprocess.run(
+                            ["curl", "-s", "-H", f"Authorization: Bearer {self.access_token}", url],
+                            capture_output=True, text=True, timeout=120,
+                        )
+                        if result2.returncode == 0:
+                            data = json.loads(result2.stdout)
+                        else:
+                            return []
+                    else:
+                        return []
+                else:
+                    print(f"  [ACLED] API error: {str(data)[:200]}", file=sys.stderr)
+                    return []
+
+            events = data.get("data", [])
+            count = data.get("count", len(events))
+            print(f"  [ACLED] Fetched {len(events)} events (total: {count})", file=sys.stderr)
+            return events
+        except json.JSONDecodeError as e:
+            print(f"  [ACLED] Invalid JSON response: {result.stdout[:200]}", file=sys.stderr)
             return []
         except Exception as e:
             print(f"  [ACLED] Fetch error: {e}", file=sys.stderr)
