@@ -896,6 +896,19 @@ for a in alerts:
     if is_confirmed and not any(e.get('confirmed_at') for e in all_sources):
         all_sources[0]['confirmed_at'] = now
 
+    # SUPPRESS: once confirmed alert has been sent, don't send it again
+    # Only send the FIRST confirmation. After that, skip silently.
+    already_sent = any(e.get('confirmed_sent') for e in all_sources)
+    if is_confirmed and already_sent:
+        # Already announced — don't spam
+        with open(corr_file, 'w') as f:
+            json.dump(corr, f)
+        continue
+
+    # Mark that we're about to send the confirmed alert
+    if is_confirmed:
+        all_sources[0]['confirmed_sent'] = True
+
     # Build source list for display
     source_names = [e['channel'] for e in all_sources]
     source_list_en = ', '.join(source_names[-6:])  # last 6
