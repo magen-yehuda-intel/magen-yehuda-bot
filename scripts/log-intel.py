@@ -18,12 +18,19 @@ def get_log_path(state_dir):
     return os.path.join(state_dir, "intel-log.jsonl")
 
 def append_event(state_dir, event):
-    """Append a structured event to the intel log."""
+    """Append a structured event to the intel log + Azure Table Storage."""
     path = get_log_path(state_dir)
     event["logged_at"] = time.time()
     event["logged_utc"] = datetime.now(timezone.utc).isoformat()
+    # File backup (always)
     with open(path, "a") as f:
         f.write(json.dumps(event, ensure_ascii=False) + "\n")
+    # DB write (best-effort, never blocks)
+    try:
+        from db import insert_event as db_insert
+        db_insert(event)
+    except Exception:
+        pass  # DB is optional; file is the backup
 
 def read_events(state_dir, since_hours=1, event_type=None):
     """Read events from the log, filtered by time and type."""
