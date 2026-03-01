@@ -794,6 +794,7 @@ check_osint() {
 
   # ══ BREAKING NEWS CHECK ══
   # Extract any alerts flagged as breaking — send immediately as CRITICAL
+  # Multi-source corroboration: 3+ reputable sources on same topic = CONFIRMED
   local breaking_json
   breaking_json=$(python3 - "$raw_json" <<'PYEOF'
 import json, sys, html as h
@@ -805,40 +806,117 @@ print(json.dumps(breaking))
 PYEOF
   )
   if [ -n "$breaking_json" ] && [ "$breaking_json" != "null" ]; then
-    # Process each breaking alert
-    python3 - "$breaking_json" <<'PYEOF'
-import json, sys, html as h, os
+    # Process breaking alerts with corroboration check
+    python3 - "$breaking_json" "$STATE_DIR" <<'PYEOF'
+import json, sys, os, time, html as h
+
+CORROBORATION_THRESHOLD = 3   # unique sources needed to confirm
+CORROBORATION_WINDOW = 7200   # 2 hours
+
+# Reputable sources whose reporting counts for confirmation
+REPUTABLE = {
+    'reuters', 'ap', 'ap news', 'associated press',
+    'times of israel', 'timesofisrael',
+    'bbc', 'cnn', 'al jazeera', 'aljazeera',
+    'ynet', 'ynetnews', 'haaretz', 'jpost', 'jerusalem post',
+    'sky news', 'fox news', 'nbc', 'abc news', 'nytimes', 'new york times',
+    'washington post', 'wall street journal',
+    'sky news arabia', 'france24',
+    'intel_point', 'intelintel', 'aurora_intel', 'oaboreal',
+    'sentdefender', 'conflicts',
+}
 
 alerts = json.loads(sys.argv[1])
+state_dir = sys.argv[2]
+corr_file = os.path.join(state_dir, 'breaking-corroboration.json')
+
+# Load corroboration state
+corr = {}
+if os.path.exists(corr_file):
+    try:
+        corr = json.load(open(corr_file))
+    except Exception:
+        corr = {}
+
+now = time.time()
+
+# Expire old entries
+for topic in list(corr.keys()):
+    corr[topic] = [e for e in corr[topic] if now - e['ts'] < CORROBORATION_WINDOW]
+    if not corr[topic]:
+        del corr[topic]
+
 for a in alerts:
     text = h.escape(a.get('text', ''))
     source = a.get('source', '?')
     channel = a.get('channel', '?')
     link = a.get('link', '')
-    topic = a.get('breaking_topic', '')
+    topic = a.get('breaking_topic', 'unknown')
+
+    # Normalize source for matching
+    src_lower = channel.lower().replace('@', '').replace('_', ' ')
+    source_lower = source.lower()
+
+    # Register this source in corroboration tracker
+    if topic not in corr:
+        corr[topic] = []
+
+    # Deduplicate — don't count same source twice
+    existing_sources = {e['source'] for e in corr[topic]}
+    source_id = src_lower or source_lower
+    if source_id not in existing_sources:
+        corr[topic].append({
+            'source': source_id,
+            'channel': channel,
+            'ts': now,
+            'reputable': any(r in src_lower for r in REPUTABLE) or any(r in source_lower for r in REPUTABLE)
+        })
+
+    # Count unique reputable sources
+    reputable_sources = [e for e in corr[topic] if e.get('reputable')]
+    all_sources = corr[topic]
+    n_reputable = len(reputable_sources)
+    n_total = len(all_sources)
+
+    is_confirmed = n_reputable >= CORROBORATION_THRESHOLD
+
+    # Build source list for display
+    source_names = [e['channel'] for e in all_sources]
+    source_list_en = ', '.join(source_names[-6:])  # last 6
+    source_list_he = source_list_en  # source names stay in English
 
     link_tag = f'\n🔗 <a href="{link}">Source</a>' if link else ''
 
-    # Write to temp files for bash to read
+    if is_confirmed:
+        footer_en = f'✅ <b>CONFIRMED — reported by {n_reputable} reputable sources</b>\n📰 {source_list_en}'
+        footer_he = f'\u200F✅ <b>מאומת — דווח על ידי {n_reputable} מקורות אמינים</b>\n\u200F📰 {source_list_he}'
+    else:
+        footer_en = f'⚠️ <b>UNVERIFIED — {n_total} source{"s" if n_total > 1 else ""} so far, awaiting confirmation</b>'
+        footer_he = f'\u200F⚠️ <b>לא מאומת — {n_total} מקור{"ות" if n_total > 1 else ""} עד כה, ממתין לאישור</b>'
+
     with open('/tmp/magen-breaking-he.txt', 'w') as f:
-        f.write(f"""\u200F🚨🚨🚨 <b>ידיעה חדשותית דחופה</b> 🚨🚨🚨
+        f.write(f"""\u200F🚨🚨🚨 <b>{'ידיעה מאומתת' if is_confirmed else 'ידיעה חדשותית דחופה'}</b> 🚨🚨🚨
 \u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 \u200F⚡ <b>מקור:</b> {channel} ({source})
 
 \u200F{text}{link_tag}
 
 \u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-\u200F⚠️ <b>לא מאומת — ממתין לאישור רשמי</b>""")
+{footer_he}""")
 
     with open('/tmp/magen-breaking-en.txt', 'w') as f:
-        f.write(f"""🚨🚨🚨 <b>BREAKING NEWS</b> 🚨🚨🚨
+        f.write(f"""🚨🚨🚨 <b>{'CONFIRMED' if is_confirmed else 'BREAKING NEWS'}</b> 🚨🚨🚨
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚡ <b>Source:</b> {channel} ({source})
 
 {text}{link_tag}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ <b>UNVERIFIED — Awaiting official confirmation</b>""")
+{footer_en}""")
+
+# Save corroboration state
+with open(corr_file, 'w') as f:
+    json.dump(corr, f)
 PYEOF
 
     if [ -f /tmp/magen-breaking-he.txt ] && [ -f /tmp/magen-breaking-en.txt ]; then
