@@ -898,7 +898,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     </div>
     <div class="feed-updated" id="feed-updated"><span class="refresh-spin" id="feed-spinner">↻</span> <span id="feed-age">connecting...</span></div>
     <div class="feed-time-bar" id="feed-time-bar">
-      <span class="feed-time-chip active" data-hours="1">1H</span>
+      <span class="feed-time-chip active" data-hours="0.25">15M</span>
+      <span class="feed-time-chip" data-hours="1">1H</span>
       <span class="feed-time-chip" data-hours="6">6H</span>
       <span class="feed-time-chip" data-hours="24">24H</span>
       <span class="feed-time-chip" data-hours="48">48H</span>
@@ -1067,7 +1068,7 @@ function toggleLegend() {
 // LIVE FEED
 // ═══════════════════════════════════════════════════════════
 let feedEvents = [];
-let feedTimeHours = 1;
+let feedTimeHours = 0.25;
 let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
@@ -1307,7 +1308,7 @@ function syncMapToFeed() {
 document.getElementById('feed-time-bar').addEventListener('click', e => {
   const chip = e.target.closest('.feed-time-chip');
   if (!chip) return;
-  feedTimeHours = parseInt(chip.dataset.hours);
+  feedTimeHours = parseFloat(chip.dataset.hours);
   document.querySelectorAll('.feed-time-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
   renderFeed();
