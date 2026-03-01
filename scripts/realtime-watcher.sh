@@ -107,6 +107,26 @@ threat_emoji() {
   esac
 }
 
+threat_level_he() {
+  case "$1" in
+    GREEN)    echo "שגרה" ;;
+    ELEVATED) echo "מוגבר" ;;
+    HIGH)     echo "גבוה" ;;
+    CRITICAL) echo "קריטי" ;;
+    *)        echo "$1" ;;
+  esac
+}
+
+reason_he() {
+  case "$1" in
+    "Active sirens in major population centers") echo "צפירות פעילות במרכזי אוכלוסייה" ;;
+    "Active sirens — Pikud HaOref broadcasting") echo "צפירות פעילות — פיקוד העורף משדר" ;;
+    *"stepping down"*)  echo "ירידה בדרגת איום — אין צפירות חדשות" ;;
+    *"returning to baseline"*) echo "חזרה לשגרה — אין צפירות" ;;
+    *) echo "$1" ;;
+  esac
+}
+
 set_threat_level() {
   local new_level="$1"
   local reason="$2"
@@ -118,6 +138,9 @@ set_threat_level() {
 
     local old_emoji=$(threat_emoji "$old_level")
     local new_emoji=$(threat_emoji "$new_level")
+    local new_he=$(threat_level_he "$new_level")
+    local old_he=$(threat_level_he "$old_level")
+    local reason_hebrew=$(reason_he "$reason")
 
     log "⚡ THREAT LEVEL: $old_emoji $old_level → $new_emoji $new_level ($reason)"
     log "   Intervals: Oref=${EFFECTIVE_OREF}s OSINT=${EFFECTIVE_OSINT}s Poly=${EFFECTIVE_POLY}s"
@@ -136,15 +159,16 @@ $old_emoji $old_level → $new_emoji $new_level
 • Polymarket: every ${EFFECTIVE_POLY}s
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    local threat_msg_he="$new_emoji <b>רמת איום: $new_level</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
-$old_emoji $old_level → $new_emoji $new_level
+    local threat_msg_he
+    threat_msg_he=$'\u200F'"$new_emoji <b>רמת איום: $new_he</b>
+"$'\u200F'"━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"$'\u200F'"⏱️ $(TZ="$DISPLAY_TZ" date '+%H:%M:%S %Z')
+"$'\u200F'"$old_emoji $old_he → $new_emoji $new_he
 
-📋 <i>$reason</i>
+"$'\u200F'"📋 <i>$reason_hebrew</i>
 
-⚡ תדירות סריקה עודכנה
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"$'\u200F'"⚡ תדירות סריקה עודכנה
+"$'\u200F'"━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     emit_alert "threat_change" "HIGH" "$threat_msg_he" "$threat_msg_en"
     

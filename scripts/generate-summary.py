@@ -144,17 +144,41 @@ def extract_market_moves(events):
     return moves
 
 
-def extract_threat_changes(events):
+def extract_threat_changes(events, hebrew=False):
     """Extract threat level transitions."""
     changes = []
+    he_map = {"GREEN": "שגרה", "ELEVATED": "מוגבר", "HIGH": "גבוה", "CRITICAL": "קריטי"}
     for ev in events:
         if ev.get("type") == "threat_change":
-            changes.append(f"{ev.get('from', '?')} → {ev.get('to', '?')}: {ev.get('reason', '')}")
+            f = ev.get('from', '?')
+            t = ev.get('to', '?')
+            r = ev.get('reason', '')
+            if hebrew:
+                f = he_map.get(f, f)
+                t = he_map.get(t, t)
+                # Translate common reasons
+                if "major population" in r:
+                    r = "צפירות במרכזי אוכלוסייה"
+                elif "Pikud HaOref" in r:
+                    r = "פיקוד העורף משדר"
+                elif "stepping down" in r:
+                    r = "אין צפירות חדשות"
+                elif "returning to baseline" in r:
+                    r = "חזרה לשגרה"
+            changes.append(f"{f} → {t}: {r}")
     return changes
 
 
 def threat_emoji(level):
     return {"CRITICAL": "⚫", "HIGH": "🔴", "ELEVATED": "🟠", "GREEN": "🟢"}.get(level, "⚪")
+
+
+THREAT_LEVEL_HE = {
+    "GREEN": "שגרה",
+    "ELEVATED": "מוגבר",
+    "HIGH": "גבוה",
+    "CRITICAL": "קריטי",
+}
 
 
 def generate_hebrew(events, stats, now_str):
@@ -165,14 +189,15 @@ def generate_hebrew(events, stats, now_str):
     fires_count = extract_fire_summary(events)
     quakes_count, quake_details = extract_quake_summary(events)
     markets = extract_market_moves(events)
-    threat_changes = extract_threat_changes(events)
+    threat_changes = extract_threat_changes(events, hebrew=True)
     te = threat_emoji(stats["threat"])
+    threat_he = THREAT_LEVEL_HE.get(stats["threat"], stats["threat"])
 
     lines = [
         f"<b>🇮🇱 סיכום מצב שעתי — מגן יהודה</b>",
         f"<i>{now_str}</i>",
         "",
-        f"{te} <b>רמת איום: {stats['threat']}</b>",
+        f"{te} <b>רמת איום: {threat_he}</b>",
         "",
         "━━━━━━━━━━━━━━━━━━━━━━",
     ]
