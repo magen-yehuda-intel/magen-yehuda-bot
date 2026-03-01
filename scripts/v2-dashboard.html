@@ -956,13 +956,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 //   2. Static mode: GitHub Pages JSON files (fallback)
 // Set API_URL to your backend, or leave empty for static mode.
 // ═══════════════════════════════════════════════════════════
-const API_URL = (new URLSearchParams(window.location.search).get('api') || '').replace(/\/+$/, '');
+const API_URL = (new URLSearchParams(window.location.search).get('api') || 'https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io').replace(/\/+$/, '');
 const STATIC_BASE = '.';
 
 function dataUrl(endpoint) {
-  // Oref: always use API if available (real-time 10s)
-  if (API_URL && endpoint === 'oref') return `${API_URL}/api/oref`;
-  // OSINT + FIRMS: always use static intel-feed.json (rich data from watcher export)
+  // When API is available, use it for real-time data
+  if (API_URL) {
+    if (endpoint === 'oref') return `${API_URL}/api/oref`;
+    if (endpoint === 'intel-feed') return `${API_URL}/api/intel-feed?hours=48&limit=2000`;
+    if (endpoint === 'fires') return `${API_URL}/api/intel-feed?hours=24&limit=500`;
+  }
+  // Fallback to static files
   const staticMap = { 'oref': 'oref-alerts.json', 'fires': 'intel-feed.json', 'intel-feed': 'intel-feed.json' };
   return `${STATIC_BASE}/${staticMap[endpoint] || endpoint + '.json'}`;
 }
@@ -1123,14 +1127,25 @@ function loadFeed() {
   const spinner = document.getElementById('feed-spinner');
   if (spinner) spinner.classList.add('spinning');
 
-  // Try API first (real-time DB), fall back to static JSON
-  const apiUrl = API_URL ? `${API_URL}/api/intel-feed?hours=${Math.max(feedTimeHours, 6) || 48}` : null;
+  // Merge API (real-time DB) + static JSON (backup) for best coverage
+  const apiUrl = API_URL ? `${API_URL}/api/intel-feed?hours=48&limit=2000` : null;
   const staticUrl = `${STATIC_BASE}/intel-feed.json`;
 
-  const fetchData = apiUrl
-    ? fetch(apiUrl).then(r => r.ok ? r.json() : Promise.reject('api-fail'))
-        .catch(() => fetch(staticUrl).then(r => r.ok ? r.json() : Promise.reject('no')))
-    : fetch(staticUrl).then(r => r.ok ? r.json() : Promise.reject('no'));
+  const fetchData = Promise.all([
+    apiUrl ? fetch(apiUrl).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null),
+    fetch(staticUrl).then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([apiData, staticData]) => {
+    const apiEvents = apiData ? (apiData.events || []) : [];
+    const staticEvents = staticData ? (staticData.events || staticData || []) : [];
+    // Merge: dedup by src+ts
+    const seen = new Set();
+    const merged = [];
+    for (const e of [...apiEvents, ...staticEvents]) {
+      const key = `${e.src||e.source||''}|${e.ts||e.timestamp||0}|${(e.text||'').slice(0,40)}`;
+      if (!seen.has(key)) { seen.add(key); merged.push(e); }
+    }
+    return { events: merged };
+  });
 
   fetchData.then(data => {
     feedEvents = (data.events || data || []).sort((a,b) => (b.ts||0) - (a.ts||0));
