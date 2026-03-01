@@ -527,8 +527,22 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .feed-item {
   padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.03);
   cursor:pointer; transition:background 0.15s;
+  position:relative;
 }
 .feed-item:hover { background:rgba(255,255,255,0.03); }
+.feed-item .feed-tooltip {
+  display:none; position:absolute; left:16px; right:16px; top:100%; z-index:10;
+  background:rgba(5,5,16,0.97); border:1px solid rgba(6,182,212,0.3);
+  border-radius:6px; padding:10px 12px; font-size:12px; line-height:1.5;
+  color:var(--text); box-shadow:0 4px 20px rgba(0,0,0,0.5);
+  backdrop-filter:blur(12px); pointer-events:none;
+  max-height:200px; overflow-y:auto;
+}
+.feed-item:hover .feed-tooltip { display:block; animation: tooltipFadeIn 2s forwards; }
+@keyframes tooltipFadeIn {
+  0%, 90% { opacity:0; visibility:hidden; }
+  100% { opacity:1; visibility:visible; }
+}
 .feed-item-header {
   display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;
 }
@@ -1032,7 +1046,9 @@ function renderFeed() {
     const sideColor = SIDE_COLORS[e.side] || '#6b7280';
     const breaking = e.breaking ? ' breaking' : '';
     const text = (e.text || '').length > 180 ? e.text.substring(0, 180) + '…' : (e.text || '');
-    return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="${e.date} ${e.time}">
+    const fullText = (e.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const needsTooltip = (e.text || '').length > 100;
+    return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="">
       <div class="feed-item-header">
         <span class="feed-item-source">${e.src || ''}</span>
         <span class="feed-item-time">${ago}</span>
@@ -1042,6 +1058,7 @@ function renderFeed() {
         ${e.loc || ''}
       </div>
       <div class="feed-item-text">${text}</div>
+      ${needsTooltip ? `<div class="feed-tooltip">${fullText}</div>` : ''}
     </div>`;
   }).join('');
   list.innerHTML = html;
