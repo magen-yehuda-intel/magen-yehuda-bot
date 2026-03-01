@@ -849,7 +849,18 @@ function renderPhases(container) {
 function renderFeed(container) {
   const el = container || document.getElementById('feed');
   if (!el) return;
-  const recent = [...filteredEvents].sort((a,b) => b.date.localeCompare(a.date)).filter(e => e.location || e.notes).slice(0, isMobile() ? 30 : 25);
+  const sorted = [...filteredEvents].sort((a,b) => b.date.localeCompare(a.date)).filter(e => e.location || e.notes);
+  // Deduplicate by date+actor+location+notes
+  const seen = new Set();
+  const recent = [];
+  const limit = isMobile() ? 30 : 25;
+  for (const e of sorted) {
+    const key = e.date + '|' + (e.actor1||'') + '|' + (e.location||'') + '|' + (e.notes||'').substring(0,60);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recent.push(e);
+    if (recent.length >= limit) break;
+  }
   el.innerHTML = recent.map((ev, i) => {
     const color = SIDE_COLORS[ev.side] || '#888';
     const headline = ev.notes ? `<div style="color:#ccc;font-size:8px;margin-top:2px;line-height:1.3;white-space:normal">${ev.notes.length > 140 ? ev.notes.substring(0,140) + '…' : ev.notes}</div>` : '';
