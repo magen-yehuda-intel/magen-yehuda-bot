@@ -379,6 +379,25 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .oref-status.danger { color:var(--red); font-weight:700; animation:siren-pulse 0.8s ease-in-out infinite alternate; }
 .oref-meta { font-size:9px; color:rgba(6,182,212,0.7); margin-top:2px; }
 
+/* Oref ticker mode (collapsed) */
+#oref-banner.ticker-mode {
+  padding:3px 12px; overflow:hidden;
+}
+#oref-banner.ticker-mode .oref-title { display:none; }
+#oref-banner.ticker-mode .oref-status { 
+  font-size:10px; margin:0; white-space:nowrap;
+  display:inline-block; animation: tickerScroll 15s linear infinite;
+}
+#oref-banner.ticker-mode .oref-meta { display:none; }
+@keyframes tickerScroll {
+  0% { transform:translateX(100%); }
+  100% { transform:translateX(-100%); }
+}
+/* When alerts are active in ticker mode, override to red pulse */
+#oref-banner.ticker-mode.alert-active .oref-status {
+  color:var(--red); font-weight:700;
+}
+
 /* ═══ MOBILE HORIZONTAL TOOLBAR ═══ */
 #mobile-toolbar {
   display:none;
@@ -632,6 +651,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- TOOLBAR -->
 <div id="toolbar">
+  <div class="tb-btn active" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
+    <span>📡</span><div class="tb-tooltip">Live Feed</div>
+  </div>
+  <div class="tb-btn active" data-layer="oref-toggle" data-color="red" onclick="toggleOrefBanner()">
+    <span>🚨</span><div class="tb-tooltip">Pikud HaOref Banner</div>
+  </div>
+  <div style="height:1px;width:30px;background:rgba(6,182,212,0.3);margin:6px 0"></div>
   <div class="tb-btn" data-layer="sidebar" data-color="blue" onclick="toggleSidebar()">
     <span>☰</span><div class="tb-tooltip">Layers & Assets</div>
   </div>
@@ -679,9 +705,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
-  <div class="tb-btn" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
-    <span>📡</span><div class="tb-tooltip">Live Feed</div>
-  </div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
     <span>📋</span><div class="tb-tooltip">Legend</div>
   </div>
@@ -967,6 +990,27 @@ function toggleFeed() {
   const btn = document.querySelector('.tb-btn[data-layer="feed"]');
   if (btn) btn.classList.toggle('active', isOpen);
   if (isOpen && feedEvents.length === 0) loadFeed();
+}
+
+let orefBannerState = 'full'; // full → ticker → hidden
+function toggleOrefBanner() {
+  const banner = document.getElementById('oref-banner');
+  const btn = document.querySelector('.tb-btn[data-layer="oref-toggle"]');
+  if (orefBannerState === 'full') {
+    orefBannerState = 'ticker';
+    banner.classList.add('ticker-mode');
+    banner.style.display = '';
+    if (btn) { btn.classList.remove('active'); btn.style.opacity = '0.6'; }
+  } else if (orefBannerState === 'ticker') {
+    orefBannerState = 'hidden';
+    banner.style.display = 'none';
+    if (btn) { btn.classList.remove('active'); btn.style.opacity = '0.3'; }
+  } else {
+    orefBannerState = 'full';
+    banner.classList.remove('ticker-mode');
+    banner.style.display = '';
+    if (btn) { btn.classList.add('active'); btn.style.opacity = '1'; }
+  }
 }
 
 function loadFeed() {
@@ -1518,6 +1562,9 @@ loadSirens();
 pollOref();
 updateLayerCount();
 updateMobileButtons();
+
+// Auto-open live feed on load
+setTimeout(() => toggleFeed(), 500);
 
 // Show data mode
 document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
