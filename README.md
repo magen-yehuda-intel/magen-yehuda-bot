@@ -144,6 +144,7 @@ bash ctl.sh stop
 │    ├─ 🐦 8 CTI Twitter accounts                            │
 │    └─ 📰 4 dark web / breach RSS feeds                     │
 │  🚢 Naval tracking      every 5-30min (AIS)               │
+│  ⚔️ Strikes map data     every 6h (ACLED + local sensors)  │
 │  🎯 Strike correlation  after fire/seismic scans          │
 │  📌 Pinned status       edited every 60s (live dashboard) │
 │                                                            │
@@ -486,6 +487,103 @@ https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=
 - Both are treated as **credible sources** — alerts skip "UNVERIFIED" label
 - Works reliably, returns dozens of items per feed
 
+## ⚔️ Strikes Map
+
+Comprehensive geolocated strikes database covering the entire Middle East theater since October 7, 2023. Aggregates from multiple source layers and generates a visual map sent with hourly reports.
+
+### Data Sources (layered)
+
+| Layer | Source | Geo Accuracy | Latency | Auth |
+|-------|--------|-------------|---------|------|
+| 1 | **ACLED API** — structured conflict events | High (analyst-verified) | 1-3 days | Free account |
+| 2 | **NASA FIRMS** — satellite fire detections | High (satellite coords) | 3-15 min | MAP_KEY |
+| 3 | **USGS Seismic** — earthquake events | High (seismograph) | Minutes | None |
+| 4 | **Strike Correlation** — fire+seismic fusion | High (multi-sensor) | After scan | None |
+| 5 | **OSINT Text Extraction** — location mentions | Medium (city-level) | Real-time | None |
+
+### ACLED Registration
+
+ACLED (Armed Conflict Location & Event Data Project) provides the gold-standard structured conflict dataset with lat/lon, actors, fatalities, and event type for every recorded event.
+
+**Registration (required, free):**
+1. Go to [acleddata.com/register](https://acleddata.com/register/)
+2. Sign up with email (institutional email recommended for more access)
+3. Accept terms of use (non-commercial, attribution required)
+4. Verify email via confirmation link
+5. Add credentials to `secrets/acled-creds.txt` (line 1: email, line 2: password)
+
+The scanner auto-handles OAuth2 token management (24h access tokens, 14-day refresh tokens).
+
+### Configuration (`config.json → strikes`)
+
+```json
+{
+  "strikes": {
+    "acled_email": "",
+    "acled_password": "",
+    "countries": ["Iran", "Israel", "Lebanon", "Syria", "Iraq", "Yemen", "Palestine", "Saudi Arabia", "Jordan"],
+    "event_types": ["Explosions/Remote violence", "Battles", "Violence against civilians"],
+    "sub_event_types": ["Air/drone strike", "Shelling/artillery/missile attack", "Armed clash", "Attack"],
+    "start_date": "2023-10-07",
+    "window_days": null,
+    "max_events": 50000,
+    "poll_interval_hours": 6,
+    "include_firms": true,
+    "include_seismic": true,
+    "include_correlations": true,
+    "include_osint": true,
+    "min_fatalities": 0,
+    "actor_filter": [],
+    "map_width": 1600,
+    "map_height": 1000,
+    "highlight_recent_hours": 48,
+    "show_legend": true
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `start_date` | War start date — how far back to collect (default: Oct 7, 2023) |
+| `window_days` | If set, overrides `start_date` with rolling N-day window |
+| `countries` | ACLED country names to query |
+| `event_types` | ACLED event type filter |
+| `sub_event_types` | Fine-grained sub-type filter (air/drone strike, shelling, etc.) |
+| `max_events` | API row limit per query (ACLED default cap: 5000) |
+| `poll_interval_hours` | How often to refresh ACLED data |
+| `include_firms` | Overlay NASA FIRMS fire detections |
+| `include_seismic` | Overlay USGS seismic events |
+| `include_correlations` | Overlay fire+seismic strike correlations |
+| `include_osint` | Extract locations from intel-log.jsonl |
+| `min_fatalities` | Minimum fatality filter (0 = all events) |
+| `actor_filter` | Filter by actor name (empty = all); e.g., `["Israel", "Iran"]` |
+| `highlight_recent_hours` | Yellow outline on events from last N hours |
+
+### Map Visual
+
+- **Dark themed** with country outlines and grid
+- **Color-coded by actor side:** 🔵 Israel, 🔴 Iran, 🟠 Iran proxies, 🔵 US, ⚪ Unknown
+- **Shape by event type:** ● Airstrike, ◆ Missile/Shelling, ▲ Ground combat, ✚ Satellite, ○ Seismic
+- **Size scaled by fatalities**
+- **Opacity by confidence:** solid (high), semi-transparent (medium), faint (low)
+- **Yellow outline:** events from last 48h (configurable)
+- **Legend:** actor breakdown, total events, fatalities, date range
+
+### Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scan_strikes.py` | Data aggregation — ACLED API + local sensors → `strikes-data.json` |
+| `generate-strikes-map.py` | Map rendering — `strikes-data.json` → `strikes-map.png` |
+
+### Backfill
+
+To force a full data refresh (ignoring poll interval):
+```bash
+python3 scripts/scan_strikes.py config.json state --backfill
+python3 scripts/generate-strikes-map.py config.json state
+```
+
 ## 🛡️ Cyber Warfare Monitor
 
 Monitors 19 hacktivist groups (25 TG handles), 8 CTI Twitter accounts, and 4 dark web/breach RSS feeds for Iran-Israel cyber operations. Auto-classifies attacks and dispatches bilingual alerts.
@@ -614,6 +712,10 @@ iran-israel-alerts/
     ├── poly_current.json        # Current Polymarket state
     ├── osint-{telegram,twitter,rss,seismic}-seen.json
     ├── cyber-{telegram,twitter,rss}-seen.json
+    ├── strikes-data.json         # Unified strikes database (ACLED + sensors)
+    ├── strikes-last-fetch.json   # ACLED poll timestamp
+    ├── strikes-map.png           # Latest strikes map image
+    ├── acled-token.json          # ACLED OAuth2 token cache
     └── logs/                     # Rotated watcher logs (max 5)
 ```
 

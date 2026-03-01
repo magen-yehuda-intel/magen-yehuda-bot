@@ -166,5 +166,48 @@
     "min_longitude": 44,
     "max_longitude": 63,
     "min_magnitude": 3.5
+  },
+  "strikes": {
+    "acled_email": "",
+    "acled_password": "",
+    "countries": [
+      "Iran",
+      "Israel",
+      "Lebanon",
+      "Syria",
+      "Iraq",
+      "Yemen",
+      "Palestine",
+      "Saudi Arabia",
+      "Jordan"
+    ],
+    "event_types": [
+      "Explosions/Remote violence",
+      "Battles",
+      "Violence against civilians"
+    ],
+    "sub_event_types": [
+      "Air/drone strike",
+      "Shelling/artillery/missile attack",
+      "Suicide bomb",
+      "Remote explosive/landmine/IED",
+      "Armed clash",
+      "Attack",
+      "Chemical weapon"
+    ],
+    "start_date": "2023-10-07",
+    "window_days": null,
+    "max_events": 50000,
+    "poll_interval_hours": 6,
+    "include_firms": true,
+    "include_seismic": true,
+    "include_correlations": true,
+    "include_osint": true,
+    "min_fatalities": 0,
+    "actor_filter": [],
+    "map_width": 1600,
+    "map_height": 1000,
+    "highlight_recent_hours": 48,
+    "show_legend": true
   }
 }

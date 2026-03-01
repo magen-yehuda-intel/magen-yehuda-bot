@@ -66,6 +66,18 @@ if [ -f "$FLIGHT_MAP" ]; then
   echo "{\"type\":\"flight_map\",\"severity\":\"LOW\",\"image\":\"$FLIGHT_MAP\",\"image_importance\":\"high\",\"image_caption\":\"✈️ Air Traffic — ${FLIGHT_TOTAL} aircraft, ${FLIGHT_IRAN} over Iran — $NOW_UTC\",\"image_caption_he\":\"\u200F✈️ תנועה אווירית — ${FLIGHT_TOTAL} מטוסים, ${FLIGHT_IRAN} מעל איראן — $NOW_UTC\"}" | $DISPATCH 2>/dev/null && echo "  ✈️ Flight map sent" || echo "  ⚠️ Flight map send failed"
 fi
 
+# ── Generate and send strikes map ──
+STRIKES_MAP="$STATE_DIR/strikes-map.png"
+# Refresh strikes data first (--backfill forces update regardless of poll interval)
+python3 "$SKILL_DIR/scripts/scan_strikes.py" "$CONFIG_FILE" "$STATE_DIR" --backfill 2>/dev/null
+python3 "$SKILL_DIR/scripts/generate-strikes-map.py" "$CONFIG_FILE" "$STATE_DIR" --output "$STRIKES_MAP" 2>/dev/null
+
+if [ -f "$STRIKES_MAP" ]; then
+  STRIKES_TOTAL=$(python3 -c "import json; d=json.load(open('$STATE_DIR/strikes-data.json')); print(d['stats']['total'])" 2>/dev/null || echo "0")
+  STRIKES_START=$(python3 -c "import json; d=json.load(open('$STATE_DIR/strikes-data.json')); print(d['config']['start_date'])" 2>/dev/null || echo "2023-10-07")
+  echo "{\"type\":\"strikes_map\",\"severity\":\"LOW\",\"image\":\"$STRIKES_MAP\",\"image_importance\":\"high\",\"image_caption\":\"⚔️ Strikes Map — ${STRIKES_TOTAL} events since ${STRIKES_START} — $NOW_UTC\",\"image_caption_he\":\"\u200F⚔️ מפת תקיפות — ${STRIKES_TOTAL} אירועים מאז ${STRIKES_START} — $NOW_UTC\"}" | $DISPATCH 2>/dev/null && echo "  ⚔️ Strikes map sent" || echo "  ⚠️ Strikes map send failed"
+fi
+
 # ── Cleanup ──
 rm -f "$FIRE_JSON" "$SEISMIC_JSON"
 

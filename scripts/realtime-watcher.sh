@@ -1350,6 +1350,42 @@ check_strike_correlation() {
 }
 
 # ──────────────────────────────────────────────────────────
+# STRIKES MAP DATA COLLECTION
+# ──────────────────────────────────────────────────────────
+
+check_strikes() {
+  log "⚔️  Collecting strikes data..."
+  local stats_json
+  stats_json=$(python3 "$SKILL_DIR/scripts/scan_strikes.py" "$CONFIG_FILE" "$STATE_DIR" 2>>"$SKILL_DIR/state/watcher.log")
+  local exit_code=$?
+
+  if [ $exit_code -ne 0 ]; then
+    # Exit code 0 with empty output = skipped (poll interval not reached)
+    # Non-zero = actual error
+    if [ $exit_code -ne 0 ] && [ -n "$stats_json" ]; then
+      log "  ⚠️  Strikes scan error"
+    fi
+    return
+  fi
+
+  if [ -z "$stats_json" ]; then
+    return
+  fi
+
+  local total
+  total=$(echo "$stats_json" | python3 -c "import sys,json; print(json.loads(sys.stdin.read()).get('total', 0))" 2>/dev/null || echo "0")
+  log "  ⚔️  Strikes data: $total total events collected"
+
+  # Generate strikes map if we have data
+  if [ "${total:-0}" -gt 0 ]; then
+    python3 "$SKILL_DIR/scripts/generate-strikes-map.py" "$CONFIG_FILE" "$STATE_DIR" 2>>"$SKILL_DIR/state/watcher.log"
+    if [ $? -eq 0 ]; then
+      log "  🗺️  Strikes map generated"
+    fi
+  fi
+}
+
+# ──────────────────────────────────────────────────────────
 # CYBER WARFARE MONITOR
 # ──────────────────────────────────────────────────────────
 check_cyber() {
@@ -1514,11 +1550,12 @@ while true; do
     LAST_FIRES_CHECK=$NOW
   fi
 
-  # Extended intel: blackout + military flights + cyber warfare (less frequent)
+  # Extended intel: blackout + military flights + cyber warfare + strikes (less frequent)
   if [ $((NOW - LAST_INTEL_CHECK)) -ge $EFFECTIVE_INTEL ]; then
     check_blackout
     check_military_flights
     check_cyber
+    check_strikes
     LAST_INTEL_CHECK=$NOW
   fi
 

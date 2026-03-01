@@ -63,7 +63,7 @@ ALL_EVENT_TYPES = {
     "blackout", "military_flights", "polymarket", "cyber",
     "breaking_news",
     "map", "summary_he", "summary_en", "timelapse", "pinned_status",
-    "flight_map",
+    "flight_map", "strikes_map",
 }
 
 

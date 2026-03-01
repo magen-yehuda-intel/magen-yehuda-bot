@@ -42,6 +42,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 │     ├─ 🐦 8 CTI Twitter accounts                               │
 │     └─ 📰 4 dark web / breach RSS feeds                        │
 │   🚢 Naval tracking      every 5-30min (AIS vessel data)      │
+│   ⚔️ Strikes map data     every 6h (ACLED + local sensors)     │
 │   🎯 Strike correlation   after every fire/seismic scan        │
 │   📌 Pinned status        edited every 60s (live dashboard)     │
 │                                                                │
@@ -83,6 +84,7 @@ bash ctl.sh teardown  # 🛑 Kill everything (watcher + cron + state)
 | 13 | 🛡️ Cyber CTI Twitter | 8 accounts | Syndication API | None |
 | 14 | 🛡️ Cyber/DarkWeb RSS | 4 feeds | RSS/XML parsing | None |
 | 15 | 🚢 Naval AIS | Persian Gulf | AIS data feeds | None |
+| 16 | ⚔️ ACLED Strikes | ME region (9 countries) | REST API (OAuth2) | Free account |
 
 ### Telegram OSINT Channels
 - `warmonitors` — War Monitors (fastest English breaking)
@@ -508,6 +510,7 @@ Every alert the watcher sends to Telegram is also saved to `state/intel-log.json
 | `threat_change` | Threat level transitions with reason |
 | `flight_scan` | Air traffic snapshot (total, over Iran, military, airport status) |
 | `strike_correlation` | Fire + seismic coincidence detection |
+| `strikes_map` | Strikes map image with hourly report |
 
 ### Usage
 ```bash
@@ -660,6 +663,50 @@ https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=
 - Google News RSS items include `<source url="...">Reuters</source>` tags for attribution
 - Both are in the `CREDIBLE_SOURCES` set — alerts from Reuters/AP skip "UNVERIFIED" labeling
 - Returns dozens of items per feed, updates frequently
+
+## ⚔️ Strikes Map (`scan_strikes.py` + `generate-strikes-map.py`)
+
+Comprehensive geolocated strikes database and visual map covering the entire Middle East theater since October 7, 2023.
+
+### Data Layers
+1. **ACLED API** — Structured conflict events with lat/lon, actors, fatalities (1-3 day lag, analyst-verified)
+2. **NASA FIRMS** — Satellite thermal anomalies near known military sites
+3. **USGS Seismic** — Earthquake events in Iran region
+4. **Strike Correlation** — Fire+seismic coincidence detections from correlation engine
+5. **OSINT Text Extraction** — Location mentions in intel-log.jsonl matched against 80+ known cities/sites
+
+### ACLED Registration (required for Layer 1)
+1. Register at [acleddata.com/register](https://acleddata.com/register/) — free, institutional email recommended
+2. Accept non-commercial terms, verify email
+3. Add credentials: `secrets/acled-creds.txt` (line 1: email, line 2: password) OR `config.json → strikes.acled_email/acled_password`
+4. Scanner auto-handles OAuth2 (24h access token, 14-day refresh, auto-refresh)
+
+### Config (`config.json → strikes`)
+| Field | Default | Description |
+|-------|---------|-------------|
+| `start_date` | `"2023-10-07"` | How far back to collect |
+| `window_days` | `null` | Rolling window (overrides start_date) |
+| `countries` | 9 countries | ACLED country filter |
+| `event_types` | 3 types | Explosions, Battles, Violence against civilians |
+| `sub_event_types` | 7 types | Air/drone strike, shelling, etc. |
+| `poll_interval_hours` | `6` | ACLED refresh frequency |
+| `max_events` | `50000` | API row limit |
+| `include_firms/seismic/correlations/osint` | `true` | Toggle each data layer |
+| `min_fatalities` | `0` | Fatality filter |
+| `actor_filter` | `[]` | Empty=all, or `["Israel","Iran"]` |
+| `map_width/map_height` | `1600×1000` | Output image size |
+| `highlight_recent_hours` | `48` | Yellow outline threshold |
+
+### Map Visual
+- Color-coded by actor side: 🔵 Israel, 🔴 Iran, 🟠 Proxies, 🔵 US
+- Shape by event type: ● Airstrike, ◆ Missile, ▲ Ground, ✚ Satellite, ○ Seismic
+- Size scaled by fatalities, opacity by confidence
+- Sent with hourly report via dispatch
+
+### Integration
+- Watcher: `check_strikes()` runs on extended intel interval (5-30min)
+- Hourly report: `--backfill` refresh + map generation + dispatch as `strikes_map` event
+- State files: `strikes-data.json`, `strikes-last-fetch.json`, `strikes-map.png`, `acled-token.json`
 
 ## 🛡️ Cyber Warfare Monitor (`scan_cyber.py`)
 
@@ -878,6 +925,10 @@ iran-israel-alerts/
     ├── poly_current.json       # Current Polymarket state
     ├── osint-{telegram,twitter,rss,seismic}-seen.json
     ├── cyber-{telegram,twitter,rss}-seen.json
+    ├── strikes-data.json       # Unified strikes database
+    ├── strikes-last-fetch.json # ACLED poll timestamp
+    ├── strikes-map.png         # Latest strikes map
+    ├── acled-token.json        # ACLED OAuth2 token cache
     └── logs/                   # Rotated watcher logs (max 5)
 ```
 
@@ -924,6 +975,8 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 | Cyber alerts found but never dispatched | `scan-cyber.py` (hyphen) can't be Python-imported → `from scan_cyber import format_cyber_summary` fails | Renamed to `scan_cyber.py` (underscore); format uses heredoc-based Python |
 | OpenSky returns HTTP 429 | Rate limiting (no API key configured) | Register free OpenSky account for higher limits, or rely on FR24 for hourly flight maps |
 | Darkfeed RSS returns 404 | Feed URL changed or removed | Replace with alternative ransomware feed, or remove from config |
+| Hourly summary shows "Threat Level: UNKNOWN" | `generate-summary.py` parsed watcher.log for threat level but regex didn't match log format (emoji prefixes, startup lines) | Fixed: reads `state/watcher-threat-level.txt` first (written by watcher), falls back to log parsing |
+| Cyber config has empty source arrays | `config.json` cyber section had no Telegram channels, Twitter accounts, or RSS feeds configured | Add sources to `cyber.telegram_channels`, `cyber.twitter_accounts`, `cyber.rss_feeds` in config.json |
 | OSINT scan "still running" skips | Slow proxy causes scan to exceed cycle interval → lock file blocks next scan | Stale locks auto-break at 120s; check proxy latency if persistent |
 
 ### Debugging Tips
