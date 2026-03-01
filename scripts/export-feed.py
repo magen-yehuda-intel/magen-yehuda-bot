@@ -118,12 +118,33 @@ def main():
     with open(FEED_FILE, 'w') as f:
         f.write(feed_json)
 
+    # Also export Oref alerts from state
+    oref_state = os.path.join(STATE_DIR, 'oref-last-alert.json')
+    oref_out = os.path.join(DOCS_DIR, 'oref-alerts.json')
+    try:
+        if os.path.exists(oref_state):
+            with open(oref_state) as f:
+                oref_data = json.load(f)
+        else:
+            oref_data = {"alerts": []}
+        oref_export = {
+            "timestamp": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+            "source": "pikud-haoref",
+            "poll_interval": "5m",
+            "alert_count": len(oref_data.get("alerts", [])),
+            "alerts": oref_data.get("alerts", [])
+        }
+        with open(oref_out, 'w') as f:
+            json.dump(oref_export, f, ensure_ascii=False, indent=2)
+    except Exception as ex:
+        print(f"Oref export error: {ex}")
+
     size_kb = len(feed_json) / 1024
     print(f"Exported {len(events)} events ({size_kb:.0f}KB) → {FEED_FILE}")
 
     # Git commit + push
     try:
-        subprocess.run(['git', 'add', 'docs/intel-feed.json'], cwd=SKILL_DIR, check=True,
+        subprocess.run(['git', 'add', 'docs/intel-feed.json', 'docs/oref-alerts.json'], cwd=SKILL_DIR, check=True,
                        capture_output=True, timeout=10)
         subprocess.run(['git', 'commit', '-m', f'feed: {len(events)} events ({datetime.now(timezone.utc).strftime("%H:%M UTC")})'],
                        cwd=SKILL_DIR, check=True, capture_output=True, timeout=10)

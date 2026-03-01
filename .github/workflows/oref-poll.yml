@@ -1,0 +1,104 @@
+name: Oref Alert Poller
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'  # Every 2 minutes
+  workflow_dispatch: {}     # Manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Poll Pikud HaOref
+        run: |
+          set -euo pipefail
+          
+          # Oref alerts endpoint
+          OREF_URL="https://www.oref.org.il/WarningMessages/alert/alerts.json"
+          
+          # Fetch with IL proxy if available, otherwise direct
+          HTTP_CODE=$(curl -s -o /tmp/oref-raw.json -w "%{http_code}" \
+            -H "X-Requested-With: XMLHttpRequest" \
+            -H "Referer: https://www.oref.org.il/" \
+            -H "User-Agent: Mozilla/5.0" \
+            --connect-timeout 8 --max-time 15 \
+            "$OREF_URL" || echo "000")
+          
+          echo "Oref HTTP: $HTTP_CODE"
+          
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            # Check if response is valid JSON
+            if python3 -c "import json,sys; json.load(open('/tmp/oref-raw.json'))" 2>/dev/null; then
+              # Wrap in our format with metadata
+              python3 -c "
+          import json, sys
+          with open('/tmp/oref-raw.json') as f:
+              raw = json.load(f)
+          alerts = raw if isinstance(raw, list) else raw.get('data', raw.get('alerts', []))
+          out = {
+              'timestamp': '$TIMESTAMP',
+              'source': 'pikud-haoref',
+              'poll_interval': '2m',
+              'http_code': $HTTP_CODE,
+              'alert_count': len(alerts),
+              'alerts': alerts
+          }
+          with open('docs/oref-alerts.json', 'w') as f:
+              json.dump(out, f, ensure_ascii=False, indent=2)
+          print(f'Wrote {len(alerts)} alerts')
+          "
+            else
+              echo "Invalid JSON response, writing empty"
+              echo '{"timestamp":"'"$TIMESTAMP"'","source":"pikud-haoref","alert_count":0,"alerts":[],"note":"invalid response"}' > docs/oref-alerts.json
+            fi
+          else
+            # Non-200 or connection fail — check if geo-blocked
+            echo "Oref unreachable (HTTP $HTTP_CODE), preserving last known state"
+            # Only write empty if no file exists yet
+            if [ ! -f docs/oref-alerts.json ]; then
+              echo '{"timestamp":"'"$TIMESTAMP"'","source":"pikud-haoref","alert_count":0,"alerts":[],"note":"geo-blocked, needs IL proxy"}' > docs/oref-alerts.json
+            else
+              # Update timestamp but keep alerts
+              python3 -c "
+          import json
+          try:
+              with open('docs/oref-alerts.json') as f:
+                  data = json.load(f)
+              data['timestamp'] = '$TIMESTAMP'
+              data['note'] = 'cached, oref returned $HTTP_CODE'
+              with open('docs/oref-alerts.json', 'w') as f:
+                  json.dump(data, f, ensure_ascii=False, indent=2)
+          except:
+              pass
+          "
+            fi
+          fi
+
+      - name: Build intel feed snapshot
+        run: |
+          # If we have a local intel-log, convert to feed format
+          # For now, just ensure oref-alerts.json exists
+          ls -la docs/oref-alerts.json
+          cat docs/oref-alerts.json | python3 -m json.tool | head -20
+
+      - name: Commit & push if changed
+        run: |
+          cd docs
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add oref-alerts.json intel-feed.json 2>/dev/null || true
+          git add oref-alerts.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🚨 Oref alert update $(date -u +%H:%M)"
+            git push
+          fi
