@@ -105,6 +105,12 @@
     background: var(--panel); border-left: 1px solid var(--border);
     overflow-y: auto; z-index: 500; transition: bottom 0.25s ease;
   }
+  #panel-resize {
+    position: fixed; top: 40px; width: 5px; bottom: 200px;
+    cursor: col-resize; z-index: 501; background: transparent;
+    transition: bottom 0.25s ease;
+  }
+  #panel-resize:hover, #panel-resize.dragging { background: rgba(0,200,255,0.3); }
 
   /* ══ DESKTOP BOTTOM TIMELINE ══ */
   #timeline-panel {
@@ -281,6 +287,7 @@
 <div id="map"></div>
 
 <!-- DESKTOP RIGHT PANEL -->
+<div id="panel-resize"></div>
 <div id="panel">
   <div class="section">
     <div class="section-title">THEATER SELECT</div>
@@ -997,14 +1004,58 @@ function initTimelineBrush() {
     const btn = document.getElementById('tl-collapse');
     const collapsed = panel.classList.toggle('collapsed');
     btn.textContent = collapsed ? '▲' : '▼';
-    // Resize map + side panel
+    // Resize map + side panel + resize handle
     if (window.innerWidth > 768) {
       const b = collapsed ? '24px' : '200px';
       document.getElementById('map').style.bottom = b;
       document.getElementById('panel').style.bottom = b;
+      const rh = document.getElementById('panel-resize');
+      if (rh) rh.style.bottom = b;
       setTimeout(() => map.invalidateSize(), 300);
     }
   });
+
+  // Panel resize drag
+  const resizeHandle = document.getElementById('panel-resize');
+  if (resizeHandle && window.innerWidth > 768) {
+    let dragging = false;
+    const panelEl = document.getElementById('panel');
+    const tlPanel = document.getElementById('timeline-panel');
+    const mapEl = document.getElementById('map');
+    const minW = 200, maxW = 600;
+
+    function syncResizeHandle() {
+      resizeHandle.style.right = panelEl.offsetWidth + 'px';
+      resizeHandle.style.bottom = panelEl.style.bottom || '200px';
+    }
+    syncResizeHandle();
+
+    resizeHandle.addEventListener('mousedown', e => {
+      e.preventDefault();
+      dragging = true;
+      resizeHandle.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+
+    document.addEventListener('mousemove', e => {
+      if (!dragging) return;
+      const w = Math.min(maxW, Math.max(minW, window.innerWidth - e.clientX));
+      panelEl.style.width = w + 'px';
+      mapEl.style.right = w + 'px';
+      tlPanel.style.right = w + 'px';
+      resizeHandle.style.right = w + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      resizeHandle.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      map.invalidateSize();
+    });
+  }
 
   // Scroll wheel zoom
   canvas.addEventListener('wheel', e => {
