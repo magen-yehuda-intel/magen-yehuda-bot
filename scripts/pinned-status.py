@@ -75,26 +75,38 @@ def load_state(state_dir):
         state["watcher_pid"] = None
     
     state["threat_level"] = "UNKNOWN"
+    # Primary: read threat level file (most reliable)
     try:
-        log_path = os.path.join(state_dir, "watcher.log")
-        if os.path.exists(log_path):
-            with open(log_path, "rb") as f:
-                f.seek(0, 2)
-                size = f.tell()
-                f.seek(max(0, size - 8192))
-                tail = f.read().decode("utf-8", errors="replace")
-            for line in reversed(tail.splitlines()):
-                for lvl in ["CRITICAL", "HIGH", "ELEVATED", "GREEN"]:
-                    if f"→ {lvl}" in line or f"→ ⚫ {lvl}" in line or f"→ 🔴 {lvl}" in line or f"→ 🟠 {lvl}" in line or f"→ 🟢 {lvl}" in line:
-                        state["threat_level"] = lvl
-                        break
-                    if f"Threat level: 🟢 {lvl}" in line or f"Threat level: {lvl}" in line:
-                        state["threat_level"] = lvl
-                        break
-                if state["threat_level"] != "UNKNOWN":
-                    break
+        tl_path = os.path.join(state_dir, "watcher-threat-level.txt")
+        if os.path.exists(tl_path):
+            with open(tl_path) as f:
+                lvl = f.read().strip().upper()
+                if lvl in ("CRITICAL", "HIGH", "ELEVATED", "GREEN"):
+                    state["threat_level"] = lvl
     except:
         pass
+    # Fallback: parse watcher.log
+    if state["threat_level"] == "UNKNOWN":
+        try:
+            log_path = os.path.join(state_dir, "watcher.log")
+            if os.path.exists(log_path):
+                with open(log_path, "rb") as f:
+                    f.seek(0, 2)
+                    size = f.tell()
+                    f.seek(max(0, size - 8192))
+                    tail = f.read().decode("utf-8", errors="replace")
+                for line in reversed(tail.splitlines()):
+                    for lvl in ["CRITICAL", "HIGH", "ELEVATED", "GREEN"]:
+                        if f"→ {lvl}" in line or f"→ ⚫ {lvl}" in line or f"→ 🔴 {lvl}" in line or f"→ 🟠 {lvl}" in line or f"→ 🟢 {lvl}" in line:
+                            state["threat_level"] = lvl
+                            break
+                        if f"Threat level: 🟢 {lvl}" in line or f"Threat level: {lvl}" in line:
+                            state["threat_level"] = lvl
+                            break
+                    if state["threat_level"] != "UNKNOWN":
+                        break
+        except:
+            pass
     
     state["last_siren"] = None
     try:
