@@ -1,15 +1,15 @@
 # 🛡️ Magen Yehuda Bot — Iran-Israel Real-Time Intelligence Monitor
 
-Multi-source intelligence aggregation for Iran/Israel/US military escalation. Adaptive threat-level system, 30+ OSINT sources, satellite fire detection, seismic monitoring, flight tracking, internet blackout detection, strike correlation, wire service integration, bilingual alerts, and instant Telegram delivery.
+Multi-source intelligence aggregation for Iran/Israel/US military escalation. Adaptive threat-level system, 75+ OSINT sources, satellite fire detection, seismic monitoring, flight tracking, internet blackout detection, strike correlation, cyber warfare monitoring, wire service integration, multi-source corroboration, bilingual alerts with per-channel timezones, and instant Telegram delivery.
 
 ![Threat Levels](https://img.shields.io/badge/threat_levels-GREEN_%7C_ELEVATED_%7C_HIGH_%7C_CRITICAL-brightgreen)
-![Sources](https://img.shields.io/badge/sources-30%2B_channels-blue)
+![Sources](https://img.shields.io/badge/sources-75%2B_channels-blue)
 ![Delivery](https://img.shields.io/badge/delivery-Telegram-26A5E4)
 ![Languages](https://img.shields.io/badge/languages-English_%2B_Hebrew-ff69b4)
 
 ## What It Does
 
-Monitors 40+ intelligence sources across 12 categories, auto-adjusts polling frequency based on threat level, auto-detects breaking news from credible sources, and pushes instant bilingual alerts to Telegram channels:
+Monitors 75+ intelligence sources across 16 categories, auto-adjusts polling frequency based on threat level, auto-detects and corroborates breaking news from credible sources, and pushes instant bilingual alerts to Telegram channels with per-channel timezones:
 
 | Source | Channels | Speed | Auth Required |
 |--------|----------|-------|---------------|
@@ -20,28 +20,32 @@ Monitors 40+ intelligence sources across 12 categories, auto-adjusts polling fre
 | 🌍 **USGS Seismic** | Iran region (M2.5+) | 30s-5min | None |
 | 📊 **Polymarket** | Prediction markets | 60s-5min | None |
 | 🔥 **NASA FIRMS** | 4 satellites | 3-15min | Free MAP_KEY |
-| 🌐 **Internet Blackout** | IODA + direct probes | 5-30min | None |
+| 🌐 **Internet Blackout** | IODA + 3 direct probes | 5-30min | None |
 | ✈️ **Military Flights** | ADS-B (OpenSky) | 5-30min | None |
 | ✈️ **Flight Radar** | FR24 air traffic | Hourly map | None |
 | 🎯 **Strike Correlation** | Fire + seismic fusion | After each scan | None |
-| 🛡️ **Cyber Warfare** | ~25 hacktivist TG channels | 5-30min | None |
-| 🛡️ **Cyber CTI Twitter** | 8 CTI accounts | 5-30min | None |
-| 🛡️ **Dark Web / Breach RSS** | 4+ feeds | 5-30min | None |
+| 🛡️ **Cyber Hacktivist TG** | 25 handles (19 groups) | 5-30min | None |
+| 🛡️ **Cyber CTI Twitter** | 8 accounts | 5-30min | None |
+| 🛡️ **Dark Web / Breach RSS** | 4 feeds | 5-30min | None |
+| 🚢 **Naval Tracking** | AIS vessel data | 5-30min | None |
 
 ### Key Features
 
 - **Adaptive threat system** — Polling scales from 5min (GREEN) to 30s (CRITICAL) based on siren activity
-- **Breaking news detection** — Auto-identifies critical events from credible sources (Reuters, AP, IDF, etc.)
+- **Breaking news corroboration** — Auto-tracks sources per topic; 3+ reputable sources (Reuters, AP, BBC, etc.) = CONFIRMED with source list; <3 = UNVERIFIED with count
 - **Multi-channel dispatch** — Route alerts to English and/or Hebrew channels with language-specific formatting
+- **Per-channel timezones** — English channel shows ET, Hebrew channel shows IST (configurable per output)
+- **Hebrew threat levels** — שגרה (GREEN), מוגבר (ELEVATED), גבוה (HIGH), קריטי (CRITICAL) — all alert types fully translated
 - **Satellite fire detection** — 4 NASA satellites, proximity to 23 known nuclear/military/oil sites
 - **Internet blackout early warning** — Iran historically cuts internet before military operations
 - **Strike correlation engine** — Automatic fire + seismic coincidence detection (50km/30min window)
 - **US/Israeli military flight tracking** — 50+ aircraft type→role mappings, filtered to relevant assets only
-- **Live pinned status dashboard** — Single message edited every 60s with full system state
+- **Cyber warfare monitor** — 19 hacktivist groups (25 TG handles), 8 CTI Twitter accounts, 4 dark web feeds, auto-classification
+- **Live pinned status dashboard** — Single message edited every 60s with full system state (separate EN/HE versions)
 - **Bilingual hourly reports** — Intel map + flight map + Hebrew summary + English summary + 24h time-lapse GIF
 - **Wire service integration** — Reuters and AP News via Google News RSS proxy (direct feeds are Cloudflared)
-- **Cyber warfare monitor** — 30+ hacktivist groups (Handala, CyberAv3ngers, Predatory Sparrow, etc.), CTI Twitter, dark web feeds
 - **Attack classification** — Auto-categorizes ICS/SCADA, data breach, ransomware, DDoS, espionage with severity scoring
+- **Naval vessel tracking** — US Navy, IRGC Navy, zone classification, naval base proximity
 
 ## Quick Start
 
@@ -64,11 +68,13 @@ Edit `config.json`:
 {
   "telegram_bot_token": "YOUR_BOT_TOKEN",
   "telegram_chat_id": "@your_channel",
+  "timezone": "Asia/Jerusalem",
   "outputs": [
     {
       "id": "main",
       "chat_id": "@your_english_channel",
       "language": "en",
+      "timezone": "America/New_York",
       "content": ["all"],
       "images": "all"
     },
@@ -76,6 +82,7 @@ Edit `config.json`:
       "id": "hebrew",
       "chat_id": "@your_hebrew_channel",
       "language": "he",
+      "timezone": "Asia/Jerusalem",
       "content": ["all"],
       "images": "high_only"
     }
@@ -132,12 +139,18 @@ bash ctl.sh stop
 │  🔥 NASA FIRMS fires    every 3-15min                      │
 │  🌐 Iran internet       every 5-30min (blackout detect)   │
 │  ✈️ Military flights     every 5-30min (ADS-B)            │
+│  🛡️ Cyber warfare       every 5-30min                     │
+│    ├─ 📢 25 hacktivist TG handles (19 groups)             │
+│    ├─ 🐦 8 CTI Twitter accounts                            │
+│    └─ 📰 4 dark web / breach RSS feeds                     │
+│  🚢 Naval tracking      every 5-30min (AIS)               │
 │  🎯 Strike correlation  after fire/seismic scans          │
 │  📌 Pinned status       edited every 60s (live dashboard) │
 │                                                            │
 │  → dispatch.py routes to EN + HE channels                  │
-│  → Breaking news auto-detection (credible sources)         │
+│  → Breaking news corroboration (3+ reputable = CONFIRMED)  │
 │  → Auto-escalate/deescalate threat level                   │
+│  → Per-channel timezones (EN=ET, HE=IST)                   │
 └──────────────────┬─────────────────────────────────────────┘
                    │
 ┌──────────────────▼─────────────────────────────────────────┐
@@ -147,8 +160,8 @@ bash ctl.sh stop
 └──────────────────┬─────────────────────────────────────────┘
                    │
           dispatch.py (multi-output router)
-           ├─ 🇺🇸 English Channel
-           └─ 🇮🇱 Hebrew Channel
+           ├─ 🇺🇸 English Channel (ET timestamps)
+           └─ 🇮🇱 Hebrew Channel (IST timestamps)
 ```
 
 ## Multi-Channel Dispatch
@@ -183,6 +196,7 @@ The `dispatch.py` module routes every alert to multiple Telegram channels based 
 | Field | Values | Description |
 |-------|--------|-------------|
 | `language` | `"en"`, `"he"`, `"both"` | Which language text to send |
+| `timezone` | IANA tz string | Timestamps for this output (e.g. `"America/New_York"`) |
 | `content` | `["all"]` or specific types | Event type filter |
 | `min_severity` | `"LOW"` to `"CRITICAL"` | Minimum severity to send |
 | `images` | `"all"`, `"high_only"`, `"critical_only"`, `"none"` | Image inclusion policy |
@@ -232,7 +246,24 @@ Netanyahu, Biden, Trump, IDF confirms, Pentagon confirms, Reuters, Associated Pr
 - **Nuclear events** — Nuclear detonation, nuclear strike, nuclear bomb
 - **Compound matching** — Words appearing anywhere in text (e.g., "khamenei" + "dead")
 
-## OSINT Sources (40+ channels)
+### Multi-Source Corroboration
+
+Breaking news alerts are tracked per topic. When **3+ reputable sources** report the same topic within a 2-hour window, the alert upgrades from UNVERIFIED to **CONFIRMED**:
+
+| Sources | Status | Display |
+|---------|--------|---------|
+| 1-2 | ⚠️ UNVERIFIED | "2 sources so far, awaiting confirmation" |
+| 3+ reputable | ✅ CONFIRMED | "Confirmed — reported by 3 reputable sources" + source list |
+
+**Reputable sources** (30+): Reuters, AP, BBC, CNN, Times of Israel, Ynet, Haaretz, Jerusalem Post, Al Jazeera, Sky News, France24, NY Times, Washington Post, plus trusted OSINT accounts (SentDefender, IntelPoint, Aurora Intel, etc.)
+
+**How it works:**
+1. Each breaking alert registers its source in `state/breaking-corroboration.json`
+2. Same source doesn't count twice (deduplication by outlet)
+3. Entries expire after 2 hours
+4. Header changes: "BREAKING NEWS" → "CONFIRMED" (EN) / "ידיעה חדשותית דחופה" → "ידיעה מאומתת" (HE)
+
+## OSINT Sources (75+ channels)
 
 ### Telegram OSINT Channels (10)
 | Channel | Description |
@@ -367,12 +398,14 @@ Status: `[X] CLOSED` (0 flights), `[!] Limited` (<5), `[+] Operating` (5+)
 
 ## Adaptive Threat-Level System
 
-| Level | Trigger | Oref | OSINT | Fires | Intel |
-|-------|---------|------|-------|-------|-------|
-| 🟢 GREEN | No sirens >30min | 30s | 5min | 15min | 30min |
-| 🟡 ELEVATED | Sirens <30min ago | 15s | 2min | 10min | 15min |
-| 🔴 HIGH | Active sirens NOW | 10s | 60s | 5min | 10min |
-| ⚫ CRITICAL | Major cities | 10s | 30s | 3min | 5min |
+| Level | Hebrew | Trigger | Oref | OSINT | Fires | Intel |
+|-------|--------|---------|------|-------|-------|-------|
+| 🟢 GREEN | שגרה | No sirens >30min | 30s | 5min | 15min | 30min |
+| 🟡 ELEVATED | מוגבר | Sirens <30min ago | 15s | 2min | 10min | 15min |
+| 🔴 HIGH | גבוה | Active sirens NOW | 10s | 60s | 5min | 10min |
+| ⚫ CRITICAL | קריטי | Major cities | 10s | 30s | 3min | 5min |
+
+All threat levels, threat change alerts, and transition reasons are displayed in Hebrew on the Hebrew channel (e.g., "רמת איום: מוגבר" instead of "THREAT LEVEL: ELEVATED").
 
 Major cities: תל אביב, ירושלים, חיפה, באר שבע, and 13 more.
 
@@ -455,7 +488,7 @@ https://news.google.com/rss/search?q=site:apnews.com+iran+OR+israel&hl=en-US&gl=
 
 ## 🛡️ Cyber Warfare Monitor
 
-Monitors 30+ hacktivist groups, cyber threat intel aggregators, and dark web breach feeds for Iran-Israel cyber operations. Auto-classifies attacks and dispatches bilingual alerts.
+Monitors 19 hacktivist groups (25 TG handles), 8 CTI Twitter accounts, and 4 dark web/breach RSS feeds for Iran-Israel cyber operations. Auto-classifies attacks and dispatches bilingual alerts.
 
 ### Hacktivist Groups Monitored
 
@@ -571,9 +604,14 @@ iran-israel-alerts/
     ├── intel-log.jsonl           # All alert events (48h retention)
     ├── flight-history.jsonl      # Air traffic snapshots (7-day)
     ├── dispatch-log.jsonl        # Dispatch audit trail (7-day)
+    ├── breaking-corroboration.json # Multi-source breaking news tracker (2h window)
     ├── intel-map-latest.png
     ├── flight-map.png
-    ├── pinned-message-id.txt
+    ├── pinned-message-id-main.txt    # EN channel pinned msg ID
+    ├── pinned-message-id-hebrew.txt  # HE channel pinned msg ID
+    ├── last-standdown-ts.txt    # Standdown throttle timestamp
+    ├── watcher-oref-last.txt    # Last Oref API response
+    ├── poly_current.json        # Current Polymarket state
     ├── osint-{telegram,twitter,rss,seismic}-seen.json
     ├── cyber-{telegram,twitter,rss}-seen.json
     └── logs/                     # Rotated watcher logs (max 5)
@@ -581,7 +619,12 @@ iran-israel-alerts/
 
 ## Cron Setup
 
+> ⚠️ **macOS cron PATH**: Add `PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin` as the first line of your crontab. Without it, cron uses system Python (3.9) which lacks Pillow — causing silent failures in map/GIF generation.
+
 ```bash
+# First line of crontab:
+PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
+
 # Hourly report (map + summaries + GIF)
 0 * * * * cd /path/to/iran-israel-alerts && bash scripts/hourly-report.sh
 
