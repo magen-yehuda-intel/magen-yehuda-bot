@@ -1,0 +1,12 @@
+# Docker
+.env
+secrets/
+state/
+config.json
+docs/
+*.log
+__pycache__/
+*.pyc
+.git/
+memory/
+fonts/

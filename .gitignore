@@ -11,3 +11,4 @@ watcher-twitter-alerts.txt
 watcher-twitter-seen.json
 __pycache__/
 *.pyc
+.env

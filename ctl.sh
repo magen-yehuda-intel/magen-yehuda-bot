@@ -41,6 +41,12 @@ case "${1:-help}" in
     echo "✅ Watcher started (PID $!). Log: $LOG_FILE"
     ;;
 
+  start-foreground)
+    # Run watcher in foreground (for Docker/container use)
+    echo "🚀 Starting real-time watcher (foreground mode)..."
+    exec bash "$SKILL_DIR/scripts/realtime-watcher.sh" 2>&1 | tee -a "$LOG_FILE"
+    ;;
+
   stop)
     # Stop the real-time watcher
     if [ -f "$PID_FILE" ]; then

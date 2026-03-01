@@ -155,6 +155,50 @@ bash ctl.sh dashboard
 bash ctl.sh stop
 ```
 
+### 🐳 Docker (Recommended for Cloud/Self-Hosting)
+
+```bash
+# Option A: Quick start with env vars
+cp .env.example .env
+# Edit .env with your Telegram bot token + channel IDs
+
+docker compose up -d
+
+# View logs
+docker compose logs -f
+
+# Stop
+docker compose down
+```
+
+```bash
+# Option B: Use your own config.json
+docker build -t iran-israel-watcher .
+docker run -d --name watcher \
+  -v ./config.json:/app/config.json:ro \
+  -v ./secrets:/app/secrets:ro \
+  -v watcher-state:/app/state \
+  iran-israel-watcher
+```
+
+```bash
+# One-shot SITREP (without starting daemon)
+docker run --rm --env-file .env iran-israel-watcher bash ctl.sh check
+```
+
+**Environment variables** (see `.env.example`):
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `TELEGRAM_BOT_TOKEN` | ✅ | Telegram bot token from @BotFather |
+| `TELEGRAM_CHAT_ID` | ✅ | English channel (e.g., `@mychannel`) |
+| `TELEGRAM_CHAT_ID_HE` | | Hebrew channel (optional) |
+| `NORD_USER` / `NORD_PASS` | | NordVPN creds for Israel proxy (Pikud HaOref) |
+| `FIRMS_MAP_KEY` | | NASA FIRMS API key for fire detection |
+| `PUSH_API_KEY` | | Cloud API push endpoint key |
+| `API_URL` | | Cloud API URL for push endpoints |
+| `TIMEZONE` | | Display timezone (default: `Asia/Jerusalem`) |
+
 ## Architecture
 
 ```
