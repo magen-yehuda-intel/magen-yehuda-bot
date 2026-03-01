@@ -957,7 +957,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 // Set API_URL to your backend, or leave empty for static mode.
 // ═══════════════════════════════════════════════════════════
 const API_URL = (new URLSearchParams(window.location.search).get('api') || '').replace(/\/+$/, '');
-const STATIC_BASE = window.location.pathname.includes('/v2') ? '..' : '.';
+const STATIC_BASE = '.';
 
 function dataUrl(endpoint) {
   // Oref: always use API if available (real-time 10s)
