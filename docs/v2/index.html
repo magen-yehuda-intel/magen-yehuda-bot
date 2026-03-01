@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CENTCOM Theater Operations | Magen Yehuda Intel</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Teko:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050510;
+  --panel-bg: rgba(10,15,30,0.92);
+  --panel-border: rgba(255,255,255,0.08);
+  --blue: #3b82f6;
+  --cyan: #06b6d4;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --orange: #f97316;
+  --purple: #a855f7;
+  --pink: #ec4899;
+  --green: #22c55e;
+  --text: #e2e8f0;
+  --text-dim: rgba(255,255,255,0.5);
+  --font-title: 'Orbitron', sans-serif;
+  --font-data: 'JetBrains Mono', monospace;
+  --font-body: 'Inter', sans-serif;
+  --font-mil: 'Rajdhani', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); font-family:var(--font-body); color:var(--text); }
+
+/* ═══ TITLE BAR ═══ */
+#titlebar {
+  position:fixed; top:0; left:0; right:0; height:44px; z-index:1000;
+  background: linear-gradient(180deg, rgba(5,5,16,0.95) 0%, rgba(5,5,16,0.8) 100%);
+  backdrop-filter: blur(12px);
+  display:flex; align-items:center; justify-content:center;
+  border-bottom: 1px solid var(--panel-border);
+}
+#titlebar::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, rgba(59,130,246,0.4) 0%, rgba(6,182,212,0.5) 30%, rgba(255,255,255,0.15) 50%, rgba(239,68,68,0.5) 70%, rgba(239,68,68,0.4) 100%);
+}
+.title-flag { font-size:24px; }
+.title-text { font-family:var(--font-title); font-size:14px; font-weight:700; letter-spacing:2px; margin:0 16px; }
+.title-us { color:#60a5fa; text-shadow: 0 0 20px rgba(59,130,246,0.5), 0 0 40px rgba(59,130,246,0.2); }
+.title-vs { color:rgba(255,255,255,0.4); font-weight:400; font-size:11px; margin:0 6px; }
+.title-iran { color:#f87171; text-shadow: 0 0 20px rgba(239,68,68,0.5), 0 0 40px rgba(239,68,68,0.2); }
+
+/* ═══ MAP ═══ */
+#map { position:fixed; top:44px; left:54px; right:0; bottom:0; z-index:1; background:var(--bg); }
+
+/* ═══ TOOLBAR (left) ═══ */
+#toolbar {
+  position:fixed; top:44px; left:0; bottom:0; width:54px; z-index:900;
+  background: linear-gradient(180deg, rgba(5,5,16,0.95), rgba(5,5,16,0.85));
+  backdrop-filter: blur(8px);
+  border-right: 1px solid var(--panel-border);
+  display:flex; flex-direction:column; align-items:center;
+  padding:8px 0; gap:4px; overflow-y:auto;
+}
+.tb-btn {
+  width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.06);
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:16px; transition: all 0.2s; position:relative;
+}
+.tb-btn:hover { border-color:rgba(255,255,255,0.15); background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); transform:scale(1.08); }
+.tb-btn.active { border-color:rgba(255,255,255,0.2); }
+.tb-btn.active::after { content:''; position:absolute; inset:0; border-radius:50%; background:linear-gradient(rgba(255,255,255,0.1) 0%, transparent 60%); pointer-events:none; }
+.tb-btn[data-color="blue"].active { box-shadow:0 0 12px rgba(59,130,246,0.5); border-color:rgba(59,130,246,0.5); }
+.tb-btn[data-color="cyan"].active { box-shadow:0 0 12px rgba(6,182,212,0.5); border-color:rgba(6,182,212,0.5); }
+.tb-btn[data-color="red"].active { box-shadow:0 0 12px rgba(239,68,68,0.5); border-color:rgba(239,68,68,0.5); }
+.tb-btn[data-color="amber"].active { box-shadow:0 0 12px rgba(245,158,11,0.5); border-color:rgba(245,158,11,0.5); }
+.tb-btn[data-color="green"].active { box-shadow:0 0 12px rgba(34,197,94,0.5); border-color:rgba(34,197,94,0.5); }
+.tb-btn[data-color="purple"].active { box-shadow:0 0 12px rgba(168,85,247,0.5); border-color:rgba(168,85,247,0.5); }
+.tb-btn[data-color="orange"].active { box-shadow:0 0 12px rgba(249,115,22,0.5); border-color:rgba(249,115,22,0.5); }
+.tb-tooltip {
+  position:absolute; left:48px; top:50%; transform:translateY(-50%);
+  background:rgba(5,5,16,0.95); border:1px solid var(--panel-border);
+  padding:4px 10px; border-radius:4px; font-size:11px; white-space:nowrap;
+  pointer-events:none; opacity:0; transition:opacity 0.15s;
+  font-family:var(--font-data); color:var(--text-dim);
+  backdrop-filter:blur(8px);
+}
+.tb-btn:hover .tb-tooltip { opacity:1; }
+
+/* ═══ MARKER STYLES ═══ */
+.custom-marker {
+  backdrop-filter:blur(2px); cursor:pointer;
+  background:rgba(0,0,0,0.3); border:1.5px solid; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.custom-marker:hover { background:rgba(0,0,0,0.5); transform:scale(1.4); z-index:10000 !important; }
+.marker-us-base { filter:drop-shadow(0 0 8px rgba(59,130,246,0.7)); border-color:#60a5fa; }
+.marker-us-base:hover { box-shadow:0 0 20px rgba(59,130,246,0.6), 0 0 40px rgba(59,130,246,0.2); }
+.marker-us-naval { filter:drop-shadow(0 0 8px rgba(6,182,212,0.7)); border-color:#22d3ee; }
+.marker-us-naval:hover { box-shadow:0 0 20px rgba(6,182,212,0.6), 0 0 40px rgba(6,182,212,0.2); }
+.marker-us-marine { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; }
+.marker-us-marine:hover { box-shadow:0 0 20px rgba(239,68,68,0.6), 0 0 40px rgba(239,68,68,0.2); }
+.marker-us-radar { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#22d3ee; }
+.marker-iran-nuclear { filter:drop-shadow(0 0 10px rgba(245,158,11,0.8)); border-color:#fbbf24; animation:pulse-threat 2s ease infinite; }
+.marker-iran-missile { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
+.marker-iran-missile:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
+.marker-iran-naval { filter:drop-shadow(0 0 8px rgba(236,72,153,0.7)); border-color:#f9a8d4; }
+.marker-iran-naval:hover { box-shadow:0 0 20px rgba(236,72,153,0.6), 0 0 40px rgba(236,72,153,0.2); }
+.marker-iran-ad { filter:drop-shadow(0 0 8px rgba(234,179,8,0.7)); border-color:#facc15; }
+.marker-iran-ad:hover { box-shadow:0 0 20px rgba(234,179,8,0.6), 0 0 40px rgba(234,179,8,0.2); }
+.marker-iran-airbase { filter:drop-shadow(0 0 8px rgba(168,85,247,0.7)); border-color:#c084fc; }
+.marker-iran-airbase:hover { box-shadow:0 0 20px rgba(168,85,247,0.6), 0 0 40px rgba(168,85,247,0.2); }
+.marker-iran-irgc { filter:drop-shadow(0 0 8px rgba(220,38,38,0.7)); border-color:#f87171; }
+.marker-iran-irgc:hover { box-shadow:0 0 20px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.2); }
+.marker-iran-energy { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
+.marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
+.marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
+.marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
+.marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
+
+/* ═══ SAM RANGE RINGS ═══ */
+.sam-ring { fill:none; stroke-dasharray:8,6; }
+.sam-ring-active { animation:defense-ring-pulse 2.5s ease-in-out infinite; }
+
+/* ═══ NEON GLOW (waterways) ═══ */
+.neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
+.neon-line { stroke-linecap:round; stroke-linejoin:round; }
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes pulse-threat {
+  0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  50% { box-shadow: 0 0 24px rgba(245,158,11,0.8), 0 0 48px rgba(245,158,11,0.3); }
+}
+@keyframes defense-ring-pulse {
+  0%, 100% { opacity:0.3; }
+  50% { opacity:0.7; }
+}
+@keyframes missile-impact-anim {
+  0%, 100% { opacity:0.8; transform:scale(1); }
+  50% { opacity:0.4; transform:scale(1.4); }
+}
+@keyframes neon-pulse {
+  0%, 100% { opacity:0.55; }
+  50% { opacity:0.85; }
+}
+@keyframes pin-bounce {
+  0% { opacity:0; transform:translateY(-20px) scale(1.2); }
+  60% { opacity:1; transform:translateY(2px) scale(0.95); }
+  100% { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes alert-pulse-anim {
+  0%, 100% { opacity:0.8; }
+  50% { opacity:0.3; }
+}
+@keyframes dash-flow {
+  to { stroke-dashoffset: -20; }
+}
+@keyframes spin { 100% { transform:rotate(360deg); } }
+
+/* ═══ COUNTER CHIPS (bottom-left) ═══ */
+#chips {
+  position:fixed; bottom:12px; left:62px; z-index:800;
+  display:flex; gap:8px;
+}
+.chip {
+  backdrop-filter:blur(8px);
+  background: rgba(5,5,16,0.85);
+  border:1px solid var(--panel-border);
+  border-radius:8px; padding:6px 12px;
+  display:flex; align-items:center; gap:8px;
+  cursor:pointer; transition:all 0.2s;
+}
+.chip:hover { border-color:rgba(255,255,255,0.15); }
+.chip-icon { font-size:16px; }
+.chip-label { font-family:var(--font-data); font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+.chip-value { font-family:var(--font-title); font-size:14px; font-weight:700; }
+.chip-alert .chip-value { color:var(--red); }
+.chip-sat .chip-value { color:var(--cyan); }
+.chip-live .chip-value { color:var(--green); }
+.chip-ais .chip-value { color:var(--blue); }
+
+/* ═══ SIDEBAR ═══ */
+#sidebar {
+  position:fixed; top:44px; left:54px; bottom:0; width:320px; z-index:850;
+  background: linear-gradient(rgb(10,15,30) 0%, rgb(7,11,22) 100%);
+  border-right:1px solid var(--panel-border);
+  transform:translateX(-100%); transition:transform 0.3s ease;
+  overflow-y:auto; font-family:var(--font-body);
+}
+#sidebar.open { transform:translateX(0); }
+.sb-header {
+  padding:16px; border-bottom:1px solid rgba(255,255,255,0.04);
+  background:linear-gradient(rgba(255,255,255,0.02), transparent);
+  display:flex; align-items:center; gap:12px;
+}
+.sb-logo {
+  width:40px; height:40px; border-radius:10px;
+  background:linear-gradient(135deg, #1d4ed8, #0e7490);
+  box-shadow:0 0 20px rgba(59,130,246,0.2);
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+}
+.sb-title { font-family:var(--font-title); font-size:13px; font-weight:700; letter-spacing:1px; }
+.sb-subtitle { font-family:var(--font-data); font-size:9px; color:var(--text-dim); letter-spacing:1px; }
+.sb-close { position:absolute; top:12px; right:12px; background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:18px; }
+.sb-tabs {
+  display:flex; border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.sb-tab {
+  flex:1; padding:10px; text-align:center; cursor:pointer;
+  font-family:var(--font-data); font-size:10px; letter-spacing:1px;
+  color:var(--text-dim); border-bottom:2px solid transparent;
+  transition:all 0.2s;
+}
+.sb-tab.active { color:var(--text); border-bottom-color:var(--cyan); background:linear-gradient(rgba(59,130,246,0.05), transparent); }
+.sb-search {
+  padding:8px 12px; border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.sb-search input {
+  width:100%; padding:8px 10px; background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.06); border-radius:4px;
+  color:var(--text); font-family:var(--font-data); font-size:11px; outline:none;
+}
+.sb-search input:focus { border-color:rgba(59,130,246,0.4); box-shadow:0 0 0 1px rgba(59,130,246,0.15); }
+.sb-section-title {
+  font-family:var(--font-title); font-size:9px; letter-spacing:2px; font-weight:600;
+  padding:10px 12px 4px; background:rgba(255,255,255,0.01);
+}
+.sb-section-title.us { color:var(--blue); }
+.sb-section-title.iran { color:var(--red); }
+.sb-section-title.overlay { color:var(--green); }
+.sb-row {
+  display:flex; align-items:center; gap:8px; padding:8px 12px;
+  cursor:pointer; border-left:2px solid transparent; transition:all 0.15s;
+}
+.sb-row:hover { background:rgba(255,255,255,0.02); border-left-color:rgba(255,255,255,0.08); }
+.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sb-row-name { flex:1; font-size:12px; }
+.sb-row-count { font-family:var(--font-data); font-size:11px; color:var(--text-dim); }
+.sb-actions {
+  padding:10px 12px; border-top:1px solid rgba(255,255,255,0.04);
+  display:flex; flex-direction:column; gap:6px;
+}
+.sb-action-btn {
+  padding:8px; text-align:center; border-radius:4px; cursor:pointer;
+  font-family:var(--font-data); font-size:10px; letter-spacing:1px;
+  background:linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border:1px solid rgba(255,255,255,0.06); transition:all 0.2s;
+}
+.sb-action-btn:hover { background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); border-color:rgba(255,255,255,0.12); }
+.sb-footer {
+  padding:8px 12px; background:rgba(0,0,0,0.15);
+  border-top:1px solid rgba(255,255,255,0.04);
+  font-family:var(--font-data); font-size:8px; color:var(--text-dim); letter-spacing:1px;
+}
+
+/* ═══ LEGEND ═══ */
+#legend {
+  position:fixed; bottom:12px; right:12px; z-index:800;
+  background:var(--panel-bg); backdrop-filter:blur(8px);
+  border:1px solid var(--panel-border); border-radius:8px;
+  padding:12px 16px; max-width:260px; display:none;
+}
+#legend.visible { display:block; }
+.legend-title {
+  font-family:var(--font-title); font-size:10px; letter-spacing:2px;
+  color:var(--text-dim); margin-bottom:8px;
+}
+.legend-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; }
+.legend-item { display:flex; align-items:center; gap:6px; font-size:10px; }
+.legend-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.legend-close { position:absolute; top:6px; right:8px; background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:14px; }
+
+/* ═══ BASEMAP TOGGLE ═══ */
+#basemap-toggle {
+  position:fixed; top:54px; right:12px; z-index:800;
+  display:flex; gap:0; border-radius:6px; overflow:hidden;
+  border:1px solid var(--panel-border);
+}
+.bm-btn {
+  padding:6px 14px; cursor:pointer;
+  font-family:var(--font-data); font-size:10px; letter-spacing:1px;
+  background:rgba(5,5,16,0.85); color:var(--text-dim);
+  backdrop-filter:blur(4px); transition:all 0.2s;
+  border:none; outline:none;
+}
+.bm-btn.active { background:rgba(59,130,246,0.15); color:var(--text); }
+
+/* ═══ STATUS BAR ═══ */
+#statusbar {
+  position:fixed; bottom:0; left:54px; right:0; height:24px; z-index:800;
+  background:rgba(5,5,16,0.9); backdrop-filter:blur(4px);
+  border-top:1px solid var(--panel-border);
+  display:flex; align-items:center; padding:0 12px; gap:16px;
+  font-family:var(--font-data); font-size:9px; color:var(--text-dim);
+}
+#clock { color:var(--cyan); }
+
+/* ═══ LEAFLET OVERRIDES ═══ */
+.leaflet-control-zoom { border:1px solid var(--panel-border) !important; }
+.leaflet-control-zoom a { background:rgba(5,5,16,0.85) !important; color:var(--text) !important; border-color:var(--panel-border) !important; backdrop-filter:blur(4px); }
+.leaflet-control-zoom a:hover { background:rgba(20,25,40,0.9) !important; }
+.leaflet-popup-content-wrapper { background:rgba(10,15,30,0.95) !important; color:var(--text) !important; border:1px solid var(--panel-border) !important; border-radius:8px !important; backdrop-filter:blur(12px) !important; }
+.leaflet-popup-tip { background:rgba(10,15,30,0.95) !important; }
+.leaflet-popup-close-button { color:var(--text-dim) !important; }
+
+/* ═══ MOBILE ═══ */
+@media (max-width:768px) {
+  #toolbar { display:none; }
+  #map { left:0; bottom:52px; }
+  #chips { left:8px; bottom:60px; }
+  #sidebar { left:0; width:100%; }
+  #basemap-toggle { right:8px; bottom:60px; }
+  #statusbar { left:0; }
+  .title-text { font-size:11px; letter-spacing:1px; }
+}
+</style>
+</head>
+<body>
+
+<!-- MAP CONTAINER -->
+<div id="map"></div>
+
+<!-- TITLE BAR -->
+<div id="titlebar">
+  <span class="title-flag">🇺🇸</span>
+  <span class="title-text">
+    <span class="title-us">U.S. & ALLIES</span>
+    <span class="title-vs">vs.</span>
+    <span class="title-iran">ISLAMIC REPUBLIC OF IRAN</span>
+  </span>
+  <span class="title-flag">🇮🇷</span>
+</div>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <div class="tb-btn" data-layer="sidebar" data-color="blue" onclick="toggleSidebar()">
+    <span>☰</span><div class="tb-tooltip">Layers & Assets</div>
+  </div>
+  <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
+  <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="toggleLayer('borders')">
+    <span>🗺</span><div class="tb-tooltip">Country Borders</div>
+  </div>
+  <div class="tb-btn" data-layer="infra" data-color="orange" onclick="toggleLayer('infra')">
+    <span>🏗</span><div class="tb-tooltip">Iran Infrastructure</div>
+  </div>
+  <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
+    <span>⭐</span><div class="tb-tooltip">Military Bases</div>
+  </div>
+  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft')">
+    <span>✈️</span><div class="tb-tooltip">Live Aircraft (ADS-B)</div>
+  </div>
+  <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
+    <span>🚢</span><div class="tb-tooltip">Ship Tracking (AIS)</div>
+  </div>
+  <div class="tb-btn" data-layer="labels" data-color="blue" onclick="toggleLayer('labels')">
+    <span>🏷</span><div class="tb-tooltip">Base Labels</div>
+  </div>
+  <div class="tb-btn" data-layer="sam" data-color="amber" onclick="toggleLayer('sam')">
+    <span>🛡</span><div class="tb-tooltip">SAM Range Rings</div>
+  </div>
+  <div class="tb-btn" data-layer="patrol" data-color="green" onclick="toggleLayer('patrol')">
+    <span>↻</span><div class="tb-tooltip">Air Patrol Routes</div>
+  </div>
+  <div class="tb-btn" data-layer="waterways" data-color="cyan" onclick="toggleLayer('waterways')">
+    <span>🌊</span><div class="tb-tooltip">Strategic Waterways</div>
+  </div>
+  <div class="tb-btn" data-layer="gpsjam" data-color="red" onclick="toggleLayer('gpsjam')">
+    <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
+  </div>
+  <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
+    <span>🔥</span><div class="tb-tooltip">FIRMS Fire Hotspots</div>
+  </div>
+  <div class="tb-btn" data-layer="satellites" data-color="cyan" onclick="toggleLayer('satellites')">
+    <span>🛰</span><div class="tb-tooltip">Recon Satellites</div>
+  </div>
+  <div class="tb-btn active" data-layer="osint" data-color="red" onclick="toggleLayer('osint')">
+    <span>📌</span><div class="tb-tooltip">OSINT Events</div>
+  </div>
+  <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
+  <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
+    <span>📋</span><div class="tb-tooltip">Legend</div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-header">
+    <div class="sb-logo">🎯</div>
+    <div>
+      <div class="sb-title">CENTCOM THEATER OPS</div>
+      <div class="sb-subtitle">FORCE TRACKING SYSTEM</div>
+    </div>
+    <button class="sb-close" onclick="toggleSidebar()">✕</button>
+  </div>
+  <div class="sb-tabs">
+    <div class="sb-tab active" onclick="switchTab('layers')">LAYERS</div>
+    <div class="sb-tab" onclick="switchTab('assets')">ASSETS (<span id="asset-count">0</span>)</div>
+  </div>
+  <div id="tab-layers">
+    <div class="sb-search"><input type="text" placeholder="Search layers..." oninput="filterSidebarLayers(this.value)"></div>
+    <div class="sb-section-title us">US FORCES</div>
+    <div class="sb-row" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
+    <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
+    <div class="sb-section-title iran">IRAN / ADVERSARY</div>
+    <div class="sb-row" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
+    <div class="sb-section-title overlay">OVERLAYS</div>
+    <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
+    <div class="sb-actions">
+      <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
+      <div class="sb-action-btn" onclick="showUSOnly()" style="border-color:rgba(59,130,246,0.3);color:#60a5fa">US Forces Only</div>
+      <div class="sb-action-btn" onclick="showIranOnly()" style="border-color:rgba(239,68,68,0.3);color:#f87171">Iran Targets Only</div>
+    </div>
+  </div>
+  <div id="tab-assets" style="display:none">
+    <div class="sb-search"><input type="text" placeholder="Search assets..." id="asset-search" oninput="filterAssets(this.value)"></div>
+    <div id="asset-list"></div>
+  </div>
+  <div class="sb-footer">OSINT DATA · UNCLASSIFIED · MAGEN YEHUDA INTEL v2.0</div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="legend-title">FORCE TYPE</div>
+  <button class="legend-close" onclick="toggleLegend()">✕</button>
+  <div class="legend-grid">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>US Air Base</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>US Naval</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>USMC</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Allied Air Def</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Iran Nuclear</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Iran Missile</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f9a8d4"></div>Iran Naval</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>Iran Air Def</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Iran Air Base</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>IRGC</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Iran Oil & Gas</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Waterway</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Air Route</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff8800"></div>Fire (FIRMS)</div>
+  </div>
+</div>
+
+<!-- COUNTER CHIPS -->
+<div id="chips">
+  <div class="chip chip-alert"><span class="chip-icon">🛡</span><div><div class="chip-label">ALERT</div><div class="chip-value" id="chip-alert">0</div></div></div>
+  <div class="chip chip-sat"><span class="chip-icon">🛰</span><div><div class="chip-label">SAT</div><div class="chip-value" id="chip-sat">12</div></div></div>
+  <div class="chip chip-live"><span class="chip-icon">✈</span><div><div class="chip-label">LIVE</div><div class="chip-value" id="chip-live">0</div></div></div>
+  <div class="chip chip-ais"><span class="chip-icon">🚢</span><div><div class="chip-label">AIS</div><div class="chip-value" id="chip-ais">0</div></div></div>
+</div>
+
+<!-- BASEMAP TOGGLE -->
+<div id="basemap-toggle">
+  <button class="bm-btn" id="bm-carto" onclick="setBasemap('carto')">Map</button>
+  <button class="bm-btn active" id="bm-viirs" onclick="setBasemap('viirs')">VIIRS</button>
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <span id="clock"></span>
+  <span id="layer-status">Layers: 3 active</span>
+  <span style="flex:1"></span>
+  <span>MAGEN YEHUDA INTEL v2.0</span>
+</div>
+
+<!-- SVG FILTER for neon glow -->
+<svg style="position:absolute;width:0;height:0">
+  <defs>
+    <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="v2-data.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// MAP INITIALIZATION
+// ═══════════════════════════════════════════════════════════
+const VIIRS_URL = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png';
+const CARTO_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const NE_COUNTRIES = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
+
+const viirsTile = L.tileLayer(VIIRS_URL, { maxZoom: 8, attribution: '© NASA GIBS Black Marble' });
+const cartoTile = L.tileLayer(CARTO_URL, { maxZoom: 18, attribution: '© CARTO', subdomains: 'abcd' });
+
+window.map = L.map('map', {
+  center: [28, 52], zoom: 5,
+  zoomControl: false,
+  layers: [viirsTile],
+  attributionControl: false,
+});
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
+let currentBasemap = 'viirs';
+
+function setBasemap(name) {
+  if (name === 'carto') { map.removeLayer(viirsTile); map.addLayer(cartoTile); }
+  else { map.removeLayer(cartoTile); map.addLayer(viirsTile); }
+  currentBasemap = name;
+  document.getElementById('bm-carto').classList.toggle('active', name === 'carto');
+  document.getElementById('bm-viirs').classList.toggle('active', name === 'viirs');
+}
+
+// ═══════════════════════════════════════════════════════════
+// LAYER GROUPS
+// ═══════════════════════════════════════════════════════════
+const layers = {
+  borders: L.layerGroup(),
+  military: L.layerGroup(),
+  infra: L.layerGroup(),
+  nuclear: L.layerGroup(),
+  missiles: L.layerGroup(),
+  naval: L.layerGroup(),
+  ad: L.layerGroup(),
+  airbases: L.layerGroup(),
+  irgc: L.layerGroup(),
+  energy: L.layerGroup(),
+  sam: L.layerGroup(),
+  waterways: L.layerGroup(),
+  patrol: L.layerGroup(),
+  fires: L.layerGroup(),
+  osint: L.layerGroup(),
+  labels: L.layerGroup(),
+  aircraft: L.layerGroup(),
+  ships: L.layerGroup(),
+  gpsjam: L.layerGroup(),
+  satellites: L.layerGroup(),
+};
+
+// Track which layers are active
+const activeState = {
+  borders: true, military: true, fires: true, osint: true,
+  infra: false, nuclear: false, missiles: false, naval: false,
+  ad: false, airbases: false, irgc: false, energy: false,
+  sam: false, waterways: false, patrol: false, labels: false,
+  aircraft: false, ships: false, gpsjam: false, satellites: false,
+};
+
+// Add default-on layers
+['borders', 'military', 'fires', 'osint'].forEach(k => layers[k].addTo(map));
+
+// ═══════════════════════════════════════════════════════════
+// TOGGLE FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+function toggleLayer(name) {
+  if (!layers[name]) return;
+  activeState[name] = !activeState[name];
+  if (activeState[name]) { layers[name].addTo(map); } else { map.removeLayer(layers[name]); }
+  // Update toolbar button state
+  const btn = document.querySelector(`.tb-btn[data-layer="${name}"]`);
+  if (btn) btn.classList.toggle('active', activeState[name]);
+  updateLayerCount();
+  // For military toggle, also toggle all Iran sub-layers
+  if (name === 'military') {
+    ['nuclear','missiles','naval','ad','airbases','irgc','energy'].forEach(sub => {
+      activeState[sub] = activeState[name];
+      if (activeState[sub]) layers[sub].addTo(map); else map.removeLayer(layers[sub]);
+    });
+  }
+}
+
+function isolateIranLayer(name) {
+  // Toggle individual Iran sublayer
+  activeState[name] = !activeState[name];
+  if (activeState[name]) layers[name].addTo(map); else map.removeLayer(layers[name]);
+  updateLayerCount();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+function toggleLegend() {
+  const el = document.getElementById('legend');
+  el.classList.toggle('visible');
+  const btn = document.querySelector('.tb-btn[data-layer="legend"]');
+  if (btn) btn.classList.toggle('active', el.classList.contains('visible'));
+}
+
+function updateLayerCount() {
+  const count = Object.values(activeState).filter(Boolean).length;
+  document.getElementById('layer-status').textContent = `Layers: ${count} active`;
+}
+
+function showAllLayers() {
+  Object.keys(activeState).forEach(k => {
+    activeState[k] = true; layers[k].addTo(map);
+    const btn = document.querySelector(`.tb-btn[data-layer="${k}"]`);
+    if (btn) btn.classList.add('active');
+  });
+  updateLayerCount();
+}
+
+function showUSOnly() {
+  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
+  ['borders','military','labels','patrol'].forEach(k => { activeState[k] = true; layers[k].addTo(map); });
+  document.querySelectorAll('.tb-btn').forEach(b => {
+    b.classList.toggle('active', activeState[b.dataset.layer] || false);
+  });
+  updateLayerCount();
+}
+
+function showIranOnly() {
+  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
+  ['borders','nuclear','missiles','naval','ad','airbases','irgc','energy','sam'].forEach(k => {
+    activeState[k] = true; layers[k].addTo(map);
+  });
+  document.querySelectorAll('.tb-btn').forEach(b => {
+    b.classList.toggle('active', activeState[b.dataset.layer] || false);
+  });
+  updateLayerCount();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.sb-tab').forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'layers' && i === 0) || (tab === 'assets' && i === 1));
+  });
+  document.getElementById('tab-layers').style.display = tab === 'layers' ? '' : 'none';
+  document.getElementById('tab-assets').style.display = tab === 'assets' ? '' : 'none';
+  if (tab === 'assets') renderAssetList();
+}
+
+function filterSidebarLayers(q) { /* TODO */ }
+
+// ═══════════════════════════════════════════════════════════
+// MARKER HELPER
+// ═══════════════════════════════════════════════════════════
+function mkMarker(lat, lon, emoji, cssClass, size, popup) {
+  size = size || 26;
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="custom-marker ${cssClass}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*0.5)}px">${emoji}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+  });
+  const m = L.marker([lat, lon], { icon });
+  if (popup) m.bindPopup(popup, { maxWidth: 320 });
+  return m;
+}
+
+function mkPopup(title, subtitle, details, color) {
+  color = color || '#3b82f6';
+  return `<div style="min-width:200px">
+    <div style="background:${color};margin:-7px -11px 8px;padding:8px 12px;border-radius:4px 4px 0 0">
+      <b style="color:#fff;font-size:13px;font-family:var(--font-mil)">${title}</b>
+    </div>
+    ${subtitle ? `<div style="font-size:12px;color:var(--cyan);font-family:var(--font-data);margin-bottom:4px">${subtitle}</div>` : ''}
+    <div style="font-size:11px;line-height:1.5;color:#ccc">${details}</div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER STATIC LAYERS
+// ═══════════════════════════════════════════════════════════
+function renderAllLayers() {
+  if (typeof V2_DATA === 'undefined') { console.error('V2_DATA not loaded'); return; }
+
+  // ─── US BASES ───
+  V2_DATA.US_BASES.forEach(b => {
+    const cls = b.type === 'naval' ? 'marker-us-naval' : b.type === 'base' ? 'marker-us-marine' : b.type === 'radar' ? 'marker-us-radar' : 'marker-us-base';
+    const popup = mkPopup(`${b.emoji} ${b.name}`, b.country, `<b>Forces:</b> ${b.forces}`, '#3b82f6');
+    mkMarker(b.lat, b.lon, b.emoji, cls, 28, popup).addTo(layers.military);
+    // Label
+    const label = L.marker([b.lat, b.lon], {
+      icon: L.divIcon({ className: '', html: `<div style="font-family:var(--font-data);font-size:8px;color:#60a5fa;white-space:nowrap;text-shadow:0 0 4px rgba(0,0,0,0.8);pointer-events:none;transform:translateY(14px)">${b.name}</div>`, iconSize:[0,0] }),
+      interactive: false,
+    });
+    label.addTo(layers.labels);
+  });
+
+  // ─── IRAN NUCLEAR ───
+  V2_DATA.IRAN_NUCLEAR.forEach(s => {
+    const popup = mkPopup(`☢️ ${s.name}`, `Threat: ${s.threat.toUpperCase()}`, s.desc, '#f59e0b');
+    mkMarker(s.lat, s.lon, '☢️', 'marker-iran-nuclear', 30, popup).addTo(layers.nuclear);
+  });
+
+  // ─── IRAN MISSILES ───
+  V2_DATA.IRAN_MISSILES.forEach(s => {
+    const popup = mkPopup(`🚀 ${s.name}`, s.system, `Range: ${s.range}km<br>${s.desc}`, '#f97316');
+    mkMarker(s.lat, s.lon, '🚀', 'marker-iran-missile', 24, popup).addTo(layers.missiles);
+  });
+
+  // ─── IRAN NAVAL ───
+  V2_DATA.IRAN_NAVAL.forEach(s => {
+    const popup = mkPopup(`${s.emoji} ${s.name}`, s.type.toUpperCase(), s.forces, '#ec4899');
+    mkMarker(s.lat, s.lon, s.emoji, 'marker-iran-naval', 26, popup).addTo(layers.naval);
+  });
+
+  // ─── IRAN AIR DEFENSE + SAM RINGS ───
+  V2_DATA.IRAN_AIRDEFENSE.forEach(s => {
+    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Range: ${s.range_km}km`, '#eab308');
+    mkMarker(s.lat, s.lon, '🛡️', 'marker-iran-ad', 24, popup).addTo(layers.ad);
+    // SAM range ring
+    if (s.range_km > 0) {
+      const ring = L.circle([s.lat, s.lon], {
+        radius: s.range_km * 1000,
+        color: s.range_km >= 200 ? '#ef4444' : s.range_km >= 100 ? '#f59e0b' : '#facc15',
+        weight: 1.5,
+        fillColor: s.range_km >= 200 ? 'rgba(239,68,68,0.05)' : 'rgba(245,158,11,0.03)',
+        fillOpacity: 1,
+        dashArray: s.range_km >= 200 ? '' : '8,6',
+        className: 'sam-ring-active',
+        interactive: false,
+      });
+      ring.addTo(layers.sam);
+    }
+  });
+
+  // ─── IRAN AIR BASES ───
+  V2_DATA.IRAN_AIRBASES.forEach(s => {
+    const popup = mkPopup(`${s.emoji} ${s.name}`, '', `Aircraft: ${s.aircraft}`, '#a855f7');
+    mkMarker(s.lat, s.lon, s.emoji, 'marker-iran-airbase', 24, popup).addTo(layers.airbases);
+  });
+
+  // ─── IRAN IRGC ───
+  V2_DATA.IRAN_IRGC.forEach(s => {
+    const popup = mkPopup(`${s.emoji} ${s.name}`, '', s.desc, '#dc2626');
+    mkMarker(s.lat, s.lon, s.emoji, 'marker-iran-irgc', 26, popup).addTo(layers.irgc);
+  });
+
+  // ─── IRAN ENERGY ───
+  V2_DATA.IRAN_ENERGY.forEach(s => {
+    const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : s.type.includes('pipeline') ? '🔗' : '🛢';
+    const popup = mkPopup(`${emoji} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#f97316');
+    mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
+  });
+
+  // ─── STRATEGIC WATERWAYS ───
+  V2_DATA.WATERWAYS.forEach(w => {
+    const latlngs = w.coords.map(c => [c[0], c[1]]);
+    // Glow line (wider, lower opacity)
+    L.polyline(latlngs, {
+      color: w.color, weight: 8, opacity: 0.15,
+      className: 'neon-glow',
+    }).addTo(layers.waterways);
+    // Core line
+    L.polyline(latlngs, {
+      color: w.color, weight: 3, opacity: 0.7,
+      className: 'neon-line',
+    }).addTo(layers.waterways);
+    // Label marker at midpoint
+    const mid = latlngs[Math.floor(latlngs.length/2)];
+    const popup = mkPopup(`${w.emoji} ${w.name}`, '', w.desc, '#06b6d4');
+    mkMarker(mid[0], mid[1], w.emoji, 'marker-waterway', 24, popup).addTo(layers.waterways);
+  });
+
+  // ─── AIR PATROL ROUTES ───
+  V2_DATA.PATROL_ROUTES.forEach(r => {
+    const latlngs = r.coords.map(c => [c[0], c[1]]);
+    L.polyline(latlngs, {
+      color: r.color, weight: 2, opacity: 0.6,
+      dashArray: '10,6',
+      className: 'patrol-line',
+    }).addTo(layers.patrol);
+    // Arrow markers at each vertex
+    latlngs.forEach((ll, i) => {
+      if (i === 0) return;
+      const label = L.marker(ll, {
+        icon: L.divIcon({ className: '', html: `<div style="color:${r.color};font-size:10px;opacity:0.5">▶</div>`, iconSize:[0,0] }),
+        interactive: false,
+      });
+      label.addTo(layers.patrol);
+    });
+  });
+
+  // ─── COUNTRY BORDERS ───
+  fetch(NE_COUNTRIES).then(r => r.json()).then(geo => {
+    L.geoJSON(geo, {
+      style: feature => {
+        const name = (feature.properties.ADMIN || '').toLowerCase();
+        const iso = (feature.properties.ISO_A2 || '').toUpperCase();
+        let fillColor = 'transparent', fillOpacity = 0, color = 'rgba(255,255,255,0.12)', weight = 0.8;
+        if (name === 'iran' || iso === 'IR') { fillColor = '#ef4444'; fillOpacity = 0.12; color = 'rgba(239,68,68,0.5)'; weight = 1.5; }
+        else if (name === 'israel' || iso === 'IL') { fillColor = '#3b82f6'; fillOpacity = 0.12; color = 'rgba(59,130,246,0.5)'; weight = 1.5; }
+        else if (['SA','AE','QA','BH','KW','OM','JO','IQ'].includes(iso)) { fillColor = '#3b82f6'; fillOpacity = 0.03; color = 'rgba(59,130,246,0.3)'; weight = 1; }
+        else if (['SY','YE','LB'].includes(iso)) { fillColor = '#ef4444'; fillOpacity = 0.05; color = 'rgba(239,68,68,0.3)'; weight = 1; }
+        return { fillColor, fillOpacity, color, weight, className: 'neon-glow' };
+      },
+      onEachFeature: (feature, layer) => {
+        const name = feature.properties.ADMIN || feature.properties.NAME || '';
+        if (name) layer.bindTooltip(name, { sticky: true, className: 'country-tooltip' });
+      }
+    }).addTo(layers.borders);
+  }).catch(e => console.warn('Borders load failed:', e));
+
+  // ─── OSINT from intel-feed.json ───
+  loadOSINT();
+
+  // ─── Update counts ───
+  const totalAssets = V2_DATA.US_BASES.length + V2_DATA.IRAN_NUCLEAR.length + V2_DATA.IRAN_MISSILES.length +
+    V2_DATA.IRAN_NAVAL.length + V2_DATA.IRAN_AIRDEFENSE.length + V2_DATA.IRAN_AIRBASES.length +
+    V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length;
+  document.getElementById('asset-count').textContent = totalAssets;
+  document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+// LIVE DATA LOADERS
+// ═══════════════════════════════════════════════════════════
+function loadOSINT() {
+  // Try loading from our intel-feed.json
+  fetch('intel-feed.json').then(r => r.ok ? r.json() : Promise.reject('no feed'))
+  .then(data => {
+    const events = data.events || data || [];
+    let count = 0;
+    events.forEach(ev => {
+      if (!ev.lat || !ev.lon) return;
+      count++;
+      const recent = ev.timestamp && (Date.now()/1000 - ev.timestamp) < 86400;
+      const popup = mkPopup(
+        `📌 ${ev.sub_event_type || ev.type || 'OSINT Event'}`,
+        ev.actor1 || ev.source || '',
+        `📍 ${ev.location || ''}<br>📅 ${ev.date || ''}<br>${ev.notes || ev.text || ''}`,
+        recent ? '#ef4444' : '#888'
+      );
+      mkMarker(ev.lat, ev.lon, '📌', recent ? 'marker-osint' : 'marker-osint', recent ? 22 : 18, popup)
+        .addTo(layers.osint);
+    });
+    document.getElementById('cnt-osint').textContent = count;
+  }).catch(() => {
+    console.log('No intel-feed.json available, OSINT layer empty');
+  });
+}
+
+function loadFIRMS() {
+  // Load from FIRMS API or our data
+  fetch('intel-feed.json').then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    const fires = (data.events || data || []).filter(e => (e.sub_event_type || '').includes('FIRMS'));
+    let count = 0;
+    fires.forEach(f => {
+      if (!f.lat || !f.lon) return;
+      count++;
+      mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
+        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || ''}<br>📅 ${f.date || ''}`, '#ff8800')
+      ).addTo(layers.fires);
+    });
+    document.getElementById('cnt-fires').textContent = count;
+  }).catch(() => {});
+}
+
+// ═══════════════════════════════════════════════════════════
+// ASSET LIST (sidebar)
+// ═══════════════════════════════════════════════════════════
+function renderAssetList(filter) {
+  const el = document.getElementById('asset-list');
+  filter = (filter || '').toLowerCase();
+  const allAssets = [
+    ...V2_DATA.US_BASES.map(b => ({ ...b, category: 'US', emoji: b.emoji })),
+    ...V2_DATA.IRAN_NUCLEAR.map(s => ({ ...s, category: 'Nuclear', emoji: '☢️', lon: s.lon })),
+    ...V2_DATA.IRAN_MISSILES.map(s => ({ ...s, category: 'Missile', emoji: '🚀', lon: s.lon })),
+    ...V2_DATA.IRAN_NAVAL.map(s => ({ ...s, category: 'Naval', emoji: s.emoji, lon: s.lon })),
+    ...V2_DATA.IRAN_AIRDEFENSE.map(s => ({ ...s, category: 'Air Def', emoji: '🛡️', lon: s.lon })),
+    ...V2_DATA.IRAN_AIRBASES.map(s => ({ ...s, category: 'Air Base', emoji: s.emoji, lon: s.lon })),
+    ...V2_DATA.IRAN_IRGC.map(s => ({ ...s, category: 'IRGC', emoji: s.emoji, lon: s.lon })),
+    ...V2_DATA.IRAN_ENERGY.map(s => ({ ...s, category: 'Energy', emoji: '🛢', lon: s.lon })),
+  ];
+  const filtered = filter ? allAssets.filter(a => (a.name||'').toLowerCase().includes(filter) || (a.category||'').toLowerCase().includes(filter)) : allAssets;
+  el.innerHTML = filtered.slice(0, 100).map(a => `
+    <div class="sb-row" onclick="map.flyTo([${a.lat},${a.lon}],10)">
+      <span style="font-size:14px">${a.emoji}</span>
+      <span class="sb-row-name" style="font-size:11px">${a.name}</span>
+      <span class="sb-row-count" style="font-size:9px">${a.category}</span>
+    </div>
+  `).join('');
+}
+
+function filterAssets(q) { renderAssetList(q); }
+
+// ═══════════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s} ${tz}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+renderAllLayers();
+loadFIRMS();
+updateLayerCount();
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { document.getElementById('sidebar').classList.remove('open'); }
+  if (e.key === 'l' || e.key === 'L') toggleLegend();
+  if (e.key === 's' || e.key === 'S') toggleSidebar();
+});
+</script>
+</body>
+</html>
