@@ -700,7 +700,7 @@ function renderMarkers() {
         <div style="font-size:12px;line-height:1.5">
           <span style="color:${sideColor};font-weight:bold">${ev.actor1 || ev.side.toUpperCase()}</span>
           ${ev.actor2 ? ' ⚔️ <b>' + ev.actor2 + '</b>' : ''}<br>
-          📍 ${ev.location || ev.country || 'Unknown'} · 📅 ${ev.date}
+          📍 ${ev.location || ev.country || 'Unknown'} · 📅 ${fmtPopupTime(ev)}
           ${fat > 0 ? '<br>☠ <b style="color:#ff4444">' + fat + '</b> fatalities' : ''}
         </div>
         ${ev.notes ? '<div style="margin-top:6px;padding-top:5px;border-top:1px solid #444;color:#ddd;font-size:11px;line-height:1.4">' + ev.notes + '</div>' : ''}
@@ -1189,9 +1189,29 @@ function renderPhases(container) {
 function fmtFeedTime(ev) {
   if (ev.timestamp) {
     const d = new Date(ev.timestamp * 1000);
-    return d.toISOString().substring(5,16).replace('T',' ');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mn = String(d.getMinutes()).padStart(2,'0');
+    return `${mm}-${dd} ${hh}:${mn}`;
   }
   return ev.date.substring(5);
+}
+function fmtPopupTime(ev) {
+  if (ev.timestamp) {
+    const d = new Date(ev.timestamp * 1000);
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mn = String(d.getMinutes()).padStart(2,'0');
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'local';
+    return `${ev.date} ${hh}:${mn} (${tz.split('/').pop()})`;
+  }
+  return ev.date;
+}
+function feedSortKey(ev) {
+  // Events with timestamps sort by timestamp (newest first); others by date
+  return ev.timestamp ? ev.timestamp : (new Date(ev.date + 'T00:00:00').getTime() / 1000);
 }
 
 function initSearch() {
@@ -1239,7 +1259,7 @@ function initSearch() {
                   <b style="font-size:13px">${ev.sub_event_type||ev.event_type||'Event'}</b><br>
                   <span style="color:${SIDE_COLORS[ev.side]||'#888'};font-weight:bold">${ev.actor1||''}</span>
                   ${ev.actor2?' vs <b>'+ev.actor2+'</b>':''}<br>
-                  📍 ${ev.location||ev.country} · 📅 ${ev.date}
+                  📍 ${ev.location||ev.country} · 📅 ${fmtPopupTime(ev)}
                   ${ev.fatalities>0?' · ☠ <b>'+ev.fatalities+'</b> killed':''}
                   ${ev.notes?'<div style="margin-top:6px;padding-top:5px;border-top:1px solid #444;color:#ddd;font-size:11px">'+ev.notes+'</div>':''}
                 </div>`
@@ -1304,7 +1324,7 @@ function initSizeControls() {
 function renderFeed(container) {
   const el = container || document.getElementById('feed');
   if (!el) return;
-  const sorted = [...filteredEvents].sort((a,b) => b.date.localeCompare(a.date)).filter(e => e.location || e.notes);
+  const sorted = [...filteredEvents].sort((a,b) => feedSortKey(b) - feedSortKey(a)).filter(e => e.location || e.notes);
   // Deduplicate by date+actor+location+notes
   const seen = new Set();
   const recent = [];
@@ -1345,7 +1365,7 @@ function renderFeed(container) {
           <b style="font-size:13px">${ev.sub_event_type || ev.event_type || 'Event'}</b><br>
           <span style="color:${SIDE_COLORS[ev.side]||'#888'};font-weight:bold">${ev.actor1 || ''}</span>
           ${ev.actor2 ? ' vs <b>' + ev.actor2 + '</b>' : ''}<br>
-          📍 ${ev.location || ev.country} · 📅 ${ev.date}
+          📍 ${ev.location || ev.country} · 📅 ${fmtPopupTime(ev)}
           ${ev.fatalities > 0 ? ' · ☠ <b>' + ev.fatalities + '</b> killed' : ''}
           ${ev.notes ? '<div style="margin-top:6px;padding-top:5px;border-top:1px solid #444;color:#ddd;font-size:11px;line-height:1.4">' + ev.notes + '</div>' : ''}
         </div>`;
@@ -1360,7 +1380,7 @@ function renderFeed(container) {
 
 function renderMobileFeed(el) {
   if (!el) return;
-  const sorted = [...filteredEvents].sort((a,b) => b.date.localeCompare(a.date)).filter(e => e.location || e.notes);
+  const sorted = [...filteredEvents].sort((a,b) => feedSortKey(b) - feedSortKey(a)).filter(e => e.location || e.notes);
   const seen = new Set();
   const recent = [];
   for (const e of sorted) {
@@ -1397,7 +1417,7 @@ function renderMobileFeed(el) {
               </div>
               <div style="font-size:11px;line-height:1.5">
                 <b style="color:${color}">${ev.actor1 || ''}</b><br>
-                📍 ${ev.location || ev.country} · 📅 ${ev.date}
+                📍 ${ev.location || ev.country} · 📅 ${fmtPopupTime(ev)}
                 ${ev.fatalities > 0 ? '<br>☠ <b style="color:#ff4444">' + ev.fatalities + '</b> killed' : ''}
               </div>
               ${ev.notes ? '<div style="margin-top:5px;border-top:1px solid #444;padding-top:4px;color:#ddd;font-size:10px;line-height:1.3">' + ev.notes + '</div>' : ''}
@@ -1847,7 +1867,10 @@ function drawTimeline() {
 // CLOCK
 // ═══════════════════════════════════════════════════════════
 setInterval(() => {
-  document.getElementById('clock').textContent = new Date().toISOString().replace('T',' ').substring(0,19)+' UTC';
+  const now = new Date();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+  const short = tz.split('/').pop().replace(/_/g,' ');
+  document.getElementById('clock').textContent = now.toLocaleString('en-GB',{hour12:false}).replace(',','') + ' ' + short;
 }, 1000);
 
 // ═══════════════════════════════════════════════════════════

@@ -592,9 +592,10 @@ Breaking alerts are tracked per topic in `state/breaking-corroboration.json`. Wh
 - Same outlet doesn't count twice (deduplication by source name)
 - Entries auto-expire after 2 hours (24 hours if confirmed)
 - CONFIRMED alerts display the full list of corroborating sources
-- **Confirmed topics suppressed after first alert** — `confirmed_sent` flag prevents re-alerting on new sources matching an already-confirmed topic
+- **Full alert suppression after confirmation** — `confirmed_sent` flag blocks ALL re-alerts (both confirmed AND unverified) for the same topic
+- **Unverified dedup** — `alerted_at_count` tracks source count at last alert; only fires when NEW sources found, not every scan cycle
 - State persists across scan cycles in `breaking-corroboration.json`
-- Expiry preserves `confirmed_sent` flag via sentinel entries
+- Expiry preserves `confirmed_sent` and `alerted_at_count` flags via sentinel entries
 
 ### Hebrew-First OSINT Prioritization
 
