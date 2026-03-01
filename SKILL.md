@@ -1098,6 +1098,56 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 
 > ⚠️ Without `PATH=/opt/homebrew/bin`, cron uses macOS system Python (3.9) which lacks Pillow — causing silent failures in fire map / timelapse / flight map generation.
 
+## V2 CENTCOM Dashboard
+
+Interactive Leaflet map with real-time data layers, deployed to GitHub Pages at `/v2/`.
+
+### Features
+- US/Iran military bases with MarkerCluster (cyan/orange bubble clusters)
+- Pulsing red siren markers from Pikud HaOref
+- NASA FIRMS fire hotspots
+- OSINT event markers
+- Pikud HaOref live banner (green "no alerts" / red pulsing "ACTIVE")
+- Mobile bottom toolbar with 6 action buttons
+- Keyboard shortcuts for all layers
+
+### Data Modes
+
+The dashboard supports two data sources via the `?api=` URL parameter:
+
+| Mode | URL | Oref Latency | FIRMS Latency |
+|------|-----|-------------|---------------|
+| **API mode** | `?api=https://your-backend.io` | ~10-30s | ~5min |
+| **Static mode** | (default, no param) | ~2-5min | ~5min |
+
+Static mode reads `oref-alerts.json` and `intel-feed.json` from the same GitHub Pages origin.
+
+### Optional: API Backend
+
+A lightweight Flask API can serve live data to the dashboard. See the separate `magen-yehuda-api` project for:
+- Azure Container Apps deployment (~$0 on consumption plan)
+- Direct Oref polling with GitHub Pages fallback
+- NASA FIRMS polling
+- Push endpoints for external data sources
+
+**Environment variables for the API:**
+
+| Variable | Description |
+|----------|-------------|
+| `FIRMS_MAP_KEY` | NASA FIRMS API key |
+| `GITHUB_PAGES_URL` | Dashboard repo GitHub Pages URL (Oref fallback) |
+| `PUSH_API_KEY` | Shared secret for POST endpoints (optional) |
+
+**Dashboard config** (in `config.json`, gitignored):
+```json
+{
+  "dashboard": {
+    "api_url": "https://your-app.azurecontainerapps.io",
+    "api_key": "your-push-key"
+  }
+}
+```
+
 ## Troubleshooting
 
 ### Known Issues & Fixes (Feb 2026)
