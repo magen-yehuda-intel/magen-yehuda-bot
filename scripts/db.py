@@ -53,6 +53,9 @@ def _partition_key(ts):
 def insert_event(event):
     """Insert or upsert a single event. Returns True on success."""
     try:
+        # Skip empty events
+        if not (event.get("text", "") or "").strip() and not (event.get("src", "") or "").strip():
+            return False
         client = _get_client()
         ts = event.get("ts") or event.get("timestamp") or time.time()
 

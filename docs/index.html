@@ -1148,7 +1148,7 @@ function loadFeed() {
   });
 
   fetchData.then(data => {
-    feedEvents = (data.events || data || []).sort((a,b) => (b.ts||0) - (a.ts||0));
+    feedEvents = (data.events || data || []).filter(e => (e.text||'').trim() || (e.src||'').trim()).sort((a,b) => (b.ts||0) - (a.ts||0));
     feedLastUpdate = Date.now();
 
     // Flash if new events arrived
