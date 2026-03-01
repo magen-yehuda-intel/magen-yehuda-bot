@@ -798,8 +798,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
     <span>⭐</span><div class="tb-tooltip">Military Bases</div>
   </div>
-  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft')">
-    <span>✈️</span><div class="tb-tooltip">Live Aircraft (ADS-B)</div>
+  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft');loadAircraft()" oncontextmenu="event.preventDefault();_acMilOnly=!_acMilOnly;loadAircraft();this.querySelector('.tb-tooltip').textContent=_acMilOnly?'Military Aircraft Only':'All Aircraft (FR24)'">
+    <span>✈️</span><div class="tb-tooltip">All Aircraft (FR24) · Right-click: Military Only</div>
   </div>
   <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
     <span>🚢</span><div class="tb-tooltip">Ship Tracking (AIS)</div>
@@ -1854,7 +1854,51 @@ setInterval(() => {
   loadOSINT();
   loadFIRMS();
   loadSirens();
+  loadAircraft();
 }, 60000);
+
+// ═══════ LIVE AIRCRAFT (FR24 via API) ═══════
+let _acMilOnly = false;
+function loadAircraft() {
+  if (!API_URL) return;
+  const filt = _acMilOnly ? '?filter=military' : '';
+  fetch(`${API_URL}/api/aircraft${filt}`).then(r=>r.json()).then(d => {
+    layers.aircraft.clearLayers();
+    const aircraft = d.aircraft || [];
+    aircraft.forEach(ac => {
+      const isMil = ac.mil === 'us_mil' || ac.mil === 'il_mil';
+      const color = ac.mil === 'us_mil' ? '#22c55e' : ac.mil === 'il_mil' ? '#3b82f6' : '#facc15';
+      const size = isMil ? 14 : 10;
+      const heading = ac.heading || 0;
+      const icon = L.divIcon({
+        className: 'aircraft-icon' + (isMil ? ' aircraft-mil' : ''),
+        html: `<div style="transform:rotate(${heading}deg);color:${color};font-size:${size}px;text-shadow:0 0 6px ${color}80;line-height:1">✈</div>`,
+        iconSize: [size, size], iconAnchor: [size/2, size/2],
+      });
+      const m = L.marker([ac.lat, ac.lon], { icon });
+      const altFt = ac.alt ? `${ac.alt.toLocaleString()} ft` : '?';
+      const milTag = ac.mil === 'us_mil' ? ' 🇺🇸 US MIL' : ac.mil === 'il_mil' ? ' 🇮🇱 IAF' : '';
+      const route = (ac.from || ac.to) ? `<br>Route: ${ac.from||'?'} → ${ac.to||'?'}` : '';
+      m.bindPopup(`<div style="font-family:var(--font-data);font-size:11px;min-width:140px">
+        <b style="color:${color}">${ac.callsign || 'N/A'}${milTag}</b><br>
+        Type: ${ac.type || '?'} · Reg: ${ac.reg || '?'}<br>
+        Alt: ${altFt} · Speed: ${ac.speed || '?'} kts${route}
+      </div>`, {className:'dark-popup'});
+      m.addTo(layers.aircraft);
+    });
+    // Update button badge
+    const btn = document.querySelector('.tb-btn[data-layer="aircraft"]');
+    if (btn) {
+      const badge = btn.querySelector('.ac-badge') || document.createElement('span');
+      badge.className = 'ac-badge';
+      badge.style.cssText = 'position:absolute;top:-2px;right:-2px;font-size:8px;background:#22c55e;color:#000;border-radius:50%;padding:1px 3px;font-weight:700';
+      badge.textContent = d.mil_count || (d.count || 0);
+      if (!btn.querySelector('.ac-badge')) btn.appendChild(badge);
+    }
+  }).catch(()=>{});
+}
+// Initial load
+loadAircraft();
 
 // Mobile toolbar toggle helper
 function mtToggle(name, el) {
