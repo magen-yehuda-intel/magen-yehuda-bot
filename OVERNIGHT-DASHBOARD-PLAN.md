@@ -32,19 +32,13 @@
 - [x] Dynamically updates with filter changes
 - [x] Push + commit + test ✅ (`170174b`)
 
-### Hour 4 (04:45-05:45) — INTERACTIVITY & UX
-**Goal:** Polish to production quality
-
-- [ ] **Keyboard shortcuts** — T(heater), F(eed), S(earch), Esc(reset), +/- zoom
-- [ ] **URL hash state** — save current view (theater, time range, filters) in URL
-  - Share specific dashboard states via link
-- [ ] **Hover tooltips** — show mini info on marker hover (not just click)
-- [ ] **Fullscreen button** — hide header for max map space
-- [ ] **Auto-refresh indicator** — "Last updated: X min ago" in header
-- [ ] **Smooth transitions** — animate marker appearance on filter change
-- [ ] **Loading skeleton** — show placeholder while data loads
-- [ ] **Right-click context menu** on map — "What happened here?" radius search
-- [ ] Push + commit + test
+### Hour 4 (04:45-05:45) — INTERACTIVITY & UX ✅ DONE
+**Shipped:**
+- [x] ⌨️ Keyboard shortcuts — F(ullscreen), S(earch), H(eatmap), Esc(reset), +/-(zoom), 1-9(theaters)
+- [x] 🔗 URL hash state — shareable links preserving map position, time range, filters, heatmap
+- [x] ⛶ Fullscreen mode — HUD+panel hide, map fills viewport, EXIT button top-right
+- [x] Hash auto-loads on page open (overrides default Last 7d)
+- [x] Push + commit + test ✅ (`2b08c87`)
 
 ### Hour 5 (05:45-06:45) — MOBILE & FINAL POLISH
 **Goal:** Mobile must be as good as desktop

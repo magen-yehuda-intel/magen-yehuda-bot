@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Magen Yehuda">
+<meta name="theme-color" content="#0a0e17">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Magen%20Yehuda%20%E2%80%94%20Theater%20Ops%22%2C%22short_name%22%3A%22MagenYehuda%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230a0e17%22%2C%22theme_color%22%3A%22%230a0e17%22%2C%22description%22%3A%22Middle%20East%20theater%20operations%20dashboard%22%7D">
 <title>⚔️ MAGEN YEHUDA — Theater Operations</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -82,6 +88,20 @@
     display: flex; height: 44px;
     background: var(--panel); border-top: 1px solid var(--border);
   }
+  #mobile-search-bar {
+    display: flex; padding: 5px 8px; gap: 4px; background: var(--panel);
+    border-top: 1px solid var(--border);
+  }
+  #mobile-search-bar input {
+    flex: 1; padding: 6px 8px; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border); border-radius: 4px; color: var(--text);
+    font-size: 11px; font-family: inherit; outline: none;
+  }
+  #mobile-search-bar input:focus { border-color: var(--accent); }
+  #mob-search-results {
+    max-height: 40vh; overflow-y: auto; padding: 0 8px;
+    background: var(--panel); display: none;
+  }
   .mob-tab {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
     font-size: 8px; color: var(--text-dim); cursor: pointer; border: none; background: none;
@@ -99,6 +119,22 @@
     -webkit-overflow-scrolling: touch;
   }
   #mobile-sheet.open { display: block; }
+
+  /* ══ MOBILE FEED CARDS ══ */
+  .mob-feed-card {
+    padding: 10px; margin: 6px 0; border-radius: 6px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    -webkit-tap-highlight-color: transparent; cursor: pointer;
+  }
+  .mob-feed-card:active { background: rgba(0,200,255,0.06); border-color: var(--accent); }
+  .mob-feed-card .mfc-header {
+    display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;
+  }
+  .mob-feed-card .mfc-source { color: var(--accent); font-weight: bold; font-size: 11px; }
+  .mob-feed-card .mfc-time { color: var(--text-dim); font-size: 9px; }
+  .mob-feed-card .mfc-loc { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+  .mob-feed-card .mfc-text { font-size: 11px; color: #ddd; line-height: 1.4; }
+  .mob-feed-card .mfc-fat { color: #ff4444; font-weight: bold; font-size: 10px; margin-top: 3px; }
 
   /* ══ DESKTOP RIGHT PANEL ══ */
   #panel {
@@ -310,10 +346,12 @@
     .threat-badge { font-size: 6px; padding: 1px 4px; letter-spacing: 1px; }
     .clock { display: none; }
 
-    #map { top: 36px; bottom: 44px; right: 0; }
+    #map { top: 36px; bottom: 80px; right: 0; }
     #panel { display: none; }
     #timeline-panel { display: none; }
     #mobile-controls { display: block; }
+    #legend { bottom: 84px; }
+    #legend-toggle { bottom: 84px; }
 
     .theater-btn, .phase-btn { padding: 6px 10px; font-size: 10px; }
     .force-row { padding: 5px 4px; }
@@ -438,13 +476,17 @@
 
 <!-- MOBILE BOTTOM CONTROLS -->
 <div id="mobile-controls">
+  <div id="mob-search-results"></div>
   <div id="mobile-sheet"></div>
+  <div id="mobile-search-bar">
+    <input type="text" id="mob-search-box" placeholder="🔍 Search location, actor, keyword...">
+  </div>
   <div id="mobile-tabs">
-    <button class="mob-tab" data-tab="theater"><span class="icon">🗺️</span>Theater</button>
+    <button class="mob-tab" data-tab="theater"><span class="icon">🗺️</span>Map</button>
     <button class="mob-tab" data-tab="phase"><span class="icon">⏱</span>Phase</button>
+    <button class="mob-tab" data-tab="intel"><span class="icon">📡</span>Feed</button>
     <button class="mob-tab" data-tab="forces"><span class="icon">⚔️</span>Forces</button>
     <button class="mob-tab" data-tab="layers"><span class="icon">📍</span>Layers</button>
-    <button class="mob-tab" data-tab="intel"><span class="icon">📡</span>Intel</button>
   </div>
 </div>
 
@@ -1316,6 +1358,127 @@ function renderFeed(container) {
   });
 }
 
+function renderMobileFeed(el) {
+  if (!el) return;
+  const sorted = [...filteredEvents].sort((a,b) => b.date.localeCompare(a.date)).filter(e => e.location || e.notes);
+  const seen = new Set();
+  const recent = [];
+  for (const e of sorted) {
+    const key = e.date + '|' + (e.actor1||'') + '|' + (e.location||'') + '|' + (e.notes||'').substring(0,60);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    recent.push(e);
+    if (recent.length >= 40) break;
+  }
+  el.innerHTML = recent.map((ev, i) => {
+    const color = SIDE_COLORS[ev.side] || '#888';
+    return `<div class="mob-feed-card" data-mfc="${i}">
+      <div class="mfc-header">
+        <span class="mfc-source" style="color:${color}">${ev.actor1 || ev.side.toUpperCase()}</span>
+        <span class="mfc-time">${fmtFeedTime(ev)}</span>
+      </div>
+      <div class="mfc-loc">📍 ${ev.location || ev.country || '—'}</div>
+      ${ev.notes ? `<div class="mfc-text">${ev.notes.length > 180 ? ev.notes.substring(0,180) + '…' : ev.notes}</div>` : ''}
+      ${ev.fatalities > 0 ? `<div class="mfc-fat">☠ ${ev.fatalities} fatalities</div>` : ''}
+    </div>`;
+  }).join('');
+  el._feedEvents = recent;
+  el.querySelectorAll('.mob-feed-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const ev = recent[parseInt(card.dataset.mfc)];
+      if (ev && ev.lat && ev.lon) {
+        closeMobileSheet();
+        map.flyTo([ev.lat, ev.lon], 10, { duration: 0.8 });
+        setTimeout(() => {
+          L.popup({ maxWidth: 260 }).setLatLng([ev.lat, ev.lon]).setContent(`
+            <div style="min-width:180px;max-width:260px">
+              <div style="background:${color};margin:-7px -11px 8px;padding:6px 10px;border-radius:4px 4px 0 0">
+                <b style="color:#fff;font-size:12px">${ev.sub_event_type || 'Event'}</b>
+              </div>
+              <div style="font-size:11px;line-height:1.5">
+                <b style="color:${color}">${ev.actor1 || ''}</b><br>
+                📍 ${ev.location || ev.country} · 📅 ${ev.date}
+                ${ev.fatalities > 0 ? '<br>☠ <b style="color:#ff4444">' + ev.fatalities + '</b> killed' : ''}
+              </div>
+              ${ev.notes ? '<div style="margin-top:5px;border-top:1px solid #444;padding-top:4px;color:#ddd;font-size:10px;line-height:1.3">' + ev.notes + '</div>' : ''}
+            </div>
+          `).openOn(map);
+        }, 900);
+      }
+    });
+  });
+}
+
+function initMobileSearch() {
+  const box = document.getElementById('mob-search-box');
+  const results = document.getElementById('mob-search-results');
+  if (!box || !results) return;
+  let timer;
+  box.addEventListener('input', () => {
+    clearTimeout(timer);
+    const q = box.value.trim().toLowerCase();
+    if (q.length < 2) { results.style.display = 'none'; return; }
+    timer = setTimeout(() => {
+      const matches = filteredEvents.filter(e =>
+        (e.location || '').toLowerCase().includes(q) ||
+        (e.actor1 || '').toLowerCase().includes(q) ||
+        (e.notes || '').toLowerCase().includes(q) ||
+        (e.country || '').toLowerCase().includes(q)
+      ).slice(0, 10);
+      if (!matches.length) { results.style.display = 'none'; return; }
+      results.innerHTML = matches.map((ev, i) => {
+        const color = SIDE_COLORS[ev.side] || '#888';
+        return `<div class="mob-feed-card" data-sr="${i}" style="margin:4px 0;padding:8px">
+          <span style="color:${color};font-weight:bold;font-size:10px">${ev.actor1 || ev.side}</span>
+          → ${ev.location || ev.country} · ${ev.date}
+          ${ev.notes ? '<div style="font-size:9px;color:#bbb;margin-top:2px">' + (ev.notes.length > 80 ? ev.notes.substring(0,80) + '…' : ev.notes) + '</div>' : ''}
+        </div>`;
+      }).join('');
+      results.style.display = 'block';
+      results._srEvents = matches;
+      results.querySelectorAll('[data-sr]').forEach(item => {
+        item.addEventListener('click', () => {
+          const ev = matches[parseInt(item.dataset.sr)];
+          if (ev && ev.lat && ev.lon) {
+            results.style.display = 'none';
+            box.value = '';
+            closeMobileSheet();
+            map.flyTo([ev.lat, ev.lon], 10, { duration: 0.8 });
+          }
+        });
+      });
+    }, 250);
+  });
+  box.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { box.value = ''; results.style.display = 'none'; box.blur(); }
+  });
+}
+
+function initMobileSwipe() {
+  const tabs = ['theater', 'phase', 'intel', 'forces', 'layers'];
+  let startX = 0, startY = 0;
+  const sheet = document.getElementById('mobile-sheet');
+  
+  document.getElementById('mobile-controls').addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  document.getElementById('mobile-controls').addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return; // too short or vertical
+    const curIdx = activeTab ? tabs.indexOf(activeTab) : -1;
+    if (dx < 0) { // swipe left → next tab
+      const next = curIdx < tabs.length - 1 ? curIdx + 1 : 0;
+      openMobileSheet(tabs[next]);
+    } else { // swipe right → prev tab
+      const prev = curIdx > 0 ? curIdx - 1 : tabs.length - 1;
+      openMobileSheet(tabs[prev]);
+    }
+  }, { passive: true });
+}
+
 // ═══════════════════════════════════════════════════════════
 // MOBILE BOTTOM SHEET
 // ═══════════════════════════════════════════════════════════
@@ -1359,8 +1522,8 @@ function openMobileSheet(tab) {
     renderLayerToggles(document.getElementById('mob-layers'));
     renderIranSites(document.getElementById('mob-sites'));
   } else if (tab === 'intel') {
-    sheet.innerHTML = '<div class="section"><div class="section-title">▸ NEWS FEED</div><div id="mob-feed"></div></div>';
-    renderFeed(document.getElementById('mob-feed'));
+    sheet.innerHTML = '<div class="section"><div class="section-title">NEWS FEED</div><div id="mob-feed"></div></div>';
+    renderMobileFeed(document.getElementById('mob-feed'));
   }
 
   // Resize map to account for sheet
@@ -1864,8 +2027,10 @@ window.addEventListener('load', () => {
     renderTheaters(); renderPhases(); initSearch(); initCollapsible(); initSizeControls();
     initTimelineBrush();
   }
-  // Mobile tabs
+  // Mobile tabs + search + swipe
   initMobileTabs();
+  initMobileSearch();
+  initMobileSwipe();
 
   // Default: Last 7 days (unless hash state overrides)
   const hasHash = loadHashState();
