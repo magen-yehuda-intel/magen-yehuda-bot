@@ -91,8 +91,20 @@ def count_events(events):
     return counts
 
 
-def extract_osint_highlights(events, max_items=8):
-    """Extract OSINT alert text highlights."""
+def extract_osint_highlights(events, max_items=8, lang=None):
+    """Extract OSINT alert text highlights.
+    lang='he' → prefer Hebrew sources/text; lang='en' → prefer English; None → all.
+    """
+    # Hebrew sources — these produce Hebrew-language content
+    HEBREW_SOURCES = {
+        'ynet', 'מעריב', 'maariv', 'וואלה', 'walla', 'חדשות 13', '13news',
+        'kann_news', 'aharonyediot', 'flash_news_il', 'idfofficial', 'idfonline',
+        'AbuAliExpress', 'IDFarabic',
+    }
+
+    import re
+    HE_CHARS = re.compile(r'[\u0590-\u05FF]')
+
     highlights = []
     for ev in events:
         if ev.get("type") == "osint":
@@ -101,12 +113,25 @@ def extract_osint_highlights(events, max_items=8):
                 text = a.get("text", "")[:200]
                 source = a.get("source", "")
                 channel = a.get("channel", "")
-                if text:
-                    highlights.append({
-                        "text": text,
-                        "source": source,
-                        "channel": channel,
-                    })
+                if not text:
+                    continue
+                if lang == 'he':
+                    # Accept if source is Hebrew OR text contains Hebrew characters
+                    ch_lower = channel.lower()
+                    is_hebrew_src = any(hs in ch_lower for hs in HEBREW_SOURCES)
+                    has_hebrew_text = bool(HE_CHARS.search(text))
+                    if not is_hebrew_src and not has_hebrew_text:
+                        continue
+                elif lang == 'en':
+                    # Accept if text does NOT contain Hebrew characters (English content)
+                    has_hebrew_text = bool(HE_CHARS.search(text))
+                    if has_hebrew_text:
+                        continue
+                highlights.append({
+                    "text": text,
+                    "source": source,
+                    "channel": channel,
+                })
     return highlights[:max_items]
 
 
@@ -194,7 +219,10 @@ def generate_hebrew(events, stats, now_str):
     """Generate Hebrew summary — confident Israeli style."""
     counts = count_events(events)
     sirens = extract_siren_events(events)
-    osint = extract_osint_highlights(events)
+    # Hebrew channel: prefer Hebrew sources + Hebrew text; fall back to all if too few
+    osint = extract_osint_highlights(events, lang='he')
+    if len(osint) < 3:
+        osint = extract_osint_highlights(events)  # fallback to all
     fires_count = extract_fire_summary(events)
     quakes_count, quake_details = extract_quake_summary(events)
     markets = extract_market_moves(events)
@@ -301,7 +329,7 @@ def generate_english(events, stats, now_str):
     """Generate English summary — confident, knowledgeable analyst style."""
     counts = count_events(events)
     sirens = extract_siren_events(events)
-    osint = extract_osint_highlights(events)
+    osint = extract_osint_highlights(events, lang='en')
     fires_count = extract_fire_summary(events)
     quakes_count, quake_details = extract_quake_summary(events)
     markets = extract_market_moves(events)

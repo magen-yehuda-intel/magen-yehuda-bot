@@ -81,6 +81,18 @@ def main():
         print(json.dumps({"text_he": "", "text_en": "", "count": 0, "summary": ""}))
         return
     
+    import re
+    HE_CHARS = re.compile(r'[\u0590-\u05FF]')
+    HEBREW_CHANNELS = {
+        'ynet', 'מעריב', 'maariv', 'וואלה', 'walla', 'חדשות 13', '13news',
+        'kann_news', 'aharonyediot', 'flash_news_il', 'idfofficial', 'idfonline',
+        'AbuAliExpress', 'IDFarabic',
+    }
+    
+    def is_hebrew_alert(a):
+        ch = (a.get('channel', '') or '').lower()
+        return any(hs in ch for hs in HEBREW_CHANNELS) or bool(HE_CHARS.search(a.get('text', '')))
+    
     by_source = {}
     for a in alerts:
         by_source.setdefault(a.get("source", "?"), []).append(a)
@@ -88,20 +100,23 @@ def main():
     lines_en = []
     lines_he = []
     
-    # Telegram (up to 6)
-    for a in by_source.get("telegram", [])[:6]:
-        lines_en.append(format_alert_en(a, SOURCE_EN))
-        lines_he.append(format_alert_he(a, SOURCE_EN))
+    # For Hebrew: prioritize Hebrew-language alerts, then fill with English
+    he_alerts = [a for a in alerts if is_hebrew_alert(a)]
+    en_alerts = [a for a in alerts if not is_hebrew_alert(a)]
     
-    # Twitter (up to 4)
-    for a in by_source.get("twitter", [])[:4]:
-        lines_en.append(format_alert_en(a, SOURCE_EN))
+    # Hebrew channel: Hebrew first, then English to fill up to 12
+    for a in he_alerts[:10]:
         lines_he.append(format_alert_he(a, SOURCE_EN))
+    if len(lines_he) < 12:
+        for a in en_alerts[:12 - len(lines_he)]:
+            lines_he.append(format_alert_he(a, SOURCE_EN))
     
-    # RSS (up to 3)
-    for a in by_source.get("rss", [])[:3]:
+    # English channel: English first, then Hebrew to fill up to 12
+    for a in en_alerts[:10]:
         lines_en.append(format_alert_en(a, SOURCE_EN))
-        lines_he.append(format_alert_he(a, SOURCE_EN))
+    if len(lines_en) < 12:
+        for a in he_alerts[:12 - len(lines_en)]:
+            lines_en.append(format_alert_en(a, SOURCE_EN))
     
     # Cap at 12
     text_en = "\n".join(lines_en[:12])
