@@ -85,8 +85,9 @@ BREAKING_TOPICS = [
     'khamenei passed', 'khamenei assassinated', 'khamenei eliminated',
     'khamenei confirmed dead', 'khamenei is dead', 'khamenei has died',
     'khamenei has been killed', 'khamenei reportedly dead',
+    'killing of khamenei', 'death of khamenei',
     'חמינאי מת', 'חמינאי נהרג', 'חמינאי חוסל', 'מות חמינאי',
-    'death of khamenei', 'supreme leader dead', 'supreme leader killed',
+    'supreme leader dead', 'supreme leader killed', 'supreme leader dies',
     'supreme leader confirmed dead', 'supreme leader has died',
     'המנהיג העליון מת', 'המנהיג העליון נהרג',
     # Nuclear strike / detonation
@@ -101,7 +102,9 @@ BREAKING_TOPICS = [
 BREAKING_COMPOUND = [
     {'words': ['khamenei', 'dead'], 'topic': 'khamenei dead'},
     {'words': ['khamenei', 'killed'], 'topic': 'khamenei killed'},
+    {'words': ['khamenei', 'killing'], 'topic': 'khamenei killed'},
     {'words': ['khamenei', 'died'], 'topic': 'khamenei died'},
+    {'words': ['khamenei', 'death'], 'topic': 'khamenei death'},
     {'words': ['khamenei', 'eliminated'], 'topic': 'khamenei eliminated'},
     {'words': ['khamenei', 'assassinated'], 'topic': 'khamenei assassinated'},
     {'words': ['חמינאי', 'מת'], 'topic': 'חמינאי מת'},
@@ -113,6 +116,61 @@ BREAKING_COMPOUND = [
     {'words': ['nuclear', 'strike', 'iran'], 'topic': 'nuclear strike iran'},
 ]
 
+# Normalize topic variants to a single canonical key for corroboration.
+# All language variants and phrasings that refer to the same event must map
+# to the same key so corroboration counts across Hebrew/English/Farsi sources.
+TOPIC_CANONICAL = {
+    # Khamenei — everything maps to one key
+    'khamenei dead': 'khamenei_killed',
+    'khamenei died': 'khamenei_killed',
+    'khamenei killed': 'khamenei_killed',
+    'khamenei killing': 'khamenei_killed',
+    'khamenei death': 'khamenei_killed',
+    'khamenei passed': 'khamenei_killed',
+    'khamenei assassinated': 'khamenei_killed',
+    'khamenei eliminated': 'khamenei_killed',
+    'khamenei confirmed dead': 'khamenei_killed',
+    'khamenei is dead': 'khamenei_killed',
+    'khamenei has died': 'khamenei_killed',
+    'khamenei has been killed': 'khamenei_killed',
+    'khamenei reportedly dead': 'khamenei_killed',
+    'killing of khamenei': 'khamenei_killed',
+    'death of khamenei': 'khamenei_killed',
+    'חמינאי מת': 'khamenei_killed',
+    'חמינאי נהרג': 'khamenei_killed',
+    'חמינאי חוסל': 'khamenei_killed',
+    'מות חמינאי': 'khamenei_killed',
+    'supreme leader dead': 'khamenei_killed',
+    'supreme leader killed': 'khamenei_killed',
+    'supreme leader dies': 'khamenei_killed',
+    'supreme leader confirmed dead': 'khamenei_killed',
+    'supreme leader has died': 'khamenei_killed',
+    'המנהיג העליון מת': 'khamenei_killed',
+    'המנהיג העליון נהרג': 'khamenei_killed',
+    # Nuclear
+    'nuclear detonation': 'nuclear_event',
+    'nuclear strike on': 'nuclear_event',
+    'nuclear bomb': 'nuclear_event',
+    'nuclear strike iran': 'nuclear_event',
+    'פיצוץ גרעיני': 'nuclear_event',
+    'פצצה גרעינית': 'nuclear_event',
+    'תקיפה גרעינית': 'nuclear_event',
+    # Nasrallah
+    'nasrallah dead': 'nasrallah_killed',
+    'nasrallah killed': 'nasrallah_killed',
+    'נסראללה חוסל': 'nasrallah_killed',
+    'נסראללה נהרג': 'nasrallah_killed',
+    # Sinwar
+    'sinwar dead': 'sinwar_killed',
+    'sinwar killed': 'sinwar_killed',
+    'סינוואר חוסל': 'sinwar_killed',
+    'סינוואר נהרג': 'sinwar_killed',
+}
+
+def normalize_breaking_topic(raw_topic):
+    """Map any topic variant to its canonical key for corroboration."""
+    return TOPIC_CANONICAL.get(raw_topic, raw_topic)
+
 # Credible sources — channel names and keywords that indicate reliability
 CREDIBLE_SOURCES = {
     # Telegram channels (high reliability)
@@ -121,8 +179,12 @@ CREDIBLE_SOURCES = {
     # Twitter accounts
     'beholdisrael', 'sentdefender', 'IsraelRadar_',
     # RSS feeds / wire services
-    'timesofisrael', 'jpost', 'ynet',
+    'timesofisrael', 'times of israel', 'jpost', 'jerusalem post', 'ynet', 'ynetnews',
     'reuters', 'ap news', 'apnews', 'associated press',
+    'tass', 'al jazeera', 'aljazeera',
+    'haaretz', 'bbc', 'cnn', 'sky news', 'france24',
+    'fox news', 'nbc', 'abc news', 'nytimes', 'new york times',
+    'washington post', 'wall street journal',
 }
 
 CREDIBLE_ATTRIBUTION = [
@@ -141,6 +203,7 @@ def check_breaking_news(text, source_channel=""):
     """
     Check if an OSINT alert qualifies as breaking news.
     Returns (is_breaking: bool, topic: str) tuple.
+    Topic is normalized to a canonical key so all language variants merge.
     Must match a topic trigger AND (credible source OR credible attribution).
     """
     text_lower = text.lower()
@@ -168,7 +231,9 @@ def check_breaking_news(text, source_channel=""):
     has_credible_attribution = any(attr in text_lower for attr in CREDIBLE_ATTRIBUTION)
 
     if from_credible_source or has_credible_attribution:
-        return True, matched_topic
+        # Normalize topic to canonical key for cross-language corroboration
+        canonical = normalize_breaking_topic(matched_topic)
+        return True, canonical
 
     return False, ""
 
