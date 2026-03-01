@@ -456,6 +456,110 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   #oref-banner { top:44px; }
   #map { top:80px; }
 }
+
+/* ═══ LIVE FEED PANEL ═══ */
+#feed-panel {
+  position:fixed; top:44px; right:0; bottom:0; width:380px; z-index:950;
+  background: linear-gradient(180deg, rgba(5,5,16,0.96), rgba(5,5,16,0.92));
+  backdrop-filter:blur(16px);
+  border-left:1px solid var(--panel-border);
+  transform:translateX(100%); transition:transform 0.3s ease;
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+#feed-panel.open { transform:translateX(0); }
+.feed-header {
+  padding:12px 16px 8px;
+  border-bottom:1px solid var(--panel-border);
+  flex-shrink:0;
+}
+.feed-header-row {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;
+}
+.feed-title {
+  font-family:var(--font-title); font-size:13px; font-weight:700; letter-spacing:1.5px;
+  color:var(--cyan);
+}
+.feed-count {
+  font-family:var(--font-data); font-size:11px; color:var(--text-dim);
+}
+.feed-close {
+  background:none; border:none; color:var(--text-dim); cursor:pointer;
+  font-size:18px; padding:4px 8px; transition:color 0.2s;
+}
+.feed-close:hover { color:var(--text); }
+
+/* Time filter chips */
+.feed-time-bar {
+  display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap;
+}
+.feed-time-chip {
+  padding:4px 10px; border-radius:12px; font-family:var(--font-data); font-size:10px;
+  letter-spacing:0.5px; cursor:pointer; transition:all 0.2s;
+  border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03);
+  color:var(--text-dim);
+}
+.feed-time-chip:hover { border-color:rgba(255,255,255,0.15); color:var(--text); }
+.feed-time-chip.active { border-color:rgba(6,182,212,0.5); background:rgba(6,182,212,0.1); color:var(--cyan); }
+
+/* Category filter bubbles */
+.feed-cat-bar {
+  display:flex; gap:5px; flex-wrap:wrap;
+}
+.feed-cat-chip {
+  padding:3px 9px; border-radius:10px; font-family:var(--font-data); font-size:9px;
+  letter-spacing:0.3px; cursor:pointer; transition:all 0.2s;
+  border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02);
+  color:var(--text-dim); display:flex; align-items:center; gap:4px;
+}
+.feed-cat-chip:hover { border-color:rgba(255,255,255,0.15); }
+.feed-cat-chip.active { color:var(--text); }
+.feed-cat-chip .cat-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.feed-cat-chip .cat-count { opacity:0.6; font-size:8px; }
+
+/* Feed list */
+.feed-list {
+  flex:1; overflow-y:auto; padding:8px 0;
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;
+}
+.feed-list::-webkit-scrollbar { width:4px; }
+.feed-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+.feed-item {
+  padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.03);
+  cursor:pointer; transition:background 0.15s;
+}
+.feed-item:hover { background:rgba(255,255,255,0.03); }
+.feed-item-header {
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;
+}
+.feed-item-source {
+  font-family:var(--font-data); font-size:10px; color:var(--cyan);
+  letter-spacing:0.3px;
+}
+.feed-item-time {
+  font-family:var(--font-data); font-size:9px; color:var(--text-dim);
+}
+.feed-item-loc {
+  font-family:var(--font-data); font-size:9px; color:var(--amber);
+  margin-bottom:3px; display:flex; align-items:center; gap:4px;
+}
+.feed-item-side {
+  display:inline-block; width:5px; height:5px; border-radius:50%; flex-shrink:0;
+}
+.feed-item-text {
+  font-size:12px; line-height:1.4; color:var(--text);
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+}
+.feed-item.breaking { border-left:2px solid var(--red); }
+.feed-item.breaking .feed-item-source { color:var(--red); }
+.feed-empty {
+  text-align:center; padding:40px 20px; color:var(--text-dim);
+  font-family:var(--font-data); font-size:11px;
+}
+
+@media (max-width:768px) {
+  #feed-panel { width:100%; top:40px; bottom:52px; }
+}
 </style>
 </head>
 <body>
@@ -556,6 +660,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
+  <div class="tb-btn" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
+    <span>📡</span><div class="tb-tooltip">Live Feed</div>
+  </div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
     <span>📋</span><div class="tb-tooltip">Legend</div>
   </div>
@@ -652,11 +759,31 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <span>MAGEN YEHUDA INTEL v2.0</span>
 </div>
 
+<!-- LIVE FEED PANEL -->
+<div id="feed-panel">
+  <div class="feed-header">
+    <div class="feed-header-row">
+      <span class="feed-title">📡 LIVE FEED</span>
+      <span class="feed-count" id="feed-count">0 events</span>
+      <button class="feed-close" onclick="toggleFeed()">✕</button>
+    </div>
+    <div class="feed-time-bar" id="feed-time-bar">
+      <span class="feed-time-chip active" data-hours="1">1H</span>
+      <span class="feed-time-chip" data-hours="6">6H</span>
+      <span class="feed-time-chip" data-hours="24">24H</span>
+      <span class="feed-time-chip" data-hours="48">48H</span>
+      <span class="feed-time-chip" data-hours="0">ALL</span>
+    </div>
+    <div class="feed-cat-bar" id="feed-cat-bar"></div>
+  </div>
+  <div class="feed-list" id="feed-list"></div>
+</div>
+
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
   <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>⭐</span>BASES</button>
-  <button class="mob-btn" onclick="mobileQuickToggle('sirens')"><span>🚨</span>SIRENS</button>
+  <button class="mob-btn" onclick="toggleFeed()"><span>📡</span>FEED</button>
   <button class="mob-btn" onclick="mobileQuickToggle('fires')"><span>🔥</span>FIRES</button>
   <button class="mob-btn" onclick="mobileQuickToggle('osint')"><span>📌</span>OSINT</button>
   <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
@@ -805,6 +932,146 @@ function toggleLegend() {
   const btn = document.querySelector('.tb-btn[data-layer="legend"]');
   if (btn) btn.classList.toggle('active', el.classList.contains('visible'));
 }
+
+// ═══════════════════════════════════════════════════════════
+// LIVE FEED
+// ═══════════════════════════════════════════════════════════
+let feedEvents = [];
+let feedTimeHours = 1;
+let feedActiveCats = new Set();
+const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
+const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
+
+function toggleFeed() {
+  const panel = document.getElementById('feed-panel');
+  const isOpen = panel.classList.toggle('open');
+  const btn = document.querySelector('.tb-btn[data-layer="feed"]');
+  if (btn) btn.classList.toggle('active', isOpen);
+  if (isOpen && feedEvents.length === 0) loadFeed();
+}
+
+function loadFeed() {
+  const feedUrl = `${STATIC_BASE}/intel-feed.json`;
+  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    feedEvents = (data.events || data || []).sort((a,b) => (b.ts||0) - (a.ts||0));
+    buildCatChips();
+    renderFeed();
+  }).catch(() => {
+    document.getElementById('feed-list').innerHTML = '<div class="feed-empty">No feed data available</div>';
+  });
+}
+
+function buildCatChips() {
+  const cats = {};
+  const now = Date.now() / 1000;
+  feedEvents.forEach(e => {
+    const s = e.side || 'unknown';
+    cats[s] = (cats[s]||0) + 1;
+  });
+  const bar = document.getElementById('feed-cat-bar');
+  bar.innerHTML = '';
+  // "All" chip
+  const allChip = document.createElement('span');
+  allChip.className = 'feed-cat-chip active';
+  allChip.dataset.cat = 'all';
+  allChip.innerHTML = `ALL <span class="cat-count">${feedEvents.length}</span>`;
+  allChip.onclick = () => {
+    feedActiveCats.clear();
+    bar.querySelectorAll('.feed-cat-chip').forEach(c => c.classList.remove('active'));
+    allChip.classList.add('active');
+    renderFeed();
+  };
+  bar.appendChild(allChip);
+
+  Object.entries(cats).sort((a,b) => b[1]-a[1]).forEach(([side, count]) => {
+    const chip = document.createElement('span');
+    chip.className = 'feed-cat-chip';
+    chip.dataset.cat = side;
+    const color = SIDE_COLORS[side] || '#6b7280';
+    chip.innerHTML = `<span class="cat-dot" style="background:${color}"></span>${SIDE_LABELS[side]||side} <span class="cat-count">${count}</span>`;
+    chip.onclick = () => {
+      // Toggle this category
+      if (feedActiveCats.has(side)) {
+        feedActiveCats.delete(side);
+        chip.classList.remove('active');
+      } else {
+        feedActiveCats.add(side);
+        chip.classList.add('active');
+      }
+      // Deactivate "All" if specific cats are selected
+      allChip.classList.toggle('active', feedActiveCats.size === 0);
+      renderFeed();
+    };
+    bar.appendChild(chip);
+  });
+}
+
+function renderFeed() {
+  const now = Date.now() / 1000;
+  const cutoff = feedTimeHours > 0 ? now - (feedTimeHours * 3600) : 0;
+  let filtered = feedEvents.filter(e => {
+    const ts = e.ts || 0;
+    if (cutoff > 0 && ts < cutoff) return false;
+    if (feedActiveCats.size > 0 && !feedActiveCats.has(e.side || 'unknown')) return false;
+    return true;
+  });
+
+  document.getElementById('feed-count').textContent = `${filtered.length} events`;
+
+  const list = document.getElementById('feed-list');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="feed-empty">No events in this time range</div>';
+    return;
+  }
+
+  // Render max 200 for performance
+  const html = filtered.slice(0, 200).map(e => {
+    const ts = e.ts || 0;
+    const ago = ts > 0 ? formatAgo(now - ts) : (e.time || '');
+    const sideColor = SIDE_COLORS[e.side] || '#6b7280';
+    const breaking = e.breaking ? ' breaking' : '';
+    const text = (e.text || '').length > 180 ? e.text.substring(0, 180) + '…' : (e.text || '');
+    return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="${e.date} ${e.time}">
+      <div class="feed-item-header">
+        <span class="feed-item-source">${e.src || ''}</span>
+        <span class="feed-item-time">${ago}</span>
+      </div>
+      <div class="feed-item-loc">
+        <span class="feed-item-side" style="background:${sideColor}"></span>
+        ${e.loc || ''}
+      </div>
+      <div class="feed-item-text">${text}</div>
+    </div>`;
+  }).join('');
+  list.innerHTML = html;
+}
+
+function formatAgo(seconds) {
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
+  if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
+  return Math.floor(seconds/86400) + 'd ago';
+}
+
+function flyToEvent(lat, lon) {
+  if (lat && lon) map.flyTo([lat, lon], 8, { duration: 0.8 });
+}
+
+// Time chip click handler
+document.getElementById('feed-time-bar').addEventListener('click', e => {
+  const chip = e.target.closest('.feed-time-chip');
+  if (!chip) return;
+  feedTimeHours = parseInt(chip.dataset.hours);
+  document.querySelectorAll('.feed-time-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  renderFeed();
+});
+
+// Auto-refresh feed every 60s
+setInterval(() => {
+  if (document.getElementById('feed-panel').classList.contains('open')) loadFeed();
+}, 60000);
 
 function updateLayerCount() {
   const count = Object.values(activeState).filter(Boolean).length;
