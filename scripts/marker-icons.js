@@ -1,99 +1,115 @@
-// marker-icons.js — Custom SVG marker icons for the Iran-Israel strikes dashboard
-// 24x24px, military-style, high contrast on dark (#0a0e1a) backgrounds
+// marker-icons.js — Custom SVG marker icons for strikes dashboard
+// Design: NATO APP-6 inspired, high contrast on dark (#0a0e1a), 32×32 viewBox
+// Each icon has a distinct silhouette identifiable at 16px+
 
-function svgDataUrl(svg) {
-  return 'data:image/svg+xml,' + encodeURIComponent(svg.replace(/\n\s*/g, ''));
+function svgIcon(svg, size) {
+  size = size || 32;
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 32 32">' + svg + '</svg>'
+  );
 }
 
-const MARKER_ICONS = {
-  'Shelling/artillery/missile attack': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <polygon points="12,1 14,8 21,8 15.5,12.5 17.5,20 12,15.5 6.5,20 8.5,12.5 3,8 10,8" fill="#ff2d2d" stroke="#fff" stroke-width="0.8"/>
-      <circle cx="12" cy="12" r="3" fill="#ffaa00" opacity="0.9"/>
-    </svg>`),
+const MARKER_SVG = {
+  // 💥 Shelling / Artillery / Missile — Red starburst explosion
+  'Shelling/artillery/missile attack': (color) => svgIcon(`
+    <defs><radialGradient id="g1" cx="50%" cy="50%"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/>
+    <stop offset="40%" stop-color="${color||'#ff2d2d'}" stop-opacity="0.8"/><stop offset="100%" stop-color="${color||'#ff2d2d'}" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="16" cy="16" r="14" fill="url(#g1)"/>
+    <polygon points="16,1 18.5,11 28,8 21,15 31,16 21,17 28,24 18.5,21 16,31 13.5,21 4,24 11,17 1,16 11,15 4,8 13.5,11" fill="${color||'#ff2d2d'}" opacity="0.95"/>
+    <circle cx="16" cy="16" r="5" fill="#fff" opacity="0.85"/>
+    <circle cx="16" cy="16" r="2.5" fill="${color||'#ff2d2d'}"/>
+  `),
 
-  'Air/drone strike': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <path d="M12,3 L14,9 L22,11 L14,13 L12,21 L10,13 L2,11 L10,9 Z" fill="#2d9cff" stroke="#fff" stroke-width="0.8"/>
-      <circle cx="12" cy="11" r="2" fill="#0a0e1a"/>
-    </svg>`),
+  // ✈️ Air/Drone Strike — Jet silhouette with impact burst
+  'Air/drone strike': (color) => svgIcon(`
+    <defs><radialGradient id="g2" cx="50%" cy="70%"><stop offset="0%" stop-color="#fff" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="${color||'#2d9cff'}" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="16" cy="20" r="10" fill="url(#g2)"/>
+    <path d="M16,3 L18,10 L26,13 L18,14 L20,22 L16,17 L12,22 L14,14 L6,13 L14,10 Z" 
+      fill="${color||'#2d9cff'}" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+    <path d="M13,24 L16,20 L19,24" fill="none" stroke="#ffaa00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14" y1="26" x2="18" y2="26" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
+  `),
 
-  'Armed clash': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <line x1="4" y1="20" x2="20" y2="4" stroke="#ff8c00" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="4" y1="4" x2="20" y2="20" stroke="#ff8c00" stroke-width="2.5" stroke-linecap="round"/>
-      <circle cx="12" cy="12" r="3.5" fill="none" stroke="#fff" stroke-width="1"/>
-    </svg>`),
+  // ⚔️ Armed Clash — Crossed rifles/swords
+  'Armed clash': (color) => svgIcon(`
+    <line x1="6" y1="26" x2="26" y2="6" stroke="${color||'#ff8c00'}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="6" y1="6" x2="26" y2="26" stroke="${color||'#ff8c00'}" stroke-width="3" stroke-linecap="round"/>
+    <polygon points="24,4 28,4 28,8" fill="${color||'#ff8c00'}"/>
+    <polygon points="4,4 8,4 4,8" fill="${color||'#ff8c00'}"/>
+    <polygon points="24,28 28,28 28,24" fill="${color||'#ff8c00'}"/>
+    <polygon points="4,28 8,28 4,24" fill="${color||'#ff8c00'}"/>
+    <circle cx="16" cy="16" r="4" fill="#0a0e17" stroke="${color||'#ff8c00'}" stroke-width="1.5"/>
+    <circle cx="16" cy="16" r="1.5" fill="${color||'#ff8c00'}"/>
+  `),
 
-  'Attack': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r="10" fill="none" stroke="#ff2d2d" stroke-width="1.5"/>
-      <circle cx="12" cy="12" r="5" fill="none" stroke="#ff2d2d" stroke-width="1.2"/>
-      <circle cx="12" cy="12" r="1.5" fill="#ff2d2d"/>
-      <line x1="12" y1="1" x2="12" y2="5" stroke="#fff" stroke-width="1"/>
-      <line x1="12" y1="19" x2="12" y2="23" stroke="#fff" stroke-width="1"/>
-      <line x1="1" y1="12" x2="5" y2="12" stroke="#fff" stroke-width="1"/>
-      <line x1="19" y1="12" x2="23" y2="12" stroke="#fff" stroke-width="1"/>
-    </svg>`),
+  // 🎯 Attack — Crosshair/target reticle
+  'Attack': (color) => svgIcon(`
+    <circle cx="16" cy="16" r="12" fill="none" stroke="${color||'#ff2d2d'}" stroke-width="1.5" opacity="0.7"/>
+    <circle cx="16" cy="16" r="7" fill="none" stroke="${color||'#ff2d2d'}" stroke-width="1.5" opacity="0.85"/>
+    <circle cx="16" cy="16" r="2.5" fill="${color||'#ff2d2d'}"/>
+    <line x1="16" y1="1" x2="16" y2="8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="16" y1="24" x2="16" y2="31" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="1" y1="16" x2="8" y2="16" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="24" y1="16" x2="31" y2="16" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+  `),
 
-  'Remote explosive/landmine/IED': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <ellipse cx="12" cy="15" rx="7" ry="6" fill="#ffd600" stroke="#fff" stroke-width="0.8"/>
-      <rect x="10" y="4" width="4" height="8" rx="1" fill="#ffd600" stroke="#fff" stroke-width="0.8"/>
-      <line x1="12" y1="1" x2="12" y2="4" stroke="#ff6600" stroke-width="2" stroke-linecap="round"/>
-      <line x1="10" y1="2" x2="14" y2="2" stroke="#ff6600" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`),
+  // 💣 Remote Explosive / IED — Classic bomb
+  'Remote explosive/landmine/IED': (color) => svgIcon(`
+    <circle cx="16" cy="18" r="10" fill="${color||'#ffd600'}" stroke="#fff" stroke-width="0.8" opacity="0.9"/>
+    <rect x="14" y="5" width="4" height="7" rx="1.5" fill="${color||'#ffd600'}" stroke="#fff" stroke-width="0.7"/>
+    <line x1="16" y1="2" x2="16" y2="5" stroke="#ff6600" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="16" cy="1.5" r="1.5" fill="#ff4400" opacity="0.9"/>
+    <text x="16" y="21" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="bold" fill="#0a0e17">IED</text>
+  `),
 
-  'Location mention in OSINT': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <ellipse cx="12" cy="18" rx="8" ry="3" fill="none" stroke="#00e5ff" stroke-width="1"/>
-      <ellipse cx="12" cy="18" rx="5" ry="2" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
-      <line x1="12" y1="3" x2="12" y2="15" stroke="#00e5ff" stroke-width="1.5"/>
-      <circle cx="12" cy="4" r="3" fill="#00e5ff" stroke="#fff" stroke-width="0.8"/>
-    </svg>`),
+  // 📡 OSINT Location Mention — Radar pulse
+  'Location mention in OSINT': (color) => svgIcon(`
+    <circle cx="16" cy="16" r="14" fill="none" stroke="${color||'#00e5ff'}" stroke-width="0.7" opacity="0.3"/>
+    <circle cx="16" cy="16" r="10" fill="none" stroke="${color||'#00e5ff'}" stroke-width="0.8" opacity="0.5"/>
+    <circle cx="16" cy="16" r="6" fill="none" stroke="${color||'#00e5ff'}" stroke-width="1" opacity="0.7"/>
+    <circle cx="16" cy="16" r="3" fill="${color||'#00e5ff'}" opacity="0.9"/>
+    <line x1="16" y1="16" x2="28" y2="8" stroke="${color||'#00e5ff'}" stroke-width="1.2" opacity="0.8"/>
+  `),
 
-  'Suicide bomb': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <circle cx="12" cy="10" r="7" fill="#8b0000" stroke="#fff" stroke-width="0.8"/>
-      <circle cx="9" cy="8" r="1.5" fill="#0a0e1a"/>
-      <circle cx="15" cy="8" r="1.5" fill="#0a0e1a"/>
-      <path d="M8,13 Q12,17 16,13" fill="none" stroke="#0a0e1a" stroke-width="1.5"/>
-      <line x1="7" y1="20" x2="10" y2="16" stroke="#8b0000" stroke-width="1.5"/>
-      <line x1="17" y1="20" x2="14" y2="16" stroke="#8b0000" stroke-width="1.5"/>
-    </svg>`),
+  // 💀 Suicide Bomb — Skull with blast ring
+  'Suicide bomb': (color) => svgIcon(`
+    <circle cx="16" cy="16" r="13" fill="none" stroke="${color||'#8b0000'}" stroke-width="2" opacity="0.5" stroke-dasharray="3,2"/>
+    <circle cx="16" cy="14" r="8" fill="${color||'#8b0000'}" stroke="#fff" stroke-width="0.7"/>
+    <circle cx="13" cy="12" r="2" fill="#0a0e17"/>
+    <circle cx="19" cy="12" r="2" fill="#0a0e17"/>
+    <rect x="12" y="17" width="8" height="2" rx="1" fill="#0a0e17"/>
+    <line x1="13" y1="17" x2="13" y2="19" stroke="${color||'#8b0000'}" stroke-width="1"/>
+    <line x1="16" y1="17" x2="16" y2="19" stroke="${color||'#8b0000'}" stroke-width="1"/>
+    <line x1="19" y1="17" x2="19" y2="19" stroke="${color||'#8b0000'}" stroke-width="1"/>
+    <path d="M10,22 L16,26 L22,22" fill="none" stroke="${color||'#8b0000'}" stroke-width="1.5"/>
+  `),
 
-  'FIRMS': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <path d="M12,2 Q14,8 18,12 Q14,10 14,16 Q12,12 10,16 Q10,10 6,12 Q10,8 12,2 Z" fill="#ff8c00" stroke="#fff" stroke-width="0.7"/>
-      <path d="M12,8 Q13,11 15,13 Q13,12 13,16 Q12,13 11,16 Q11,12 9,13 Q11,11 12,8 Z" fill="#ffd600" opacity="0.8"/>
-      <ellipse cx="12" cy="21" rx="5" ry="1.5" fill="#ff8c00" opacity="0.3"/>
-    </svg>`),
+  // 🔥 Possible Strike (FIRMS) — Flame
+  'Possible strike (FIRMS)': (color) => svgIcon(`
+    <path d="M16,2 C18,8 23,10 22,16 C22,20 20,24 16,28 C12,24 10,20 10,16 C9,10 14,8 16,2 Z" 
+      fill="${color||'#ff8800'}" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+    <path d="M16,10 C17,13 19,14 19,17 C19,19 18,21 16,23 C14,21 13,19 13,17 C13,14 15,13 16,10 Z" 
+      fill="#ffd600" opacity="0.85"/>
+    <ellipse cx="16" cy="29" rx="6" ry="1.5" fill="${color||'#ff8800'}" opacity="0.25"/>
+  `),
 
-  'Siren': svgDataUrl(`
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-      <path d="M7,14 L7,10 Q7,4 12,4 Q17,4 17,10 L17,14 Z" fill="#ff2d2d" stroke="#fff" stroke-width="0.8"/>
-      <rect x="5" y="14" width="14" height="3" rx="1" fill="#cc0000" stroke="#fff" stroke-width="0.8"/>
-      <circle cx="12" cy="10" r="2" fill="#fff" opacity="0.9"/>
-      <line x1="3" y1="6" x2="6" y2="8" stroke="#ff2d2d" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="21" y1="6" x2="18" y2="8" stroke="#ff2d2d" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="12" y1="17" x2="12" y2="22" stroke="#aaa" stroke-width="1.5"/>
-      <line x1="8" y1="22" x2="16" y2="22" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`)
+  // 🌡️ Thermal Anomaly (FIRMS) — Heat shimmer
+  'Thermal anomaly (FIRMS)': (color) => svgIcon(`
+    <path d="M8,28 C8,20 12,22 12,14 C12,10 10,8 10,4" fill="none" stroke="${color||'#ff8800'}" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M16,28 C16,20 20,22 20,14 C20,10 18,8 18,4" fill="none" stroke="${color||'#ff8800'}" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    <path d="M24,28 C24,20 28,22 28,14 C28,10 26,8 26,4" fill="none" stroke="${color||'#ff8800'}" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+    <circle cx="16" cy="16" r="4" fill="${color||'#ff8800'}" opacity="0.6"/>
+  `),
+
+  // 🚨 Siren Alert — Alert beacon
+  'Siren alert': (color) => svgIcon(`
+    <path d="M8,18 L8,12 C8,6 12,3 16,3 C20,3 24,6 24,12 L24,18 Z" fill="${color||'#ff2d2d'}" stroke="#fff" stroke-width="0.8"/>
+    <rect x="6" y="18" width="20" height="4" rx="1.5" fill="#cc0000" stroke="#fff" stroke-width="0.7"/>
+    <circle cx="16" cy="12" r="3" fill="#fff" opacity="0.85"/>
+    <path d="M4,8 L7,10" stroke="${color||'#ff2d2d'}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    <path d="M28,8 L25,10" stroke="${color||'#ff2d2d'}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    <line x1="16" y1="22" x2="16" y2="29" stroke="#888" stroke-width="2"/>
+    <line x1="10" y1="29" x2="22" y2="29" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+  `),
 };
-
-const MARKER_LEGEND = [
-  { type: 'Shelling/artillery/missile attack', icon: MARKER_ICONS['Shelling/artillery/missile attack'], label: 'Shelling / Artillery / Missile', color: '#ff2d2d' },
-  { type: 'Air/drone strike',            icon: MARKER_ICONS['Air/drone strike'],            label: 'Air / Drone Strike',          color: '#2d9cff' },
-  { type: 'Armed clash',                 icon: MARKER_ICONS['Armed clash'],                 label: 'Armed Clash',                 color: '#ff8c00' },
-  { type: 'Attack',                      icon: MARKER_ICONS['Attack'],                      label: 'Attack',                      color: '#ff2d2d' },
-  { type: 'Remote explosive/landmine/IED', icon: MARKER_ICONS['Remote explosive/landmine/IED'], label: 'IED / Landmine / Explosive', color: '#ffd600' },
-  { type: 'Location mention in OSINT',    icon: MARKER_ICONS['Location mention in OSINT'],    label: 'OSINT Location Mention',      color: '#00e5ff' },
-  { type: 'Suicide bomb',                icon: MARKER_ICONS['Suicide bomb'],                label: 'Suicide Bomb',                color: '#8b0000' },
-  { type: 'FIRMS',                       icon: MARKER_ICONS['FIRMS'],                       label: 'FIRMS Fire Detection',        color: '#ff8c00' },
-  { type: 'Siren',                       icon: MARKER_ICONS['Siren'],                       label: 'Siren (Pikud HaOref)',        color: '#ff2d2d' }
-];
-
-// For use in browser (global) or module environments
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MARKER_ICONS, MARKER_LEGEND };
-}

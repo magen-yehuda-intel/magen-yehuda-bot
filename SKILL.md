@@ -788,20 +788,54 @@ Standalone Leaflet-based HTML dashboard for theater operations visualization. Ho
 - Responsive CSS for ≤768px screens
 
 ### Files
-- **Template:** `scripts/strikes-dashboard.html` (~1,900 lines, no inline data)
-- **Standalone:** `scripts/strikes-dashboard-standalone.html` (~4.6MB, data embedded)
+- **Template:** `scripts/strikes-dashboard.html` (~2,300 lines, no inline data)
+- **Standalone:** `scripts/strikes-dashboard-standalone.html` (~5.4MB, data embedded)
 - **Pages:** `docs/index.html` (copy of standalone for GitHub Pages)
 - **Live feed:** `docs/intel-feed.json` (auto-updated every 5 min by cron)
 - **Feed exporter:** `scripts/export-feed.py` (cron job)
 - **GitHub Gist:** `cce8ab4f861d240f21dc2916e7cd187e`
 - **GitHub Pages:** `https://magen-yehuda-intel.github.io/magen-yehuda-bot/`
 
+### Local Timezone Support
+All times displayed in the user's local timezone (auto-detected via `Intl.DateTimeFormat`):
+- **Clock** — shows local time + timezone name (e.g., `03/01/2026 03:36:00 America/New_York`)
+- **Feed timestamps** — `fmtFeedTime(ev)` shows `MM-DD HH:MM` in local time for events with real timestamps
+- **Popup times** — `fmtPopupTime(ev)` shows full date + local HH:MM + timezone name
+- **Feed sorting** — `feedSortKey(ev)` sorts by unix timestamp (newest first), falls back to date string
+
 ### Rebuild Standalone
 ```bash
-python3 scripts/build-dashboard-standalone.py  # Or inline build script
+python3 scripts/build-standalone.py
 ```
 
-The build script injects `strikes-data.json` as `COMPACT_DATA` (ultra-compact array format: day_num, lat×1000, lon×1000, country_idx, side_idx, fatalities, subtype_idx, location_idx, actor1, actor2, confidence).
+The build script (`scripts/build-standalone.py`) reads `state/strikes-data.json`, compacts events into ultra-compact array format (day_num, lat×1000, lon×1000, country_idx, side_idx, fatalities, subtype_idx, location_idx, actor1, actor2, confidence, notes, timestamp), replaces `COMPACT_DATA` placeholder in the template, and writes both `scripts/strikes-dashboard-standalone.html` and `docs/index.html`.
+
+### UI/UX Overhaul (Mar 1 — in progress)
+3-hour improvement plan (`UI-IMPROVEMENT-PLAN.md`):
+
+**Hour 1: Custom SVG Icons + Larger Defaults**
+- 10 custom SVG marker icons per event type: starburst explosion (shelling), jet silhouette (airstrike), crossed swords (armed clash), crosshair (attack), bomb (IED), radar pulse (OSINT), skull (suicide bomb), flame (FIRMS fire), heat shimmer (thermal), siren beacon (alert)
+- Dual rendering: `L.circleMarker` at zoom <7 (performance), `L.divIcon` + SVG at zoom ≥7 (detail)
+- `SVG_ICONS` dict with color-parameterized factory functions + `_iconCache` for memoization
+- Icon scaling: base 16-48px by fatalities × `markerScale`; hover scale 1.3× with CSS transition
+- Default `markerScale` raised from 1× to 1.5×; `MARKER_STEPS = [0.75, 1, 1.5, 2, 2.5, 3]`
+- Default `fontScale` raised from 1× to 1.15×; `FONT_STEPS = [0.85, 1, 1.15, 1.3, 1.5, 1.7]`
+
+**Hour 2: Panel & Feed UI Overhaul**
+- All font sizes increased: section titles 8→10px, body 9→12px, stats 9→12px, feed items 9→12px, theater/phase buttons 9→11px, HUD stats 9→11px, logo 11→14px, clock 9→11px
+- HUD bar height 40→48px, panel width 320→360px
+- Event type legend shows emoji icons next to each type name
+- Feed item headlines 8→11px, type tags 7→9px
+- Force disposition bars wider (48px) and taller (5px)
+- Legend panel larger (max-width 220px, font 11px)
+- Popup fonts 12→13px with 14px header
+- Mobile feed cards larger (source 13px, text 13px, time 11px)
+- Mobile tab bar taller (52px) with bigger icons (22px)
+- Stat numbers in analytics 16→18px
+- All 7px labels upgraded to 9px minimum
+
+**Hour 3: Mobile UX + Visual Polish** (planned)
+- Mobile gesture refinements, loading screen, marker hover glow, legend with SVG icons
 
 ## 🛡️ Cyber Warfare Monitor (`scan_cyber.py`)
 
@@ -986,7 +1020,9 @@ iran-israel-alerts/
 │   ├── generate-summary.py     # Hourly Hebrew + English analyst summaries
 │   ├── generate-strikes-map.py # Dark-themed ME strikes map
 │   ├── strikes-dashboard.html  # Interactive Leaflet dashboard (template)
-│   ├── strikes-dashboard-standalone.html # Standalone (~3.3MB, Gist-hosted)
+│   ├── strikes-dashboard-standalone.html # Standalone (~5.4MB, data embedded)
+│   ├── build-standalone.py         # Compaction build script → standalone + docs/index.html
+│   ├── marker-icons.js             # 10 custom SVG marker icon definitions (reference/standalone)
 │   ├── pinned-status.py        # Live pinned status message (every 60s + immediate on threat change)
 │   ├── dispatch.py             # Multi-channel alert dispatcher (EN/HE routing)
 │   ├── format-fires.py         # Fire data → Telegram HTML formatter

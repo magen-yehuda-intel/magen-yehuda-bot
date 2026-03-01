@@ -48,33 +48,33 @@
   /* ══ TOP HUD ══ */
   #hud {
     position: fixed; top: 0; left: 0; right: 0;
-    height: 40px;
+    height: 48px;
     background: linear-gradient(180deg, rgba(6,10,18,0.97), rgba(6,10,18,0.85));
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 10px; z-index: 1000; backdrop-filter: blur(12px);
+    padding: 0 12px; z-index: 1000; backdrop-filter: blur(12px);
   }
   .logo {
-    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 11px; letter-spacing: 1.5px;
+    font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 14px; letter-spacing: 1.5px;
     background: linear-gradient(90deg, var(--accent), #fff, var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     white-space: nowrap;
   }
-  .hud-stats { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
-  .stat { font-size: 9px; color: var(--text-dim); white-space: nowrap; }
-  .stat b { font-family: 'Orbitron', sans-serif; font-size: 11px; margin-left: 2px; }
+  .hud-stats { display: flex; gap: 12px; align-items: center; flex-shrink: 0; }
+  .stat { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+  .stat b { font-family: 'Orbitron', sans-serif; font-size: 13px; margin-left: 2px; }
   .stat b.cyan { color: var(--accent); }
   .stat b.red { color: var(--critical); }
   .threat-badge {
-    padding: 2px 6px; border: 1px solid var(--critical); border-radius: 3px;
-    font-family: 'Orbitron', sans-serif; font-size: 7px; letter-spacing: 1.5px;
+    padding: 3px 8px; border: 1px solid var(--critical); border-radius: 3px;
+    font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 1.5px;
     color: var(--critical); animation: pulse 2s infinite;
   }
   @keyframes pulse { 0%,100%{box-shadow:0 0 6px rgba(255,0,64,0.2)} 50%{box-shadow:0 0 16px rgba(255,0,64,0.5)} }
-  .clock { font-family: 'Orbitron', sans-serif; font-size: 9px; color: var(--accent); letter-spacing: 0.5px; }
+  .clock { font-family: 'Orbitron', sans-serif; font-size: 11px; color: var(--accent); letter-spacing: 0.5px; }
 
   /* ══ MAP ══ */
-  #map { position: fixed; top: 40px; left: 0; right: 0; bottom: 0; z-index: 1; }
+  #map { position: fixed; top: 48px; left: 0; right: 0; bottom: 0; z-index: 1; }
   .leaflet-container { background: #080c14 !important; }
   .leaflet-control-zoom a { background: var(--panel) !important; color: var(--accent) !important; border-color: var(--border) !important; }
   .leaflet-control-attribution { display: none !important; }
@@ -85,7 +85,7 @@
     z-index: 800; display: none;
   }
   #mobile-tabs {
-    display: flex; height: 44px;
+    display: flex; height: 52px;
     background: var(--panel); border-top: 1px solid var(--border);
   }
   #mobile-search-bar {
@@ -93,9 +93,9 @@
     border-top: 1px solid var(--border);
   }
   #mobile-search-bar input {
-    flex: 1; padding: 6px 8px; background: rgba(255,255,255,0.05);
+    flex: 1; padding: 8px 10px; background: rgba(255,255,255,0.05);
     border: 1px solid var(--border); border-radius: 4px; color: var(--text);
-    font-size: 11px; font-family: inherit; outline: none;
+    font-size: 13px; font-family: inherit; outline: none;
   }
   #mobile-search-bar input:focus { border-color: var(--accent); }
   #mob-search-results {
@@ -104,11 +104,11 @@
   }
   .mob-tab {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-size: 8px; color: var(--text-dim); cursor: pointer; border: none; background: none;
-    font-family: 'JetBrains Mono', monospace; gap: 1px;
+    font-size: 10px; color: var(--text-dim); cursor: pointer; border: none; background: none;
+    font-family: 'JetBrains Mono', monospace; gap: 2px;
     -webkit-tap-highlight-color: transparent;
   }
-  .mob-tab .icon { font-size: 16px; }
+  .mob-tab .icon { font-size: 22px; }
   .mob-tab.active { color: var(--accent); }
   .mob-tab:active { background: rgba(0,200,255,0.08); }
 
@@ -130,20 +130,21 @@
   .mob-feed-card .mfc-header {
     display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;
   }
-  .mob-feed-card .mfc-source { color: var(--accent); font-weight: bold; font-size: 11px; }
-  .mob-feed-card .mfc-time { color: var(--text-dim); font-size: 9px; }
-  .mob-feed-card .mfc-loc { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
-  .mob-feed-card .mfc-text { font-size: 11px; color: #ddd; line-height: 1.4; }
-  .mob-feed-card .mfc-fat { color: #ff4444; font-weight: bold; font-size: 10px; margin-top: 3px; }
+  .mob-feed-card .mfc-source { color: var(--accent); font-weight: bold; font-size: 13px; }
+  .mob-feed-card .mfc-time { color: var(--text-dim); font-size: 11px; }
+  .mob-feed-card .mfc-loc { font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+  .mob-feed-card .mfc-text { font-size: 13px; color: #ddd; line-height: 1.4; }
+  .mob-feed-card .mfc-fat { color: #ff4444; font-weight: bold; font-size: 12px; margin-top: 3px; }
 
   /* ══ DESKTOP RIGHT PANEL ══ */
   #panel {
-    position: fixed; top: 40px; right: 0; width: 320px; bottom: 24px;
+    position: fixed; top: 48px; right: 0; width: 360px; bottom: 24px;
     background: var(--panel); border-left: 1px solid var(--border);
     overflow-y: auto; z-index: 500; transition: bottom 0.25s ease;
+    font-size: 12px;
   }
   #panel-resize {
-    position: fixed; top: 40px; width: 8px; bottom: 24px;
+    position: fixed; top: 48px; width: 8px; bottom: 24px;
     cursor: col-resize; z-index: 501; background: transparent;
     transition: bottom 0.25s ease;
   }
@@ -158,7 +159,7 @@
 
   /* ══ DESKTOP BOTTOM TIMELINE ══ */
   #timeline-panel {
-    position: fixed; left: 0; right: 320px; bottom: 0;
+    position: fixed; left: 0; right: 360px; bottom: 0;
     height: 200px; background: var(--panel);
     border-top: 1px solid var(--border);
     padding: 6px 12px; z-index: 500;
@@ -176,8 +177,8 @@
   }
   .tl-collapse:hover { background: rgba(0,200,255,0.2); border-color: var(--accent); }
   .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; gap: 6px; }
-  .timeline-title { font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 2px; color: var(--accent); }
-  .timeline-range { font-size: 8px; color: var(--text-dim); flex: 1; text-align: right; }
+  .timeline-title { font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 2px; color: var(--accent); }
+  .timeline-range { font-size: 10px; color: var(--text-dim); flex: 1; text-align: right; }
   .tl-controls { display: flex; gap: 3px; align-items: center; }
   .tl-btn {
     background: rgba(0,200,255,0.08); border: 1px solid var(--border);
@@ -189,18 +190,18 @@
   .timeline-reset {
     background: rgba(255,170,0,0.1); border: 1px solid rgba(255,170,0,0.3);
     color: var(--warning); padding: 2px 6px; height: 18px;
-    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
     cursor: pointer; border-radius: 3px; display: none;
   }
   .timeline-reset.visible { display: inline-block; }
   #timeline-canvas { width: 100%; height: 165px; cursor: crosshair; }
 
   /* ══ PANEL SECTIONS ══ */
-  .section { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .section { padding: 12px 14px; border-bottom: 1px solid var(--border); }
   .section-title {
-    font-family: 'Orbitron', sans-serif; font-size: 8px; font-weight: 700;
-    letter-spacing: 2.5px; color: var(--accent); margin-bottom: 6px;
-    cursor: pointer; user-select: none; padding: 4px 0;
+    font-family: 'Orbitron', sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: 2.5px; color: var(--accent); margin-bottom: 8px;
+    cursor: pointer; user-select: none; padding: 5px 0;
     transition: color 0.15s;
   }
   .section-title:hover { color: #fff; }
@@ -211,8 +212,8 @@
   .section.collapsed > *:not(.section-title) { display: none !important; }
   .sz-btn {
     background: rgba(0,200,255,0.08); border: 1px solid var(--border); border-radius: 3px;
-    color: var(--accent); font-size: 9px; font-family: 'Orbitron', sans-serif;
-    padding: 2px 6px; cursor: pointer; line-height: 1;
+    color: var(--accent); font-size: 11px; font-family: 'Orbitron', sans-serif;
+    padding: 3px 8px; cursor: pointer; line-height: 1;
   }
   .sz-btn:hover { background: rgba(0,200,255,0.2); border-color: var(--accent); }
 
@@ -220,16 +221,16 @@
   #legend {
     position: fixed; bottom: 32px; left: 8px; z-index: 600;
     background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
-    padding: 6px 8px; font-size: 8px; max-width: 180px;
+    padding: 8px 10px; font-size: 11px; max-width: 220px;
   }
-  #legend .leg-title { font-family: 'Orbitron', sans-serif; font-size: 7px; color: var(--accent); letter-spacing: 1.5px; margin-bottom: 4px; }
-  #legend .leg-row { display: flex; align-items: center; gap: 5px; margin: 2px 0; color: var(--text); }
-  #legend .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  #legend .leg-bar { width: 12px; height: 3px; border-radius: 1px; flex-shrink: 0; }
+  #legend .leg-title { font-family: 'Orbitron', sans-serif; font-size: 9px; color: var(--accent); letter-spacing: 1.5px; margin-bottom: 5px; }
+  #legend .leg-row { display: flex; align-items: center; gap: 6px; margin: 3px 0; color: var(--text); }
+  #legend .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  #legend .leg-bar { width: 14px; height: 4px; border-radius: 1px; flex-shrink: 0; }
   #legend-toggle {
     position: fixed; bottom: 32px; left: 8px; z-index: 601;
     background: var(--panel); border: 1px solid var(--border); border-radius: 3px;
-    color: var(--accent); font-size: 8px; padding: 3px 6px; cursor: pointer;
+    color: var(--accent); font-size: 10px; padding: 4px 8px; cursor: pointer;
     font-family: 'Orbitron', sans-serif; letter-spacing: 1px; display: none;
   }
 
@@ -245,6 +246,7 @@
     background: var(--panel) !important; color: var(--text) !important;
     border: 1px solid var(--border) !important; border-radius: 6px !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.6) !important;
+    font-size: 13px !important;
   }
   .leaflet-popup-tip { background: var(--panel) !important; border: 1px solid var(--border) !important; }
   .leaflet-popup-close-button { color: var(--text-dim) !important; }
@@ -254,8 +256,8 @@
   .theater-btns, .phase-btns { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
   .theater-btn, .phase-btn {
     background: rgba(0,200,255,0.06); border: 1px solid var(--border);
-    color: var(--text-dim); padding: 5px 8px;
-    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: var(--text-dim); padding: 6px 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
     cursor: pointer; border-radius: 3px; transition: all 0.15s; white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
   }
@@ -282,9 +284,9 @@
   .force-row .toggle-on { color: var(--safe); }
   .force-row .toggle-off { color: var(--text-dim); }
   .force-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-  .force-name { flex: 1; color: var(--text-dim); font-size: 9px; }
-  .force-count { font-family: 'Orbitron', sans-serif; font-weight: 500; font-size: 10px; min-width: 40px; text-align: right; }
-  .force-bar-bg { width: 40px; height: 3px; background: rgba(255,255,255,0.04); border-radius: 2px; overflow: hidden; }
+  .force-name { flex: 1; color: var(--text-dim); font-size: 11px; }
+  .force-count { font-family: 'Orbitron', sans-serif; font-weight: 500; font-size: 12px; min-width: 44px; text-align: right; }
+  .force-bar-bg { width: 48px; height: 5px; background: rgba(255,255,255,0.04); border-radius: 2px; overflow: hidden; }
   .force-bar-fill { height: 100%; border-radius: 2px; }
 
   /* Country grid */
@@ -299,11 +301,11 @@
   .country-n { font-family: 'Orbitron', sans-serif; font-size: 10px; color: var(--accent); }
 
   /* Kill feed */
-  .feed-item { font-size: 9px; padding: 6px 6px; border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1.3; cursor: pointer; border-radius: 3px; }
+  .feed-item { font-size: 12px; padding: 8px 8px; border-bottom: 1px solid rgba(255,255,255,0.06); line-height: 1.4; cursor: pointer; border-radius: 3px; }
   .feed-item:hover { background: rgba(0,200,255,0.06); }
-  .feed-ts { color: var(--text-dim); }
+  .feed-ts { color: var(--text-dim); font-size: 10px; }
   .feed-loc { color: var(--accent); }
-  .feed-fat { color: var(--critical); font-weight: 700; }
+  .feed-fat { color: var(--critical); font-weight: 700; font-size: 11px; }
 
   /* Key sites */
   .site-tag {
@@ -332,7 +334,7 @@
 
   /* ══ DESKTOP LAYOUT ══ */
   @media (min-width: 769px) {
-    #map { right: 320px; bottom: 24px; transition: bottom 0.25s ease; }
+    #map { right: 360px; bottom: 24px; transition: bottom 0.25s ease; }
     #mobile-controls { display: none !important; }
   }
 
@@ -355,7 +357,7 @@
 
     .theater-btn, .phase-btn { padding: 6px 10px; font-size: 10px; }
     .force-row { padding: 5px 4px; }
-    .force-name { font-size: 10px; }
+    .force-name { font-size: 12px; }
 
     .leaflet-popup-content { font-size: 12px !important; }
     .popup-title { font-size: 13px; }
@@ -395,7 +397,7 @@
   <div class="leg-row"><span style="font-size:10px">☢️</span> Iran nuclear site</div>
   <div class="leg-row"><span style="font-size:10px">🚀</span> Iran missile site</div>
   <div style="margin:4px 0;border-top:1px solid var(--border)"></div>
-  <div class="leg-row" style="color:var(--text-dim);font-size:7px">⬤ size = fatalities</div>
+  <div class="leg-row" style="color:var(--text-dim);font-size:9px">⬤ size = fatalities</div>
 </div>
 <button id="legend-toggle" onclick="const l=document.getElementById('legend');if(l.style.display==='none'){l.style.display='';this.style.display='none'}">◉ LEGEND</button>
 
@@ -404,19 +406,19 @@
 <div id="panel">
   <div class="section" style="padding:6px 8px">
     <input type="text" id="search-box" placeholder="🔍 Search location, actor, keyword..." 
-      style="width:100%;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;font-family:inherit;outline:none"
+      style="width:100%;padding:8px 10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;font-family:inherit;outline:none"
       onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     <div id="search-results" style="display:none;max-height:200px;overflow-y:auto;margin-top:4px"></div>
   </div>
   <div style="display:flex;gap:8px;padding:4px 8px;align-items:center;border-bottom:1px solid var(--border)">
-    <span style="font-size:7px;color:var(--text-dim);letter-spacing:1px">MARKERS</span>
+    <span style="font-size:9px;color:var(--text-dim);letter-spacing:1px">MARKERS</span>
     <button class="sz-btn" id="marker-down" title="Smaller markers">−</button>
-    <span id="marker-sz-label" style="font-size:8px;color:var(--text);min-width:20px;text-align:center">1×</span>
+    <span id="marker-sz-label" style="font-size:10px;color:var(--text);min-width:24px;text-align:center">1.5×</span>
     <button class="sz-btn" id="marker-up" title="Larger markers">+</button>
     <span style="width:1px;height:12px;background:var(--border);margin:0 4px"></span>
-    <span style="font-size:7px;color:var(--text-dim);letter-spacing:1px">FONT</span>
+    <span style="font-size:9px;color:var(--text-dim);letter-spacing:1px">FONT</span>
     <button class="sz-btn" id="font-down" title="Smaller text">A−</button>
-    <span id="font-sz-label" style="font-size:8px;color:var(--text);min-width:20px;text-align:center">1×</span>
+    <span id="font-sz-label" style="font-size:10px;color:var(--text);min-width:24px;text-align:center">1.15×</span>
     <button class="sz-btn" id="font-up" title="Larger text">A+</button>
   </div>
   <div class="section collapsed">
@@ -429,7 +431,7 @@
     <div class="phase-btns" id="phase-btns"></div>
   </div>
   <div class="section">
-    <div class="section-title">NEWS FEED <span id="feed-live-indicator" style="font-family:'JetBrains Mono';font-size:7px;color:var(--text-dim);letter-spacing:0;float:right;margin-top:2px">⏳ connecting...</span></div>
+    <div class="section-title">NEWS FEED <span id="feed-live-indicator" style="font-family:'JetBrains Mono';font-size:9px;color:var(--text-dim);letter-spacing:0;float:right;margin-top:2px">⏳ connecting...</span></div>
     <div id="feed"></div>
   </div>
   <div class="section collapsed">
@@ -587,10 +589,10 @@ let activeEventTypes = null; // null = all, Set = selected types
 let timeStart = null, timeEnd = null;
 let allDaysSorted = [];
 let tlViewStart = null, tlViewEnd = null; // independent timeline viewport
-let markerScale = 1;  // 0.5x to 3x
-let fontScale = 1;    // 0.5x to 2x
-const MARKER_STEPS = [0.5, 0.75, 1, 1.5, 2, 3];
-const FONT_STEPS = [0.7, 0.85, 1, 1.15, 1.3, 1.5];
+let markerScale = 1.5;  // default bigger (was 1)
+let fontScale = 1.15;    // default bigger (was 1)
+const MARKER_STEPS = [0.75, 1, 1.5, 2, 2.5, 3];
+const FONT_STEPS = [0.85, 1, 1.15, 1.3, 1.5, 1.7];
 const isMobile = () => window.innerWidth <= 768;
 
 const CONFLICT_PHASES = [
@@ -641,7 +643,7 @@ function initMap() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// MARKERS
+// MARKERS — SVG Icon System
 // ═══════════════════════════════════════════════════════════
 const EVENT_TYPE_ICONS = {
   'Shelling/artillery/missile attack': { emoji: '💥', color: '#ff2d2d' },
@@ -656,11 +658,108 @@ const EVENT_TYPE_ICONS = {
   'Siren alert': { emoji: '🚨', color: '#ff2d2d' },
 };
 
+// SVG icon builder — creates inline data URL icons for each event type
+function mkSvgUrl(svg, sz) {
+  sz = sz || 32;
+  return 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="'+sz+'" height="'+sz+'" viewBox="0 0 32 32">' + svg + '</svg>'
+  );
+}
+
+const SVG_ICONS = {
+  'Shelling/artillery/missile attack': (c) => mkSvgUrl(`
+    <defs><radialGradient id="g1" cx="50%" cy="50%"><stop offset="0%" stop-color="#fff" stop-opacity="0.9"/>
+    <stop offset="40%" stop-color="${c}" stop-opacity="0.8"/><stop offset="100%" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="16" cy="16" r="14" fill="url(#g1)"/>
+    <polygon points="16,1 18.5,11 28,8 21,15 31,16 21,17 28,24 18.5,21 16,31 13.5,21 4,24 11,17 1,16 11,15 4,8 13.5,11" fill="${c}" opacity="0.95"/>
+    <circle cx="16" cy="16" r="5" fill="#fff" opacity="0.85"/><circle cx="16" cy="16" r="2.5" fill="${c}"/>`),
+
+  'Air/drone strike': (c) => mkSvgUrl(`
+    <defs><radialGradient id="g2" cx="50%" cy="70%"><stop offset="0%" stop-color="#fff" stop-opacity="0.6"/>
+    <stop offset="100%" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="16" cy="20" r="10" fill="url(#g2)"/>
+    <path d="M16,3 L18,10 L26,13 L18,14 L20,22 L16,17 L12,22 L14,14 L6,13 L14,10 Z" fill="${c}" stroke="#fff" stroke-width="0.5" opacity="0.95"/>
+    <path d="M13,24 L16,20 L19,24" fill="none" stroke="#ffaa00" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="14" y1="26" x2="18" y2="26" stroke="#ff6600" stroke-width="1" opacity="0.7"/>`),
+
+  'Armed clash': (c) => mkSvgUrl(`
+    <line x1="6" y1="26" x2="26" y2="6" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+    <line x1="6" y1="6" x2="26" y2="26" stroke="${c}" stroke-width="3" stroke-linecap="round"/>
+    <polygon points="24,4 28,4 28,8" fill="${c}"/><polygon points="4,4 8,4 4,8" fill="${c}"/>
+    <polygon points="24,28 28,28 28,24" fill="${c}"/><polygon points="4,28 8,28 4,24" fill="${c}"/>
+    <circle cx="16" cy="16" r="4" fill="#0a0e17" stroke="${c}" stroke-width="1.5"/>
+    <circle cx="16" cy="16" r="1.5" fill="${c}"/>`),
+
+  'Attack': (c) => mkSvgUrl(`
+    <circle cx="16" cy="16" r="12" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.7"/>
+    <circle cx="16" cy="16" r="7" fill="none" stroke="${c}" stroke-width="1.5" opacity="0.85"/>
+    <circle cx="16" cy="16" r="2.5" fill="${c}"/>
+    <line x1="16" y1="1" x2="16" y2="8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="16" y1="24" x2="16" y2="31" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="1" y1="16" x2="8" y2="16" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="24" y1="16" x2="31" y2="16" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>`),
+
+  'Remote explosive/landmine/IED': (c) => mkSvgUrl(`
+    <circle cx="16" cy="18" r="10" fill="${c}" stroke="#fff" stroke-width="0.8" opacity="0.9"/>
+    <rect x="14" y="5" width="4" height="7" rx="1.5" fill="${c}" stroke="#fff" stroke-width="0.7"/>
+    <line x1="16" y1="2" x2="16" y2="5" stroke="#ff6600" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="16" cy="1.5" r="1.5" fill="#ff4400" opacity="0.9"/>
+    <text x="16" y="21" text-anchor="middle" font-family="sans-serif" font-size="8" font-weight="bold" fill="#0a0e17">IED</text>`),
+
+  'Location mention in OSINT': (c) => mkSvgUrl(`
+    <circle cx="16" cy="16" r="14" fill="none" stroke="${c}" stroke-width="0.7" opacity="0.3"/>
+    <circle cx="16" cy="16" r="10" fill="none" stroke="${c}" stroke-width="0.8" opacity="0.5"/>
+    <circle cx="16" cy="16" r="6" fill="none" stroke="${c}" stroke-width="1" opacity="0.7"/>
+    <circle cx="16" cy="16" r="3" fill="${c}" opacity="0.9"/>
+    <line x1="16" y1="16" x2="28" y2="8" stroke="${c}" stroke-width="1.2" opacity="0.8"/>`),
+
+  'Suicide bomb': (c) => mkSvgUrl(`
+    <circle cx="16" cy="16" r="13" fill="none" stroke="${c}" stroke-width="2" opacity="0.5" stroke-dasharray="3,2"/>
+    <circle cx="16" cy="14" r="8" fill="${c}" stroke="#fff" stroke-width="0.7"/>
+    <circle cx="13" cy="12" r="2" fill="#0a0e17"/><circle cx="19" cy="12" r="2" fill="#0a0e17"/>
+    <rect x="12" y="17" width="8" height="2" rx="1" fill="#0a0e17"/>
+    <path d="M10,22 L16,26 L22,22" fill="none" stroke="${c}" stroke-width="1.5"/>`),
+
+  'Possible strike (FIRMS)': (c) => mkSvgUrl(`
+    <path d="M16,2 C18,8 23,10 22,16 C22,20 20,24 16,28 C12,24 10,20 10,16 C9,10 14,8 16,2 Z" fill="${c}" stroke="#fff" stroke-width="0.5" opacity="0.9"/>
+    <path d="M16,10 C17,13 19,14 19,17 C19,19 18,21 16,23 C14,21 13,19 13,17 C13,14 15,13 16,10 Z" fill="#ffd600" opacity="0.85"/>
+    <ellipse cx="16" cy="29" rx="6" ry="1.5" fill="${c}" opacity="0.25"/>`),
+
+  'Thermal anomaly (FIRMS)': (c) => mkSvgUrl(`
+    <path d="M8,28 C8,20 12,22 12,14 C12,10 10,8 10,4" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+    <path d="M16,28 C16,20 20,22 20,14 C20,10 18,8 18,4" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    <path d="M24,28 C24,20 28,22 28,14 C28,10 26,8 26,4" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+    <circle cx="16" cy="16" r="4" fill="${c}" opacity="0.6"/>`),
+
+  'Siren alert': (c) => mkSvgUrl(`
+    <path d="M8,18 L8,12 C8,6 12,3 16,3 C20,3 24,6 24,12 L24,18 Z" fill="${c}" stroke="#fff" stroke-width="0.8"/>
+    <rect x="6" y="18" width="20" height="4" rx="1.5" fill="#cc0000" stroke="#fff" stroke-width="0.7"/>
+    <circle cx="16" cy="12" r="3" fill="#fff" opacity="0.85"/>
+    <path d="M4,8 L7,10" stroke="${c}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    <path d="M28,8 L25,10" stroke="${c}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+    <line x1="16" y1="22" x2="16" y2="29" stroke="#888" stroke-width="2"/>
+    <line x1="10" y1="29" x2="22" y2="29" stroke="#888" stroke-width="2" stroke-linecap="round"/>`),
+};
+
+// Cache generated icon URLs to avoid regenerating SVGs per event
+const _iconCache = {};
+function getIconUrl(subType, color) {
+  const key = subType + '|' + color;
+  if (_iconCache[key]) return _iconCache[key];
+  const gen = SVG_ICONS[subType];
+  const url = gen ? gen(color) : null;
+  _iconCache[key] = url;
+  return url;
+}
+
 function renderMarkers() {
   markerLayer.clearLayers();
   if (heatLayer) map.removeLayer(heatLayer);
   const cutoff48h = new Date(Date.now() - 48*3600000).toISOString().substring(0,10);
   const heatPoints = [];
+  const zoom = map.getZoom();
+  // At low zoom, use lightweight circles for performance; at zoom 7+ use SVG icons
+  const useSvgIcons = zoom >= 7;
 
   for (const ev of filteredEvents) {
     if (!activeSides.has(ev.side)) continue;
@@ -669,10 +768,6 @@ function renderMarkers() {
     const isFirms = (ev.sub_event_type || '').includes('FIRMS');
     const color = isFirms ? '#ff8800' : (SIDE_COLORS[ev.side] || '#555');
     const fat = ev.fatalities || 0;
-    const r0 = isFirms
-      ? (ev.confidence === 'h' ? 5 : ev.confidence === 'm' ? 3.5 : 2.5)
-      : Math.max(isMobile() ? 3 : 2, Math.min(2.5 + Math.sqrt(fat) * 0.7, 16));
-    const r = r0 * markerScale;
     const isRecent = ev.date >= cutoff48h;
     const opacity = isFirms
       ? (ev.confidence === 'h' ? 0.9 : ev.confidence === 'm' ? 0.6 : 0.3)
@@ -681,31 +776,54 @@ function renderMarkers() {
     // Heatmap data
     heatPoints.push([ev.lat, ev.lon, fat > 0 ? Math.min(fat, 50) / 50 : 0.2]);
 
-    const marker = L.circleMarker([ev.lat, ev.lon], {
-      radius: r, fillColor: color, fillOpacity: opacity,
-      color: isRecent ? '#ffff00' : color,
-      weight: isRecent ? 2 : 0.5,
-      opacity: isRecent ? 0.9 : 0.4,
-      className: isRecent ? 'marker-recent' : '',
-    });
+    let marker;
+    const iconUrl = useSvgIcons ? getIconUrl(ev.sub_event_type, color) : null;
+
+    if (iconUrl && useSvgIcons) {
+      // SVG icon markers at high zoom
+      const baseSize = isFirms
+        ? (ev.confidence === 'h' ? 20 : ev.confidence === 'm' ? 16 : 12)
+        : Math.max(16, Math.min(16 + Math.sqrt(fat) * 3, 48));
+      const sz = Math.round(baseSize * markerScale);
+      const icon = L.divIcon({
+        className: '',
+        html: `<img src="${iconUrl}" style="width:${sz}px;height:${sz}px;opacity:${opacity};filter:drop-shadow(0 0 ${isRecent?'6px rgba(255,255,0,0.8)':'3px rgba(0,0,0,0.5)'})${isRecent?' brightness(1.2)':''};pointer-events:auto;transition:transform 0.15s" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">`,
+        iconSize: [sz, sz],
+        iconAnchor: [sz/2, sz/2],
+      });
+      marker = L.marker([ev.lat, ev.lon], { icon, interactive: true });
+    } else {
+      // Circle markers at low zoom for performance
+      const r0 = isFirms
+        ? (ev.confidence === 'h' ? 5 : ev.confidence === 'm' ? 3.5 : 2.5)
+        : Math.max(isMobile() ? 3.5 : 3, Math.min(3 + Math.sqrt(fat) * 0.8, 18));
+      const r = r0 * markerScale;
+      marker = L.circleMarker([ev.lat, ev.lon], {
+        radius: r, fillColor: color, fillOpacity: opacity,
+        color: isRecent ? '#ffff00' : color,
+        weight: isRecent ? 2 : 0.5,
+        opacity: isRecent ? 0.9 : 0.4,
+        className: isRecent ? 'marker-recent' : '',
+      });
+    }
 
     // Enhanced popup with color header bar
     const typeInfo = EVENT_TYPE_ICONS[ev.sub_event_type] || { emoji: '⚡', color: '#888' };
     const sideColor = SIDE_COLORS[ev.side] || '#888';
     marker.bindPopup(`
-      <div style="min-width:200px;max-width:${isMobile()?240:300}px">
-        <div style="background:${sideColor};margin:-7px -11px 8px;padding:6px 10px;border-radius:4px 4px 0 0">
-          <b style="color:#fff;font-size:13px">${typeInfo.emoji} ${ev.sub_event_type || 'Event'}</b>
+      <div style="min-width:220px;max-width:${isMobile()?260:340}px">
+        <div style="background:${sideColor};margin:-7px -11px 8px;padding:8px 12px;border-radius:4px 4px 0 0">
+          <b style="color:#fff;font-size:14px">${typeInfo.emoji} ${ev.sub_event_type || 'Event'}</b>
         </div>
-        <div style="font-size:12px;line-height:1.5">
+        <div style="font-size:13px;line-height:1.6">
           <span style="color:${sideColor};font-weight:bold">${ev.actor1 || ev.side.toUpperCase()}</span>
           ${ev.actor2 ? ' ⚔️ <b>' + ev.actor2 + '</b>' : ''}<br>
           📍 ${ev.location || ev.country || 'Unknown'} · 📅 ${fmtPopupTime(ev)}
-          ${fat > 0 ? '<br>☠ <b style="color:#ff4444">' + fat + '</b> fatalities' : ''}
+          ${fat > 0 ? '<br>☠ <b style="color:#ff4444;font-size:14px">' + fat + '</b> fatalities' : ''}
         </div>
-        ${ev.notes ? '<div style="margin-top:6px;padding-top:5px;border-top:1px solid #444;color:#ddd;font-size:11px;line-height:1.4">' + ev.notes + '</div>' : ''}
+        ${ev.notes ? '<div style="margin-top:8px;padding-top:6px;border-top:1px solid #444;color:#ddd;font-size:12px;line-height:1.5">' + ev.notes + '</div>' : ''}
       </div>
-    `, { maxWidth: isMobile() ? 260 : 320 });
+    `, { maxWidth: isMobile() ? 280 : 360 });
 
     markerLayer.addLayer(marker);
   }
@@ -725,7 +843,7 @@ function renderMarkers() {
     const catColors = { nuclear:'#ff4444', military:'#ff8800', command:'#ffdd00', strategic:'#ff6600', missile:'#ff2222', naval:'#4488ff', airbase:'#00ccff', airdefense:'#cc44ff' };
     for (const site of IRAN_SITES) {
       const nearby = filteredEvents.filter(e => Math.abs(e.lat-site.lat)<0.5 && Math.abs(e.lon-site.lon)<0.5).length;
-      const sz = isMobile() ? 10 : 8;
+      const sz = isMobile() ? 13 : 11;
       const clr = catColors[site.cat] || '#ff4444';
       const ico = catIcons[site.cat] || '◆';
       const showLabel = map.getZoom() >= 7;
@@ -745,7 +863,7 @@ function renderMarkers() {
   usBaseLayer.clearLayers();
   if (showUSBases && map.getZoom() >= 4) {
     for (const base of US_BASES) {
-      const sz = isMobile() ? 10 : 8;
+      const sz = isMobile() ? 13 : 11;
       const showLabel = map.getZoom() >= 6;
       const icon = L.divIcon({
         className: '',
@@ -889,37 +1007,37 @@ function renderAnalytics(container) {
     <!-- KEY STATS -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
       <div style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);border-radius:4px;padding:6px 8px;text-align:center">
-        <div style="font-size:16px;font-weight:bold;color:var(--accent)">${vis.length.toLocaleString()}</div>
-        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">TOTAL EVENTS</div>
+        <div style="font-size:18px;font-weight:bold;color:var(--accent)">${vis.length.toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">TOTAL EVENTS</div>
       </div>
       <div style="background:rgba(255,34,34,0.08);border:1px solid rgba(255,34,34,0.2);border-radius:4px;padding:6px 8px;text-align:center">
-        <div style="font-size:16px;font-weight:bold;color:#ff4444">${totalKIA.toLocaleString()}</div>
-        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">FATALITIES</div>
+        <div style="font-size:18px;font-weight:bold;color:#ff4444">${totalKIA.toLocaleString()}</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">FATALITIES</div>
       </div>
       <div style="background:rgba(255,136,0,0.08);border:1px solid rgba(255,136,0,0.2);border-radius:4px;padding:6px 8px;text-align:center">
-        <div style="font-size:16px;font-weight:bold;color:#ff8800">${theaters}</div>
-        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">THEATERS</div>
+        <div style="font-size:18px;font-weight:bold;color:#ff8800">${theaters}</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">THEATERS</div>
       </div>
       <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:4px;padding:6px 8px;text-align:center">
-        <div style="font-size:16px;font-weight:bold;color:var(--text)">${daysSinceOct7}</div>
-        <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px">DAYS SINCE OCT 7</div>
+        <div style="font-size:18px;font-weight:bold;color:var(--text)">${daysSinceOct7}</div>
+        <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px">DAYS SINCE OCT 7</div>
       </div>
     </div>
 
     <!-- ESCALATION INDEX -->
     <div style="margin-bottom:8px">
-      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">ESCALATION INDEX
+      <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">ESCALATION INDEX
         <span style="float:right;color:${escColor};font-weight:bold">${escLabel}</span>
       </div>
       <div style="background:rgba(255,255,255,0.06);border-radius:3px;height:8px;overflow:hidden">
         <div style="width:${escPct}%;height:100%;background:${escColor};border-radius:3px;transition:width 0.5s"></div>
       </div>
-      <div style="font-size:7px;color:var(--text-dim);margin-top:2px">${rate7.toFixed(1)} evt/day (7d) vs ${rate30.toFixed(1)} (30d) · ${escIdx.toFixed(1)}x</div>
+      <div style="font-size:9px;color:var(--text-dim);margin-top:2px">${rate7.toFixed(1)} evt/day (7d) vs ${rate30.toFixed(1)} (30d) · ${escIdx.toFixed(1)}x</div>
     </div>
 
     <!-- DAILY TREND SPARKLINE -->
     <div style="margin-bottom:8px">
-      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">DAILY TREND (${last30.length}d)</div>
+      <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">DAILY TREND (${last30.length}d)</div>
       <svg width="100%" viewBox="0 0 ${sparkW} ${sparkH}" preserveAspectRatio="none" style="display:block;border-bottom:1px solid rgba(255,255,255,0.05)">
         <polyline points="${sparkPoints}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"/>
         <polyline points="0,${sparkH} ${sparkPoints} ${sparkW},${sparkH}" fill="url(#sparkGrad)" stroke="none"/>
@@ -929,7 +1047,7 @@ function renderAnalytics(container) {
 
     <!-- CASUALTY BY SIDE -->
     <div style="margin-bottom:8px">
-      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">CASUALTIES BY FORCE</div>
+      <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">CASUALTIES BY FORCE</div>
       ${casSorted.map(([side,count]) => {
         const c = SIDE_COLORS[side] || '#555';
         const pct = Math.round((count/casMax)*100);
@@ -946,7 +1064,7 @@ function renderAnalytics(container) {
 
     <!-- TOP ACTORS -->
     <div>
-      <div style="font-size:7px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">TOP ACTORS</div>
+      <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;margin-bottom:3px">TOP ACTORS</div>
       ${topActors.map(([actor,count]) => {
         const pct = Math.round((count/actorMax)*100);
         return `<div style="display:flex;align-items:center;gap:5px;margin:2px 0;cursor:pointer" onclick="document.getElementById('search-box').value='${actor.replace(/'/g,"\\'")}';initSearch&&initSearch()">
@@ -1044,12 +1162,14 @@ function renderEventTypes(container) {
   const max = Math.max(1, ...Object.values(types));
   const allTypes = Object.entries(types).sort((a,b)=>b[1]-a[1]);
 
-  el.innerHTML = '<div style="font-size:8px;color:var(--text-dim);margin-bottom:4px">Click to filter map by event type</div>' +
+  el.innerHTML = '<div style="font-size:10px;color:var(--text-dim);margin-bottom:5px">Click to filter map by event type</div>' +
     allTypes.map(([t,c]) => {
     const isActive = !activeEventTypes || activeEventTypes.has(t);
+    const typeInfo = EVENT_TYPE_ICONS[t] || { emoji:'⚡', color:'#888' };
     return `<div class="force-row${isActive?'':' dimmed'}" data-etype="${t}" style="cursor:pointer">
-      <span class="force-name" style="font-size:9px">${t}</span>
-      <span class="force-count" style="color:var(--warning)">${c.toLocaleString()}</span>
+      <span style="font-size:14px;flex-shrink:0;width:20px;text-align:center">${typeInfo.emoji}</span>
+      <span class="force-name" style="font-size:11px">${t}</span>
+      <span class="force-count" style="color:var(--warning);font-size:11px">${c.toLocaleString()}</span>
       <div class="force-bar-bg"><div class="force-bar-fill" style="width:${(c/max*100).toFixed(0)}%;background:var(--warning)"></div></div>
     </div>`;
   }).join('');
@@ -1129,7 +1249,7 @@ function renderTheaters(container) {
   }
   el.innerHTML = Object.keys(THEATERS).map(name => {
     const c = name === 'ALL' ? EVENTS.length : (counts[name]||0);
-    const badge = c > 0 ? ` <span style="font-size:7px;opacity:0.6">${c>=1000?(c/1000).toFixed(1)+'k':c}</span>` : '';
+    const badge = c > 0 ? ` <span style="font-size:9px;opacity:0.6">${c>=1000?(c/1000).toFixed(1)+'k':c}</span>` : '';
     return `<button class="theater-btn${name==='ALL'?' active':''}" data-theater="${name}">${name}${badge}</button>`;
   }).join('');
 
@@ -1245,7 +1365,7 @@ function initSearch() {
             <span style="color:${color};font-weight:bold">${ev.actor1||ev.side}</span>
             → <span class="feed-loc">${ev.location||ev.country}</span>
             ${ev.fatalities>0?`<span class="feed-fat">☠${ev.fatalities}</span>`:''}
-            ${ev.notes?`<div style="color:#aaa;font-size:7px;margin-top:1px">${ev.notes.substring(0,80)}</div>`:''}
+            ${ev.notes?`<div style="color:#aaa;font-size:9px;margin-top:1px">${ev.notes.substring(0,80)}</div>`:''}
           </div>`;
         }).join('');
         results._searchEvents = matches;
@@ -1297,6 +1417,11 @@ function initSizeControls() {
   const fLabel = document.getElementById('font-sz-label');
   function stepIdx(steps, val) { return steps.indexOf(steps.reduce((a,b) => Math.abs(b-val) < Math.abs(a-val) ? b : a)); }
 
+  // Set initial display
+  if (mLabel) mLabel.textContent = markerScale + '×';
+  if (fLabel) fLabel.textContent = fontScale + '×';
+  document.getElementById('panel').style.fontSize = (fontScale * 100) + '%';
+
   document.getElementById('marker-up')?.addEventListener('click', () => {
     const i = stepIdx(MARKER_STEPS, markerScale);
     if (i < MARKER_STEPS.length - 1) { markerScale = MARKER_STEPS[i+1]; mLabel.textContent = markerScale + '×'; renderMarkers(); }
@@ -1338,9 +1463,9 @@ function renderFeed(container) {
   }
   el.innerHTML = recent.map((ev, i) => {
     const color = SIDE_COLORS[ev.side] || '#888';
-    const headline = ev.notes ? `<div style="color:#ccc;font-size:8px;margin-top:2px;line-height:1.3;white-space:normal">${ev.notes.length > 140 ? ev.notes.substring(0,140) + '…' : ev.notes}</div>` : '';
+    const headline = ev.notes ? `<div style="color:#ccc;font-size:11px;margin-top:3px;line-height:1.4;white-space:normal">${ev.notes.length > 140 ? ev.notes.substring(0,140) + '…' : ev.notes}</div>` : '';
     const typeTag = ev.sub_event_type && ev.sub_event_type !== 'Location mention in OSINT'
-      ? `<span style="color:var(--warning);font-size:7px;text-transform:uppercase">${ev.sub_event_type}</span> ` : '';
+      ? `<span style="color:var(--warning);font-size:9px;text-transform:uppercase;font-weight:500">${ev.sub_event_type}</span> ` : '';
     return `<div class="feed-item" data-feed-idx="${i}">
       <div style="display:flex;justify-content:space-between;align-items:baseline">
         <span>${typeTag}<span style="color:${color};font-weight:bold">${ev.actor1 || ev.side.toUpperCase()}</span>
@@ -1724,7 +1849,7 @@ function initTimelineBrush() {
 
   // Hover tooltip
   const tip = document.createElement('div');
-  tip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:rgba(8,12,22,0.95);border:1px solid var(--accent);padding:5px 8px;border-radius:3px;font-family:"JetBrains Mono";font-size:10px;color:#c0c8d8;display:none;white-space:nowrap;backdrop-filter:blur(8px)';
+  tip.style.cssText = 'position:fixed;pointer-events:none;z-index:9999;background:rgba(8,12,22,0.95);border:1px solid var(--accent);padding:6px 10px;border-radius:3px;font-family:"JetBrains Mono";font-size:12px;color:#c0c8d8;display:none;white-space:nowrap;backdrop-filter:blur(8px)';
   document.body.appendChild(tip);
 
   canvas.addEventListener('mousemove', e => {
@@ -1923,7 +2048,7 @@ function toggleFullscreen() {
       exitBtn = document.createElement('button');
       exitBtn.id = 'fs-exit';
       exitBtn.innerHTML = '✕ EXIT';
-      exitBtn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:999;background:rgba(0,0,0,0.8);border:1px solid var(--accent);color:var(--accent);padding:4px 10px;cursor:pointer;border-radius:3px;font-size:10px;font-family:Orbitron,sans-serif;letter-spacing:1px';
+      exitBtn.style.cssText = 'position:fixed;top:8px;right:8px;z-index:999;background:rgba(0,0,0,0.8);border:1px solid var(--accent);color:var(--accent);padding:6px 14px;cursor:pointer;border-radius:3px;font-size:12px;font-family:Orbitron,sans-serif;letter-spacing:1px';
       exitBtn.onclick = toggleFullscreen;
       document.body.appendChild(exitBtn);
     }
