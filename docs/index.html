@@ -1142,8 +1142,8 @@ window.map = L.map('map', {
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
 // Custom panes for z-ordering: OSINT above fires
-map.createPane('firesPane').style.zIndex = 450;
-map.createPane('osintPane').style.zIndex = 500;
+map.createPane('firesPane').style.zIndex = 650;
+map.createPane('osintPane').style.zIndex = 660;
 let currentBasemap = 'viirs';
 
 function setBasemap(name) {
