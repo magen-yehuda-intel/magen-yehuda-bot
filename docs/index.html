@@ -2419,14 +2419,13 @@ function buildArcPath(from, to) {
   return { path: `M${p1.x},${p1.y} Q${mx},${my} ${p2.x},${p2.y}`, p1, p2, cp: {x:mx,y:my}, dist };
 }
 
-function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
+function animateMissile(fromCoord, toCoord, delayMs, durationMs, onAllDone) {
   const svg = getBallisticSvg();
   const arc = buildArcPath(fromCoord, toCoord);
   durationMs = durationMs || Math.max(4000, Math.min(8000, arc.dist * 6));
   const WAVES = 5;
-  const WAVE_GAP = durationMs * 0.7; // gap between missile launches
+  const WAVE_GAP = durationMs * 0.7;
 
-  // Draw full trajectory arc immediately (no progressive reveal)
   const arcGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
   const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
   glowPath.setAttribute('d', arc.path);
@@ -2439,7 +2438,6 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
   corePath.setAttribute('stroke-width','2.5');
   arcGroup.appendChild(corePath);
 
-  // Send a missile head along the arc
   let completed = 0;
   function launchHead(delay) {
     setTimeout(() => {
@@ -2460,7 +2458,6 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
         const hx = (1-u)*(1-u)*arc.p1.x + 2*(1-u)*u*arc.cp.x + u*u*arc.p2.x;
         const hy = (1-u)*(1-u)*arc.p1.y + 2*(1-u)*u*arc.cp.y + u*u*arc.p2.y;
         head.setAttribute('cx', hx); head.setAttribute('cy', hy);
-        // Comet tail
         const ut = Math.max(0, u - 0.08);
         const tx = (1-ut)*(1-ut)*arc.p1.x + 2*(1-ut)*ut*arc.cp.x + ut*ut*arc.p2.x;
         const ty = (1-ut)*(1-ut)*arc.p1.y + 2*(1-ut)*ut*arc.cp.y + ut*ut*arc.p2.y;
@@ -2471,7 +2468,6 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
           requestAnimationFrame(tick);
         } else {
           head.remove(); tail.remove();
-          // Impact ripple
           ['impact-ring','impact-ring2'].forEach(cls => {
             const r = document.createElementNS('http://www.w3.org/2000/svg','circle');
             r.setAttribute('cx', arc.p2.x); r.setAttribute('cy', arc.p2.y);
@@ -2480,21 +2476,13 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
             setTimeout(() => r.remove(), 2000);
           });
           completed++;
-          // Fade arc only after ALL missiles have hit
-          if (completed >= WAVES) {
-            setTimeout(() => {
-              arcGroup.style.transition = 'opacity 10s';
-              arcGroup.style.opacity = '0';
-              setTimeout(() => arcGroup.remove(), 10000);
-            }, 3000);
-          }
+          if (completed >= WAVES && onAllDone) onAllDone();
         }
       }
       requestAnimationFrame(tick);
     }, delay);
   }
 
-  // Show arc, then launch missiles
   setTimeout(() => {
     svg.appendChild(arcGroup);
     for (let i = 0; i < WAVES; i++) {
@@ -2594,22 +2582,43 @@ function fireBallisticBarrage(targetCoords, source, profile) {
   const ne = [Math.max(...allLats) + 2, Math.max(...allLons) + 2];
   map.fitBounds([sw, ne], { padding:[40,40], maxZoom:7, animate:true, duration:1 });
 
-  // Fire arcs — each arc sends 5 missiles along it
+  // Fire arcs — all arcs stay until every missile in the barrage has landed
   _barrageActive = true;
   setTimeout(() => {
     let delay = 0;
+    const allArcs = [];
+    let totalArcs = 0;
+    let doneArcs = 0;
+
+    function onArcDone() {
+      doneArcs++;
+      if (doneArcs >= totalArcs) {
+        // ALL arcs finished — now fade everything together
+        setTimeout(() => {
+          allArcs.forEach(g => {
+            g.style.transition = 'opacity 10s';
+            g.style.opacity = '0';
+          });
+          setTimeout(() => {
+            allArcs.forEach(g => g.remove());
+            _barrageActive = false;
+          }, 10000);
+        }, 3000);
+      }
+    }
+
     targetCoords.forEach(tc => {
       const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2), source);
       launchers.forEach((l, i) => {
+        totalArcs++;
         const stagger = delay + (i * (400 + Math.random()*800));
         const duration = (profile.animMin + Math.random() * (profile.animMax - profile.animMin)) * 2;
-        animateMissile([l.lat, l.lon], tc, stagger, duration);
+        const arcEl = animateMissile([l.lat, l.lon], tc, stagger, duration, onArcDone);
+        allArcs.push(arcEl);
       });
       delay += 600 + Math.random()*1200;
     });
   }, 1500);
-  // Allow clearing after ~50s
-  setTimeout(() => { _barrageActive = false; }, 50000);
 }
 
 // Hook into Oref alerts — fire barrage when sirens detected
