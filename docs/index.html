@@ -2771,7 +2771,12 @@ setInterval(pollThreat, 30000);
 document.addEventListener('keydown', e => {
   // Don't fire shortcuts when typing in inputs
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Escape') { document.getElementById('sidebar').classList.remove('open'); }
+  if (e.key === 'Escape') {
+    // Close sidebar if open, otherwise toggle feed
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('open')) { sidebar.classList.remove('open'); }
+    else { toggleFeed(); }
+  }
   if (e.key === 'l' || e.key === 'L') toggleLegend();
   if (e.key === 's' || e.key === 'S') toggleSidebar();
 });
