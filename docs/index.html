@@ -300,6 +300,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .leaflet-control-zoom { border:1px solid var(--panel-border) !important; }
 .leaflet-control-zoom a { background:rgba(5,5,16,0.85) !important; color:var(--text) !important; border-color:var(--panel-border) !important; backdrop-filter:blur(4px); }
 .leaflet-control-zoom a:hover { background:rgba(20,25,40,0.9) !important; }
+.leaflet-control-attribution { background:transparent !important; color:rgba(255,255,255,0.15) !important; font-size:8px !important; }
+.leaflet-control-attribution a { color:rgba(255,255,255,0.2) !important; }
 .leaflet-popup-content-wrapper { background:rgba(10,15,30,0.95) !important; color:var(--text) !important; border:1px solid var(--panel-border) !important; border-radius:8px !important; backdrop-filter:blur(12px) !important; }
 .leaflet-popup-tip { background:rgba(10,15,30,0.95) !important; }
 .leaflet-popup-close-button { color:var(--text-dim) !important; }
@@ -746,7 +748,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
   <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
   <div class="mt-btn" data-mt="sam" onclick="mtToggle('sam',this)">🛡</div>
-  <div class="mt-btn" data-mt="patrol" onclick="mtToggle('patrol',this)">↻</div>
+  <div class="mt-btn" data-mt="patrol" onclick="mtToggle('patrol',this)">🛩</div>
   <div class="mt-btn" data-mt="waterways" onclick="mtToggle('waterways',this)">🌊</div>
   <div class="mt-sep"></div>
   <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
