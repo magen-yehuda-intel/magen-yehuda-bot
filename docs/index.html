@@ -1059,6 +1059,9 @@ window.map = L.map('map', {
 });
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
+// Custom panes for z-ordering: OSINT above fires
+map.createPane('firesPane').style.zIndex = 450;
+map.createPane('osintPane').style.zIndex = 500;
 let currentBasemap = 'viirs';
 
 function setBasemap(name) {
@@ -1106,6 +1109,7 @@ const layers = {
     chunkDelay: 10,
     animate: false,
     spiderfyOnMaxZoom: false,
+    clusterPane: 'firesPane',
     iconCreateFunction: function(cluster) {
       const count = cluster.getChildCount();
       const sz = count > 200 ? 'large' : count > 50 ? 'medium' : 'small';
@@ -1116,7 +1120,7 @@ const layers = {
       });
     }
   }),
-  osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7 }),
+  osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, zoomToBoundsOnClick: true, clusterPane: 'osintPane' }),
   sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7, iconCreateFunction: sirenClusterIcon }),
   labels: L.layerGroup(),
   aircraft: L.layerGroup(),
