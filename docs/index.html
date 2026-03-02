@@ -2308,8 +2308,15 @@ const LAUNCH_ORIGINS = {
   gaza:     { lat:31.4, lon:34.38,label:'Gaza',     bounds:[[31,34],[31.6,34.6]], keywords:['gaza','hamas','pij','islamic jihad','עזה','חמאס'] },
 };
 
-// Detect launch source from recent OSINT feed text
+// Detect launch source — AI classification first, keyword fallback
 function detectLaunchSource() {
+  // Prefer AI classification from watcher (via threat API)
+  if (_attackClass && _attackClass.source && _attackClass.source !== 'unknown') {
+    const ageS = _attackClass.ts ? (Date.now()/1000 - _attackClass.ts) : 0;
+    if (ageS < 900) return _attackClass.source; // Use if < 15min old
+  }
+
+  // Fallback: keyword scan of recent OSINT
   const events = window._osintEvents || [];
   const now = Date.now() / 1000;
   // Only check events from last 15 minutes
@@ -2410,7 +2417,17 @@ const THREAT_PROFILES = {
 };
 
 function detectThreatType(alerts, source) {
-  // Check Oref category + OSINT text to determine weapon type
+  // Prefer AI classification weapon type
+  if (_attackClass && _attackClass.weapon && _attackClass.weapon !== 'unknown') {
+    const wpn = _attackClass.weapon;
+    const src = _attackClass.source || source;
+    if (wpn.includes('uav') || wpn.includes('drone')) return `uav_${src === 'yemen' ? 'yemen' : 'iran'}`;
+    if (wpn.includes('cruise')) return 'cruise_iran';
+    if (wpn.includes('rocket')) return `rocket_${src === 'gaza' ? 'gaza' : src === 'lebanon' ? 'lebanon' : 'default'}`;
+    if (wpn.includes('ballistic')) return `ballistic_${src === 'iraq' ? 'iraq' : 'iran'}`;
+  }
+
+  // Fallback: keyword scan
   const orefCats = (alerts || []).map(a => parseInt(a.cat || 0)).filter(c => c > 0);
   const recentText = (window._osintEvents || [])
     .filter(e => e.timestamp && (Date.now()/1000 - e.timestamp) < 900)
@@ -2517,6 +2534,9 @@ setInterval(pollOref, API_URL ? 10000 : 30000);
 
 // ═══════ THREAT LEVEL INDICATOR ═══════
 const THREAT_ICONS = { GREEN:'🟢', ELEVATED:'🟡', HIGH:'🔴', CRITICAL:'⚫', UNKNOWN:'⚪' };
+// Store latest AI attack classification from threat API
+let _attackClass = null;
+
 function pollThreat() {
   if (!API_URL) return;
   fetch(`${API_URL}/api/threat`).then(r=>r.json()).then(d => {
@@ -2525,11 +2545,20 @@ function pollThreat() {
     const icon = THREAT_ICONS[level] || '⚪';
     document.getElementById('threat-icon').textContent = icon;
     document.getElementById('threat-label').textContent = level;
-    // Update class for styling
     el.className = 'threat-' + level.toLowerCase();
-    // Reason
+    // Store AI classification if present
+    if (d.attack_class && d.attack_class.source && d.attack_class.source !== 'unknown') {
+      _attackClass = d.attack_class;
+    }
+    // Reason — show AI classification if available
     const reasonEl = document.getElementById('threat-reason');
-    if (d.reason && d.reason !== 'watcher startup') {
+    if (_attackClass && _attackClass.source !== 'unknown' && (level === 'HIGH' || level === 'CRITICAL')) {
+      const src = (_attackClass.source || '').toUpperCase();
+      const wpn = (_attackClass.weapon || '').replace(/_/g,' ');
+      const conf = _attackClass.confidence ? ` (${Math.round(_attackClass.confidence*100)}%)` : '';
+      reasonEl.textContent = `${src} — ${wpn}${conf}`;
+      reasonEl.style.display = '';
+    } else if (d.reason && d.reason !== 'watcher startup') {
       reasonEl.textContent = d.reason;
       reasonEl.style.display = '';
     } else { reasonEl.style.display = 'none'; }

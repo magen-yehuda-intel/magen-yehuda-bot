@@ -34,6 +34,7 @@ BOT_TOKEN=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.
 CHAT_ID=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_chat_id',''))" 2>/dev/null || echo "")
 CHANNEL_NAME=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_channel_name','Alert Monitor'))" 2>/dev/null || echo "Alert Monitor")
 PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('push_api_key','myi-fcf15b5484f76e9b'))" 2>/dev/null || echo "myi-fcf15b5484f76e9b")
+GEMINI_API_KEY="${GEMINI_API_KEY:-$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('gemini_api_key',''))" 2>/dev/null || echo "")}"
 
 # Proxy for Oref: try direct first, fall back to VPN proxy if configured
 # Azure/cloud IPs can reach Oref directly. Residential IPs outside Israel need proxy.
@@ -729,6 +730,39 @@ except:
     -H "Content-Type: application/json" \
     -H "X-API-Key: $PUSH_API_KEY" \
     -d "$push_payload" >/dev/null 2>&1 &
+
+  # Classify attack source/weapon using AI (non-blocking)
+  # Only run when we have active alerts (not on clear/standdown)
+  if [ "$alert_type" = "ACTIVE_THREAT" ]; then
+    (
+      local oref_areas
+      oref_areas=$(python3 -c "
+import json, sys
+raw = sys.stdin.read().strip()
+try:
+    alerts = json.loads(raw) if raw and raw != '[]' else []
+    if not isinstance(alerts, list): alerts = [alerts]
+    areas = [a.get('data','') or a.get('title','') or a.get('area','') for a in alerts]
+    print(','.join([a for a in areas if a]))
+except:
+    print('')
+" <<< "$alerts" 2>/dev/null)
+      
+      local classification
+      classification=$(GEMINI_API_KEY="$GEMINI_API_KEY" python3 "$SCRIPT_DIR/classify-attack.py" --oref-areas "$oref_areas" 2>/dev/null)
+      
+      if [ -n "$classification" ] && echo "$classification" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); assert d.get('source','unknown') != 'unknown'" 2>/dev/null; then
+        log "  Attack classification: $classification"
+        # Push to API alongside threat level
+        curl -sf --max-time 5 -X POST \
+          "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+          -H "Content-Type: application/json" \
+          -H "X-API-Key: $PUSH_API_KEY" \
+          -d "{\"level\":\"$THREAT_LEVEL\",\"score\":$THREAT_SCORE,\"reason\":\"Active sirens\",\"attack_class\":$classification}" \
+          >/dev/null 2>&1
+      fi
+    ) &
+  fi
 }
 
 # ══════════════════════════════════════════════════════════════
