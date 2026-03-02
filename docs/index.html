@@ -133,15 +133,19 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 /* Ballistic missile animation */
 .ballistic-overlay { position:absolute; top:0; left:0; pointer-events:none; z-index:650; overflow:visible; }
 .ballistic-trail { fill:none; stroke-linecap:round; }
-.ballistic-trail-glow { stroke:rgba(255,60,60,0.4); }
-.ballistic-trail-core { stroke:#ff3333; }
+.ballistic-trail-glow { stroke:rgba(255,120,50,0.15); }
+.ballistic-trail-core { stroke:rgba(255,160,60,0.6); }
 @keyframes missile-fly { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes missile-head-pulse { 0%,100% { r:5; opacity:1; } 50% { r:9; opacity:0.8; } }
-.missile-head { fill:#ffdd00; }
-@keyframes impact-flash { 0% { r:8; opacity:1; fill:#fff; } 30% { r:35; opacity:0.9; fill:#ff4444; } 100% { r:55; opacity:0; fill:#ff4444; } }
-.impact-flash { animation:impact-flash 1.2s ease-out forwards; }
-@keyframes smoke-ring { 0% { r:10; opacity:0.7; stroke-width:4; } 100% { r:60; opacity:0; stroke-width:1; } }
-.smoke-ring { fill:none; stroke:rgba(255,100,50,0.6); animation:smoke-ring 1.8s ease-out forwards; }
+@keyframes missile-head-pulse { 0%,100% { r:3; opacity:1; } 50% { r:5; opacity:0.7; } }
+.missile-head { fill:#ffaa33; animation:missile-head-pulse 0.3s ease-in-out infinite; }
+@keyframes origin-ping { 0% { r:4; opacity:0.8; stroke-width:2; } 100% { r:20; opacity:0; stroke-width:0.5; } }
+.origin-ping { fill:none; stroke:rgba(255,140,50,0.6); animation:origin-ping 1.5s ease-out forwards; }
+@keyframes impact-ring { 0% { r:3; opacity:1; stroke-width:2; } 100% { r:25; opacity:0; stroke-width:0.5; } }
+.impact-ring { fill:none; stroke:rgba(255,80,80,0.7); animation:impact-ring 1s ease-out forwards; }
+@keyframes impact-ring2 { 0% { r:3; opacity:0.7; stroke-width:1.5; } 100% { r:18; opacity:0; stroke-width:0.3; } }
+.impact-ring2 { fill:none; stroke:rgba(255,160,60,0.5); animation:impact-ring2 0.8s ease-out 0.2s forwards; }
+@keyframes impact-dot { 0% { r:4; opacity:1; } 50% { r:6; opacity:0.8; } 100% { r:2; opacity:0.3; } }
+.impact-dot { fill:#ff6633; animation:impact-dot 2s ease-out forwards; }
 
 /* ═══ NEON GLOW (waterways) ═══ */
 .neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
@@ -2374,46 +2378,49 @@ function buildArcPath(from, to) {
 function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
   const svg = getBallisticSvg();
   const arc = buildArcPath(fromCoord, toCoord);
-  durationMs = durationMs || Math.max(2000, Math.min(5000, arc.dist * 4));
+  durationMs = durationMs || Math.max(3000, Math.min(8000, arc.dist * 6));
   const g = document.createElementNS('http://www.w3.org/2000/svg','g');
 
-  // Glow trail
+  // Origin ping (ripple at launch site)
+  const ping = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  ping.setAttribute('cx', arc.p1.x); ping.setAttribute('cy', arc.p1.y);
+  ping.setAttribute('r','4'); ping.setAttribute('class','origin-ping');
+  g.appendChild(ping);
+
+  // Glow trail (wide, faint)
   const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
   glowPath.setAttribute('d', arc.path);
   glowPath.setAttribute('class','ballistic-trail ballistic-trail-glow');
-  glowPath.setAttribute('stroke-width','10');
-  const totalLen = glowPath.getTotalLength ? 800 : 800;
-  glowPath.style.strokeDasharray = totalLen;
-  glowPath.style.strokeDashoffset = totalLen;
+  glowPath.setAttribute('stroke-width','8');
   g.appendChild(glowPath);
 
-  // Core trail
+  // Core trail (thin, bright)
   const corePath = document.createElementNS('http://www.w3.org/2000/svg','path');
   corePath.setAttribute('d', arc.path);
   corePath.setAttribute('class','ballistic-trail ballistic-trail-core');
-  corePath.setAttribute('stroke-width','3');
-  corePath.style.strokeDasharray = totalLen;
-  corePath.style.strokeDashoffset = totalLen;
+  corePath.setAttribute('stroke-width','1.5');
   g.appendChild(corePath);
 
-  // Missile head (animated along path)
+  // Missile head
   const head = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  head.setAttribute('cx', arc.p1.x);
-  head.setAttribute('cy', arc.p1.y);
-  head.setAttribute('r','5');
-  head.setAttribute('class','missile-head');
+  head.setAttribute('cx', arc.p1.x); head.setAttribute('cy', arc.p1.y);
+  head.setAttribute('r','3'); head.setAttribute('class','missile-head');
   g.appendChild(head);
+
+  // Comet tail (short trail behind the head)
+  const tail = document.createElementNS('http://www.w3.org/2000/svg','line');
+  tail.setAttribute('stroke','rgba(255,160,60,0.4)'); tail.setAttribute('stroke-width','2');
+  tail.setAttribute('stroke-linecap','round');
+  g.appendChild(tail);
 
   svg.appendChild(g);
 
-  // Animate after delay
   setTimeout(() => {
     const startTime = performance.now();
-    const animLen = durationMs;
-
-    // Use getTotalLength on the actual path element
     let pathLen;
     try { pathLen = corePath.getTotalLength(); } catch(e) { pathLen = 800; }
+
+    // Set up dash for progressive reveal
     glowPath.style.strokeDasharray = pathLen;
     glowPath.style.strokeDashoffset = pathLen;
     corePath.style.strokeDasharray = pathLen;
@@ -2421,41 +2428,46 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
 
     function tick(now) {
       const elapsed = now - startTime;
-      const t = Math.min(1, elapsed / animLen);
-      // Ease in-out
+      const t = Math.min(1, elapsed / durationMs);
       const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
 
-      // Reveal trail
+      // Reveal trail progressively
       const offset = pathLen * (1 - ease);
       glowPath.style.strokeDashoffset = offset;
       corePath.style.strokeDashoffset = offset;
 
-      // Move head along quadratic bezier
+      // Move head along bezier
       const u = ease;
       const hx = (1-u)*(1-u)*arc.p1.x + 2*(1-u)*u*arc.cp.x + u*u*arc.p2.x;
       const hy = (1-u)*(1-u)*arc.p1.y + 2*(1-u)*u*arc.cp.y + u*u*arc.p2.y;
-      head.setAttribute('cx', hx);
-      head.setAttribute('cy', hy);
+      head.setAttribute('cx', hx); head.setAttribute('cy', hy);
+
+      // Comet tail (point slightly behind on curve)
+      const ut = Math.max(0, u - 0.06);
+      const tx = (1-ut)*(1-ut)*arc.p1.x + 2*(1-ut)*ut*arc.cp.x + ut*ut*arc.p2.x;
+      const ty = (1-ut)*(1-ut)*arc.p1.y + 2*(1-ut)*ut*arc.cp.y + ut*ut*arc.p2.y;
+      tail.setAttribute('x1', hx); tail.setAttribute('y1', hy);
+      tail.setAttribute('x2', tx); tail.setAttribute('y2', ty);
 
       if (t < 1) {
         requestAnimationFrame(tick);
       } else {
-        // Impact! Flash + smoke
-        head.remove();
-        const flash = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        flash.setAttribute('cx', arc.p2.x);
-        flash.setAttribute('cy', arc.p2.y);
-        flash.setAttribute('r','5');
-        flash.setAttribute('class','impact-flash');
-        g.appendChild(flash);
-        const smoke = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        smoke.setAttribute('cx', arc.p2.x);
-        smoke.setAttribute('cy', arc.p2.y);
-        smoke.setAttribute('r','8');
-        smoke.setAttribute('class','smoke-ring');
-        g.appendChild(smoke);
+        // Impact — ripple rings
+        head.remove(); tail.remove(); ping.remove();
+        const r1 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        r1.setAttribute('cx', arc.p2.x); r1.setAttribute('cy', arc.p2.y);
+        r1.setAttribute('r','3'); r1.setAttribute('class','impact-ring');
+        g.appendChild(r1);
+        const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        r2.setAttribute('cx', arc.p2.x); r2.setAttribute('cy', arc.p2.y);
+        r2.setAttribute('r','3'); r2.setAttribute('class','impact-ring2');
+        g.appendChild(r2);
+        const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        dot.setAttribute('cx', arc.p2.x); dot.setAttribute('cy', arc.p2.y);
+        dot.setAttribute('r','4'); dot.setAttribute('class','impact-dot');
+        g.appendChild(dot);
 
-        // Fade trails over 60s then remove
+        // Fade trails over 60s
         setTimeout(() => {
           g.style.transition = 'opacity 30s ease-in';
           g.style.opacity = '0.15';
