@@ -2179,7 +2179,7 @@ setInterval(loadTicker, 30000); // refresh ticker every 30s
 // oref mode display removed
 // Fetch last oref alert from DB for persistent "last alert" display
 if (API_URL) fetch(`${API_URL}/api/oref/last`).then(r=>r.ok?r.json():null).then(d=>{
-  if(d&&d.alert){window._lastOrefAlertTitle=d.alert.title||'Alert';window._lastOrefAlertTime=d.alert.ts?d.alert.ts*1000:null;}
+  if(d&&d.alert){window._lastOrefAlertTitle=OREF_CAT_EN[d.alert.cat]||d.alert.title||'Alert';window._lastOrefAlertTime=d.alert.ts?d.alert.ts*1000:null;}
 }).catch(()=>{});
 // oref mode/interval display removed
 
@@ -2353,7 +2353,7 @@ function updateOrefBanner(alerts, serverTs, note) {
     }
   } else {
     window._lastOrefAlertTime = Date.now();
-    window._lastOrefAlertTitle = alerts[0].title || 'Alert';
+    window._lastOrefAlertTitle = OREF_CAT_EN[alerts[0].cat] || alerts[0].title || 'Alert';
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
     const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
@@ -2701,6 +2701,7 @@ function fireBallisticBarrage(targetCoords, source, profile) {
 // Hook into Oref alerts — fire barrage when sirens detected
 // Threat type → animation behavior
 // Oref cat: 1=missiles/rockets, 6=hostile aircraft (UAV)
+const OREF_CAT_EN = {1:'Rockets & Missiles',2:'Tsunami',3:'Earthquake',4:'Radiological',5:'Hostile Aircraft Intrusion',6:'Hostile Aircraft Intrusion',7:'Unconventional Warfare',13:'Tsunami'};
 // Source distance determines flight animation duration
 const THREAT_PROFILES = {
   // source → { animDuration: ms range, repeatInterval: ms, maxDuration: ms (auto-shutoff) }
