@@ -1449,6 +1449,7 @@ document.getElementById('feed-time-bar').addEventListener('click', e => {
   chip.classList.add('active');
   renderFeed();
   // Re-filter all live data layers
+  if (window._osintEvents) renderOSINTMarkers(window._osintEvents);
   loadFIRMS();
   if (activeState.seismic) loadSeismic();
   loadSirens();
@@ -1714,8 +1715,12 @@ function renderOSINTMarkers(events) {
   layers.osint.clearLayers();
   let count = 0;
   const now = Date.now()/1000;
+  const cutoff = feedTimeHours > 0 ? now - (feedTimeHours * 3600) : 0;
   events.forEach(ev => {
     if (!ev.lat || !ev.lon) return;
+    const ts = ev.timestamp || ev.ts || 0;
+    // Apply same time filter as feed panel
+    if (cutoff > 0 && ts && ts < cutoff) return;
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
