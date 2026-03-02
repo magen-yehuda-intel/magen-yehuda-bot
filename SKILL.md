@@ -1257,3 +1257,25 @@ The watcher uses these bash variables — **`STATE_DIR` must be exported** for i
 | `STATE_DIR` | Runtime state files directory | **Yes** (Python reads via `os.environ`) |
 | `CONFIG_FILE` | Path to config.json | No (passed as arg) |
 | `THREAT_LEVEL` | Current threat level string | No (bash only) |
+
+### Updates (Mar 2 2026)
+
+**New Data Tables (Azure Table Storage):**
+- `seismicevents` — USGS earthquakes, polled every 2min
+- `fireevents` — NASA FIRMS hotspots (FRP>10MW), polled every 5min
+- Strike correlation engine: `/api/correlate?hours=1&radius_km=50`
+- Historical endpoints: `/api/seismic/history`, `/api/fires/history`
+
+**Dashboard Additions:**
+- 40 regional energy assets (Qatar, UAE, Saudi, Iraq, Kuwait, Bahrain, Oman, Israel, Egypt)
+- DAMAGED_FACILITIES overlay: 💥 struck / ⚠️ shutdown / 🚫 blocked markers with pulsing borders
+- All 23 sidebar layer toggles now functional (7 were missing)
+- Feed auto-refreshes every 30s regardless of panel state
+- Oref banner shows English category names via `OREF_CAT_EN` dictionary
+
+**Strikes Map Rewrite:**
+- Replaced PIL rectangle-based rendering with Cartopy + Matplotlib
+- Real Natural Earth coastlines, borders, ocean. Country labels. Dual legends.
+- Dependencies: cartopy, pyproj, shapely, pyshp
+
+**API v19 deployed** — revision `magen-yehuda-api--0000019`
