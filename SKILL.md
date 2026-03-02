@@ -1155,10 +1155,14 @@ Flask/gunicorn API deployed on Azure Container Apps (consumption plan, ~$0/month
 | `/api/oref` | GET | Pikud HaOref alerts (from watcher push) |
 | `/api/fires` | GET | NASA FIRMS hotspots (self-polling, 5min) |
 | `/api/intel-feed` | GET | Intel events from Azure Table (`?hours=`, `?side=`, `?limit=`) |
+| `/api/aircraft` | GET | Live aircraft from FR24 (~400 in ME, 60s). `?filter=military` for military only |
+| `/api/seismic` | GET | USGS earthquakes M2.5+ in ME (50 latest, 2min refresh) |
+| `/api/threat` | GET | Current threat level (GREEN/ELEVATED/HIGH/CRITICAL) |
 | `/api/health` | GET | Health check with cache ages |
 | `/api/debug` | GET | Debug info |
 | `/api/push/oref` | POST | Push Oref data (API key auth) |
 | `/api/push/intel` | POST | Push intel events (API key auth) |
+| `/api/push/threat` | POST | Push threat level changes (API key auth) |
 
 **Project:** `~/.openclaw/workspace/projects/magen-yehuda-api/`
 
@@ -1171,7 +1175,7 @@ Primary data store for intel events. Practically free (~$0.01/month).
 - **Auth:** Entra ID (shared key blocked by tenant policy)
 - **Managed identity:** Container app has `Storage Table Data Contributor` role
 - **Schema:** `PartitionKey=YYYY-MM-DD`, `RowKey=SHA256(src+text+ts)[:32]`
-- **Fields:** `ts`, `src`, `text`, `side`, `type`, `sub_event_type`, `lat`, `lon`, `location`, `breaking`, `confidence`
+- **Fields:** `ts`, `src`, `text`, `side`, `type`, `sub_event_type`, `lat`, `lon`, `location`, `breaking`, `confidence`, `link`
 
 ### Azure Resources
 
