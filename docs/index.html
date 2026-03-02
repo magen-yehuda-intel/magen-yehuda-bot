@@ -810,7 +810,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>🏷</span><div class="tb-tooltip">Base Labels</div>
   </div>
   <div class="tb-btn" data-layer="sam" data-color="amber" onclick="toggleLayer('sam')">
-    <span>🛡</span><div class="tb-tooltip">SAM Range Rings</div>
+    <span>🛡</span><div class="tb-tooltip">Iran Air Defense (SAM engagement ranges)</div>
   </div>
   <div class="tb-btn" data-layer="patrol" data-color="green" onclick="toggleLayer('patrol')">
     <span>↻</span><div class="tb-tooltip">Air Patrol Routes</div>
@@ -1564,20 +1564,26 @@ function renderAllLayers() {
 
   // ─── IRAN AIR DEFENSE + SAM RINGS ───
   V2_DATA.IRAN_AIRDEFENSE.forEach(s => {
-    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Range: ${s.range_km}km`, '#eab308');
+    const rangeColor = s.range_km >= 200 ? '#ef4444' : s.range_km >= 100 ? '#f59e0b' : '#facc15';
+    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Engagement range: ${s.range_km}km<br>Type: Surface-to-Air Missile`, rangeColor);
     mkMarker(s.lat, s.lon, '🛡️', 'marker-iran-ad', 24, popup).addTo(layers.ad);
     // SAM range ring
     if (s.range_km > 0) {
       const ring = L.circle([s.lat, s.lon], {
         radius: s.range_km * 1000,
-        color: s.range_km >= 200 ? '#ef4444' : s.range_km >= 100 ? '#f59e0b' : '#facc15',
+        color: rangeColor,
         weight: 1.5,
         fillColor: s.range_km >= 200 ? 'rgba(239,68,68,0.05)' : 'rgba(245,158,11,0.03)',
         fillOpacity: 1,
         dashArray: s.range_km >= 200 ? '' : '8,6',
         className: 'sam-ring-active',
-        interactive: false,
       });
+      ring.bindPopup(`<div style="font-family:var(--font-data);font-size:11px">
+        <b style="color:${rangeColor}">🛡️ ${s.name}</b><br>
+        System: ${s.system}<br>
+        Range: ${s.range_km}km radius<br>
+        <span style="color:var(--text-dim);font-size:9px">Circle = engagement envelope</span>
+      </div>`, {className:'dark-popup'});
       ring.addTo(layers.sam);
     }
   });
