@@ -2105,12 +2105,13 @@ setTimeout(() => { loadFeed(); toggleFeed(); }, 500);
 // NEWS TICKER
 // ═══════════════════════════════════════════════════════════
 function loadTicker() {
-  const feedUrl = `${STATIC_BASE}/intel-feed.json`;
-  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
+  const apiUrl = API_URL ? `${API_URL}/api/intel-feed?hours=6&limit=50` : null;
+  const staticUrl = `${STATIC_BASE}/intel-feed.json`;
+  const fetchUrl = apiUrl || staticUrl;
+  fetch(fetchUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const events = (data.events || data || []).sort((a,b) => (b.ts||0) - (a.ts||0));
     const now = Date.now() / 1000;
-    // Show last 6 hours in ticker
     const recent = events.filter(e => e.ts && (now - e.ts) < 21600).slice(0, 50);
     if (recent.length === 0) return;
 
@@ -2143,6 +2144,7 @@ function loadTicker() {
 }
 
 loadTicker();
+setInterval(loadTicker, 60000); // refresh ticker every 60s
 setInterval(loadTicker, 30000); // refresh ticker every 30s
 
 // Show data mode
