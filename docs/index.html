@@ -133,15 +133,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 /* Ballistic missile animation */
 .ballistic-overlay { position:absolute; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:650; overflow:visible; }
 .ballistic-trail { fill:none; stroke-linecap:round; }
-.ballistic-trail-glow { stroke:rgba(239,68,68,0.3); filter:blur(4px); }
-.ballistic-trail-core { stroke:#ef4444; }
+.ballistic-trail-glow { stroke:rgba(255,60,60,0.5); filter:blur(6px); }
+.ballistic-trail-core { stroke:#ff3333; filter:drop-shadow(0 0 4px rgba(255,50,50,0.8)); }
 @keyframes missile-fly { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes missile-head-pulse { 0%,100% { r:4; opacity:1; } 50% { r:7; opacity:0.8; } }
-.missile-head { fill:#ff0; animation:missile-head-pulse 0.4s ease-in-out infinite; }
-@keyframes impact-flash { 0% { r:5; opacity:1; fill:#fff; } 30% { r:25; opacity:0.9; fill:#ff4444; } 100% { r:40; opacity:0; fill:#ff4444; } }
-.impact-flash { animation:impact-flash 1s ease-out forwards; }
-@keyframes smoke-ring { 0% { r:8; opacity:0.6; stroke-width:3; } 100% { r:45; opacity:0; stroke-width:1; } }
-.smoke-ring { fill:none; stroke:rgba(255,100,50,0.5); animation:smoke-ring 1.5s ease-out forwards; }
+@keyframes missile-head-pulse { 0%,100% { r:5; opacity:1; } 50% { r:9; opacity:0.8; } }
+.missile-head { fill:#ffdd00; filter:drop-shadow(0 0 8px #ff0); animation:missile-head-pulse 0.4s ease-in-out infinite; }
+@keyframes impact-flash { 0% { r:8; opacity:1; fill:#fff; } 30% { r:35; opacity:0.9; fill:#ff4444; } 100% { r:55; opacity:0; fill:#ff4444; } }
+.impact-flash { animation:impact-flash 1.2s ease-out forwards; }
+@keyframes smoke-ring { 0% { r:10; opacity:0.7; stroke-width:4; } 100% { r:60; opacity:0; stroke-width:1; } }
+.smoke-ring { fill:none; stroke:rgba(255,100,50,0.6); animation:smoke-ring 1.8s ease-out forwards; }
 
 /* ═══ NEON GLOW (waterways) ═══ */
 .neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
@@ -2357,7 +2357,7 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
   const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
   glowPath.setAttribute('d', arc.path);
   glowPath.setAttribute('class','ballistic-trail ballistic-trail-glow');
-  glowPath.setAttribute('stroke-width','6');
+  glowPath.setAttribute('stroke-width','10');
   const totalLen = glowPath.getTotalLength ? 800 : 800;
   glowPath.style.strokeDasharray = totalLen;
   glowPath.style.strokeDashoffset = totalLen;
@@ -2367,7 +2367,7 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
   const corePath = document.createElementNS('http://www.w3.org/2000/svg','path');
   corePath.setAttribute('d', arc.path);
   corePath.setAttribute('class','ballistic-trail ballistic-trail-core');
-  corePath.setAttribute('stroke-width','2');
+  corePath.setAttribute('stroke-width','3');
   corePath.style.strokeDasharray = totalLen;
   corePath.style.strokeDashoffset = totalLen;
   g.appendChild(corePath);
