@@ -1217,7 +1217,7 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: true, countryNames: false,
+  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: true, countryNames: true,
   infra: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
@@ -1225,7 +1225,7 @@ const activeState = {
 };
 
 // Add default-on layers
-['borders', 'military', 'osint', 'sirens'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'osint', 'sirens', 'countryNames'].forEach(k => layers[k].addTo(map));
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
@@ -1248,7 +1248,7 @@ function cycleFireRange(btn) {
 }
 
 // Borders 3-state cycle: borders only → borders+names → off
-let _borderState = 0; // 0=borders, 1=borders+names, 2=off
+let _borderState = 1; // 0=borders, 1=borders+names, 2=off
 function cycleBorders(btn) {
   _borderState = (_borderState + 1) % 3;
   const tips = ['Borders Only', 'Borders + Names', 'Off'];
