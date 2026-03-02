@@ -38,8 +38,8 @@ def _get_client():
 
 
 def _row_key(event):
-    """Deterministic hash for dedup."""
-    raw = f"{event.get('src','')}{event.get('text','')}{event.get('ts',0)}"
+    """Deterministic hash for dedup — ignores ts so re-scraped events don't duplicate."""
+    raw = f"{event.get('src','')}{(event.get('text','') or '')[:60]}"
     return hashlib.sha256(raw.encode()).hexdigest()[:32]
 
 
