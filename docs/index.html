@@ -2275,38 +2275,100 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
 }
 
 // Pick plausible launch sites based on range to target
-function pickLaunchSites(targetCoord, count) {
-  count = count || 3;
-  const sites = (V2_DATA.IRAN_MISSILES || []).filter(m => m.range >= 500);
-  // Sort by distance to target, pick closest that are in range
-  return sites.map(s => {
-    const dlat = s.lat - targetCoord[0], dlon = s.lon - targetCoord[1];
-    const distKm = Math.sqrt(dlat*dlat + dlon*dlon) * 111;
-    return { ...s, distKm };
-  }).filter(s => s.distKm <= s.range && s.distKm > 100)
-    .sort((a,b) => a.distKm - b.distKm)
-    .slice(0, count);
+// Known launch origins with approximate coordinates and keywords
+const LAUNCH_ORIGINS = {
+  iran:     { lat:33.5, lon:48.8, label:'Iran',     bounds:[[25,44],[38,56]], keywords:['iran','tehran','irgc','persian','isfahan','tehran','shahab','emad','sejjil','khorramshahr','ghadr','بایران','ایران'] },
+  yemen:    { lat:15.4, lon:44.2, label:'Yemen/Houthis', bounds:[[12,42],[20,48]], keywords:['yemen','houthi','ansar','sanaa','hodeidah','תימן','חות\'י'] },
+  lebanon:  { lat:33.85,lon:35.85,label:'Lebanon/Hezbollah', bounds:[[31,34],[34.5,36.5]], keywords:['lebanon','hezbollah','nasrallah','beirut','south lebanon','לבנון','חיזבאללה'] },
+  iraq:     { lat:33.3, lon:44.4, label:'Iraq/Militias', bounds:[[29,43],[37,48]], keywords:['iraq','iraqi','militia','pmu','hashd','kataib','עיראק'] },
+  syria:    { lat:33.5, lon:36.3, label:'Syria',    bounds:[[32,35],[37,42]], keywords:['syria','syrian','damascus','סוריה','דמשק'] },
+  gaza:     { lat:31.4, lon:34.38,label:'Gaza',     bounds:[[31,34],[31.6,34.6]], keywords:['gaza','hamas','pij','islamic jihad','עזה','חמאס'] },
+};
+
+// Detect launch source from recent OSINT feed text
+function detectLaunchSource() {
+  const events = window._osintEvents || [];
+  const now = Date.now() / 1000;
+  // Only check events from last 15 minutes
+  const recent = events.filter(e => e.timestamp && (now - e.timestamp) < 900);
+  const recentText = recent.map(e => (e.text || '').toLowerCase()).join(' ');
+
+  // Also check Oref alert text
+  const orefText = (orefAlerts || []).map(a => (a.data || a.title || a.area || '').toLowerCase()).join(' ');
+  const allText = recentText + ' ' + orefText;
+
+  // Score each origin by keyword matches
+  let best = null, bestScore = 0;
+  for (const [key, origin] of Object.entries(LAUNCH_ORIGINS)) {
+    let score = 0;
+    origin.keywords.forEach(kw => {
+      const matches = (allText.match(new RegExp(kw, 'gi')) || []).length;
+      score += matches;
+    });
+    if (score > bestScore) { bestScore = score; best = key; }
+  }
+
+  // Default to Iran if no strong signal
+  return best || 'iran';
 }
 
-function fireBallisticBarrage(targetCoords) {
+function pickLaunchSites(targetCoord, count, source) {
+  count = count || 3;
+  const origin = LAUNCH_ORIGINS[source] || LAUNCH_ORIGINS.iran;
+
+  if (source === 'iran') {
+    // Use actual missile base data
+    const sites = (V2_DATA.IRAN_MISSILES || []).filter(m => m.range >= 500);
+    return sites.map(s => {
+      const dlat = s.lat - targetCoord[0], dlon = s.lon - targetCoord[1];
+      const distKm = Math.sqrt(dlat*dlat + dlon*dlon) * 111;
+      return { ...s, distKm };
+    }).filter(s => s.distKm <= s.range && s.distKm > 100)
+      .sort((a,b) => a.distKm - b.distKm)
+      .slice(0, count);
+  }
+
+  // For non-Iran sources, generate launch points around the origin with some spread
+  const spread = source === 'gaza' ? 0.05 : source === 'lebanon' ? 0.15 : 0.3;
+  const sites = [];
+  for (let i = 0; i < count; i++) {
+    sites.push({
+      lat: origin.lat + (Math.random() - 0.5) * spread,
+      lon: origin.lon + (Math.random() - 0.5) * spread,
+      name: `${origin.label} launch site`,
+    });
+  }
+  return sites;
+}
+
+function fireBallisticBarrage(targetCoords, source) {
   // Clear previous
   if (_ballisticSvg) _ballisticSvg.innerHTML = '';
 
-  // Zoom to show both Iran and Israel
-  map.fitBounds([[25,44],[38,56]], { padding:[30,30], maxZoom:6, animate:true, duration:1 });
+  source = source || detectLaunchSource();
+  const origin = LAUNCH_ORIGINS[source] || LAUNCH_ORIGINS.iran;
+
+  // Zoom to show launch origin + Israel
+  const allLats = [...targetCoords.map(t=>t[0]), origin.lat];
+  const allLons = [...targetCoords.map(t=>t[1]), origin.lon];
+  const sw = [Math.min(...allLats) - 2, Math.min(...allLons) - 2];
+  const ne = [Math.max(...allLats) + 2, Math.max(...allLons) + 2];
+  map.fitBounds([sw, ne], { padding:[40,40], maxZoom:7, animate:true, duration:1 });
 
   setTimeout(() => {
     let delay = 0;
     targetCoords.forEach(tc => {
-      const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2));
+      const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2), source);
       launchers.forEach((l, i) => {
         const stagger = delay + (i * (300 + Math.random()*700));
-        const duration = 3000 + Math.random()*2000;
+        // Duration based on source distance — Yemen is farther so longer flight
+        const baseDuration = source === 'gaza' ? 1500 : source === 'lebanon' ? 2000 : 3000;
+        const duration = baseDuration + Math.random()*2000;
         animateMissile([l.lat, l.lon], tc, stagger, duration);
       });
       delay += 500 + Math.random()*1000;
     });
-  }, 1200); // Wait for zoom
+  }, 1200);
 }
 
 // Hook into Oref alerts — fire barrage when sirens detected
@@ -2330,14 +2392,20 @@ function maybeFireBarrage(alerts) {
       }
     }
   });
-  if (targets.length > 0) fireBallisticBarrage(targets);
+  if (targets.length > 0) {
+    const source = detectLaunchSource();
+    fireBallisticBarrage(targets, source);
+  }
 }
 
-// Demo function — callable from console: demoBarrage()
-function demoBarrage() {
-  // Simulate barrage targeting Tel Aviv, Haifa, Jerusalem
-  fireBallisticBarrage([[32.08,34.78],[32.79,34.99],[31.77,35.21]]);
+// Demo functions — callable from console
+function demoBarrage(source) {
+  // Simulate barrage from specified source (default: auto-detect → iran fallback)
+  fireBallisticBarrage([[32.08,34.78],[32.79,34.99],[31.77,35.21]], source || 'iran');
 }
+function demoYemen() { fireBallisticBarrage([[32.08,34.78],[29.56,34.95]], 'yemen'); }
+function demoLebanon() { fireBallisticBarrage([[32.79,34.99],[33.21,35.57]], 'lebanon'); }
+function demoGaza() { fireBallisticBarrage([[31.25,34.79],[31.67,34.57]], 'gaza'); }
 
 // Refresh SVG positions on map move (paths are in pixel space)
 map.on('moveend zoomend', () => {
