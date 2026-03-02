@@ -2341,11 +2341,12 @@ function pickLaunchSites(targetCoord, count, source) {
   return sites;
 }
 
-function fireBallisticBarrage(targetCoords, source) {
-  // Clear previous
+function fireBallisticBarrage(targetCoords, source, profile) {
+  // Clear previous trails (keep SVG container)
   if (_ballisticSvg) _ballisticSvg.innerHTML = '';
 
   source = source || detectLaunchSource();
+  profile = profile || THREAT_PROFILES[`ballistic_${source}`] || THREAT_PROFILES.default;
   const origin = LAUNCH_ORIGINS[source] || LAUNCH_ORIGINS.iran;
 
   // Zoom to show launch origin + Israel
@@ -2361,9 +2362,7 @@ function fireBallisticBarrage(targetCoords, source) {
       const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2), source);
       launchers.forEach((l, i) => {
         const stagger = delay + (i * (300 + Math.random()*700));
-        // Duration based on source distance — Yemen is farther so longer flight
-        const baseDuration = source === 'gaza' ? 1500 : source === 'lebanon' ? 2000 : 3000;
-        const duration = baseDuration + Math.random()*2000;
+        const duration = profile.animMin + Math.random() * (profile.animMax - profile.animMin);
         animateMissile([l.lat, l.lon], tc, stagger, duration);
       });
       delay += 500 + Math.random()*1000;
@@ -2372,12 +2371,58 @@ function fireBallisticBarrage(targetCoords, source) {
 }
 
 // Hook into Oref alerts — fire barrage when sirens detected
+// Threat type → animation behavior
+// Oref cat: 1=missiles/rockets, 6=hostile aircraft (UAV)
+// Source distance determines flight animation duration
+const THREAT_PROFILES = {
+  // source → { animDuration: ms range, repeatInterval: ms, maxDuration: ms (auto-shutoff) }
+  ballistic_iran:    { animMin:3000, animMax:5000, repeatMs:15000, maxMs:900000  }, // 15min total
+  cruise_iran:       { animMin:5000, animMax:8000, repeatMs:30000, maxMs:3600000 }, // 60min total
+  ballistic_iraq:    { animMin:2000, animMax:3500, repeatMs:12000, maxMs:600000  }, // 10min
+  rocket_lebanon:    { animMin:800,  animMax:1500, repeatMs:5000,  maxMs:180000  }, // 3min
+  rocket_gaza:       { animMin:500,  animMax:1000, repeatMs:3000,  maxMs:120000  }, // 2min
+  uav_yemen:         { animMin:6000, animMax:10000,repeatMs:60000, maxMs:32400000},// 9hr (but we cap display)
+  uav_iran:          { animMin:5000, animMax:8000, repeatMs:45000, maxMs:7200000 }, // 2hr
+  default:           { animMin:3000, animMax:5000, repeatMs:20000, maxMs:600000  }, // 10min fallback
+};
+
+function detectThreatType(alerts, source) {
+  // Check Oref category + OSINT text to determine weapon type
+  const orefCats = (alerts || []).map(a => parseInt(a.cat || 0)).filter(c => c > 0);
+  const recentText = (window._osintEvents || [])
+    .filter(e => e.timestamp && (Date.now()/1000 - e.timestamp) < 900)
+    .map(e => (e.text || '').toLowerCase()).join(' ');
+  const orefText = (alerts || []).map(a => `${a.title||''} ${a.desc||''}`).join(' ').toLowerCase();
+  const allText = recentText + ' ' + orefText;
+
+  const hasUav = /uav|drone|כטב|מזל"ט|shahed|samad/i.test(allText) || orefCats.includes(6);
+  const hasCruise = /cruise|soumar|hoveyz|טיל שיוט/i.test(allText);
+  const hasRocket = /rocket|רקט|qassam|katyusha|grad/i.test(allText);
+
+  if (hasUav) return `uav_${source === 'yemen' ? 'yemen' : 'iran'}`;
+  if (hasCruise) return `cruise_iran`;
+  if (hasRocket && (source === 'gaza' || source === 'lebanon')) return `rocket_${source}`;
+  if (source === 'iraq') return 'ballistic_iraq';
+  return `ballistic_${source === 'iran' ? 'iran' : 'default'}`;
+}
+
 let _lastBarrageTs = 0;
+let _barrageTimer = null;
+let _barrageShutoffTimer = null;
+
 function maybeFireBarrage(alerts) {
-  if (!alerts || alerts.length === 0) return;
+  if (!alerts || alerts.length === 0) {
+    // Sirens cleared — stop any ongoing barrage
+    clearBarrage();
+    return;
+  }
   const now = Date.now();
-  if (now - _lastBarrageTs < 60000) return; // Max once per minute
+  if (now - _lastBarrageTs < 30000) return; // Debounce 30s
   _lastBarrageTs = now;
+
+  const source = detectLaunchSource();
+  const threatType = detectThreatType(alerts, source);
+  const profile = THREAT_PROFILES[threatType] || THREAT_PROFILES.default;
 
   // Geocode alert areas to targets
   const targets = [];
@@ -2392,9 +2437,38 @@ function maybeFireBarrage(alerts) {
       }
     }
   });
-  if (targets.length > 0) {
-    const source = detectLaunchSource();
-    fireBallisticBarrage(targets, source);
+  if (targets.length === 0) return;
+
+  // Clear any existing barrage timers
+  clearBarrage();
+
+  // Fire initial salvo
+  fireBallisticBarrage(targets, source, profile);
+
+  // For sustained attacks, repeat at interval (new waves)
+  if (profile.repeatMs && profile.repeatMs < profile.maxMs) {
+    _barrageTimer = setInterval(() => {
+      fireBallisticBarrage(targets, source, profile);
+    }, profile.repeatMs);
+  }
+
+  // Auto-shutoff based on threat type
+  const shutoffMs = Math.min(profile.maxMs, 900000); // Cap at 15min display regardless
+  _barrageShutoffTimer = setTimeout(() => {
+    clearBarrage();
+  }, shutoffMs);
+}
+
+function clearBarrage() {
+  if (_barrageTimer) { clearInterval(_barrageTimer); _barrageTimer = null; }
+  if (_barrageShutoffTimer) { clearTimeout(_barrageShutoffTimer); _barrageShutoffTimer = null; }
+  // Fade out remaining SVG elements
+  if (_ballisticSvg && _ballisticSvg.children.length > 0) {
+    _ballisticSvg.style.transition = 'opacity 2s';
+    _ballisticSvg.style.opacity = '0';
+    setTimeout(() => {
+      if (_ballisticSvg) { _ballisticSvg.innerHTML = ''; _ballisticSvg.style.opacity = '1'; }
+    }, 2000);
   }
 }
 
