@@ -1961,8 +1961,16 @@ function loadFIRMS() {
         const frp = f.frp ? `FRP: ${f.frp.toFixed(1)} MW` : '';
         const conf = f.confidence ? `Confidence: ${f.confidence}` : '';
         const sat = f.sat ? `Satellite: ${f.sat}` : '';
-        const acq = f.acq ? `Acquired: ${f.acq} UTC` : '';
-        const details = [conf, frp, sat, acq].filter(Boolean).join('<br>');
+        let acqLabel = '';
+        if (f.acq) {
+          const ap = f.acq.split(' ');
+          if (ap.length === 2) {
+            const hm = ap[1].padStart(4,'0');
+            const d = new Date(ap[0] + 'T' + hm.slice(0,2) + ':' + hm.slice(2) + ':00Z');
+            if (!isNaN(d)) acqLabel = 'Detected: ' + d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}) + ' UTC';
+          }
+        }
+        const details = [conf, frp, sat, acqLabel].filter(Boolean).join('<br>');
         markers.push(fireCircleMarker(f.lat, f.lon, frpVal, {
           title: '🔥 Fire Hotspot', sub: details, details: ''
         }));
