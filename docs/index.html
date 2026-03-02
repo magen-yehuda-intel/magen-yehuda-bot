@@ -251,7 +251,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   cursor:pointer; border-left:2px solid transparent; transition:all 0.15s;
 }
 .sb-row:hover { background:rgba(255,255,255,0.02); border-left-color:rgba(255,255,255,0.08); }
-.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; transition:opacity 0.2s; }
+.sb-row.off .sb-dot { opacity:0.2; }
+.sb-row.off .sb-row-name { opacity:0.4; }
+.sb-row.off .sb-row-count { opacity:0.3; }
 .sb-row-name { flex:1; font-size:12px; }
 .sb-row-count { font-family:var(--font-data); font-size:11px; color:var(--text-dim); }
 .sb-actions {
@@ -881,22 +884,22 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div id="tab-layers">
     <div class="sb-search"><input type="text" placeholder="Search layers..." oninput="filterSidebarLayers(this.value)"></div>
     <div class="sb-section-title us">US FORCES</div>
-    <div class="sb-row" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
-    <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
+    <div class="sb-row" data-sb="military" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
+    <div class="sb-row" data-sb="ships" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
     <div class="sb-section-title iran">IRAN / ADVERSARY</div>
-    <div class="sb-row" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
+    <div class="sb-row" data-sb="nuclear" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
+    <div class="sb-row" data-sb="missiles" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
+    <div class="sb-row" data-sb="naval" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
+    <div class="sb-row" data-sb="ad" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
+    <div class="sb-row" data-sb="airbases" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
+    <div class="sb-row" data-sb="irgc" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
+    <div class="sb-row" data-sb="energy" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
-    <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
-    <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
-    <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
+    <div class="sb-row" data-sb="sirens" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
+    <div class="sb-row" data-sb="waterways" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" data-sb="patrol" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" data-sb="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" data-sb="osint" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
       <div class="sb-action-btn" onclick="showUSOnly()" style="border-color:rgba(59,130,246,0.3);color:#60a5fa">US Forces Only</div>
@@ -1152,6 +1155,14 @@ const activeState = {
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
 // ═══════════════════════════════════════════════════════════
+function syncSidebarState() {
+  document.querySelectorAll('.sb-row[data-sb]').forEach(row => {
+    const key = row.dataset.sb;
+    const isOn = activeState[key];
+    row.classList.toggle('off', !isOn);
+  });
+}
+
 function toggleLayer(name) {
   if (!layers[name]) return;
   activeState[name] = !activeState[name];
@@ -1161,6 +1172,7 @@ function toggleLayer(name) {
   if (btn) btn.classList.toggle('active', activeState[name]);
   updateMobileButtons();
   updateLayerCount();
+  syncSidebarState();
 }
 
 function isolateIranLayer(name) {
@@ -1168,6 +1180,7 @@ function isolateIranLayer(name) {
   activeState[name] = !activeState[name];
   if (activeState[name]) layers[name].addTo(map); else map.removeLayer(layers[name]);
   updateLayerCount();
+  syncSidebarState();
 }
 
 function toggleSidebar() {
@@ -1478,7 +1491,7 @@ function showAllLayers() {
     const btn = document.querySelector(`.tb-btn[data-layer="${k}"]`);
     if (btn) btn.classList.add('active');
   });
-  updateLayerCount();
+  updateLayerCount(); syncSidebarState();
 }
 
 function showUSOnly() {
@@ -1487,7 +1500,7 @@ function showUSOnly() {
   document.querySelectorAll('.tb-btn').forEach(b => {
     b.classList.toggle('active', activeState[b.dataset.layer] || false);
   });
-  updateLayerCount();
+  updateLayerCount(); syncSidebarState();
 }
 
 function showIranOnly() {
@@ -1498,7 +1511,7 @@ function showIranOnly() {
   document.querySelectorAll('.tb-btn').forEach(b => {
     b.classList.toggle('active', activeState[b.dataset.layer] || false);
   });
-  updateLayerCount();
+  updateLayerCount(); syncSidebarState();
 }
 
 function switchTab(tab) {
@@ -1699,8 +1712,9 @@ function renderAllLayers() {
   const totalAssets = V2_DATA.US_BASES.length + V2_DATA.IRAN_NUCLEAR.length + V2_DATA.IRAN_MISSILES.length +
     V2_DATA.IRAN_NAVAL.length + V2_DATA.IRAN_AIRDEFENSE.length + V2_DATA.IRAN_AIRBASES.length +
     V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length;
-  document.getElementById('asset-count').textContent = totalAssets;
+    document.getElementById('asset-count').textContent = totalAssets;
   document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
+  syncSidebarState();
 }
 
 // ═══════════════════════════════════════════════════════════
