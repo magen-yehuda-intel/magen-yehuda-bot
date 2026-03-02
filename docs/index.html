@@ -896,8 +896,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="gpsjam" data-color="red" onclick="toggleLayer('gpsjam')">
     <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
-  <div class="tb-btn" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')" oncontextmenu="event.preventDefault();cycleFireRange(this)">
-    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fires (24h) — right-click to change</div>
+  <div class="tb-btn" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
+    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fires (2h)</div>
   </div>
   <div class="tb-btn" data-layer="seismic" data-color="amber" onclick="toggleLayer('seismic');loadSeismic()">
     <span>🌋</span><div class="tb-tooltip">USGS Seismic (M2.5+)</div>
@@ -1231,9 +1231,9 @@ const activeState = {
 // TOGGLE FUNCTIONS
 // ═══════════════════════════════════════════════════════════
 // Fire time range — independent of global time filter
-const FIRE_RANGES = [1, 4, 12, 24];
-let _fireRangeIdx = 3; // default 24h
-let _fireHours = 24;
+const FIRE_RANGES = [2];
+let _fireRangeIdx = 0;
+let _fireHours = 2;
 function cycleFireRange(btn) {
   _fireRangeIdx = (_fireRangeIdx + 1) % FIRE_RANGES.length;
   _fireHours = FIRE_RANGES[_fireRangeIdx];
