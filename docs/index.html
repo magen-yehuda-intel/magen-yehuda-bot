@@ -766,6 +766,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn" data-mt="waterways" onclick="mtToggle('waterways',this)">🌊</div>
   <div class="mt-sep"></div>
   <div class="mt-btn" onclick="demoBarrage()" title="Simulate missile barrage" style="border-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.15)">🚀</div>
+  <div class="mt-btn" onclick="map.setView([28,52],5)" title="Reset view">🏠</div>
   <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
   <div class="mt-btn" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
@@ -848,6 +849,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="osint" data-color="red" onclick="toggleLayer('osint')">
   <div class="tb-btn" data-color="red" onclick="demoBarrage()" style="border-color:rgba(239,68,68,0.5)">
     <span>🚀</span><div class="tb-tooltip">Demo Barrage (Iran→Israel)</div>
+  </div>
+  <div class="tb-btn" onclick="map.setView([28,52],5)" style="border-color:rgba(255,255,255,0.2)">
+    <span>🏠</span><div class="tb-tooltip">Reset View</div>
   </div>
     <span>📌</span><div class="tb-tooltip">OSINT Events</div>
   </div>
