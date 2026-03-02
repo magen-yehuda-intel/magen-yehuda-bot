@@ -1666,6 +1666,7 @@ function renderAllLayers() {
   // ─── COUNTRY BORDERS ───
   fetch(NE_COUNTRIES).then(r => r.json()).then(geo => {
     L.geoJSON(geo, {
+      interactive: false,
       style: feature => {
         const name = (feature.properties.ADMIN || feature.properties.NAME || feature.properties.name || '').toLowerCase();
         const iso = (feature.properties.ISO_A2 || feature.properties.ISO_A3 || '').toUpperCase();
@@ -1675,10 +1676,6 @@ function renderAllLayers() {
         else if (['SA','AE','QA','BH','KW','OM','JO','IQ'].includes(iso)) { fillColor = '#3b82f6'; fillOpacity = 0.03; color = 'rgba(59,130,246,0.3)'; weight = 1; }
         else if (['SY','YE','LB'].includes(iso)) { fillColor = '#ef4444'; fillOpacity = 0.05; color = 'rgba(239,68,68,0.3)'; weight = 1; }
         return { fillColor, fillOpacity, color, weight, className: 'neon-glow' };
-      },
-      onEachFeature: (feature, layer) => {
-        const name = feature.properties.ADMIN || feature.properties.NAME || '';
-        if (name) layer.bindTooltip(name, { sticky: true, className: 'country-tooltip' });
       }
     }).addTo(layers.borders);
   }).catch(e => console.warn('Borders load failed:', e));
