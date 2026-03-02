@@ -1196,7 +1196,7 @@ Primary data store for intel events. Practically free (~$0.01/month).
 
 ## Troubleshooting
 
-### Known Issues & Fixes (Feb 2026)
+### Known Issues & Fixes (Feb–Mar 2026)
 
 | Issue | Root Cause | Fix |
 |-------|-----------|-----|
@@ -1210,6 +1210,15 @@ Primary data store for intel events. Practically free (~$0.01/month).
 | Duplicate threat level alerts on restart | Watcher initialized `THREAT_LEVEL=GREEN` on every start, then detected stale `OREF_LAST` → spammed GREEN→CRITICAL | Fixed: watcher reads `watcher-threat-level.txt` on startup to restore last known level |
 | Hebrew channel missing some content types | Hebrew output had explicit content allowlist — new event types silently dropped | Switched to `content: ["all"]` + `content_exclude: ["summary_en"]`; added `content_exclude` support to `dispatch.py` |
 | OSINT scan "still running" skips | Slow proxy causes scan to exceed cycle interval → lock file blocks next scan | Stale locks auto-break at 120s; check proxy latency if persistent |
+| Literal `\u200F` in Telegram messages | macOS bash 3.2 doesn't support `\u` escapes in `$'...'` syntax | Use `RLM=$(printf '\xe2\x80\x8f')` variable; Python files are fine |
+| FIRMS time filter shows 0 or all fires | `acq` format is `YYYY-MM-DD HHMM` (no colon, 3-4 digit time) — `new Date()` returns NaN | Parse manually: pad to 4 digits, build ISO. Also: satellites pass few times/day so short time windows show 0 |
+| 4800+ fire markers clutter map | Most are agricultural/brush fires | Filter by FRP intensity (>10MW) instead of time window |
+| Threat indicator stuck at HIGH | Watcher died, API cached stale level | Push correct level via `/api/push/threat`; indicator now hidden when GREEN |
+| Ballistic arcs flicker/disappear | Each arc faded independently — some faded while others still launching | Moved cleanup to barrage level; ALL arcs fade together after last missile lands |
+| Ballistic arcs look like growing arrows | Progressive `strokeDashoffset` reveal | Draw full arc instantly, no progressive reveal |
+| Azure Container App `latest` tag no-op | `latest` doesn't trigger new revision | Use explicit versioned tags (e.g. `v17`) |
+| DB query returns stale events | Azure Table returns by RowKey (hash), early `break` at limit grabbed random old rows | Collect ALL matching, sort by `ts` desc, THEN limit |
+| Duplicate DB rows from re-scraping | `_row_key()` included `ts` in hash | Use `src + text[:60]` only |
 
 ### Debugging Tips
 
