@@ -205,7 +205,7 @@ $old_emoji $old_level → $new_emoji $new_level
     
     # Immediately update pinned status on threat level change
     log "📌 Immediate pinned status update (threat → $new_level)"
-    python3 "$SKILL_DIR/scripts/pinned-status.py" "$CONFIG_FILE" "$STATE_DIR" 2>/dev/null
+    python3 "$SKILL_DIR/scripts/pinned-status.py" "$CONFIG_FILE" "$STATE_DIR" >/dev/null 2>&1
     LAST_PINNED_UPDATE=$(date +%s)
 
     # Push threat level to cloud API
@@ -1711,7 +1711,7 @@ while true; do
 
   # Update pinned live status message
   if [ $((NOW - LAST_PINNED_UPDATE)) -ge $PINNED_UPDATE_INTERVAL ]; then
-    python3 "$SKILL_DIR/scripts/pinned-status.py" "$CONFIG_FILE" "$STATE_DIR" 2>/dev/null
+    python3 "$SKILL_DIR/scripts/pinned-status.py" "$CONFIG_FILE" "$STATE_DIR" >/dev/null 2>&1
     LAST_PINNED_UPDATE=$NOW
   fi
 
