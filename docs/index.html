@@ -896,8 +896,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="gpsjam" data-color="red" onclick="toggleLayer('gpsjam')">
     <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
-  <div class="tb-btn" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
-    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fire Hotspots</div>
+  <div class="tb-btn" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')" oncontextmenu="event.preventDefault();cycleFireRange(this)">
+    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fires (24h) — right-click to change</div>
   </div>
   <div class="tb-btn" data-layer="seismic" data-color="amber" onclick="toggleLayer('seismic');loadSeismic()">
     <span>🌋</span><div class="tb-tooltip">USGS Seismic (M2.5+)</div>
@@ -1230,6 +1230,22 @@ const activeState = {
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
 // ═══════════════════════════════════════════════════════════
+// Fire time range — independent of global time filter
+const FIRE_RANGES = [1, 4, 12, 24];
+let _fireRangeIdx = 3; // default 24h
+let _fireHours = 24;
+function cycleFireRange(btn) {
+  _fireRangeIdx = (_fireRangeIdx + 1) % FIRE_RANGES.length;
+  _fireHours = FIRE_RANGES[_fireRangeIdx];
+  const label = `FIRMS Fires (${_fireHours}h) — right-click to change`;
+  const tt = document.getElementById('tt-fires');
+  if (tt) tt.textContent = label;
+  const tbTip = document.getElementById('tb-tip');
+  if (tbTip && tbTip.classList.contains('show')) tbTip.textContent = label;
+  // Reload fires with new range
+  if (activeState.fires) loadFIRMS();
+}
+
 // Borders 3-state cycle: borders only → borders+names → off
 let _borderState = 0; // 0=borders, 1=borders+names, 2=off
 function cycleBorders(btn) {
@@ -1916,7 +1932,7 @@ function loadFIRMS() {
   // Primary: /api/fires (real-time FIRMS, 4 satellites)
   // Fallback: intel-feed fire events
   const apiUrl = API_URL ? `${API_URL}/api/fires` : null;
-  const cutoffMs = feedTimeHours > 0 ? Date.now() - (feedTimeHours * 3600000) : 0;
+  const cutoffMs = _fireHours > 0 ? Date.now() - (_fireHours * 3600000) : 0;
   const loadFromApi = apiUrl ? fetch(apiUrl).then(r=>r.ok?r.json():null).catch(()=>null) : Promise.resolve(null);
   loadFromApi.then(apiData => {
     layers.fires.clearLayers();
@@ -1953,7 +1969,7 @@ function loadFIRMS() {
         all.filter(e=>{
           const t=(e.sub_event_type||e.type||'').toLowerCase();
           if(!t.includes('fire')&&!t.includes('firms')) return false;
-          if(feedTimeHours>0 && e.timestamp && (nowS - e.timestamp) > feedTimeHours*3600) return false;
+          if(_fireHours>0 && e.timestamp && (nowS - e.timestamp) > _fireHours*3600) return false;
           return true;
         })
         .forEach(f=>{
