@@ -2928,6 +2928,17 @@ function pollThreat() {
 pollThreat();
 setInterval(pollThreat, 30000);
 
+// Pause polling when tab is hidden (saves mobile battery + bandwidth)
+let _pollsPaused = false;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { _pollsPaused = true; }
+  else { _pollsPaused = false; pollOref(); pollThreat(); loadFeed(); loadTicker(); }
+});
+// Wrap existing intervals to respect visibility
+const _origPollOref = pollOref, _origPollThreat = pollThreat;
+pollOref = () => { if (!_pollsPaused) _origPollOref(); };
+pollThreat = () => { if (!_pollsPaused) _origPollThreat(); };
+
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
   // Don't fire shortcuts when typing in inputs

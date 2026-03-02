@@ -12,6 +12,7 @@ RowKey: hash of (src + text + ts) for dedup
 import os
 import hashlib
 import json
+import math
 import time
 
 TABLE_NAME = "intelevents"
@@ -433,7 +434,6 @@ def correlate_strike_indicators(hours=1, radius_km=50):
     Returns list of correlation objects.
     """
     try:
-        import math
 
         def haversine(lat1, lon1, lat2, lon2):
             R = 6371

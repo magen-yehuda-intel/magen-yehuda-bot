@@ -35,7 +35,10 @@ else:
 BOT_TOKEN=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_bot_token',''))" 2>/dev/null || echo "")
 CHAT_ID=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_chat_id',''))" 2>/dev/null || echo "")
 CHANNEL_NAME=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_channel_name','Alert Monitor'))" 2>/dev/null || echo "Alert Monitor")
-PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('push_api_key','myi-fcf15b5484f76e9b'))" 2>/dev/null || echo "myi-fcf15b5484f76e9b")
+PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); k=c.get('push_api_key',''); print(k) if k else exit(1)" 2>/dev/null)
+if [ -z "$PUSH_API_KEY" ]; then
+  log "⚠️  WARNING: push_api_key not found in config — API push disabled"
+fi
 GEMINI_API_KEY="${GEMINI_API_KEY:-$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('gemini_api_key',''))" 2>/dev/null || echo "")}"
 
 # Proxy for Oref: try direct first, fall back to VPN proxy if configured
@@ -88,6 +91,14 @@ if [ -f "$STATE_DIR/watcher-threat-level.txt" ]; then
   esac
 fi
 THREAT_FILE="$STATE_DIR/watcher-threat-level.txt"
+# Set numeric score matching current level
+case "$THREAT_LEVEL" in
+  GREEN)    THREAT_SCORE=0 ;;
+  ELEVATED) THREAT_SCORE=25 ;;
+  HIGH)     THREAT_SCORE=75 ;;
+  CRITICAL) THREAT_SCORE=100 ;;
+  *)        THREAT_SCORE=0 ;;
+esac
 LAST_SIREN_TIME=0        # epoch of most recent siren
 LAST_SIREN_CRITICAL=0    # epoch of most recent CRITICAL-trigger siren
 ESCALATION_COOLDOWN=600  # 10min before stepping down from HIGH/CRIT
@@ -166,6 +177,14 @@ set_threat_level() {
   if [ "$new_level" != "$THREAT_LEVEL" ]; then
     local old_level="$THREAT_LEVEL"
     THREAT_LEVEL="$new_level"
+    # Set numeric score for API
+    case "$THREAT_LEVEL" in
+      GREEN)    THREAT_SCORE=0 ;;
+      ELEVATED) THREAT_SCORE=25 ;;
+      HIGH)     THREAT_SCORE=75 ;;
+      CRITICAL) THREAT_SCORE=100 ;;
+      *)        THREAT_SCORE=0 ;;
+    esac
     echo "$THREAT_LEVEL" > "$THREAT_FILE"
     get_threat_intervals
 
@@ -440,7 +459,7 @@ Pikud HaOref is no longer broadcasting new alerts.
     fi
     echo "" > "$OREF_LAST"
     # Push clear to API
-    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d "{"alerts":[]}" >/dev/null 2>&1 &
+    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d '{"alerts":[]}' >/dev/null 2>&1 &
     return
   fi
 
@@ -597,7 +616,7 @@ ${details}
     # Clear OREF_LAST so evaluate_threat_level doesn't think sirens are active
     echo "" > "$OREF_LAST"
     # Push clear to API
-    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d "{"alerts":[]}" >/dev/null 2>&1 &
+    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d '{"alerts":[]}' >/dev/null 2>&1 &
     return
   fi
 

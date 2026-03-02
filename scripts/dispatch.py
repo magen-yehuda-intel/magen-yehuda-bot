@@ -77,27 +77,30 @@ def image_rank(importance: str) -> int:
 
 # ─── Telegram delivery ───
 
-def send_telegram_text(bot_token: str, chat_id: str, text: str) -> bool:
-    """Send an HTML text message to Telegram."""
+def send_telegram_text(bot_token: str, chat_id: str, text: str, retries: int = 1) -> bool:
+    """Send an HTML text message to Telegram. Retries on failure."""
     if not text or not text.strip():
         return False
-    try:
-        data = urllib.parse.urlencode({
-            "chat_id": chat_id,
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": "true",
-        }).encode()
-        req = urllib.request.Request(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            data=data,
-        )
-        resp = urllib.request.urlopen(req, timeout=15)
-        result = json.loads(resp.read())
-        return result.get("ok", False)
-    except Exception as e:
-        print(f"  ⚠️  Telegram text send failed ({chat_id}): {e}", file=sys.stderr)
-        return False
+    for attempt in range(retries + 1):
+        try:
+            data = urllib.parse.urlencode({
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": "true",
+            }).encode()
+            req = urllib.request.Request(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                data=data,
+            )
+            resp = urllib.request.urlopen(req, timeout=15)
+            result = json.loads(resp.read())
+            return result.get("ok", False)
+        except Exception as e:
+            print(f"  ⚠️  Telegram text send failed ({chat_id}, attempt {attempt+1}/{retries+1}): {e}", file=sys.stderr)
+            if attempt < retries:
+                import time as _time; _time.sleep(2 ** attempt)
+    return False
 
 
 def send_telegram_photo(bot_token: str, chat_id: str, photo_path: str, caption: str = "") -> bool:
@@ -345,19 +348,20 @@ class Dispatcher:
                 if ok:
                     sent = True
 
-            # Send text
+            # Send text (retry on HIGH/CRITICAL)
+            _retries = 2 if severity in ("HIGH", "CRITICAL") else 0
             if lang == "both":
                 # Send both languages as separate messages
                 if text_he:
-                    ok = send_telegram_text(self.bot_token, chat_id, text_he)
+                    ok = send_telegram_text(self.bot_token, chat_id, text_he, retries=_retries)
                     sent = sent or ok
                 if text_en:
-                    ok = send_telegram_text(self.bot_token, chat_id, text_en)
+                    ok = send_telegram_text(self.bot_token, chat_id, text_en, retries=_retries)
                     sent = sent or ok
             else:
                 text = pick_text(output, text_he, text_en)
                 if text:
-                    ok = send_telegram_text(self.bot_token, chat_id, text)
+                    ok = send_telegram_text(self.bot_token, chat_id, text, retries=_retries)
                     sent = sent or ok
 
             # Send GIF if applicable
