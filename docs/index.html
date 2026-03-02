@@ -823,22 +823,23 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="mobile-toolbar">
   <div class="mt-btn" onclick="toggleSidebar()">☰</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn active" data-mt="borders" onclick="mtToggle('borders',this)">🗺</div>
+  <div class="mt-btn active" data-mt="borders" onclick="cycleBorders(this)">🗺</div>
+  <div class="mt-btn active" data-mt="countryNames" onclick="mtToggle('countryNames',this)">🔤</div>
   <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">🎖️</div>
   <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
   <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
   <div class="mt-btn" data-mt="patrol" onclick="mtToggle('patrol',this)">🛩</div>
   <div class="mt-btn" data-mt="waterways" onclick="mtToggle('waterways',this)">🌊</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn" onclick="demoBarrage()" title="Simulate missile barrage" style="border-color:rgba(239,68,68,0.6);background:rgba(239,68,68,0.15)">🚀</div>
-  <div class="mt-btn" onclick="map.setView([28,52],5)" title="Reset view">🏠</div>
   <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
   <div class="mt-btn" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
+  <div class="mt-btn active" data-mt="nuclear" onclick="mtToggle('nuclear',this)">☢️</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
   <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
-  <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
+  <div class="mt-btn" onclick="map.setView([28,52],5)" title="Reset view">🏠</div>
+  <div class="mt-btn" onclick="toggleLegend()">📋</div>
+  <div class="mt-btn" onclick="map.locate({setView:true,maxZoom:8})">📍</div>
 </div>
 
 <!-- PIKUD HAOREF BANNER -->
@@ -1080,10 +1081,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
   <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>🎖️</span>BASES</button>
-  <button class="mob-btn" onclick="toggleFeed()"><span>📋</span>INTEL</button>
+  <button class="mob-btn" onclick="mobileQuickToggle('sirens')"><span>🚨</span>SIRENS</button>
   <button class="mob-btn" onclick="mobileQuickToggle('fires')"><span>🔥</span>FIRES</button>
   <button class="mob-btn" onclick="mobileQuickToggle('osint')"><span>📌</span>OSINT</button>
-  <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
+  <button class="mob-btn" onclick="mobileQuickToggle('nuclear')"><span>☢️</span>NUKES</button>
 </div>
 
 <!-- SVG FILTER for neon glow -->
@@ -2251,7 +2252,7 @@ function mtToggle(name, el) {
   toggleLayer(name);
   // Update mobile toolbar button styling
   if (!el) return;
-  const colorMap = { sirens:'active-red', fires:'active-orange', osint:'active-red', military:'active', borders:'active', sam:'active-amber', patrol:'active-green', waterways:'active', aircraft:'active-green', ships:'active', infra:'active-orange', gpsjam:'active-red' };
+  const colorMap = { sirens:'active-red', fires:'active-orange', osint:'active-red', military:'active', borders:'active', sam:'active-amber', patrol:'active-green', waterways:'active', aircraft:'active-green', ships:'active', infra:'active-orange', gpsjam:'active-red', nuclear:'active', countryNames:'active' };
   const cls = colorMap[name] || 'active';
   if (activeState[name]) { el.classList.add(cls); } else { el.classList.remove(cls,'active','active-red','active-orange','active-amber','active-green'); }
 }
