@@ -2,6 +2,8 @@
 # Real-time watcher daemon for Pikud HaOref sirens + Polymarket spikes + Twitter OSINT
 # Features adaptive threat-level system: polling frequency scales with danger.
 # Designed to run as a background process. Use ctl.sh start/stop to manage.
+# RTL mark (U+200F) — bash 3.2 on macOS doesn't support 
+RLM=$(printf '\xe2\x80\x8f')
 
 SKILL_DIR="${SKILL_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
 CONFIG_FILE="$SKILL_DIR/config.json"
@@ -191,15 +193,15 @@ $old_emoji $old_level → $new_emoji $new_level
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     local threat_msg_he
-    threat_msg_he=$'\u200F'"$new_emoji <b>רמת איום: $new_he</b>
-"$'\u200F'"━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"$'\u200F'"⏱️ $(TZ="$DISPLAY_TZ_HE" date '+%H:%M:%S %Z')
-"$'\u200F'"$old_emoji $old_he → $new_emoji $new_he
+    threat_msg_he="${RLM}${new_emoji} <b>רמת איום: ${new_he}</b>
+${RLM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${RLM}⏱️ $(TZ="$DISPLAY_TZ_HE" date '+%H:%M:%S %Z')
+${RLM}${old_emoji} ${old_he} → ${new_emoji} ${new_he}
 
-"$'\u200F'"📋 <i>$reason_hebrew</i>
+${RLM}📋 <i>${reason_hebrew}</i>
 
-"$'\u200F'"⚡ תדירות סריקה עודכנה
-"$'\u200F'"━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+${RLM}⚡ תדירות סריקה עודכנה
+${RLM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     emit_alert "threat_change" "HIGH" "$threat_msg_he" "$threat_msg_en"
     

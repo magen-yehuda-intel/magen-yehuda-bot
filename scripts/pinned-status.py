@@ -274,7 +274,7 @@ def generate_status_he(config, state):
     on = "✅" if w else "❌"
     siren_str = state["last_siren"] or "אין"
 
-    # U+200F RIGHT-TO-LEFT MARK forces RTL on every line
+    # Right-to-Left Mark
     R = "\u200F"
     return f"""{R}🛡 <b>מגן יהודה</b> 🛡
 {R}<i>מערכת מודיעין בזמן אמת</i>
