@@ -1098,7 +1098,24 @@ const layers = {
   sam: L.layerGroup(),
   waterways: L.layerGroup(),
   patrol: L.layerGroup(),
-  fires: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, iconCreateFunction: iranClusterIcon }),
+  fires: L.markerClusterGroup({
+    maxClusterRadius: 60,
+    disableClusteringAtZoom: 10,
+    chunkedLoading: true,
+    chunkInterval: 100,
+    chunkDelay: 10,
+    animate: false,
+    spiderfyOnMaxZoom: false,
+    iconCreateFunction: function(cluster) {
+      const count = cluster.getChildCount();
+      const sz = count > 200 ? 'large' : count > 50 ? 'medium' : 'small';
+      return L.divIcon({
+        html: `<div style="background:rgba(255,100,0,0.85);border:2px solid #ff4400;color:#fff;font-weight:bold;text-shadow:0 1px 2px #000;border-radius:50%;display:flex;align-items:center;justify-content:center;width:100%;height:100%">${count > 999 ? Math.round(count/100)/10+'k' : count}</div>`,
+        className: `marker-cluster marker-cluster-${sz}`,
+        iconSize: L.point(sz==='large'?50:sz==='medium'?40:30, sz==='large'?50:sz==='medium'?40:30)
+      });
+    }
+  }),
   osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7 }),
   sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7, iconCreateFunction: sirenClusterIcon }),
   labels: L.layerGroup(),
@@ -1731,6 +1748,7 @@ function loadFIRMS() {
     layers.fires.clearLayers();
     let count = 0;
     if (apiData && apiData.fires && apiData.fires.length > 0) {
+      const markers = [];
       apiData.fires.forEach(f => {
         if (!f.lat || !f.lon) return;
         // Time filter: parse acquisition time if available
@@ -1744,10 +1762,11 @@ function loadFIRMS() {
         const sat = f.sat ? `Satellite: ${f.sat}` : '';
         const acq = f.acq ? `Acquired: ${f.acq} UTC` : '';
         const details = [conf, frp, sat, acq].filter(Boolean).join('<br>');
-        mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
+        markers.push(mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 16,
           mkPopup('🔥 Fire Hotspot', details, '', '#ff8800')
-        ).addTo(layers.fires);
+        ));
       });
+      layers.fires.addLayers(markers);  // Batch add — much faster with chunkedLoading
     } else {
       // Fallback to intel-feed fire events
       const feedUrl = dataUrl('intel-feed');
