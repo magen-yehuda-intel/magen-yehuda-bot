@@ -2339,11 +2339,17 @@ function updateOrefBanner(alerts, serverTs, note) {
     } else {
       banner.classList.remove('alert-active');
       status.className = 'oref-status safe';
-      status.textContent = note && note.includes('cached') ? 'No active alerts (cached)' : 'No active alerts in Israel.';
-      window._lastOrefAlertTime = null;
+      if (window._lastOrefAlertTitle && window._lastOrefAlertTime) {
+        const minsAgo = Math.round((Date.now() - window._lastOrefAlertTime) / 60000);
+        const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : `${Math.floor(minsAgo/60)}h ${minsAgo%60}m ago`;
+        status.textContent = `No active alerts (last: ${window._lastOrefAlertTitle} · ${timeStr})`;
+      } else {
+        status.textContent = 'No active alerts in Israel.';
+      }
     }
   } else {
     window._lastOrefAlertTime = Date.now();
+    window._lastOrefAlertTitle = alerts[0].title || 'Alert';
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
     const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
