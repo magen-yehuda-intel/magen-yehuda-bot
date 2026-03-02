@@ -2356,6 +2356,10 @@ function getBallisticSvg() {
     svg.style.width = container.offsetWidth + 'px';
     svg.style.height = container.offsetHeight + 'px';
   });
+  // Clear missiles on zoom/pan — pixel coords become stale
+  map.on('zoomstart movestart', () => {
+    svg.innerHTML = '';
+  });
   return svg;
 }
 
