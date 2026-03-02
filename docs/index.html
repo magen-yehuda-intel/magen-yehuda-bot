@@ -2757,6 +2757,7 @@ function pollThreat() {
     document.getElementById('threat-icon').textContent = icon;
     document.getElementById('threat-label').textContent = level;
     el.className = 'threat-' + level.toLowerCase();
+    el.style.display = level === 'GREEN' ? 'none' : '';
     // Store AI classification if present
     if (d.attack_class && d.attack_class.source && d.attack_class.source !== 'unknown') {
       _attackClass = d.attack_class;
