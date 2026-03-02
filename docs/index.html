@@ -2453,12 +2453,16 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
         smoke.setAttribute('class','smoke-ring');
         g.appendChild(smoke);
 
-        // Fade out entire group after impact
+        // Fade trails over 60s then remove
         setTimeout(() => {
-          g.style.transition = 'opacity 2s';
-          g.style.opacity = '0';
-          setTimeout(() => g.remove(), 2000);
-        }, 2000);
+          g.style.transition = 'opacity 30s ease-in';
+          g.style.opacity = '0.15';
+          setTimeout(() => {
+            g.style.transition = 'opacity 15s';
+            g.style.opacity = '0';
+            setTimeout(() => g.remove(), 15000);
+          }, 30000);
+        }, 15000);
       }
     }
     requestAnimationFrame(tick);
