@@ -2092,8 +2092,8 @@ pollOref();
 updateLayerCount();
 updateMobileButtons();
 
-// Auto-open live feed on load
-setTimeout(() => toggleFeed(), 500);
+// Auto-open live feed on load + preload data
+setTimeout(() => { loadFeed(); toggleFeed(); }, 500);
 
 // ═══════════════════════════════════════════════════════════
 // NEWS TICKER
@@ -2269,10 +2269,11 @@ function pollOref() {
     orefAlerts = alerts;
     updateOrefBanner(alerts, data.timestamp, data.note);
   }).catch(() => {
-    // No data available yet
+    // Retry after 5s on failure
     const status = document.getElementById('oref-status');
     status.className = 'oref-status safe';
-    status.textContent = 'Waiting for data feed...';
+    status.textContent = 'Connecting to Pikud HaOref...';
+    setTimeout(pollOref, 5000);
   });
 }
 
