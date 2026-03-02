@@ -847,16 +847,16 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>🛰</span><div class="tb-tooltip">Recon Satellites</div>
   </div>
   <div class="tb-btn active" data-layer="osint" data-color="red" onclick="toggleLayer('osint')">
+    <span>📌</span><div class="tb-tooltip">OSINT Events</div>
+  </div>
+  <div class="tb-btn active" data-layer="sirens" data-color="red" onclick="toggleLayer('sirens')">
+    <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
+  </div>
   <div class="tb-btn" data-color="red" onclick="demoBarrage()" style="border-color:rgba(239,68,68,0.5)">
     <span>🚀</span><div class="tb-tooltip">Demo Barrage (Iran→Israel)</div>
   </div>
   <div class="tb-btn" onclick="map.setView([28,52],5)" style="border-color:rgba(255,255,255,0.2)">
     <span>🏠</span><div class="tb-tooltip">Reset View</div>
-  </div>
-    <span>📌</span><div class="tb-tooltip">OSINT Events</div>
-  </div>
-  <div class="tb-btn active" data-layer="sirens" data-color="red" onclick="toggleLayer('sirens')">
-    <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
