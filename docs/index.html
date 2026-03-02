@@ -757,7 +757,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn" onclick="toggleSidebar()">☰</div>
   <div class="mt-sep"></div>
   <div class="mt-btn active" data-mt="borders" onclick="mtToggle('borders',this)">🗺</div>
-  <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">⭐</div>
+  <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">🎖️</div>
   <div class="mt-btn" data-mt="infra" onclick="mtToggle('infra',this)">🏗</div>
   <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
   <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
@@ -814,7 +814,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>🏗</span><div class="tb-tooltip">Iran Infrastructure</div>
   </div>
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
-    <span>⭐</span><div class="tb-tooltip">Military Bases</div>
+    <span>🎖️</span><div class="tb-tooltip">Military Bases</div>
   </div>
   <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft');loadAircraft()" oncontextmenu="event.preventDefault();_acMilOnly=!_acMilOnly;loadAircraft();this.querySelector('.tb-tooltip').textContent=_acMilOnly?'Military Aircraft Only':'All Aircraft (FR24)'">
     <span>✈️</span><div class="tb-tooltip">All Aircraft (FR24) · Right-click: Military Only</div>
@@ -1004,7 +1004,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>⭐</span>BASES</button>
+  <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>🎖️</span>BASES</button>
   <button class="mob-btn" onclick="toggleFeed()"><span>📋</span>INTEL</button>
   <button class="mob-btn" onclick="mobileQuickToggle('fires')"><span>🔥</span>FIRES</button>
   <button class="mob-btn" onclick="mobileQuickToggle('osint')"><span>📌</span>OSINT</button>
