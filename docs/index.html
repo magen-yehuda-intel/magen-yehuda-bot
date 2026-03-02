@@ -2356,9 +2356,10 @@ function getBallisticSvg() {
     svg.style.width = container.offsetWidth + 'px';
     svg.style.height = container.offsetHeight + 'px';
   });
-  // Clear missiles on zoom/pan — pixel coords become stale
+  // Clear missiles on user zoom/pan — pixel coords become stale
+  let _barrageActive = false;
   map.on('zoomstart movestart', () => {
-    svg.innerHTML = '';
+    if (!_barrageActive) svg.innerHTML = '';
   });
   return svg;
 }
@@ -2579,6 +2580,7 @@ function fireBallisticBarrage(targetCoords, source, profile) {
   map.fitBounds([sw, ne], { padding:[40,40], maxZoom:7, animate:true, duration:1 });
 
   // Fire 5 waves with 8s spacing
+  _barrageActive = true;
   const fireWave = () => {
     let delay = 0;
     targetCoords.forEach(tc => {
@@ -2596,6 +2598,8 @@ function fireBallisticBarrage(targetCoords, source, profile) {
   for (let wave = 0; wave < 5; wave++) {
     setTimeout(fireWave, 1500 + wave * 8000);
   }
+  // Allow clearing after last wave finishes (~50s total)
+  setTimeout(() => { _barrageActive = false; }, 50000);
 }
 
 // Hook into Oref alerts — fire barrage when sirens detected
