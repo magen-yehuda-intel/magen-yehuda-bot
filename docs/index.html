@@ -131,13 +131,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .siren-zone-ring { animation:defense-ring-pulse 1.5s ease-in-out infinite; }
 
 /* Ballistic missile animation */
-.ballistic-overlay { position:absolute; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:650; overflow:visible; }
+.ballistic-overlay { position:absolute; top:0; left:0; pointer-events:none; z-index:650; overflow:visible; }
 .ballistic-trail { fill:none; stroke-linecap:round; }
-.ballistic-trail-glow { stroke:rgba(255,60,60,0.5); filter:blur(6px); }
-.ballistic-trail-core { stroke:#ff3333; filter:drop-shadow(0 0 4px rgba(255,50,50,0.8)); }
+.ballistic-trail-glow { stroke:rgba(255,60,60,0.4); }
+.ballistic-trail-core { stroke:#ff3333; }
 @keyframes missile-fly { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes missile-head-pulse { 0%,100% { r:5; opacity:1; } 50% { r:9; opacity:0.8; } }
-.missile-head { fill:#ffdd00; filter:drop-shadow(0 0 8px #ff0); animation:missile-head-pulse 0.4s ease-in-out infinite; }
+.missile-head { fill:#ffdd00; }
 @keyframes impact-flash { 0% { r:8; opacity:1; fill:#fff; } 30% { r:35; opacity:0.9; fill:#ff4444; } 100% { r:55; opacity:0; fill:#ff4444; } }
 .impact-flash { animation:impact-flash 1.2s ease-out forwards; }
 @keyframes smoke-ring { 0% { r:10; opacity:0.7; stroke-width:4; } 100% { r:60; opacity:0; stroke-width:1; } }
@@ -2334,28 +2334,30 @@ let _ballisticSvg = null;
 
 function getBallisticSvg() {
   if (_ballisticSvg) return _ballisticSvg;
-  const pane = map.getPane('overlayPane');
+  const container = map.getContainer();
   const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.setAttribute('class','ballistic-overlay');
+  svg.style.width = container.offsetWidth + 'px';
+  svg.style.height = container.offsetHeight + 'px';
+  svg.style.position = 'absolute';
+  svg.style.top = '0';
+  svg.style.left = '0';
+  svg.style.zIndex = '650';
+  svg.style.pointerEvents = 'none';
   svg.style.overflow = 'visible';
-  pane.appendChild(svg);
+  container.appendChild(svg);
   _ballisticSvg = svg;
-  // Reposition on map move
-  const updatePos = () => {
-    const b = map.getBounds();
-    const tl = map.latLngToLayerPoint(b.getNorthWest());
-    svg.style.transform = `translate(${tl.x}px,${tl.y}px)`;
-  };
-  map.on('move zoom moveend zoomend', updatePos);
-  updatePos();
+  // Resize on window resize
+  window.addEventListener('resize', () => {
+    svg.style.width = container.offsetWidth + 'px';
+    svg.style.height = container.offsetHeight + 'px';
+  });
   return svg;
 }
 
 function projectPoint(lat, lon) {
-  const pt = map.latLngToLayerPoint([lat, lon]);
-  const b = map.getBounds();
-  const tl = map.latLngToLayerPoint(b.getNorthWest());
-  return { x: pt.x - tl.x, y: pt.y - tl.y };
+  const pt = map.latLngToContainerPoint([lat, lon]);
+  return { x: pt.x, y: pt.y };
 }
 
 function buildArcPath(from, to) {
