@@ -1943,7 +1943,14 @@ function loadFIRMS() {
         if (!f.lat || !f.lon) return;
         // Time filter: parse acquisition time if available
         if (cutoffMs > 0 && f.acq) {
-          const acqTime = new Date(f.acq.replace(' ','T') + 'Z').getTime();
+          // FIRMS acq format: "YYYY-MM-DD HHMM" (no colon, HHMM can be 3 or 4 digits)
+          const acqParts = f.acq.split(' ');
+          let acqTime = 0;
+          if (acqParts.length === 2) {
+            const hhmm = acqParts[1].padStart(4, '0');
+            const iso = acqParts[0] + 'T' + hhmm.slice(0,2) + ':' + hhmm.slice(2) + ':00Z';
+            acqTime = new Date(iso).getTime();
+          }
           if (acqTime && acqTime < cutoffMs) return;
         }
         count++;
