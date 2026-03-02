@@ -811,7 +811,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn" data-mt="countryNames" onclick="mtToggle('countryNames',this)">🔤</div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
   <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
   <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
@@ -848,11 +847,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>☰</span><div class="tb-tooltip">Layers & Assets</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
-  <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="toggleLayer('borders')">
-    <span>🗺</span><div class="tb-tooltip">Country Borders</div>
-  </div>
-  <div class="tb-btn" data-layer="countryNames" data-color="blue" onclick="toggleLayer('countryNames')">
-    <span>🔤</span><div class="tb-tooltip">Country Names</div>
+  <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="cycleBorders(this)">
+    <span>🗺</span><div class="tb-tooltip">Borders (click to cycle)</div>
   </div>
   </div>
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
@@ -1207,6 +1203,32 @@ const activeState = {
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
 // ═══════════════════════════════════════════════════════════
+// Borders 3-state cycle: borders only → borders+names → off
+let _borderState = 0; // 0=borders, 1=borders+names, 2=off
+function cycleBorders(btn) {
+  _borderState = (_borderState + 1) % 3;
+  const tips = ['Borders Only', 'Borders + Names', 'Off'];
+  if (_borderState === 0) {
+    activeState.borders = true; layers.borders.addTo(map);
+    activeState.countryNames = false; map.removeLayer(layers.countryNames);
+  } else if (_borderState === 1) {
+    activeState.borders = true; layers.borders.addTo(map);
+    activeState.countryNames = true; layers.countryNames.addTo(map);
+  } else {
+    activeState.borders = false; map.removeLayer(layers.borders);
+    activeState.countryNames = false; map.removeLayer(layers.countryNames);
+  }
+  if (btn) {
+    btn.classList.toggle('active', _borderState !== 2);
+    const tt = btn.querySelector('.tb-tooltip');
+    if (tt) tt.textContent = tips[_borderState];
+  }
+  // Update global tooltip if visible
+  const tbTip = document.getElementById('tb-tip');
+  if (tbTip.classList.contains('show')) tbTip.textContent = tips[_borderState];
+  updateMobileButtons(); syncSidebarState();
+}
+
 function syncSidebarState() {
   document.querySelectorAll('.sb-row[data-sb]').forEach(row => {
     const key = row.dataset.sb;
