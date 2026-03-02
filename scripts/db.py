@@ -16,10 +16,14 @@ import time
 
 TABLE_NAME = "intelevents"
 OREF_TABLE_NAME = "orefalerts"
+SEISMIC_TABLE_NAME = "seismicevents"
+FIRE_TABLE_NAME = "fireevents"
 ACCOUNT_URL = "https://magenyehudadata.table.core.windows.net"
 
 _client = None
 _oref_client = None
+_seismic_client = None
+_fire_client = None
 
 def _get_client():
     global _client
@@ -255,6 +259,244 @@ def get_last_oref_alert():
     """Get the most recent Oref alert."""
     alerts = query_oref_alerts(hours=48, limit=1)
     return alerts[0] if alerts else None
+
+
+# ═══════════════════════════════════════════════════════════
+# SEISMIC EVENTS TABLE
+# ═══════════════════════════════════════════════════════════
+
+def _get_seismic_client():
+    global _seismic_client
+    if _seismic_client:
+        return _seismic_client
+    from azure.data.tables import TableClient
+    conn_str = os.environ.get("AZURE_TABLE_CONN")
+    if conn_str:
+        _seismic_client = TableClient.from_connection_string(conn_str, table_name=SEISMIC_TABLE_NAME)
+    else:
+        from azure.identity import DefaultAzureCredential
+        cred = DefaultAzureCredential()
+        _seismic_client = TableClient(endpoint=ACCOUNT_URL, table_name=SEISMIC_TABLE_NAME, credential=cred)
+    return _seismic_client
+
+
+def insert_seismic(quake):
+    """Insert a seismic event. Dedup by USGS event ID or lat+lon+mag+time."""
+    try:
+        ts = quake.get("time") or time.time()
+        event_id = quake.get("id", "")
+        if event_id:
+            rk = hashlib.sha256(event_id.encode()).hexdigest()[:32]
+        else:
+            raw = f"{quake.get('lat',0):.3f}{quake.get('lon',0):.3f}{quake.get('mag',0):.1f}{int(ts)}"
+            rk = hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+        entity = {
+            "PartitionKey": _partition_key(ts),
+            "RowKey": rk,
+            "ts": float(ts),
+            "lat": float(quake.get("lat", 0)),
+            "lon": float(quake.get("lon", 0)),
+            "depth": float(quake.get("depth", 0)),
+            "mag": float(quake.get("mag", 0)),
+            "place": quake.get("place", "")[:500],
+            "type": quake.get("type", "earthquake"),
+            "url": quake.get("url", ""),
+            "near_nuclear": quake.get("near_nuclear", ""),
+            "near_nuclear_dist_km": float(quake.get("near_nuclear_dist_km", 0)),
+        }
+        _get_seismic_client().upsert_entity(entity)
+        return True
+    except Exception as e:
+        print(f"[db] insert_seismic error: {e}")
+        return False
+
+
+def insert_seismic_batch(quakes):
+    ok, fail = 0, 0
+    for q in quakes:
+        if insert_seismic(q):
+            ok += 1
+        else:
+            fail += 1
+    return ok, fail
+
+
+def query_seismic(hours=168, min_mag=2.5, limit=200):
+    """Query recent seismic events. Default 7 days."""
+    try:
+        client = _get_seismic_client()
+        cutoff = time.time() - (hours * 3600)
+        cutoff_date = time.strftime("%Y-%m-%d", time.gmtime(cutoff))
+        entities = []
+        for entity in client.query_entities(
+            query_filter=f"PartitionKey ge '{cutoff_date}'",
+            select=["ts", "lat", "lon", "depth", "mag", "place", "type", "url", "near_nuclear", "near_nuclear_dist_km"],
+        ):
+            if entity.get("ts", 0) >= cutoff and entity.get("mag", 0) >= min_mag:
+                entities.append(entity)
+        entities.sort(key=lambda x: x.get("ts", 0), reverse=True)
+        return entities[:limit]
+    except Exception as e:
+        print(f"[db] query_seismic error: {e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════
+# FIRE EVENTS TABLE
+# ═══════════════════════════════════════════════════════════
+
+def _get_fire_client():
+    global _fire_client
+    if _fire_client:
+        return _fire_client
+    from azure.data.tables import TableClient
+    conn_str = os.environ.get("AZURE_TABLE_CONN")
+    if conn_str:
+        _fire_client = TableClient.from_connection_string(conn_str, table_name=FIRE_TABLE_NAME)
+    else:
+        from azure.identity import DefaultAzureCredential
+        cred = DefaultAzureCredential()
+        _fire_client = TableClient(endpoint=ACCOUNT_URL, table_name=FIRE_TABLE_NAME, credential=cred)
+    return _fire_client
+
+
+def insert_fire(fire):
+    """Insert a FIRMS fire hotspot. Dedup by lat+lon+acq_time+satellite."""
+    try:
+        ts = fire.get("ts") or fire.get("time") or time.time()
+        raw = f"{fire.get('lat',0):.4f}{fire.get('lon',0):.4f}{fire.get('satellite','')}{int(ts)}"
+        rk = hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+        entity = {
+            "PartitionKey": _partition_key(ts),
+            "RowKey": rk,
+            "ts": float(ts),
+            "lat": float(fire.get("lat", 0)),
+            "lon": float(fire.get("lon", 0)),
+            "frp": float(fire.get("frp", 0)),
+            "confidence": str(fire.get("confidence", "")),
+            "satellite": fire.get("satellite", ""),
+            "country": fire.get("country", ""),
+            "acq_time": fire.get("acq_time", ""),
+            "bright": float(fire.get("bright", fire.get("brightness", 0))),
+        }
+        _get_fire_client().upsert_entity(entity)
+        return True
+    except Exception as e:
+        print(f"[db] insert_fire error: {e}")
+        return False
+
+
+def insert_fires_batch(fires):
+    ok, fail = 0, 0
+    for f in fires:
+        if insert_fire(f):
+            ok += 1
+        else:
+            fail += 1
+    return ok, fail
+
+
+def query_fires(hours=24, min_frp=10, limit=2000):
+    """Query recent fire hotspots."""
+    try:
+        client = _get_fire_client()
+        cutoff = time.time() - (hours * 3600)
+        cutoff_date = time.strftime("%Y-%m-%d", time.gmtime(cutoff))
+        entities = []
+        for entity in client.query_entities(
+            query_filter=f"PartitionKey ge '{cutoff_date}'",
+            select=["ts", "lat", "lon", "frp", "confidence", "satellite", "country", "acq_time", "bright"],
+        ):
+            if entity.get("ts", 0) >= cutoff and entity.get("frp", 0) >= min_frp:
+                entities.append(entity)
+        entities.sort(key=lambda x: x.get("ts", 0), reverse=True)
+        return entities[:limit]
+    except Exception as e:
+        print(f"[db] query_fires error: {e}")
+        return []
+
+
+# ═══════════════════════════════════════════════════════════
+# STRIKE CORRELATION ENGINE
+# Detects potential strikes by correlating seismic + fire + OSINT
+# ═══════════════════════════════════════════════════════════
+
+def correlate_strike_indicators(hours=1, radius_km=50):
+    """Find seismic events near fire hotspots (potential strike indicators).
+
+    Logic: If a seismic event (M2.0+) occurs within radius_km of a fire
+    hotspot (FRP>10MW) within the same time window, flag as potential strike.
+    Also checks proximity to nuclear/military sites.
+
+    Returns list of correlation objects.
+    """
+    try:
+        import math
+
+        def haversine(lat1, lon1, lat2, lon2):
+            R = 6371
+            dLat = math.radians(lat2 - lat1)
+            dLon = math.radians(lon2 - lon1)
+            a = math.sin(dLat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLon/2)**2
+            return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+        # Known targets of interest
+        TARGETS = {
+            "Natanz": (33.724, 51.727), "Isfahan": (32.654, 51.676),
+            "Fordow": (34.883, 51.984), "Bushehr": (28.831, 50.886),
+            "Arak": (34.382, 49.244), "Parchin": (35.517, 51.771),
+            "Isfahan Missile Fac": (32.600, 51.750),
+            "Kharg Island": (29.234, 50.329), "Bandar Abbas": (27.179, 56.272),
+            "Tehran": (35.689, 51.389), "Shiraz Air Base": (29.539, 52.589),
+        }
+
+        quakes = query_seismic(hours=hours, min_mag=2.0, limit=100)
+        fires = query_fires(hours=hours, min_frp=10, limit=2000)
+
+        if not quakes and not fires:
+            return []
+
+        correlations = []
+        for q in quakes:
+            q_lat, q_lon = q.get("lat", 0), q.get("lon", 0)
+            nearby_fires = []
+            for f in fires:
+                dist = haversine(q_lat, q_lon, f.get("lat", 0), f.get("lon", 0))
+                if dist <= radius_km:
+                    nearby_fires.append({"fire": f, "distance_km": round(dist, 1)})
+
+            nearest_target = None
+            nearest_dist = 999999
+            for name, (tlat, tlon) in TARGETS.items():
+                d = haversine(q_lat, q_lon, tlat, tlon)
+                if d < nearest_dist:
+                    nearest_dist = d
+                    nearest_target = name
+
+            if nearby_fires or nearest_dist <= 80:
+                correlations.append({
+                    "type": "strike_indicator",
+                    "quake": {
+                        "mag": q.get("mag", 0), "place": q.get("place", ""),
+                        "lat": q_lat, "lon": q_lon, "depth": q.get("depth", 0),
+                        "time": q.get("ts", 0),
+                    },
+                    "nearby_fires": len(nearby_fires),
+                    "fire_details": nearby_fires[:5],
+                    "nearest_target": nearest_target,
+                    "target_distance_km": round(nearest_dist, 1),
+                    "confidence": "HIGH" if nearby_fires and nearest_dist <= 50 else
+                                  "MEDIUM" if nearby_fires or nearest_dist <= 30 else "LOW",
+                    "ts": q.get("ts", 0),
+                })
+
+        correlations.sort(key=lambda x: x.get("ts", 0), reverse=True)
+        return correlations
+    except Exception as e:
+        print(f"[db] correlate_strike_indicators error: {e}")
+        return []
 
 
 if __name__ == "__main__":

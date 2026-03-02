@@ -960,7 +960,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" data-sb="ad" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
     <div class="sb-row" data-sb="airbases" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
     <div class="sb-row" data-sb="irgc" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
-    <div class="sb-row" data-sb="energy" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
+    <div class="sb-row" data-sb="energy" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Oil, Gas & Energy</span><span class="sb-row-count">78</span></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
     <div class="sb-row" data-sb="sirens" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
     <div class="sb-row" data-sb="waterways" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
@@ -1017,7 +1017,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>Iran Air Def</div>
     <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Iran Air Base</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>IRGC</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Iran Oil & Gas</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Oil, Gas & Energy</div>
     <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Waterway</div>
     <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Air Route</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ff8800"></div>Fire (FIRMS)</div>
@@ -1809,6 +1809,15 @@ function renderAllLayers() {
     mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
   });
 
+  // ─── REGIONAL ENERGY (non-Iran) ───
+  const FLAG = {QA:'🇶🇦',AE:'🇦🇪',SA:'🇸🇦',IQ:'🇮🇶',KW:'🇰🇼',BH:'🇧🇭',OM:'🇴🇲',IL:'🇮🇱',EG:'🇪🇬'};
+  if (V2_DATA.REGIONAL_ENERGY) V2_DATA.REGIONAL_ENERGY.forEach(s => {
+    const emoji = s.type.includes('lng') ? '🔥' : s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : '🛢';
+    const flag = FLAG[s.country] || '';
+    const popup = mkPopup(`${flag} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#06b6d4');
+    mkMarker(s.lat, s.lon, emoji, 'marker-regional-energy', 18, popup).addTo(layers.energy);
+  });
+
   // ─── STRATEGIC WATERWAYS ───
   V2_DATA.WATERWAYS.forEach(w => {
     const latlngs = w.coords.map(c => [c[0], c[1]]);
@@ -2095,6 +2104,7 @@ function renderAssetList(filter) {
     ...V2_DATA.IRAN_AIRBASES.map(s => ({ ...s, category: 'Air Base', emoji: s.emoji, lon: s.lon })),
     ...V2_DATA.IRAN_IRGC.map(s => ({ ...s, category: 'IRGC', emoji: s.emoji, lon: s.lon })),
     ...V2_DATA.IRAN_ENERGY.map(s => ({ ...s, category: 'Energy', emoji: '🛢', lon: s.lon })),
+    ...(V2_DATA.REGIONAL_ENERGY||[]).map(s => ({ ...s, category: 'Energy', emoji: '🛢', lon: s.lon })),
   ];
   const filtered = filter ? allAssets.filter(a => (a.name||'').toLowerCase().includes(filter) || (a.category||'').toLowerCase().includes(filter)) : allAssets;
   el.innerHTML = filtered.slice(0, 100).map(a => `
