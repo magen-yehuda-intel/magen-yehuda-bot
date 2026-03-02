@@ -749,7 +749,7 @@ except:
 " <<< "$alerts" 2>/dev/null)
       
       local classification
-      classification=$(GEMINI_API_KEY="$GEMINI_API_KEY" python3 "$SCRIPT_DIR/classify-attack.py" --oref-areas "$oref_areas" 2>/dev/null)
+      classification=$(python3 "$SCRIPT_DIR/classify-attack.py" --oref-areas "$oref_areas" 2>/dev/null)
       
       if [ -n "$classification" ] && echo "$classification" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); assert d.get('source','unknown') != 'unknown'" 2>/dev/null; then
         log "  Attack classification: $classification"
