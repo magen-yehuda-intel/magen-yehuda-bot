@@ -1379,8 +1379,8 @@ function loadFeed() {
   const staticUrl = `${STATIC_BASE}/intel-feed.json`;
 
   const fetchData = Promise.all([
-    apiUrl ? fetch(apiUrl).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null),
-    fetch(staticUrl).then(r => r.ok ? r.json() : null).catch(() => null),
+    apiUrl ? fetch(apiUrl, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null),
+    fetch(staticUrl, {signal: AbortSignal.timeout(8000)}).then(r => r.ok ? r.json() : null).catch(() => null),
   ]).then(([apiData, staticData]) => {
     const apiEvents = apiData ? (apiData.events || []) : [];
     const staticEvents = staticData ? (staticData.events || staticData || []) : [];
@@ -1610,9 +1610,9 @@ document.getElementById('feed-time-bar').addEventListener('click', e => {
   loadSirens();
 });
 
-// Auto-refresh feed every 30s
+// Auto-refresh feed every 30s (even if hidden — pre-loads data)
 setInterval(() => {
-  if (document.getElementById('feed-panel').classList.contains('open')) loadFeed();
+  try { loadFeed(); } catch(e) { console.error('Feed refresh error:', e); }
 }, 30000);
 
 function updateLayerCount() {
@@ -2189,8 +2189,7 @@ function loadTicker() {
 }
 
 loadTicker();
-setInterval(loadTicker, 60000); // refresh ticker every 60s
-setInterval(loadTicker, 30000); // refresh ticker every 30s
+setInterval(loadTicker, 45000); // refresh ticker every 45s
 
 // Show data mode
 // oref mode display removed
