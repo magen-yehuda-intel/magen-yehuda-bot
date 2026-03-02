@@ -2562,18 +2562,24 @@ function fireBallisticBarrage(targetCoords, source, profile) {
   const ne = [Math.max(...allLats) + 2, Math.max(...allLons) + 2];
   map.fitBounds([sw, ne], { padding:[40,40], maxZoom:7, animate:true, duration:1 });
 
-  setTimeout(() => {
+  // Fire 5 waves with 8s spacing
+  const fireWave = () => {
     let delay = 0;
     targetCoords.forEach(tc => {
       const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2), source);
       launchers.forEach((l, i) => {
-        const stagger = delay + (i * (300 + Math.random()*700));
-        const duration = profile.animMin + Math.random() * (profile.animMax - profile.animMin);
+        const stagger = delay + (i * (400 + Math.random()*800));
+        // 2x slower than profile
+        const duration = (profile.animMin + Math.random() * (profile.animMax - profile.animMin)) * 2;
         animateMissile([l.lat, l.lon], tc, stagger, duration);
       });
-      delay += 500 + Math.random()*1000;
+      delay += 600 + Math.random()*1200;
     });
-  }, 1200);
+  };
+
+  for (let wave = 0; wave < 5; wave++) {
+    setTimeout(fireWave, 1500 + wave * 8000);
+  }
 }
 
 // Hook into Oref alerts — fire barrage when sirens detected
