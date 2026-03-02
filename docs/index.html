@@ -965,9 +965,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" data-sb="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (significant)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
     <div class="sb-row" data-sb="osint" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
-      <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
-      <div class="sb-action-btn" onclick="showUSOnly()" style="border-color:rgba(59,130,246,0.3);color:#60a5fa">US Forces Only</div>
-      <div class="sb-action-btn" onclick="showIranOnly()" style="border-color:rgba(239,68,68,0.3);color:#f87171">Iran Targets Only</div>
+      <div class="sb-action-btn" onclick="clearAllLayers()" style="border-color:rgba(239,68,68,0.3);color:#f87171">✕ Clear All</div>
+      <div class="sb-action-btn" onclick="saveLayerConfig()" style="border-color:rgba(6,182,212,0.3);color:#22d3ee">💾 Save Config</div>
+      <div class="sb-action-btn" onclick="resetLayerConfig()">↺ Reset Default</div>
     </div>
   </div>
   <div id="tab-assets" style="display:none">
@@ -1610,33 +1610,53 @@ function updateLayerCount() {
   document.getElementById('layer-status').textContent = `Layers: ${count} active`;
 }
 
-function showAllLayers() {
+const DEFAULT_LAYERS = { borders:true, military:true, fires:false, osint:true, sirens:true, nuclear:true, countryNames:true, infra:false, missiles:false, naval:false, ad:false, airbases:false, irgc:false, energy:false, sam:false, waterways:false, patrol:false, labels:false, aircraft:false, seismic:false, ships:false, gpsjam:false, satellites:false };
+
+function applyLayerState(state) {
   Object.keys(activeState).forEach(k => {
-    activeState[k] = true; layers[k].addTo(map);
-    const btn = document.querySelector(`.tb-btn[data-layer="${k}"]`);
-    if (btn) btn.classList.add('active');
+    const want = !!state[k];
+    if (activeState[k] !== want) {
+      activeState[k] = want;
+      if (want) layers[k].addTo(map); else map.removeLayer(layers[k]);
+    }
   });
-  updateLayerCount(); syncSidebarState();
-}
-
-function showUSOnly() {
-  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
-  ['borders','military','labels','patrol'].forEach(k => { activeState[k] = true; layers[k].addTo(map); });
-  document.querySelectorAll('.tb-btn').forEach(b => {
+  document.querySelectorAll('.tb-btn[data-layer]').forEach(b => {
     b.classList.toggle('active', activeState[b.dataset.layer] || false);
   });
-  updateLayerCount(); syncSidebarState();
+  updateMobileButtons(); updateLayerCount(); syncSidebarState();
 }
 
-function showIranOnly() {
-  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
-  ['borders','nuclear','missiles','naval','ad','airbases','irgc','energy','sam'].forEach(k => {
-    activeState[k] = true; layers[k].addTo(map);
-  });
-  document.querySelectorAll('.tb-btn').forEach(b => {
-    b.classList.toggle('active', activeState[b.dataset.layer] || false);
-  });
-  updateLayerCount(); syncSidebarState();
+function clearAllLayers() {
+  const cleared = {};
+  Object.keys(activeState).forEach(k => cleared[k] = false);
+  applyLayerState(cleared);
+}
+
+function saveLayerConfig() {
+  const config = JSON.stringify(activeState);
+  document.cookie = `layerConfig=${encodeURIComponent(config)};max-age=${365*86400};path=/;SameSite=Lax`;
+  // Flash the button to confirm
+  const btn = event.target;
+  btn.textContent = '✓ Saved!';
+  btn.style.color = '#22c55e';
+  setTimeout(() => { btn.textContent = '💾 Save Config'; btn.style.color = '#22d3ee'; }, 1500);
+}
+
+function resetLayerConfig() {
+  document.cookie = 'layerConfig=;max-age=0;path=/';
+  applyLayerState(DEFAULT_LAYERS);
+}
+
+function loadSavedConfig() {
+  const match = document.cookie.match(/layerConfig=([^;]+)/);
+  if (match) {
+    try {
+      const saved = JSON.parse(decodeURIComponent(match[1]));
+      applyLayerState(saved);
+      return true;
+    } catch(e) {}
+  }
+  return false;
 }
 
 function switchTab(tab) {
@@ -2095,6 +2115,7 @@ renderAllLayers();
 loadFIRMS();
 loadSirens();
 pollOref();
+loadSavedConfig(); // restore user's saved layer config (cookie)
 updateLayerCount();
 updateMobileButtons();
 
