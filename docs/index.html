@@ -897,7 +897,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
   <div class="tb-btn" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
-    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fires (2h)</div>
+    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fires (24h)</div>
   </div>
   <div class="tb-btn" data-layer="seismic" data-color="amber" onclick="toggleLayer('seismic');loadSeismic()">
     <span>🌋</span><div class="tb-tooltip">USGS Seismic (M2.5+)</div>
@@ -955,7 +955,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" data-sb="sirens" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
     <div class="sb-row" data-sb="waterways" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
     <div class="sb-row" data-sb="patrol" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (2h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" data-sb="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (24h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
     <div class="sb-row" data-sb="osint" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
@@ -1231,9 +1231,9 @@ const activeState = {
 // TOGGLE FUNCTIONS
 // ═══════════════════════════════════════════════════════════
 // Fire time range — independent of global time filter
-const FIRE_RANGES = [2];
+const FIRE_RANGES = [24];
 let _fireRangeIdx = 0;
-let _fireHours = 2;
+let _fireHours = 24;
 function cycleFireRange(btn) {
   _fireRangeIdx = (_fireRangeIdx + 1) % FIRE_RANGES.length;
   _fireHours = FIRE_RANGES[_fireRangeIdx];
@@ -1924,7 +1924,7 @@ function fireCircleMarker(lat, lon, frpVal, popupData) {
 
 function updateFireTooltip(count) {
   const tt = document.getElementById('tt-fires');
-  if (tt) tt.textContent = `FIRMS Fires 2h${count > 0 ? ' (' + (count > 999 ? Math.round(count/100)/10+'k' : count) + ')' : ''}`;
+  if (tt) tt.textContent = `FIRMS Fires 24h${count > 0 ? ' (' + (count > 999 ? Math.round(count/100)/10+'k' : count) + ')' : ''}`;
   document.getElementById('cnt-fires').textContent = count;
 }
 
