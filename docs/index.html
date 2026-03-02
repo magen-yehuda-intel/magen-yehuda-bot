@@ -842,7 +842,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn active" data-mt="nuclear" onclick="mtToggle('nuclear',this)">☢️</div>
+  <div class="mt-btn" data-mt="nuclear" onclick="mtToggle('nuclear',this)">☢️</div>
   <div class="mt-btn active" data-mt="countryNames" onclick="mtToggle('countryNames',this)">🔤</div>
   <div class="mt-sep"></div>
   <div class="mt-btn" onclick="map.setView([28,52],5)" title="Reset view">🏠</div>
@@ -1227,7 +1227,7 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: true, countryNames: true,
+  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: false, countryNames: true,
   infra: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
@@ -1235,7 +1235,7 @@ const activeState = {
 };
 
 // Add default-on layers
-['borders', 'military', 'osint', 'sirens', 'countryNames', 'nuclear'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'osint', 'sirens', 'countryNames'].forEach(k => layers[k].addTo(map));
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
@@ -1613,7 +1613,7 @@ function updateLayerCount() {
   document.getElementById('layer-status').textContent = `Layers: ${count} active`;
 }
 
-const DEFAULT_LAYERS = { borders:true, military:true, fires:false, osint:true, sirens:true, nuclear:true, countryNames:true, infra:false, missiles:false, naval:false, ad:false, airbases:false, irgc:false, energy:false, sam:false, waterways:false, patrol:false, labels:false, aircraft:false, seismic:false, ships:false, gpsjam:false, satellites:false };
+const DEFAULT_LAYERS = { borders:true, military:true, fires:false, osint:true, sirens:true, nuclear:false, countryNames:true, infra:false, missiles:false, naval:false, ad:false, airbases:false, irgc:false, energy:false, sam:false, waterways:false, patrol:false, labels:false, aircraft:false, seismic:false, ships:false, gpsjam:false, satellites:false };
 
 function applyLayerState(state) {
   Object.keys(activeState).forEach(k => {
