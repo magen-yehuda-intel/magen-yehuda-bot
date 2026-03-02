@@ -1153,6 +1153,8 @@ Flask/gunicorn API deployed on Azure Container Apps (consumption plan, ~$0/month
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/oref` | GET | Pikud HaOref alerts (from watcher push) |
+| `/api/oref/last` | GET | Most recent Oref alert from DB |
+| `/api/oref/history` | GET | Oref alert history (`?hours=`, `?limit=`) |
 | `/api/fires` | GET | NASA FIRMS hotspots (self-polling, 5min) |
 | `/api/intel-feed` | GET | Intel events from Azure Table (`?hours=`, `?side=`, `?limit=`) |
 | `/api/aircraft` | GET | Live aircraft from FR24 (~400 in ME, 60s). `?filter=military` for military only |
@@ -1168,14 +1170,20 @@ Flask/gunicorn API deployed on Azure Container Apps (consumption plan, ~$0/month
 
 ### Azure Table Storage
 
-Primary data store for intel events. Practically free (~$0.01/month).
+Primary data store for intel events and Oref alerts. Practically free (~$0.01/month).
 
 - **Account:** `magenyehudadata` (eastus)
-- **Table:** `intelevents`
 - **Auth:** Entra ID (shared key blocked by tenant policy)
 - **Managed identity:** Container app has `Storage Table Data Contributor` role
-- **Schema:** `PartitionKey=YYYY-MM-DD`, `RowKey=SHA256(src+text+ts)[:32]`
+
+#### Table: `intelevents`
+- **Schema:** `PartitionKey=YYYY-MM-DD`, `RowKey=SHA256(src+text[:60])[:32]`
 - **Fields:** `ts`, `src`, `text`, `side`, `type`, `sub_event_type`, `lat`, `lon`, `location`, `breaking`, `confidence`, `link`
+
+#### Table: `orefalerts`
+- **Schema:** `PartitionKey=YYYY-MM-DD`, `RowKey=SHA256(title+cat+areas[:5])[:32]`
+- **Fields:** `ts`, `title`, `cat`, `area_count`, `areas` (JSON array), `cleared_ts`, `duration_s`
+- **API:** `/api/oref/last` (most recent), `/api/oref/history?hours=24&limit=50`
 
 ### Azure Resources
 
@@ -1216,7 +1224,7 @@ Primary data store for intel events. Practically free (~$0.01/month).
 | Threat indicator stuck at HIGH | Watcher died, API cached stale level | Push correct level via `/api/push/threat`; indicator now hidden when GREEN |
 | Ballistic arcs flicker/disappear | Each arc faded independently — some faded while others still launching | Moved cleanup to barrage level; ALL arcs fade together after last missile lands |
 | Ballistic arcs look like growing arrows | Progressive `strokeDashoffset` reveal | Draw full arc instantly, no progressive reveal |
-| Azure Container App `latest` tag no-op | `latest` doesn't trigger new revision | Use explicit versioned tags (e.g. `v17`) |
+| Azure Container App `latest` tag no-op | `latest` doesn't trigger new revision | Use explicit versioned tags (e.g. `v18`) |
 | DB query returns stale events | Azure Table returns by RowKey (hash), early `break` at limit grabbed random old rows | Collect ALL matching, sort by `ts` desc, THEN limit |
 | Duplicate DB rows from re-scraping | `_row_key()` included `ts` in hash | Use `src + text[:60]` only |
 
