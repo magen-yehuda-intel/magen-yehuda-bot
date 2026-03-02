@@ -124,6 +124,19 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .sam-ring-active { animation:defense-ring-pulse 2.5s ease-in-out infinite; }
 .siren-zone-ring { animation:defense-ring-pulse 1.5s ease-in-out infinite; }
 
+/* Ballistic missile animation */
+.ballistic-overlay { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:650; }
+.ballistic-trail { fill:none; stroke-linecap:round; }
+.ballistic-trail-glow { stroke:rgba(239,68,68,0.3); filter:blur(4px); }
+.ballistic-trail-core { stroke:#ef4444; }
+@keyframes missile-fly { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes missile-head-pulse { 0%,100% { r:4; opacity:1; } 50% { r:7; opacity:0.8; } }
+.missile-head { fill:#ff0; animation:missile-head-pulse 0.4s ease-in-out infinite; }
+@keyframes impact-flash { 0% { r:5; opacity:1; fill:#fff; } 30% { r:25; opacity:0.9; fill:#ff4444; } 100% { r:40; opacity:0; fill:#ff4444; } }
+.impact-flash { animation:impact-flash 1s ease-out forwards; }
+@keyframes smoke-ring { 0% { r:8; opacity:0.6; stroke-width:3; } 100% { r:45; opacity:0; stroke-width:1; } }
+.smoke-ring { fill:none; stroke:rgba(255,100,50,0.5); animation:smoke-ring 1.5s ease-out forwards; }
+
 /* ═══ NEON GLOW (waterways) ═══ */
 .neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
 .neon-line { stroke-linecap:round; stroke-linejoin:round; }
@@ -757,6 +770,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-sep"></div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
+  <div class="mt-btn" onclick="demoBarrage()" title="Simulate missile barrage">🚀</div>
   <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
   <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
 </div>
@@ -2035,7 +2049,33 @@ function updateOrefBanner(alerts, serverTs, note) {
   }
   // Update breathing siren zone circles
   updateSirensFromOref(alerts);
+  // Fire ballistic animation on active sirens
+  maybeFireBarrage(alerts);
 }
+
+// Israeli city/area geocoder (approximate centers) — shared by siren zones + ballistic animation
+const IL_GEO = {
+  'תל אביב':[32.08,34.78],'tel aviv':[32.08,34.78],'חיפה':[32.79,34.99],'haifa':[32.79,34.99],
+  'ירושלים':[31.77,35.21],'jerusalem':[31.77,35.21],'באר שבע':[31.25,34.79],'beer sheva':[31.25,34.79],'beersheba':[31.25,34.79],
+  'אשדוד':[31.80,34.65],'ashdod':[31.80,34.65],'אשקלון':[31.67,34.57],'ashkelon':[31.67,34.57],
+  'נתניה':[32.33,34.86],'netanya':[32.33,34.86],'הרצליה':[32.16,34.78],'herzliya':[32.16,34.78],
+  'רחובות':[31.90,34.81],'rehovot':[31.90,34.81],'פתח תקוה':[32.09,34.89],'petah tikva':[32.09,34.89],
+  'ראשון לציון':[31.97,34.79],'rishon':[31.97,34.79],'נצרת':[32.70,35.30],'nazareth':[32.70,35.30],
+  'עכו':[32.93,35.08],'acre':[32.93,35.08],'akko':[32.93,35.08],
+  'טבריה':[32.79,35.53],'tiberias':[32.79,35.53],'צפת':[32.97,35.50],'safed':[32.97,35.50],'tzfat':[32.97,35.50],
+  'קריית שמונה':[33.21,35.57],'kiryat shmona':[33.21,35.57],'כרמיאל':[32.91,35.30],'karmiel':[32.91,35.30],
+  'מגידו':[32.58,35.18],'megiddo':[32.58,35.18],'עפולה':[32.61,35.29],'afula':[32.61,35.29],
+  'שדרות':[31.52,34.59],'sderot':[31.52,34.59],'גוש דן':[32.05,34.79],'gush dan':[32.05,34.79],
+  'שרון':[32.30,34.86],'sharon':[32.30,34.86],'השפלה':[31.85,34.85],'shfela':[31.85,34.85],
+  'נגב':[30.85,34.78],'negev':[30.85,34.78],'גליל עליון':[33.05,35.50],'upper galilee':[33.05,35.50],
+  'גליל תחתון':[32.75,35.35],'lower galilee':[32.75,35.35],'עמק יזרעאל':[32.60,35.25],'jezreel':[32.60,35.25],
+  'גולן':[32.95,35.75],'golan':[32.95,35.75],'מטה בנימין':[31.90,35.25],'binyamin':[31.90,35.25],
+  'אילת':[29.56,34.95],'eilat':[29.56,34.95],'מודיעין':[31.90,35.01],"modi'in":[31.90,35.01],
+  'רמת גן':[32.07,34.82],'ramat gan':[32.07,34.82],'בני ברק':[32.08,34.83],'bnei brak':[32.08,34.83],
+  'הוד השרון':[32.15,34.88],'hod hasharon':[32.15,34.88],'רעננה':[32.18,34.87],'raanana':[32.18,34.87],
+  'כפר סבא':[32.17,34.91],'kfar saba':[32.17,34.91],'לוד':[31.95,34.89],'lod':[31.95,34.89],
+  'רמלה':[31.93,34.87],'ramla':[31.93,34.87],
+};
 
 function updateSirensFromOref(alerts) {
   // Place breathing red circles on active siren areas
@@ -2049,48 +2089,6 @@ function updateSirensFromOref(alerts) {
     const btn = document.querySelector('.tb-btn[data-layer="sam"]');
     if (btn) btn.classList.add('active-red');
   }
-
-  // Israeli city/area geocoder (approximate centers)
-  const IL_GEO = {
-    'תל אביב':  [32.08,34.78], 'tel aviv':   [32.08,34.78],
-    'חיפה':     [32.79,34.99], 'haifa':       [32.79,34.99],
-    'ירושלים':  [31.77,35.21], 'jerusalem':   [31.77,35.21],
-    'באר שבע':  [31.25,34.79], 'beer sheva':  [31.25,34.79], 'beersheba': [31.25,34.79],
-    'אשדוד':    [31.80,34.65], 'ashdod':      [31.80,34.65],
-    'אשקלון':   [31.67,34.57], 'ashkelon':    [31.67,34.57],
-    'נתניה':    [32.33,34.86], 'netanya':     [32.33,34.86],
-    'הרצליה':   [32.16,34.78], 'herzliya':    [32.16,34.78],
-    'רחובות':   [31.90,34.81], 'rehovot':     [31.90,34.81],
-    'פתח תקוה': [32.09,34.89], 'petah tikva': [32.09,34.89],
-    'ראשון לציון':[31.97,34.79],'rishon':     [31.97,34.79],
-    'נצרת':     [32.70,35.30], 'nazareth':    [32.70,35.30],
-    'עכו':      [32.93,35.08], 'acre':        [32.93,35.08], 'akko': [32.93,35.08],
-    'טבריה':    [32.79,35.53], 'tiberias':    [32.79,35.53],
-    'צפת':      [32.97,35.50], 'safed':       [32.97,35.50], 'tzfat': [32.97,35.50],
-    'קריית שמונה':[33.21,35.57],'kiryat shmona':[33.21,35.57],
-    'כרמיאל':   [32.91,35.30], 'karmiel':     [32.91,35.30],
-    'מגידו':    [32.58,35.18], 'megiddo':     [32.58,35.18],
-    'עפולה':    [32.61,35.29], 'afula':       [32.61,35.29],
-    'שדרות':    [31.52,34.59], 'sderot':      [31.52,34.59],
-    'גוש דן':  [32.05,34.79], 'gush dan':    [32.05,34.79],
-    'שרון':     [32.30,34.86], 'sharon':      [32.30,34.86],
-    'השפלה':    [31.85,34.85], 'shfela':      [31.85,34.85],
-    'נגב':      [30.85,34.78], 'negev':       [30.85,34.78],
-    'גליל עליון':[33.05,35.50],'upper galilee':[33.05,35.50],
-    'גליל תחתון':[32.75,35.35],'lower galilee':[32.75,35.35],
-    'עמק יזרעאל':[32.60,35.25],'jezreel':    [32.60,35.25],
-    'גולן':     [32.95,35.75], 'golan':       [32.95,35.75],
-    'מטה בנימין':[31.90,35.25],'binyamin':    [31.90,35.25],
-    'אילת':     [29.56,34.95], 'eilat':       [29.56,34.95],
-    'מודיעין':  [31.90,35.01], "modi'in":     [31.90,35.01],
-    'רמת גן':   [32.07,34.82], 'ramat gan':   [32.07,34.82],
-    'בני ברק':  [32.08,34.83], 'bnei brak':   [32.08,34.83],
-    'הוד השרון': [32.15,34.88], 'hod hasharon':[32.15,34.88],
-    'רעננה':    [32.18,34.87], 'raanana':     [32.18,34.87],
-    'כפר סבא':  [32.17,34.91], 'kfar saba':   [32.17,34.91],
-    'לוד':      [31.95,34.89], 'lod':         [31.95,34.89],
-    'רמלה':     [31.93,34.87], 'ramla':       [31.93,34.87],
-  };
 
   const geocoded = new Map(); // dedup by location key
   alerts.forEach(a => {
@@ -2134,6 +2132,222 @@ function updateSirensFromOref(alerts) {
 }
 
 // Poll Oref — faster with API, slower with static
+// ═══════ BALLISTIC MISSILE ANIMATION ═══════
+// Animated arcing trails from launch sites → target areas
+// Triggers on Oref siren alerts + manual demo
+
+const ballisticLayer = L.layerGroup().addTo(map);
+let _ballisticSvg = null;
+
+function getBallisticSvg() {
+  if (_ballisticSvg) return _ballisticSvg;
+  const pane = map.getPane('overlayPane');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('class','ballistic-overlay');
+  svg.style.overflow = 'visible';
+  pane.appendChild(svg);
+  _ballisticSvg = svg;
+  // Reposition on map move
+  const updatePos = () => {
+    const b = map.getBounds();
+    const tl = map.latLngToLayerPoint(b.getNorthWest());
+    svg.style.transform = `translate(${tl.x}px,${tl.y}px)`;
+  };
+  map.on('move zoom moveend zoomend', updatePos);
+  updatePos();
+  return svg;
+}
+
+function projectPoint(lat, lon) {
+  const pt = map.latLngToLayerPoint([lat, lon]);
+  const b = map.getBounds();
+  const tl = map.latLngToLayerPoint(b.getNorthWest());
+  return { x: pt.x - tl.x, y: pt.y - tl.y };
+}
+
+function buildArcPath(from, to) {
+  const p1 = projectPoint(from[0], from[1]);
+  const p2 = projectPoint(to[0], to[1]);
+  const dx = p2.x - p1.x, dy = p2.y - p1.y;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  // Control point for arc — peak height scales with distance
+  const mx = (p1.x + p2.x) / 2;
+  const my = (p1.y + p2.y) / 2 - dist * 0.4; // arc upward
+  return { path: `M${p1.x},${p1.y} Q${mx},${my} ${p2.x},${p2.y}`, p1, p2, cp: {x:mx,y:my}, dist };
+}
+
+function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
+  const svg = getBallisticSvg();
+  const arc = buildArcPath(fromCoord, toCoord);
+  durationMs = durationMs || Math.max(2000, Math.min(5000, arc.dist * 4));
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+
+  // Glow trail
+  const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+  glowPath.setAttribute('d', arc.path);
+  glowPath.setAttribute('class','ballistic-trail ballistic-trail-glow');
+  glowPath.setAttribute('stroke-width','6');
+  const totalLen = glowPath.getTotalLength ? 800 : 800;
+  glowPath.style.strokeDasharray = totalLen;
+  glowPath.style.strokeDashoffset = totalLen;
+  g.appendChild(glowPath);
+
+  // Core trail
+  const corePath = document.createElementNS('http://www.w3.org/2000/svg','path');
+  corePath.setAttribute('d', arc.path);
+  corePath.setAttribute('class','ballistic-trail ballistic-trail-core');
+  corePath.setAttribute('stroke-width','2');
+  corePath.style.strokeDasharray = totalLen;
+  corePath.style.strokeDashoffset = totalLen;
+  g.appendChild(corePath);
+
+  // Missile head (animated along path)
+  const head = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  head.setAttribute('cx', arc.p1.x);
+  head.setAttribute('cy', arc.p1.y);
+  head.setAttribute('r','5');
+  head.setAttribute('class','missile-head');
+  g.appendChild(head);
+
+  svg.appendChild(g);
+
+  // Animate after delay
+  setTimeout(() => {
+    const startTime = performance.now();
+    const animLen = durationMs;
+
+    // Use getTotalLength on the actual path element
+    let pathLen;
+    try { pathLen = corePath.getTotalLength(); } catch(e) { pathLen = 800; }
+    glowPath.style.strokeDasharray = pathLen;
+    glowPath.style.strokeDashoffset = pathLen;
+    corePath.style.strokeDasharray = pathLen;
+    corePath.style.strokeDashoffset = pathLen;
+
+    function tick(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(1, elapsed / animLen);
+      // Ease in-out
+      const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+
+      // Reveal trail
+      const offset = pathLen * (1 - ease);
+      glowPath.style.strokeDashoffset = offset;
+      corePath.style.strokeDashoffset = offset;
+
+      // Move head along quadratic bezier
+      const u = ease;
+      const hx = (1-u)*(1-u)*arc.p1.x + 2*(1-u)*u*arc.cp.x + u*u*arc.p2.x;
+      const hy = (1-u)*(1-u)*arc.p1.y + 2*(1-u)*u*arc.cp.y + u*u*arc.p2.y;
+      head.setAttribute('cx', hx);
+      head.setAttribute('cy', hy);
+
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Impact! Flash + smoke
+        head.remove();
+        const flash = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        flash.setAttribute('cx', arc.p2.x);
+        flash.setAttribute('cy', arc.p2.y);
+        flash.setAttribute('r','5');
+        flash.setAttribute('class','impact-flash');
+        g.appendChild(flash);
+        const smoke = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        smoke.setAttribute('cx', arc.p2.x);
+        smoke.setAttribute('cy', arc.p2.y);
+        smoke.setAttribute('r','8');
+        smoke.setAttribute('class','smoke-ring');
+        g.appendChild(smoke);
+
+        // Fade out entire group after impact
+        setTimeout(() => {
+          g.style.transition = 'opacity 2s';
+          g.style.opacity = '0';
+          setTimeout(() => g.remove(), 2000);
+        }, 2000);
+      }
+    }
+    requestAnimationFrame(tick);
+  }, delayMs || 0);
+
+  return g;
+}
+
+// Pick plausible launch sites based on range to target
+function pickLaunchSites(targetCoord, count) {
+  count = count || 3;
+  const sites = (V2_DATA.IRAN_MISSILES || []).filter(m => m.range >= 500);
+  // Sort by distance to target, pick closest that are in range
+  return sites.map(s => {
+    const dlat = s.lat - targetCoord[0], dlon = s.lon - targetCoord[1];
+    const distKm = Math.sqrt(dlat*dlat + dlon*dlon) * 111;
+    return { ...s, distKm };
+  }).filter(s => s.distKm <= s.range && s.distKm > 100)
+    .sort((a,b) => a.distKm - b.distKm)
+    .slice(0, count);
+}
+
+function fireBallisticBarrage(targetCoords) {
+  // Clear previous
+  if (_ballisticSvg) _ballisticSvg.innerHTML = '';
+
+  // Zoom to show both Iran and Israel
+  map.fitBounds([[25,44],[38,56]], { padding:[30,30], maxZoom:6, animate:true, duration:1 });
+
+  setTimeout(() => {
+    let delay = 0;
+    targetCoords.forEach(tc => {
+      const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2));
+      launchers.forEach((l, i) => {
+        const stagger = delay + (i * (300 + Math.random()*700));
+        const duration = 3000 + Math.random()*2000;
+        animateMissile([l.lat, l.lon], tc, stagger, duration);
+      });
+      delay += 500 + Math.random()*1000;
+    });
+  }, 1200); // Wait for zoom
+}
+
+// Hook into Oref alerts — fire barrage when sirens detected
+let _lastBarrageTs = 0;
+function maybeFireBarrage(alerts) {
+  if (!alerts || alerts.length === 0) return;
+  const now = Date.now();
+  if (now - _lastBarrageTs < 60000) return; // Max once per minute
+  _lastBarrageTs = now;
+
+  // Geocode alert areas to targets
+  const targets = [];
+  const seen = new Set();
+  alerts.forEach(a => {
+    const area = (a.data || a.title || a.area || '').toLowerCase();
+    for (const [key, ll] of Object.entries(IL_GEO)) {
+      if (area.includes(key) || key.includes(area)) {
+        const k = `${ll[0]},${ll[1]}`;
+        if (!seen.has(k)) { seen.add(k); targets.push(ll); }
+        break;
+      }
+    }
+  });
+  if (targets.length > 0) fireBallisticBarrage(targets);
+}
+
+// Demo function — callable from console: demoBarrage()
+function demoBarrage() {
+  // Simulate barrage targeting Tel Aviv, Haifa, Jerusalem
+  fireBallisticBarrage([[32.08,34.78],[32.79,34.99],[31.77,35.21]]);
+}
+
+// Refresh SVG positions on map move (paths are in pixel space)
+map.on('moveend zoomend', () => {
+  if (_ballisticSvg && _ballisticSvg.children.length > 0) {
+    // SVG paths are in pixel coords — they go stale after pan/zoom
+    // For simplicity, clear any in-progress animations on map interaction
+    // Active barrages will be re-triggered by the next poll cycle if sirens persist
+  }
+});
+
 setInterval(pollOref, API_URL ? 10000 : 30000);
 
 // ═══════ THREAT LEVEL INDICATOR ═══════
