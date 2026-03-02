@@ -320,6 +320,28 @@ REGIONAL_ENERGY: [
 ],
 
 // ═══════════════════════════════════════════════════════════
+// DAMAGED / ATTACKED FACILITIES (explosion overlay markers)
+// ═══════════════════════════════════════════════════════════
+DAMAGED_FACILITIES: [
+  // NATURAL GAS — ATTACKED / HIT
+  { name: "South Pars Gas Field (Phase 14)", lat: 26.620, lon: 52.200, status: "hit", date: "2025-06-15", by: "IDF", type: "gas", desc: "Struck by Israeli forces Jun 2025, fire at Phase 14. Resumed ops after repairs." },
+  { name: "South Pars Processing (Asaluyeh)", lat: 27.469, lon: 52.599, status: "hit", date: "2025-06-15", by: "IDF", type: "gas", desc: "Processing units damaged in Jun 2025 strikes, partial production suspension." },
+
+  // NATURAL GAS — PRECAUTIONARY SHUTDOWN
+  { name: "Leviathan Gas Field", lat: 32.950, lon: 34.100, status: "shutdown", date: "2026-02-28", by: "precautionary", type: "gas", desc: "Shut down by Israel Energy Ministry Feb 28, Chevron operated. Gas exports to Egypt halted." },
+  { name: "Karish Gas Platform", lat: 33.100, lon: 33.800, status: "shutdown", date: "2026-02-28", by: "precautionary", type: "gas", desc: "Shut down by Israel Energy Ministry Feb 28, Energean operated. Hezbollah threat target." },
+  { name: "Tamar Gas Platform", lat: 32.600, lon: 34.000, status: "shutdown", date: "2026-02-28", by: "precautionary", type: "gas", desc: "Likely shut down alongside Leviathan/Karish per security assessment." },
+
+  // OIL — ATTACKED / HIT
+  { name: "Kharg Island Terminal", lat: 29.240, lon: 50.330, status: "hit", date: "2026-02-28", by: "US/IDF", type: "oil", desc: "Struck in Operation Roaring Lion / Epic Fury. 90% of Iran oil exports. 7M bpd capacity." },
+  { name: "Haifa Oil Refinery", lat: 32.820, lon: 35.060, status: "hit", date: "2026-02-28", by: "Iran/IRGC", type: "oil", desc: "Hit by Iranian missile strikes. Some units shut down." },
+  { name: "Isfahan Oil & Gas Refinery", lat: 32.590, lon: 51.630, status: "hit", date: "2026-02-28", by: "US/IDF", type: "oil", desc: "Confirmed damage from Operation Roaring Lion strikes. 375k bpd." },
+
+  // SHIPPING — DISRUPTED
+  { name: "Strait of Hormuz (LNG Halt)", lat: 26.570, lon: 56.250, status: "blocked", date: "2026-02-28", by: "IRGC", type: "shipping", desc: "LNG tanker crossings halted Feb 28. IRGC warned all tankers. 150+ anchored in open Gulf." },
+],
+
+// ═══════════════════════════════════════════════════════════
 // STRATEGIC WATERWAYS (GeoJSON-style line coordinates)
 // ═══════════════════════════════════════════════════════════
 WATERWAYS: [
