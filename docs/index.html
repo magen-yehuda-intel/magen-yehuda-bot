@@ -796,7 +796,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- TOOLBAR -->
 <div id="toolbar">
   <div class="tb-btn active" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
-    <span>📡</span><div class="tb-tooltip">Live Feed</div>
+    <span>📋</span><div class="tb-tooltip">Live Intel Feed</div>
   </div>
   <div class="tb-btn active" data-layer="oref-toggle" data-color="red" onclick="toggleOrefBanner()">
     <span>🚨</span><div class="tb-tooltip">Pikud HaOref Banner</div>
@@ -982,12 +982,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     </div>
     <div class="feed-updated" id="feed-updated"><span class="refresh-spin" id="feed-spinner">↻</span> <span id="feed-age">connecting...</span></div>
     <div class="feed-time-bar" id="feed-time-bar">
-      <span class="feed-time-chip" data-hours="0.25">15M</span>
+      <span class="feed-time-chip" data-hours="0.5">30M</span>
       <span class="feed-time-chip active" data-hours="1">1H</span>
+      <span class="feed-time-chip" data-hours="2">2H</span>
+      <span class="feed-time-chip" data-hours="4">4H</span>
       <span class="feed-time-chip" data-hours="6">6H</span>
-      <span class="feed-time-chip" data-hours="24">24H</span>
-      <span class="feed-time-chip" data-hours="48">48H</span>
-      <span class="feed-time-chip" data-hours="0">ALL</span>
+      <span class="feed-time-chip" data-hours="12">12H</span>
     </div>
     <div class="feed-cat-bar" id="feed-cat-bar"></div>
   </div>
@@ -998,7 +998,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
   <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>⭐</span>BASES</button>
-  <button class="mob-btn" onclick="toggleFeed()"><span>📡</span>FEED</button>
+  <button class="mob-btn" onclick="toggleFeed()"><span>📋</span>INTEL</button>
   <button class="mob-btn" onclick="mobileQuickToggle('fires')"><span>🔥</span>FIRES</button>
   <button class="mob-btn" onclick="mobileQuickToggle('osint')"><span>📌</span>OSINT</button>
   <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
@@ -1311,7 +1311,7 @@ function renderFeed() {
 
   const list = document.getElementById('feed-list');
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="feed-empty">No events in this timeframe<br><span style="font-size:9px;opacity:0.6;margin-top:4px;display:block">Try expanding to 1H or 6H</span></div>';
+    list.innerHTML = '<div class="feed-empty">No events in this timeframe<br><span style="font-size:9px;opacity:0.6;margin-top:4px;display:block">Try expanding to 2H or 6H</span></div>';
     return;
   }
 
@@ -1418,7 +1418,7 @@ function syncMapToFeed() {
   renderOSINTMarkers(filtered);
 }
 
-// Time chip click handler
+// Time chip click handler — GLOBAL filter: affects feed + all map data layers
 document.getElementById('feed-time-bar').addEventListener('click', e => {
   const chip = e.target.closest('.feed-time-chip');
   if (!chip) return;
@@ -1426,6 +1426,10 @@ document.getElementById('feed-time-bar').addEventListener('click', e => {
   document.querySelectorAll('.feed-time-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
   renderFeed();
+  // Re-filter all live data layers
+  loadFIRMS();
+  if (activeState.seismic) loadSeismic();
+  loadSirens();
 });
 
 // Auto-refresh feed every 30s
@@ -1721,6 +1725,7 @@ function loadFIRMS() {
   // Primary: /api/fires (real-time FIRMS, 4 satellites)
   // Fallback: intel-feed fire events
   const apiUrl = API_URL ? `${API_URL}/api/fires` : null;
+  const cutoffMs = feedTimeHours > 0 ? Date.now() - (feedTimeHours * 3600000) : 0;
   const loadFromApi = apiUrl ? fetch(apiUrl).then(r=>r.ok?r.json():null).catch(()=>null) : Promise.resolve(null);
   loadFromApi.then(apiData => {
     layers.fires.clearLayers();
@@ -1728,6 +1733,11 @@ function loadFIRMS() {
     if (apiData && apiData.fires && apiData.fires.length > 0) {
       apiData.fires.forEach(f => {
         if (!f.lat || !f.lon) return;
+        // Time filter: parse acquisition time if available
+        if (cutoffMs > 0 && f.acq) {
+          const acqTime = new Date(f.acq.replace(' ','T') + 'Z').getTime();
+          if (acqTime && acqTime < cutoffMs) return;
+        }
         count++;
         const frp = f.frp ? `FRP: ${f.frp.toFixed(1)} MW` : '';
         const conf = f.confidence ? `Confidence: ${f.confidence}` : '';
@@ -1744,7 +1754,13 @@ function loadFIRMS() {
       fetch(feedUrl).then(r=>r.ok?r.json():null).then(data=>{
         if(!data) return;
         const all = data.events||data||[];
-        all.filter(e=>{const t=(e.sub_event_type||e.type||'').toLowerCase();return t.includes('fire')||t.includes('firms');})
+        const nowS = Date.now()/1000;
+        all.filter(e=>{
+          const t=(e.sub_event_type||e.type||'').toLowerCase();
+          if(!t.includes('fire')&&!t.includes('firms')) return false;
+          if(feedTimeHours>0 && e.timestamp && (nowS - e.timestamp) > feedTimeHours*3600) return false;
+          return true;
+        })
         .forEach(f=>{
           if(!f.lat||!f.lon) return; count++;
           mkMarker(f.lat,f.lon,'🔥','marker-fire',20,
@@ -1760,12 +1776,16 @@ function loadFIRMS() {
 
 function loadSirens() {
   const feedUrl = dataUrl('intel-feed');
+  const nowS = Date.now() / 1000;
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
+    layers.sirens.clearLayers();
     const events = data.events || data || [];
     const sirens = events.filter(e => {
       const t = (e.type || e.sub_event_type || '').toLowerCase();
-      return t.includes('siren') || t.includes('alert') || t.includes('rocket') || t.includes('missile_alert') || t.includes('oref');
+      if (!(t.includes('siren') || t.includes('alert') || t.includes('rocket') || t.includes('missile_alert') || t.includes('oref'))) return false;
+      if (feedTimeHours > 0 && e.timestamp && (nowS - e.timestamp) > feedTimeHours * 3600) return false;
+      return true;
     });
     let count = 0;
     sirens.forEach(s => {
@@ -1963,10 +1983,13 @@ function haversine(lat1,lon1,lat2,lon2){
 }
 function loadSeismic(){
   if(!API_URL) return;
+  const cutoffS = feedTimeHours > 0 ? Date.now()/1000 - (feedTimeHours * 3600) : 0;
   fetch(`${API_URL}/api/seismic`).then(r=>r.json()).then(d=>{
     layers.seismic.clearLayers();
     const quakes=d.quakes||[];
     quakes.forEach(q=>{
+      // Time filter
+      if(cutoffS > 0 && q.time && q.time < cutoffS) return;
       const mag=q.mag||0;
       const radius=Math.max(6,mag*4);
       const color=mag>=5?'#ef4444':mag>=4?'#f97316':mag>=3?'#eab308':'#a3a3a3';
