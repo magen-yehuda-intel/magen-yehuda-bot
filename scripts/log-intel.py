@@ -61,9 +61,17 @@ def _parse_alert_ts(alert):
     # Try parsing RSS-style time string
     time_str = alert.get("time", "")
     if time_str:
+        # Strip CDATA wrappers from RSS feeds (e.g. Ynet: <![CDATA[Mon, 02 Mar 2026 02:23:15 +0200]]>)
+        import re
+        time_str = re.sub(r'<!\[CDATA\[|\]\]>', '', time_str).strip()
         try:
             from email.utils import parsedate_to_datetime
-            return parsedate_to_datetime(time_str).timestamp()
+            dt = parsedate_to_datetime(time_str)
+            ts = dt.timestamp()
+            # Sanity: reject timestamps more than 10 min in the future
+            if ts > time.time() + 600:
+                return time.time()
+            return ts
         except Exception:
             pass
     return time.time()
