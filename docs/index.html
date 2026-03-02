@@ -48,6 +48,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .title-us { color:#60a5fa; text-shadow: 0 0 20px rgba(59,130,246,0.5), 0 0 40px rgba(59,130,246,0.2); }
 .title-vs { color:rgba(255,255,255,0.4); font-weight:400; font-size:11px; margin:0 6px; }
 .title-iran { color:#f87171; text-shadow: 0 0 20px rgba(239,68,68,0.5), 0 0 40px rgba(239,68,68,0.2); }
+.title-actions { position:absolute; right:8px; display:flex; gap:4px; align-items:center; }
+.ta-btn { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:4px; color:rgba(255,255,255,0.5); font-size:12px; padding:3px 7px; cursor:pointer; transition:all 0.2s; }
+.ta-btn:hover { background:rgba(255,255,255,0.12); color:#fff; border-color:rgba(255,255,255,0.25); }
+.ta-btn.ta-save:hover { border-color:rgba(6,182,212,0.5); color:#22d3ee; }
+.ta-btn.ta-saved { border-color:rgba(34,197,94,0.5); color:#22c55e; }
 
 /* ═══ MAP ═══ */
 #map { position:fixed; top:44px; left:54px; right:0; bottom:28px; z-index:1; background:var(--bg); }
@@ -645,9 +650,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   #basemap-toggle { top:120px; right:8px; }
   #statusbar { display:none; }
   #mobile-bar { display:flex; }
-  .title-text { font-size:10px; letter-spacing:1px; }
-  .title-flag { font-size:18px; }
+  .title-text { font-size:10px; letter-spacing:1px; margin:0 4px; }
+  .title-flag { display:none; }
+  .title-iran-full { display:none; }
+  .title-iran-short { display:inline; }
   #titlebar { height:40px; }
+  .ta-btn { font-size:11px; padding:2px 5px; }
   .leaflet-popup-content-wrapper { max-width:280px !important; }
   #legend { bottom:60px; right:8px; max-width:220px; }
 }
@@ -814,9 +822,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <span class="title-text">
     <span class="title-us">U.S. & ALLIES</span>
     <span class="title-vs">vs.</span>
-    <span class="title-iran">ISLAMIC REPUBLIC OF IRAN</span>
+    <span class="title-iran"><span class="title-iran-full">ISLAMIC REPUBLIC OF IRAN</span><span class="title-iran-short" style="display:none">IRAN</span></span>
   </span>
   <span class="title-flag">🇮🇷</span>
+  <div class="title-actions">
+    <button class="ta-btn" onclick="clearAllLayers()" title="Clear All Layers">✕</button>
+    <button class="ta-btn ta-save" onclick="saveLayerConfig()" title="Save Config">💾</button>
+    <button class="ta-btn" onclick="resetLayerConfig()" title="Reset Default">↺</button>
+  </div>
 </div>
 
 <!-- MOBILE HORIZONTAL TOOLBAR -->
@@ -1635,11 +1648,15 @@ function clearAllLayers() {
 function saveLayerConfig() {
   const config = JSON.stringify(activeState);
   document.cookie = `layerConfig=${encodeURIComponent(config)};max-age=${365*86400};path=/;SameSite=Lax`;
-  // Flash the button to confirm
-  const btn = event.target;
-  btn.textContent = '✓ Saved!';
-  btn.style.color = '#22c55e';
-  setTimeout(() => { btn.textContent = '💾 Save Config'; btn.style.color = '#22d3ee'; }, 1500);
+  // Flash all save buttons
+  document.querySelectorAll('.ta-save, .sb-action-btn').forEach(btn => {
+    if (btn.textContent.includes('Save') || btn.classList.contains('ta-save')) {
+      const orig = btn.textContent;
+      btn.textContent = '✓';
+      btn.classList.add('ta-saved');
+      setTimeout(() => { btn.textContent = orig; btn.classList.remove('ta-saved'); }, 1500);
+    }
+  });
 }
 
 function resetLayerConfig() {
