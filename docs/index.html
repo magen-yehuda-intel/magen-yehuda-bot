@@ -122,6 +122,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 /* ═══ SAM RANGE RINGS ═══ */
 .sam-ring { fill:none; stroke-dasharray:8,6; }
 .sam-ring-active { animation:defense-ring-pulse 2.5s ease-in-out infinite; }
+.siren-zone-ring { animation:defense-ring-pulse 1.5s ease-in-out infinite; }
 
 /* ═══ NEON GLOW (waterways) ═══ */
 .neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
@@ -747,7 +748,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn" data-mt="infra" onclick="mtToggle('infra',this)">🏗</div>
   <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
   <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
-  <div class="mt-btn" data-mt="sam" onclick="mtToggle('sam',this)">🛡</div>
+  <div class="mt-btn" data-mt="sam" onclick="mtToggle('sam',this)">🔴</div>
   <div class="mt-btn" data-mt="patrol" onclick="mtToggle('patrol',this)">🛩</div>
   <div class="mt-btn" data-mt="waterways" onclick="mtToggle('waterways',this)">🌊</div>
   <div class="mt-sep"></div>
@@ -809,8 +810,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="labels" data-color="blue" onclick="toggleLayer('labels')">
     <span>🏷</span><div class="tb-tooltip">Base Labels</div>
   </div>
-  <div class="tb-btn" data-layer="sam" data-color="amber" onclick="toggleLayer('sam')">
-    <span>🛡</span><div class="tb-tooltip">Iran Air Defense (SAM engagement ranges)</div>
+  <div class="tb-btn" data-layer="sam" data-color="red" onclick="toggleLayer('sam')">
+    <span>🔴</span><div class="tb-tooltip">Siren Alert Zones (breathing rings)</div>
   </div>
   <div class="tb-btn" data-layer="patrol" data-color="green" onclick="toggleLayer('patrol')">
     <span>↻</span><div class="tb-tooltip">Air Patrol Routes</div>
@@ -1562,30 +1563,11 @@ function renderAllLayers() {
     mkMarker(s.lat, s.lon, s.emoji, 'marker-iran-naval', 26, popup).addTo(layers.naval);
   });
 
-  // ─── IRAN AIR DEFENSE + SAM RINGS ───
+  // ─── IRAN AIR DEFENSE (markers only, no SAM rings — repurposed for siren zones) ───
   V2_DATA.IRAN_AIRDEFENSE.forEach(s => {
     const rangeColor = s.range_km >= 200 ? '#ef4444' : s.range_km >= 100 ? '#f59e0b' : '#facc15';
-    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Engagement range: ${s.range_km}km<br>Type: Surface-to-Air Missile`, rangeColor);
+    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Engagement range: ${s.range_km}km<br>⚠️ Pre-war data — status unknown`, rangeColor);
     mkMarker(s.lat, s.lon, '🛡️', 'marker-iran-ad', 24, popup).addTo(layers.ad);
-    // SAM range ring
-    if (s.range_km > 0) {
-      const ring = L.circle([s.lat, s.lon], {
-        radius: s.range_km * 1000,
-        color: rangeColor,
-        weight: 1.5,
-        fillColor: s.range_km >= 200 ? 'rgba(239,68,68,0.05)' : 'rgba(245,158,11,0.03)',
-        fillOpacity: 1,
-        dashArray: s.range_km >= 200 ? '' : '8,6',
-        className: 'sam-ring-active',
-      });
-      ring.bindPopup(`<div style="font-family:var(--font-data);font-size:11px">
-        <b style="color:${rangeColor}">🛡️ ${s.name}</b><br>
-        System: ${s.system}<br>
-        Range: ${s.range_km}km radius<br>
-        <span style="color:var(--text-dim);font-size:9px">Circle = engagement envelope</span>
-      </div>`, {className:'dark-popup'});
-      ring.addTo(layers.sam);
-    }
   });
 
   // ─── IRAN AIR BASES ───
@@ -2051,12 +2033,104 @@ function updateOrefBanner(alerts, serverTs, note) {
     status.textContent = `🚨 ACTIVE: ${alerts.length} alert${alerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
     document.getElementById('chip-alert').textContent = alerts.length;
   }
+  // Update breathing siren zone circles
+  updateSirensFromOref(alerts);
 }
 
 function updateSirensFromOref(alerts) {
-  // Clear and re-add siren markers from Oref data
-  // This requires geocoding Oref area names — use a basic lookup
-  // For now, rely on intel-feed.json which is geocoded by the watcher
+  // Place breathing red circles on active siren areas
+  layers.sam.clearLayers();
+  if (!alerts || alerts.length === 0) return;
+
+  // Auto-enable siren zones layer when sirens active
+  if (!activeState.sam) {
+    activeState.sam = true;
+    layers.sam.addTo(map);
+    const btn = document.querySelector('.tb-btn[data-layer="sam"]');
+    if (btn) btn.classList.add('active-red');
+  }
+
+  // Israeli city/area geocoder (approximate centers)
+  const IL_GEO = {
+    'תל אביב':  [32.08,34.78], 'tel aviv':   [32.08,34.78],
+    'חיפה':     [32.79,34.99], 'haifa':       [32.79,34.99],
+    'ירושלים':  [31.77,35.21], 'jerusalem':   [31.77,35.21],
+    'באר שבע':  [31.25,34.79], 'beer sheva':  [31.25,34.79], 'beersheba': [31.25,34.79],
+    'אשדוד':    [31.80,34.65], 'ashdod':      [31.80,34.65],
+    'אשקלון':   [31.67,34.57], 'ashkelon':    [31.67,34.57],
+    'נתניה':    [32.33,34.86], 'netanya':     [32.33,34.86],
+    'הרצליה':   [32.16,34.78], 'herzliya':    [32.16,34.78],
+    'רחובות':   [31.90,34.81], 'rehovot':     [31.90,34.81],
+    'פתח תקוה': [32.09,34.89], 'petah tikva': [32.09,34.89],
+    'ראשון לציון':[31.97,34.79],'rishon':     [31.97,34.79],
+    'נצרת':     [32.70,35.30], 'nazareth':    [32.70,35.30],
+    'עכו':      [32.93,35.08], 'acre':        [32.93,35.08], 'akko': [32.93,35.08],
+    'טבריה':    [32.79,35.53], 'tiberias':    [32.79,35.53],
+    'צפת':      [32.97,35.50], 'safed':       [32.97,35.50], 'tzfat': [32.97,35.50],
+    'קריית שמונה':[33.21,35.57],'kiryat shmona':[33.21,35.57],
+    'כרמיאל':   [32.91,35.30], 'karmiel':     [32.91,35.30],
+    'מגידו':    [32.58,35.18], 'megiddo':     [32.58,35.18],
+    'עפולה':    [32.61,35.29], 'afula':       [32.61,35.29],
+    'שדרות':    [31.52,34.59], 'sderot':      [31.52,34.59],
+    'גוש דן':  [32.05,34.79], 'gush dan':    [32.05,34.79],
+    'שרון':     [32.30,34.86], 'sharon':      [32.30,34.86],
+    'השפלה':    [31.85,34.85], 'shfela':      [31.85,34.85],
+    'נגב':      [30.85,34.78], 'negev':       [30.85,34.78],
+    'גליל עליון':[33.05,35.50],'upper galilee':[33.05,35.50],
+    'גליל תחתון':[32.75,35.35],'lower galilee':[32.75,35.35],
+    'עמק יזרעאל':[32.60,35.25],'jezreel':    [32.60,35.25],
+    'גולן':     [32.95,35.75], 'golan':       [32.95,35.75],
+    'מטה בנימין':[31.90,35.25],'binyamin':    [31.90,35.25],
+    'אילת':     [29.56,34.95], 'eilat':       [29.56,34.95],
+    'מודיעין':  [31.90,35.01], "modi'in":     [31.90,35.01],
+    'רמת גן':   [32.07,34.82], 'ramat gan':   [32.07,34.82],
+    'בני ברק':  [32.08,34.83], 'bnei brak':   [32.08,34.83],
+    'הוד השרון': [32.15,34.88], 'hod hasharon':[32.15,34.88],
+    'רעננה':    [32.18,34.87], 'raanana':     [32.18,34.87],
+    'כפר סבא':  [32.17,34.91], 'kfar saba':   [32.17,34.91],
+    'לוד':      [31.95,34.89], 'lod':         [31.95,34.89],
+    'רמלה':     [31.93,34.87], 'ramla':       [31.93,34.87],
+  };
+
+  const geocoded = new Map(); // dedup by location key
+  alerts.forEach(a => {
+    const area = (a.data || a.title || a.area || '').trim();
+    if (!area) return;
+    const areaLower = area.toLowerCase();
+    let coords = null;
+    // Try exact match first, then substring
+    for (const [key, ll] of Object.entries(IL_GEO)) {
+      if (areaLower.includes(key) || key.includes(areaLower)) {
+        coords = ll;
+        break;
+      }
+    }
+    if (!coords) return;
+    const locKey = `${coords[0]},${coords[1]}`;
+    if (geocoded.has(locKey)) {
+      geocoded.get(locKey).areas.push(area);
+    } else {
+      geocoded.set(locKey, { lat: coords[0], lon: coords[1], areas: [area] });
+    }
+  });
+
+  geocoded.forEach(loc => {
+    // Breathing red circle
+    const ring = L.circle([loc.lat, loc.lon], {
+      radius: 8000, // 8km radius
+      color: '#ef4444',
+      weight: 2,
+      fillColor: 'rgba(239,68,68,0.15)',
+      fillOpacity: 1,
+      className: 'siren-zone-ring',
+    });
+    ring.bindPopup(`<div style="font-family:var(--font-data);font-size:11px">
+      <b style="color:#ef4444">🚨 ACTIVE SIREN</b><br>
+      ${loc.areas.join('<br>')}<br>
+      <span style="color:var(--text-dim);font-size:9px">Take cover immediately</span>
+    </div>`, {className:'dark-popup'});
+    ring.addTo(layers.sam);
+  });
 }
 
 // Poll Oref — faster with API, slower with static
