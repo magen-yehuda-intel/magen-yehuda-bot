@@ -2298,11 +2298,22 @@ function updateOrefBanner(alerts, serverTs, note) {
   }
 
   if (alerts.length === 0) {
-    banner.classList.remove('alert-active');
-    status.className = 'oref-status safe';
-    status.textContent = note && note.includes('cached') ? 'No active alerts (cached)' : 'No active alerts in Israel.';
     document.getElementById('chip-alert').textContent = '0';
+    // If we had active alerts recently, show shelter advisory
+    const SHELTER_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+    if (window._lastOrefAlertTime && (Date.now() - window._lastOrefAlertTime) < SHELTER_WINDOW_MS) {
+      banner.classList.add('alert-active');
+      status.className = 'oref-status danger';
+      const minsAgo = Math.round((Date.now() - window._lastOrefAlertTime) / 60000);
+      status.textContent = `⚠️ Sirens ended ${minsAgo || '<1'}m ago — Stay in shelter until instructed by Pikud HaOref`;
+    } else {
+      banner.classList.remove('alert-active');
+      status.className = 'oref-status safe';
+      status.textContent = note && note.includes('cached') ? 'No active alerts (cached)' : 'No active alerts in Israel.';
+      window._lastOrefAlertTime = null;
+    }
   } else {
+    window._lastOrefAlertTime = Date.now();
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
     const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
