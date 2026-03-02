@@ -81,14 +81,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .tb-btn[data-color="purple"].active { box-shadow:0 0 12px rgba(168,85,247,0.5); border-color:rgba(168,85,247,0.5); }
 .tb-btn[data-color="orange"].active { box-shadow:0 0 12px rgba(249,115,22,0.5); border-color:rgba(249,115,22,0.5); }
 .tb-tooltip {
-  position:absolute; left:48px; top:50%; transform:translateY(-50%);
+  display:none;
+}
+#tb-tip {
+  position:fixed; left:58px;
   background:rgba(5,5,16,0.95); border:1px solid var(--panel-border);
   padding:4px 10px; border-radius:4px; font-size:11px; white-space:nowrap;
   pointer-events:none; opacity:0; transition:opacity 0.15s;
   font-family:var(--font-data); color:var(--text-dim);
-  backdrop-filter:blur(8px); z-index:9999;
+  backdrop-filter:blur(8px); z-index:99999;
 }
-.tb-btn:hover .tb-tooltip { opacity:1; }
+#tb-tip.show { opacity:1; }
 
 /* ═══ MARKER STYLES ═══ */
 .custom-marker {
@@ -867,6 +870,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   </div>
 </div>
 
+<div id="tb-tip"></div>
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="sb-header">
@@ -1715,6 +1719,22 @@ function renderAllLayers() {
     document.getElementById('asset-count').textContent = totalAssets;
   document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
   syncSidebarState();
+
+  // Global toolbar tooltip (avoids overflow clipping)
+  const tbTip = document.getElementById('tb-tip');
+  document.querySelectorAll('.tb-btn').forEach(btn => {
+    const tt = btn.querySelector('.tb-tooltip');
+    if (!tt) return;
+    const text = tt.textContent;
+    btn.addEventListener('mouseenter', () => {
+      const r = btn.getBoundingClientRect();
+      tbTip.textContent = text;
+      tbTip.style.top = (r.top + r.height/2) + 'px';
+      tbTip.style.transform = 'translateY(-50%)';
+      tbTip.classList.add('show');
+    });
+    btn.addEventListener('mouseleave', () => tbTip.classList.remove('show'));
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
