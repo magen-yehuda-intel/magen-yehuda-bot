@@ -811,6 +811,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-sep"></div>
+  <div class="mt-btn" data-mt="countryNames" onclick="mtToggle('countryNames',this)">🔤</div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
   <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
   <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
@@ -849,6 +850,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="toggleLayer('borders')">
     <span>🗺</span><div class="tb-tooltip">Country Borders</div>
+  </div>
+  <div class="tb-btn" data-layer="countryNames" data-color="blue" onclick="toggleLayer('countryNames')">
+    <span>🔤</span><div class="tb-tooltip">Country Names</div>
   </div>
   </div>
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
@@ -1178,6 +1182,9 @@ const layers = {
   osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, zoomToBoundsOnClick: true, clusterPane: 'osintPane' }),
   sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7, iconCreateFunction: sirenClusterIcon }),
   labels: L.layerGroup(),
+  countryNames: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
+    attribution:'', subdomains:'abcd', pane:'overlayPane', opacity:0.7, maxZoom:18
+  }),
   aircraft: L.layerGroup(),
   seismic: L.layerGroup(),
   ships: L.layerGroup(),
@@ -1187,7 +1194,7 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: true,
+  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: true, countryNames: false,
   infra: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
