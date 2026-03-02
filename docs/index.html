@@ -967,6 +967,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" data-sb="patrol" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
     <div class="sb-row" data-sb="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (significant)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
     <div class="sb-row" data-sb="osint" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
+    <div class="sb-row" data-sb="seismic" onclick="toggleLayer('seismic')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">🌍 Seismic Activity</span><span class="sb-row-count" id="cnt-seismic">0</span></div>
+    <div class="sb-row" data-sb="aircraft" onclick="toggleLayer('aircraft')"><div class="sb-dot" style="background:#60a5fa"></div><span class="sb-row-name">✈️ Live Aircraft</span><span class="sb-row-count" id="cnt-aircraft">0</span></div>
+    <div class="sb-row" data-sb="gpsjam" onclick="toggleLayer('gpsjam')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">📡 GPS Jamming</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" data-sb="satellites" onclick="toggleLayer('satellites')"><div class="sb-dot" style="background:#94a3b8"></div><span class="sb-row-name">🛰️ Satellites</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" data-sb="borders" onclick="toggleLayer('borders')"><div class="sb-dot" style="background:#475569"></div><span class="sb-row-name">🗺️ Borders</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" data-sb="countryNames" onclick="toggleLayer('countryNames')"><div class="sb-dot" style="background:#64748b"></div><span class="sb-row-name">🔤 Country Names</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" data-sb="labels" onclick="toggleLayer('labels')"><div class="sb-dot" style="background:#64748b"></div><span class="sb-row-name">🏷️ Labels</span><span class="sb-row-count"></span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="clearAllLayers()" style="border-color:rgba(239,68,68,0.3);color:#f87171">✕ Clear All</div>
       <div class="sb-action-btn" onclick="resetLayerConfig()">↺ Reset Default</div>
