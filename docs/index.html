@@ -859,7 +859,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim)" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
-  <div class="oref-meta">Source: Red Alert · Pikud Haoref · <span id="oref-mode"></span> · <span id="oref-interval">~30s</span> refresh</div>
+  <div class="oref-meta">Source: Red Alert · Pikud Haoref</div>
 </div>
 
 <div id="threat-indicator">
@@ -2176,8 +2176,8 @@ setInterval(loadTicker, 60000); // refresh ticker every 60s
 setInterval(loadTicker, 30000); // refresh ticker every 30s
 
 // Show data mode
-document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
-document.getElementById('oref-interval').textContent = API_URL ? '~10s' : '~2min';
+// oref mode display removed
+// oref mode/interval display removed
 
 // Auto-refresh live data every 60s
 setInterval(() => {
