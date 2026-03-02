@@ -15,9 +15,11 @@ import json
 import time
 
 TABLE_NAME = "intelevents"
+OREF_TABLE_NAME = "orefalerts"
 ACCOUNT_URL = "https://magenyehudadata.table.core.windows.net"
 
 _client = None
+_oref_client = None
 
 def _get_client():
     global _client
@@ -144,6 +146,115 @@ def get_latest_ts():
         return events[0]["ts"] if events else 0
     except:
         return 0
+
+
+# ═══════════════════════════════════════════════════════════
+# OREF ALERTS TABLE
+# ═══════════════════════════════════════════════════════════
+
+def _get_oref_client():
+    global _oref_client
+    if _oref_client:
+        return _oref_client
+    from azure.data.tables import TableClient
+    conn_str = os.environ.get("AZURE_TABLE_CONN")
+    if conn_str:
+        _oref_client = TableClient.from_connection_string(conn_str, table_name=OREF_TABLE_NAME)
+    else:
+        from azure.identity import DefaultAzureCredential
+        cred = DefaultAzureCredential()
+        _oref_client = TableClient(endpoint=ACCOUNT_URL, table_name=OREF_TABLE_NAME, credential=cred)
+    return _oref_client
+
+
+def _oref_row_key(alert):
+    """Deterministic hash for oref alert dedup: title + first 5 areas + cat."""
+    areas = alert.get("areas", alert.get("data", []))
+    area_str = ",".join(sorted(areas[:5])) if isinstance(areas, list) else str(areas)[:100]
+    raw = f"{alert.get('title','')}{alert.get('cat','')}{area_str}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]
+
+
+def insert_oref_alert(alert):
+    """Insert a Pikud HaOref alert. Returns True on success.
+
+    Expected fields:
+        title: str - alert type (e.g. "ירי רקטות וטילים")
+        cat: int/str - alert category
+        areas: list[str] - affected areas
+        ts: float - unix timestamp of alert
+        cleared_ts: float - when alert cleared (optional, update later)
+        duration_s: int - seconds alert was active (optional)
+    """
+    try:
+        ts = alert.get("ts") or time.time()
+        areas = alert.get("areas", alert.get("data", []))
+        if isinstance(areas, str):
+            areas = [areas]
+
+        entity = {
+            "PartitionKey": _partition_key(ts),
+            "RowKey": _oref_row_key(alert),
+            "ts": float(ts),
+            "title": alert.get("title", ""),
+            "cat": str(alert.get("cat", "")),
+            "area_count": len(areas),
+            "areas": json.dumps(areas, ensure_ascii=False)[:32000],
+            "cleared_ts": float(alert.get("cleared_ts", 0)),
+            "duration_s": int(alert.get("duration_s", 0)),
+        }
+        _get_oref_client().upsert_entity(entity)
+        return True
+    except Exception as e:
+        print(f"[db] insert_oref_alert error: {e}")
+        return False
+
+
+def update_oref_cleared(alert, cleared_ts=None):
+    """Update an alert with cleared timestamp and duration."""
+    try:
+        ts = alert.get("ts") or time.time()
+        cleared = cleared_ts or time.time()
+        pk = _partition_key(ts)
+        rk = _oref_row_key(alert)
+        client = _get_oref_client()
+        entity = client.get_entity(pk, rk)
+        entity["cleared_ts"] = float(cleared)
+        entity["duration_s"] = int(cleared - entity.get("ts", cleared))
+        client.upsert_entity(entity)
+        return True
+    except Exception as e:
+        print(f"[db] update_oref_cleared error: {e}")
+        return False
+
+
+def query_oref_alerts(hours=24, limit=100):
+    """Query recent Oref alerts."""
+    try:
+        client = _get_oref_client()
+        cutoff = time.time() - (hours * 3600)
+        cutoff_date = time.strftime("%Y-%m-%d", time.gmtime(cutoff))
+
+        entities = []
+        for entity in client.query_entities(
+            query_filter=f"PartitionKey ge '{cutoff_date}'",
+            select=["PartitionKey", "RowKey", "ts", "title", "cat", "area_count",
+                    "areas", "cleared_ts", "duration_s"],
+        ):
+            if entity.get("ts", 0) >= cutoff:
+                entities.append(entity)
+
+        entities.sort(key=lambda x: x.get("ts", 0), reverse=True)
+        return entities[:limit]
+    except Exception as e:
+        print(f"[db] query_oref_alerts error: {e}")
+        return []
+
+
+def get_last_oref_alert():
+    """Get the most recent Oref alert."""
+    alerts = query_oref_alerts(hours=48, limit=1)
+    return alerts[0] if alerts else None
 
 
 if __name__ == "__main__":

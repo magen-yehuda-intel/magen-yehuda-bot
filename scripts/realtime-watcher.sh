@@ -626,6 +626,25 @@ print('1' if any(c in raw for c in critical) else '0')
     log "🚨 NEW SIRENS detected"
     echo "$alerts" >> "$ALERT_LOG"
 
+    # Save to Azure Table Storage (best-effort)
+    python3 -c "
+import json, time, sys
+sys.path.insert(0, '$SCRIPT_DIR')
+from db import insert_oref_alert
+try:
+    alerts = json.loads(open('$STATE_DIR/oref-alert-tmp.json' if False else '/dev/stdin').read())
+except:
+    alerts = json.loads('''$alerts''')
+if not isinstance(alerts, list): alerts = [alerts]
+for a in alerts:
+    insert_oref_alert({
+        'title': a.get('title', ''),
+        'cat': a.get('cat', ''),
+        'areas': a.get('data', []),
+        'ts': time.time()
+    })
+" <<< "$alerts" 2>/dev/null &
+
     # Parse alert details via temp file
     local alert_tmp="$STATE_DIR/oref-alert-tmp.json"
     printf '%s' "$alerts" > "$alert_tmp"

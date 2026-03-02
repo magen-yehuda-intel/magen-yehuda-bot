@@ -2177,6 +2177,10 @@ setInterval(loadTicker, 30000); // refresh ticker every 30s
 
 // Show data mode
 // oref mode display removed
+// Fetch last oref alert from DB for persistent "last alert" display
+if (API_URL) fetch(`${API_URL}/api/oref/last`).then(r=>r.ok?r.json():null).then(d=>{
+  if(d&&d.alert){window._lastOrefAlertTitle=d.alert.title||'Alert';window._lastOrefAlertTime=d.alert.ts?d.alert.ts*1000:null;}
+}).catch(()=>{});
 // oref mode/interval display removed
 
 // Auto-refresh live data every 60s
