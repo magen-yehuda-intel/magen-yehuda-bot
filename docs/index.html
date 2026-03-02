@@ -2406,9 +2406,11 @@ function buildArcPath(from, to) {
 function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
   const svg = getBallisticSvg();
   const arc = buildArcPath(fromCoord, toCoord);
-  durationMs = durationMs || Math.max(3000, Math.min(8000, arc.dist * 6));
+  durationMs = durationMs || Math.max(4000, Math.min(8000, arc.dist * 6));
+  const WAVES = 5;
+  const WAVE_GAP = durationMs * 0.7; // gap between missile launches
 
-  // Persistent arc group (drawn once, stays visible)
+  // Draw full trajectory arc immediately (no progressive reveal)
   const arcGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
   const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
   glowPath.setAttribute('d', arc.path);
@@ -2420,19 +2422,19 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
   corePath.setAttribute('class','ballistic-trail ballistic-trail-core');
   corePath.setAttribute('stroke-width','2.5');
   arcGroup.appendChild(corePath);
-  svg.appendChild(arcGroup);
 
   // Send a missile head along the arc
+  let completed = 0;
   function launchHead(delay) {
     setTimeout(() => {
       const head = document.createElementNS('http://www.w3.org/2000/svg','circle');
       head.setAttribute('cx', arc.p1.x); head.setAttribute('cy', arc.p1.y);
-      head.setAttribute('r','3'); head.setAttribute('class','missile-head');
-      svg.appendChild(head);
+      head.setAttribute('r','4'); head.setAttribute('class','missile-head');
+      arcGroup.appendChild(head);
       const tail = document.createElementNS('http://www.w3.org/2000/svg','line');
-      tail.setAttribute('stroke','rgba(255,160,60,0.4)'); tail.setAttribute('stroke-width','2');
+      tail.setAttribute('stroke','rgba(255,200,60,0.5)'); tail.setAttribute('stroke-width','3');
       tail.setAttribute('stroke-linecap','round');
-      svg.appendChild(tail);
+      arcGroup.appendChild(tail);
 
       const startTime = performance.now();
       function tick(now) {
@@ -2442,7 +2444,8 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
         const hx = (1-u)*(1-u)*arc.p1.x + 2*(1-u)*u*arc.cp.x + u*u*arc.p2.x;
         const hy = (1-u)*(1-u)*arc.p1.y + 2*(1-u)*u*arc.cp.y + u*u*arc.p2.y;
         head.setAttribute('cx', hx); head.setAttribute('cy', hy);
-        const ut = Math.max(0, u - 0.06);
+        // Comet tail
+        const ut = Math.max(0, u - 0.08);
         const tx = (1-ut)*(1-ut)*arc.p1.x + 2*(1-ut)*ut*arc.cp.x + ut*ut*arc.p2.x;
         const ty = (1-ut)*(1-ut)*arc.p1.y + 2*(1-ut)*ut*arc.cp.y + ut*ut*arc.p2.y;
         tail.setAttribute('x1', hx); tail.setAttribute('y1', hy);
@@ -2453,53 +2456,34 @@ function animateMissile(fromCoord, toCoord, delayMs, durationMs) {
         } else {
           head.remove(); tail.remove();
           // Impact ripple
-          const r1 = document.createElementNS('http://www.w3.org/2000/svg','circle');
-          r1.setAttribute('cx', arc.p2.x); r1.setAttribute('cy', arc.p2.y);
-          r1.setAttribute('r','3'); r1.setAttribute('class','impact-ring');
-          svg.appendChild(r1);
-          const r2 = document.createElementNS('http://www.w3.org/2000/svg','circle');
-          r2.setAttribute('cx', arc.p2.x); r2.setAttribute('cy', arc.p2.y);
-          r2.setAttribute('r','3'); r2.setAttribute('class','impact-ring2');
-          svg.appendChild(r2);
-          // Clean up ripple elements after animation
-          setTimeout(() => { r1.remove(); r2.remove(); }, 2000);
+          ['impact-ring','impact-ring2'].forEach(cls => {
+            const r = document.createElementNS('http://www.w3.org/2000/svg','circle');
+            r.setAttribute('cx', arc.p2.x); r.setAttribute('cy', arc.p2.y);
+            r.setAttribute('r','3'); r.setAttribute('class', cls);
+            arcGroup.appendChild(r);
+            setTimeout(() => r.remove(), 2000);
+          });
+          completed++;
+          // Fade arc only after ALL missiles have hit
+          if (completed >= WAVES) {
+            setTimeout(() => {
+              arcGroup.style.transition = 'opacity 10s';
+              arcGroup.style.opacity = '0';
+              setTimeout(() => arcGroup.remove(), 10000);
+            }, 3000);
+          }
         }
       }
       requestAnimationFrame(tick);
     }, delay);
   }
 
-  // First reveal: draw arc progressively with first missile
+  // Show arc, then launch missiles
   setTimeout(() => {
-    let pathLen;
-    try { pathLen = corePath.getTotalLength(); } catch(e) { pathLen = 800; }
-    glowPath.style.strokeDasharray = pathLen;
-    glowPath.style.strokeDashoffset = pathLen;
-    corePath.style.strokeDasharray = pathLen;
-    corePath.style.strokeDashoffset = pathLen;
-
-    const startTime = performance.now();
-    function revealTick(now) {
-      const t = Math.min(1, (now - startTime) / durationMs);
-      const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-      const offset = pathLen * (1 - ease);
-      glowPath.style.strokeDashoffset = offset;
-      corePath.style.strokeDashoffset = offset;
-      if (t < 1) requestAnimationFrame(revealTick);
+    svg.appendChild(arcGroup);
+    for (let i = 0; i < WAVES; i++) {
+      launchHead(i * WAVE_GAP);
     }
-    requestAnimationFrame(revealTick);
-
-    // Launch 5 missiles along this arc, spaced out
-    for (let i = 0; i < 5; i++) {
-      launchHead(i * (durationMs * 0.8));
-    }
-
-    // Fade arc after all missiles done (~60s)
-    setTimeout(() => {
-      arcGroup.style.transition = 'opacity 10s';
-      arcGroup.style.opacity = '0';
-      setTimeout(() => arcGroup.remove(), 10000);
-    }, durationMs * 5);
   }, delayMs || 0);
 
   return arcGroup;
