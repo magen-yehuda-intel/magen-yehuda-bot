@@ -2033,13 +2033,12 @@ function haversine(lat1,lon1,lat2,lon2){
 }
 function loadSeismic(){
   if(!API_URL) return;
-  const cutoffS = feedTimeHours > 0 ? Date.now()/1000 - (feedTimeHours * 3600) : 0;
+  // Seismic uses longer window than OSINT — earthquakes are rare events
+  // Show all quakes from API (7d) regardless of feed time filter
   fetch(`${API_URL}/api/seismic`).then(r=>r.json()).then(d=>{
     layers.seismic.clearLayers();
     const quakes=d.quakes||[];
     quakes.forEach(q=>{
-      // Time filter
-      if(cutoffS > 0 && q.time && q.time < cutoffS) return;
       const mag=q.mag||0;
       const radius=Math.max(6,mag*4);
       const color=mag>=5?'#ef4444':mag>=4?'#f97316':mag>=3?'#eab308':'#a3a3a3';
