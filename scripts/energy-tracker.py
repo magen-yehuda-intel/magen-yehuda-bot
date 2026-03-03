@@ -135,11 +135,27 @@ def cat_emoji(cat: str) -> str:
 
 
 def main():
-    # Load feed
+    # Load main feed
     with open(FEED_PATH) as f:
         raw = json.load(f)
     events = raw if isinstance(raw, list) else raw.get('events', [])
 
+    # Also load JSONL log for energy RSS events not yet in main feed
+    jsonl_path = os.path.join(SKILL_DIR, 'state', 'log-intel.jsonl')
+    seen_texts = {e.get('text', '')[:100] for e in events}
+    if os.path.exists(jsonl_path):
+        with open(jsonl_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    ev = json.loads(line)
+                    if ev.get('text', '')[:100] not in seen_texts:
+                        events.append(ev)
+                        seen_texts.add(ev.get('text', '')[:100])
+                except Exception:
+                    pass
     now = time.time()
     energy_events = []
     facilities_affected = {}  # key -> {status, name, lat, lon, last_event_ts, events}
@@ -157,7 +173,7 @@ def main():
 
         cats = classify_event(text)
         sev = severity_score(cats, text)
-        source = e.get('source', '') or 'unknown'
+        source = e.get('src', '') or e.get('source', '') or 'unknown'
 
         entry = {
             'ts': ts,

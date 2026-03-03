@@ -199,6 +199,16 @@ def main():
     except Exception as ex:
         print(f"Git error: {ex}")
 
+    # Run energy RSS scanner to pull dedicated energy sources
+    try:
+        energy_rss = os.path.join(SKILL_DIR, 'scripts', 'scan-energy-rss.py')
+        if os.path.exists(energy_rss):
+            subprocess.run([sys.executable, energy_rss], cwd=SKILL_DIR,
+                           capture_output=True, timeout=120)
+            print("Energy RSS scan complete")
+    except Exception as ex:
+        print(f"Energy RSS error: {ex}")
+
     # Run energy tracker to update energy-feed.json
     try:
         import importlib.util
