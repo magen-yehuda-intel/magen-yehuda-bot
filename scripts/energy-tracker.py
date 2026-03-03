@@ -99,10 +99,12 @@ def extract_facilities_hit(text: str) -> list:
     has_shutdown = any(w in t for w in shutdown_words)
 
     hits = []
+    seen_names = set()
     for key, (lat, lon, name) in FACILITY_COORDS.items():
-        if key in t and (has_attack or has_shutdown):
+        if key in t and (has_attack or has_shutdown) and name not in seen_names:
             status = 'struck' if has_attack else 'shutdown'
-            hits.append({'key': key, 'lat': lat, 'lon': lon, 'name': name, 'status': status})
+            hits.append({'key': name.lower().replace(' ', '_'), 'lat': lat, 'lon': lon, 'name': name, 'status': status})
+            seen_names.add(name)
     return hits
 
 
