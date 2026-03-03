@@ -578,6 +578,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   0%, 100% { opacity:1; box-shadow:0 0 6px var(--green); }
   50% { opacity:0.4; box-shadow:0 0 2px var(--green); }
 }
+@keyframes energyPulse {
+  0%, 100% { transform:scale(1); opacity:0.15; }
+  50% { transform:scale(1.3); opacity:0.05; }
+}
 .feed-updated {
   font-family:var(--font-data); font-size:9px; color:var(--text-dim);
   display:flex; align-items:center; gap:5px;
@@ -692,6 +696,90 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 @media (max-width:768px) {
   #feed-panel { width:100%; top:40px; bottom:52px; }
 }
+/* ─── ENERGY PANEL ─── */
+#energy-panel {
+  position:fixed; top:44px; right:0; bottom:0; width:360px; z-index:960;
+  background: linear-gradient(180deg, rgba(8,5,20,0.97), rgba(5,5,16,0.94));
+  backdrop-filter:blur(16px);
+  border-left:1px solid rgba(249,115,22,0.2);
+  transform:translateX(100%); transition:transform 0.3s ease;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+#energy-panel.open { transform:translateX(0); }
+.energy-header {
+  padding:12px 16px 8px; border-bottom:1px solid rgba(249,115,22,0.15); flex-shrink:0;
+}
+.energy-title {
+  font-family:var(--font-title); font-size:14px; font-weight:700; letter-spacing:1.5px;
+  color:#f97316; display:flex; align-items:center; gap:8px;
+}
+.energy-title .pulse-dot {
+  width:8px; height:8px; border-radius:50%; background:#ef4444;
+  box-shadow:0 0 8px #ef4444; animation:livePulse 1.5s ease-in-out infinite;
+}
+.energy-stats {
+  display:flex; gap:8px; margin:8px 0 6px; flex-wrap:wrap;
+}
+.energy-stat {
+  background:rgba(249,115,22,0.1); border:1px solid rgba(249,115,22,0.2);
+  border-radius:6px; padding:4px 10px; font-size:11px; color:var(--text-dim);
+  display:flex; align-items:center; gap:4px;
+}
+.energy-stat .stat-val { color:#f97316; font-weight:700; font-size:13px; }
+.energy-facilities {
+  padding:6px 16px 10px; border-bottom:1px solid rgba(249,115,22,0.1); flex-shrink:0;
+  max-height:180px; overflow-y:auto;
+}
+.energy-facilities::-webkit-scrollbar { width:3px; }
+.energy-facilities::-webkit-scrollbar-thumb { background:rgba(249,115,22,0.2); border-radius:2px; }
+.facility-row {
+  display:flex; align-items:center; gap:6px; padding:3px 0; font-size:11px; color:var(--text-dim);
+  cursor:pointer; transition:color 0.2s;
+}
+.facility-row:hover { color:var(--text); }
+.facility-status { font-size:10px; font-weight:600; text-transform:uppercase; padding:1px 5px; border-radius:3px; }
+.facility-status.struck { background:rgba(239,68,68,0.2); color:#ef4444; }
+.facility-status.shutdown { background:rgba(234,179,8,0.2); color:#eab308; }
+.facility-reports { opacity:0.4; font-size:9px; }
+.energy-list {
+  flex:1; overflow-y:auto; padding:4px 0;
+}
+.energy-list::-webkit-scrollbar { width:4px; }
+.energy-list::-webkit-scrollbar-thumb { background:rgba(249,115,22,0.15); border-radius:2px; }
+.energy-item {
+  padding:8px 16px; border-bottom:1px solid rgba(255,255,255,0.03);
+  cursor:default; transition: background 0.2s;
+}
+.energy-item:hover { background:rgba(249,115,22,0.04); }
+.energy-item-header {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;
+}
+.energy-item-cats {
+  display:flex; gap:4px;
+}
+.energy-cat-tag {
+  font-size:9px; padding:1px 5px; border-radius:3px; font-weight:600; text-transform:uppercase;
+}
+.energy-cat-tag.attack { background:rgba(239,68,68,0.2); color:#ef4444; }
+.energy-cat-tag.blockade { background:rgba(168,85,247,0.2); color:#a855f7; }
+.energy-cat-tag.shutdown { background:rgba(234,179,8,0.2); color:#eab308; }
+.energy-cat-tag.price { background:rgba(34,197,94,0.2); color:#22c55e; }
+.energy-cat-tag.military { background:rgba(59,130,246,0.2); color:#3b82f6; }
+.energy-cat-tag.disruption { background:rgba(6,182,212,0.2); color:#06b6d4; }
+.energy-cat-tag.diplomatic { background:rgba(148,163,184,0.2); color:#94a3b8; }
+.energy-cat-tag.info { background:rgba(148,163,184,0.1); color:#64748b; }
+.energy-item-time { font-size:9px; color:var(--text-dim); opacity:0.6; }
+.energy-item-source { font-size:10px; color:#f97316; font-weight:600; margin-right:6px; }
+.energy-item-text { font-size:11px; color:var(--text-dim); line-height:1.4; }
+.energy-close { background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:16px; padding:4px; }
+.energy-close:hover { color:var(--text); }
+.energy-sev-bar {
+  width:3px; height:100%; min-height:30px; border-radius:2px; flex-shrink:0;
+}
+.energy-item-row { display:flex; gap:8px; }
+@media(max-width:768px) {
+  #energy-panel { width:100%; top:40px; bottom:52px; }
+}
 </style>
 </head>
 <body>
@@ -748,6 +836,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="toolbar">
   <div class="tb-btn active" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
     <span>📡</span><div class="tb-tooltip">Live Feed</div>
+  </div>
+  <div class="tb-btn" data-layer="energy" data-color="orange" onclick="toggleEnergy()">
+    <span>🛢️</span><div class="tb-tooltip">Energy Impact</div>
   </div>
   <div class="tb-btn active" data-layer="oref-toggle" data-color="red" onclick="toggleOrefBanner()">
     <span>🚨</span><div class="tb-tooltip">Pikud HaOref Banner</div>
@@ -927,10 +1018,23 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 </div>
 
 <!-- MOBILE BOTTOM BAR -->
+<div id="energy-panel">
+  <div class="energy-header">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span class="energy-title"><span class="pulse-dot"></span>🛢️ ENERGY & OIL IMPACT</span>
+      <button class="energy-close" onclick="toggleEnergy()">✕</button>
+    </div>
+    <div class="energy-stats" id="energy-stats"></div>
+  </div>
+  <div class="energy-facilities" id="energy-facilities"></div>
+  <div class="energy-list" id="energy-list"></div>
+</div>
+
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
   <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>⭐</span>BASES</button>
   <button class="mob-btn" onclick="toggleFeed()"><span>📡</span>FEED</button>
+  <button class="mob-btn" onclick="toggleEnergy()"><span>🛢️</span>OIL</button>
   <button class="mob-btn" onclick="mobileQuickToggle('fires')"><span>🔥</span>FIRES</button>
   <button class="mob-btn" onclick="mobileQuickToggle('osint')"><span>📌</span>OSINT</button>
   <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
@@ -1099,7 +1203,123 @@ function toggleFeed() {
   const btn = document.querySelector('.tb-btn[data-layer="feed"]');
   if (btn) btn.classList.toggle('active', isOpen);
   if (isOpen && feedEvents.length === 0) loadFeed();
+  // Close energy panel if open
+  if (isOpen) document.getElementById('energy-panel').classList.remove('open');
 }
+
+// ─── ENERGY PANEL ───
+let energyData = null;
+let energyDamageLayer = L.layerGroup().addTo(map);
+
+function toggleEnergy() {
+  const panel = document.getElementById('energy-panel');
+  const isOpen = panel.classList.toggle('open');
+  const btn = document.querySelector('.tb-btn[data-layer="energy"]');
+  if (btn) btn.classList.toggle('active', isOpen);
+  if (isOpen) {
+    document.getElementById('feed-panel').classList.remove('open');
+    if (!energyData) loadEnergy();
+  }
+}
+
+function loadEnergy() {
+  fetch('energy-feed.json?v=' + Date.now())
+    .then(r => r.json())
+    .then(data => {
+      energyData = data;
+      renderEnergy();
+      renderEnergyMarkers();
+    })
+    .catch(e => console.warn('Energy feed load failed:', e));
+}
+
+function renderEnergy() {
+  const d = energyData;
+  if (!d) return;
+
+  // Stats
+  const cats = d.summary?.categories || {};
+  const statsHtml = [
+    `<div class="energy-stat"><span class="stat-val">${d.total_events}</span> events</div>`,
+    `<div class="energy-stat"><span class="stat-val">${d.summary?.facilities_affected || 0}</span> facilities hit</div>`,
+    cats.attack ? `<div class="energy-stat">💥 <span class="stat-val">${cats.attack}</span> attacks</div>` : '',
+    cats.blockade ? `<div class="energy-stat">⛔ <span class="stat-val">${cats.blockade}</span> blockade</div>` : '',
+    cats.price ? `<div class="energy-stat">📈 <span class="stat-val">${cats.price}</span> price</div>` : '',
+    cats.shutdown ? `<div class="energy-stat">🚫 <span class="stat-val">${cats.shutdown}</span> shutdown</div>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('energy-stats').innerHTML = statsHtml;
+
+  // Facilities
+  const facHtml = (d.facilities || []).map(f => {
+    const icon = f.status === 'struck' ? '💥' : '🚫';
+    return `<div class="facility-row" onclick="map.flyTo([${f.lat},${f.lon}],8)">
+      <span>${icon}</span>
+      <span style="flex:1">${f.name}</span>
+      <span class="facility-status ${f.status}">${f.status}</span>
+      <span class="facility-reports">${f.event_count} reports</span>
+    </div>`;
+  }).join('');
+  document.getElementById('energy-facilities').innerHTML =
+    facHtml || '<div style="padding:8px;color:var(--text-dim);font-size:11px">No facilities affected</div>';
+
+  // Events list
+  const now = Date.now() / 1000;
+  const evHtml = (d.events || []).map(ev => {
+    const age = (now - ev.ts) / 3600;
+    const ageStr = age < 1 ? Math.round(age * 60) + 'm' : age < 24 ? Math.round(age) + 'h' : Math.round(age/24) + 'd';
+    const catsHtml = (ev.categories || []).map(c =>
+      `<span class="energy-cat-tag ${c}">${c}</span>`
+    ).join('');
+    const sevColor = ev.severity > 60 ? '#ef4444' : ev.severity > 30 ? '#f97316' : '#64748b';
+    return `<div class="energy-item">
+      <div class="energy-item-row">
+        <div class="energy-sev-bar" style="background:${sevColor}"></div>
+        <div style="flex:1">
+          <div class="energy-item-header">
+            <div class="energy-item-cats">${catsHtml}</div>
+            <span class="energy-item-time">${ageStr} ago</span>
+          </div>
+          <div><span class="energy-item-source">${ev.source}</span><span class="energy-item-text">${ev.text}</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('energy-list').innerHTML =
+    evHtml || '<div style="padding:20px;text-align:center;color:var(--text-dim)">No energy events</div>';
+}
+
+function renderEnergyMarkers() {
+  energyDamageLayer.clearLayers();
+  if (!energyData?.facilities) return;
+  energyData.facilities.forEach(f => {
+    const color = f.status === 'struck' ? '#ef4444' : '#eab308';
+    const icon = f.status === 'struck' ? '💥' : '🚫';
+    const pulseSize = Math.min(30 + f.event_count * 3, 60);
+    const marker = L.marker([f.lat, f.lon], {
+      icon: L.divIcon({
+        className: 'energy-damage-marker',
+        html: `<div style="position:relative;width:${pulseSize}px;height:${pulseSize}px;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:0;border-radius:50%;background:${color};opacity:0.15;animation:energyPulse 2s ease-in-out infinite"></div>
+          <div style="position:absolute;inset:4px;border-radius:50%;border:2px solid ${color};opacity:0.4;animation:energyPulse 2s ease-in-out infinite 0.5s"></div>
+          <span style="font-size:${Math.min(14 + f.event_count, 24)}px;z-index:1;filter:drop-shadow(0 0 4px ${color})">${icon}</span>
+        </div>`,
+        iconSize: [pulseSize, pulseSize],
+        iconAnchor: [pulseSize/2, pulseSize/2],
+      }),
+      zIndexOffset: 2000,
+    });
+    marker.bindPopup(`<div style="font-family:Inter,sans-serif">
+      <b style="color:${color}">${icon} ${f.name}</b><br>
+      Status: <b>${f.status.toUpperCase()}</b><br>
+      Reports: ${f.event_count}<br>
+      <span style="font-size:11px;opacity:0.7">Last report: ${new Date(f.last_ts * 1000).toLocaleString()}</span>
+    </div>`, {className:'dark-popup'});
+    marker.addTo(energyDamageLayer);
+  });
+}
+
+// Refresh energy feed every 5 minutes
+setInterval(() => { if (energyData) loadEnergy(); }, 300000);
 
 let orefBannerState = 'full'; // full → ticker → hidden
 function toggleOrefBanner() {

@@ -35,9 +35,9 @@ else:
 BOT_TOKEN=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_bot_token',''))" 2>/dev/null || echo "")
 CHAT_ID=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_chat_id',''))" 2>/dev/null || echo "")
 CHANNEL_NAME=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('telegram_channel_name','Alert Monitor'))" 2>/dev/null || echo "Alert Monitor")
-PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); k=c.get('push_api_key',''); print(k) if k else exit(1)" 2>/dev/null)
+PUSH_API_KEY=$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); k=c.get('push_api_key','') or c.get('api_key','') or c.get('dashboard',{}).get('api_key',''); print(k) if k else exit(1)" 2>/dev/null)
 if [ -z "$PUSH_API_KEY" ]; then
-  log "⚠️  WARNING: push_api_key not found in config — API push disabled"
+  echo "  ⚠️  WARNING: api_key not found in config — API push disabled" >&2
 fi
 GEMINI_API_KEY="${GEMINI_API_KEY:-$(python3 -c "import json; c=json.load(open('$CONFIG_FILE')); print(c.get('gemini_api_key',''))" 2>/dev/null || echo "")}"
 

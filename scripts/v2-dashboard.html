@@ -391,6 +391,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 .oref-status.safe { color:var(--green); }
 .oref-status.danger { color:var(--red); font-weight:700; animation:siren-pulse 0.8s ease-in-out infinite alternate; }
+.oref-last-siren { font-size:10px; color:#888; margin-top:1px; }
 .oref-meta { font-size:9px; color:rgba(6,182,212,0.7); margin-top:2px; }
 
 /* Oref ticker mode (collapsed) */
@@ -727,7 +728,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-sep"></div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
-  <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
+  <div class="mt-btn" onclick="setBasemap(currentBasemap==='carto'?'viirs':'carto')">🌗</div>
   <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
 </div>
 
@@ -739,7 +740,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim)" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
-  <div class="oref-meta">Source: Red Alert · Pikud Haoref · <span id="oref-mode"></span> · <span id="oref-interval">~30s</span> refresh</div>
+  <div class="oref-last-siren" id="oref-last-siren"></div>
+
 </div>
 
 <!-- TOOLBAR -->
@@ -882,8 +884,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- BASEMAP TOGGLE -->
 <div id="basemap-toggle">
-  <button class="bm-btn" id="bm-carto" onclick="setBasemap('carto')">Map</button>
-  <button class="bm-btn active" id="bm-viirs" onclick="setBasemap('viirs')">VIIRS</button>
+  <button class="bm-btn active" id="bm-carto" onclick="setBasemap('carto')">Map</button>
+  <button class="bm-btn" id="bm-viirs" onclick="setBasemap('viirs')">VIIRS</button>
 </div>
 
 <!-- STATUS BAR -->
@@ -984,12 +986,12 @@ const cartoTile = L.tileLayer(CARTO_URL, { maxZoom: 18, attribution: '© CARTO',
 window.map = L.map('map', {
   center: [28, 52], zoom: 5,
   zoomControl: false,
-  layers: [viirsTile],
+  layers: [cartoTile],
   attributionControl: false,
 });
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
-let currentBasemap = 'viirs';
+let currentBasemap = 'carto';
 
 function setBasemap(name) {
   if (name === 'carto') { map.removeLayer(viirsTile); map.addLayer(cartoTile); }
@@ -1870,12 +1872,47 @@ function updateOrefBanner(alerts, serverTs, note) {
     status.className = 'oref-status safe';
     status.textContent = note && note.includes('cached') ? 'No active alerts (cached)' : 'No active alerts in Israel.';
     document.getElementById('chip-alert').textContent = '0';
+    fetchLastSiren();
   } else {
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
     const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
     status.textContent = `🚨 ACTIVE: ${alerts.length} alert${alerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
     document.getElementById('chip-alert').textContent = alerts.length;
+    document.getElementById('oref-last-siren').textContent = '';
+    lastSirenCache = null;
+  }
+}
+
+const SIREN_TITLES = {'1':'Rockets & Missiles','2':'Hostile Aircraft Intrusion','3':'Tsunami','4':'Earthquake','5':'Radiological','6':'Hazardous Materials','10':'Missiles (event ended)','101':'Drill'};
+const SIREN_TITLE_HE = {'\u05d9\u05e8\u05d9 \u05e8\u05e7\u05d8\u05d5\u05ea \u05d5\u05d8\u05d9\u05dc\u05d9\u05dd':'Rockets & Missiles','\u05d7\u05d3\u05d9\u05e8\u05ea \u05db\u05dc\u05d9 \u05d8\u05d9\u05e1 \u05e2\u05d5\u05d9\u05df':'Hostile Aircraft Intrusion','\u05e6\u05d5\u05e0\u05de\u05d9':'Tsunami','\u05e8\u05e2\u05d9\u05d3\u05ea \u05d0\u05d3\u05de\u05d4':'Earthquake'};
+let lastSirenCache = null;
+function fetchLastSiren() {
+  const el = document.getElementById('oref-last-siren');
+  if (lastSirenCache) { el.textContent = lastSirenCache; return; }
+  if (API_URL) {
+    fetch(`${API_URL}/api/oref/history?limit=1`, {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      if (!d.alerts || !d.alerts.length) { el.textContent = ''; return; }
+      const a = d.alerts[0];
+      const title = SIREN_TITLE_HE[a.title] || a.title || SIREN_TITLES[a.cat] || `Category ${a.cat}`;
+      const ts = a.ts * 1000;
+      const ago = formatAgo(Math.round((Date.now() - ts) / 1000));
+      lastSirenCache = `(last: ${title} · ${ago})`;
+      el.textContent = lastSirenCache;
+    }).catch(()=>{ el.textContent = ''; });
+  } else {
+    // Static fallback: oref-alerts.json may have last_siren_ts/last_siren_title
+    fetch(dataUrl('oref') + '?t=' + Date.now(), {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      if (!d.last_siren_ts) { el.textContent = ''; return; }
+      const rawTitle = (d.last_siren_title || 'Alert').replace(/\s*-\s*.*הסתיים$/, '');
+      const title = SIREN_TITLE_HE[rawTitle] || rawTitle;
+      const parts = d.last_siren_ts.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+      if (!parts) { el.textContent = ''; return; }
+      const ts = new Date(`${parts[1]}-${parts[2]}-${parts[3]}T${parts[4]}:${parts[5]}:${parts[6]}+03:00`).getTime();
+      const ago = formatAgo(Math.round((Date.now() - ts) / 1000));
+      lastSirenCache = `(last: ${title} · ${ago})`;
+      el.textContent = lastSirenCache;
+    }).catch(()=>{ el.textContent = ''; });
   }
 }
 

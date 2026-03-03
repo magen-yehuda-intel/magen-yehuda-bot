@@ -134,6 +134,32 @@ def main():
             "alert_count": len(oref_data.get("alerts", [])),
             "alerts": oref_data.get("alerts", [])
         }
+        # Add last siren info from watcher log
+        try:
+            log_path = os.path.join(STATE_DIR, 'watcher.log')
+            if os.path.exists(log_path):
+                with open(log_path, 'rb') as f:
+                    f.seek(0, 2)
+                    size = f.tell()
+                    f.seek(max(0, size - 32768))
+                    tail = f.read().decode('utf-8', errors='replace')
+                for line in reversed(tail.splitlines()):
+                    if 'NEW SIRENS' in line and line.startswith('['):
+                        ts_str = line[1:line.index(']')]
+                        oref_export['last_siren_ts'] = ts_str
+                        break
+            # Get siren title from oref-alert-tmp.json
+            tmp_path = os.path.join(STATE_DIR, 'oref-alert-tmp.json')
+            if os.path.exists(tmp_path):
+                with open(tmp_path) as f:
+                    raw = f.read().strip()
+                if raw and raw != '{"alerts":[]}':
+                    import re
+                    m = re.search(r'"title"\s*:\s*"([^"]+)"', raw)
+                    if m:
+                        oref_export['last_siren_title'] = m.group(1)
+        except:
+            pass
         with open(oref_out, 'w') as f:
             json.dump(oref_export, f, ensure_ascii=False, indent=2)
     except Exception as ex:
@@ -172,6 +198,25 @@ def main():
             print(f"Push failed: {result.stderr.decode()[:200]}")
     except Exception as ex:
         print(f"Git error: {ex}")
+
+    # Run energy tracker to update energy-feed.json
+    try:
+        import importlib.util
+        energy_script = os.path.join(SKILL_DIR, 'scripts', 'energy-tracker.py')
+        if os.path.exists(energy_script):
+            spec = importlib.util.spec_from_file_location("energy_tracker", energy_script)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            mod.main()
+            # Commit energy feed too
+            subprocess.run(['git', 'add', 'docs/energy-feed.json'], cwd=SKILL_DIR,
+                           capture_output=True, timeout=10)
+            subprocess.run(['git', 'commit', '-m', 'energy: update feed'],
+                           cwd=SKILL_DIR, capture_output=True, timeout=10)
+            subprocess.run(['git', 'push', 'origin', 'main'], cwd=SKILL_DIR,
+                           capture_output=True, timeout=30)
+    except Exception as ex:
+        print(f"Energy tracker error: {ex}")
 
 if __name__ == '__main__':
     main()
