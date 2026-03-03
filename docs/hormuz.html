@@ -96,7 +96,7 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; 
 .facility-badge.operational { background:rgba(34,197,94,0.15); color:var(--green); }
 
 /* Event feed */
-.event-feed { flex:1; overflow-y:auto; }
+.event-feed { flex:1; overflow-y:auto; min-height:0; }
 .event-feed::-webkit-scrollbar { width:4px; }
 .event-feed::-webkit-scrollbar-thumb { background:rgba(249,115,22,0.15); border-radius:2px; }
 .event-item {
@@ -164,7 +164,7 @@ body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; 
   .header-clock { font-size:10px; }
   .main { flex-direction:column; margin-top:40px; height:calc(100vh - 40px); }
   .map-container { height:35vh; min-height:200px; flex-shrink:0; }
-  .right-panel { width:100%; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .right-panel { width:100%; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; display:block; }
   .stats-grid { grid-template-columns:repeat(2,1fr); }
   .map-hud { display:none; }
   .map-layers { bottom:6px; left:6px; }
