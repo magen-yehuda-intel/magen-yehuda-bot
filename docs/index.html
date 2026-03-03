@@ -1904,7 +1904,8 @@ function fetchLastSiren() {
     // Static fallback: oref-alerts.json may have last_siren_ts/last_siren_title
     fetch(dataUrl('oref') + '?t=' + Date.now(), {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
       if (!d.last_siren_ts) { el.textContent = ''; return; }
-      const title = d.last_siren_title || 'Alert';
+      const rawTitle = (d.last_siren_title || 'Alert').replace(/\s*-\s*.*הסתיים$/, '');
+      const title = SIREN_TITLE_HE[rawTitle] || rawTitle;
       const parts = d.last_siren_ts.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
       if (!parts) { el.textContent = ''; return; }
       const ts = new Date(`${parts[1]}-${parts[2]}-${parts[3]}T${parts[4]}:${parts[5]}:${parts[6]}+03:00`).getTime();
