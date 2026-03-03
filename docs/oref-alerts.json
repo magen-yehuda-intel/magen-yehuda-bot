@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-03-03T08:10:01Z",
+  "timestamp": "2026-03-03T08:15:00Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_ts": "2026-03-03 09:46:11 IST",
-  "last_siren_title": "חדירת מחבלים"
+  "last_siren_ts": "2026-03-03 10:14:54 IST",
+  "last_siren_title": "הסתיים אירוע חדירת מחבלים - ניתן לצאת מהבתים"
 }
