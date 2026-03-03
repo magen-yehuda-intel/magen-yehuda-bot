@@ -728,7 +728,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-sep"></div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
-  <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
+  <div class="mt-btn" onclick="setBasemap(currentBasemap==='carto'?'viirs':'carto')">🌗</div>
   <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
 </div>
 
@@ -884,8 +884,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- BASEMAP TOGGLE -->
 <div id="basemap-toggle">
-  <button class="bm-btn" id="bm-carto" onclick="setBasemap('carto')">Map</button>
-  <button class="bm-btn active" id="bm-viirs" onclick="setBasemap('viirs')">VIIRS</button>
+  <button class="bm-btn active" id="bm-carto" onclick="setBasemap('carto')">Map</button>
+  <button class="bm-btn" id="bm-viirs" onclick="setBasemap('viirs')">VIIRS</button>
 </div>
 
 <!-- STATUS BAR -->
@@ -986,12 +986,12 @@ const cartoTile = L.tileLayer(CARTO_URL, { maxZoom: 18, attribution: '© CARTO',
 window.map = L.map('map', {
   center: [28, 52], zoom: 5,
   zoomControl: false,
-  layers: [viirsTile],
+  layers: [cartoTile],
   attributionControl: false,
 });
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
-let currentBasemap = 'viirs';
+let currentBasemap = 'carto';
 
 function setBasemap(name) {
   if (name === 'carto') { map.removeLayer(viirsTile); map.addLayer(cartoTile); }
