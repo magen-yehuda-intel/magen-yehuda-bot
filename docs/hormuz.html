@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hormuz Crisis Dashboard | Magen Yehuda Intel</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #050510; --panel: rgba(10,15,30,0.95); --border: rgba(255,255,255,0.08);
+  --red: #ef4444; --orange: #f97316; --amber: #f59e0b; --green: #22c55e;
+  --blue: #3b82f6; --cyan: #06b6d4; --purple: #a855f7;
+  --text: #e2e8f0; --dim: #64748b;
+}
+body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; overflow:hidden; height:100vh; }
+
+/* ─── HEADER ─── */
+.header {
+  position:fixed; top:0; left:0; right:0; height:48px; z-index:1000;
+  background:linear-gradient(90deg, rgba(10,10,25,0.98), rgba(20,10,10,0.98));
+  border-bottom:1px solid rgba(249,115,22,0.3);
+  display:flex; align-items:center; padding:0 20px; gap:16px;
+}
+.header-title {
+  font-family:'Orbitron',monospace; font-size:15px; font-weight:700;
+  background:linear-gradient(90deg, #f97316, #ef4444);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  letter-spacing:2px;
+}
+.header-status {
+  display:flex; gap:12px; align-items:center; margin-left:auto;
+}
+.status-chip {
+  font-size:11px; padding:3px 10px; border-radius:12px; font-weight:600;
+  display:flex; align-items:center; gap:5px;
+}
+.status-chip.critical { background:rgba(239,68,68,0.2); color:var(--red); border:1px solid rgba(239,68,68,0.3); }
+.status-chip.warning { background:rgba(249,115,22,0.2); color:var(--orange); border:1px solid rgba(249,115,22,0.3); }
+.header-clock {
+  font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--dim);
+}
+
+/* ─── LAYOUT ─── */
+.main { display:flex; height:calc(100vh - 48px); margin-top:48px; }
+.map-container { flex:1; position:relative; }
+#map { width:100%; height:100%; background:var(--bg); }
+
+/* ─── RIGHT PANEL ─── */
+.right-panel {
+  width:380px; background:var(--panel); border-left:1px solid rgba(249,115,22,0.15);
+  display:flex; flex-direction:column; overflow:hidden; flex-shrink:0;
+}
+.panel-section {
+  padding:12px 16px; border-bottom:1px solid var(--border);
+}
+.section-title {
+  font-family:'Orbitron',monospace; font-size:11px; font-weight:600;
+  color:var(--orange); letter-spacing:1.5px; margin-bottom:8px;
+  display:flex; align-items:center; gap:6px;
+}
+.section-title .pulse { width:6px; height:6px; border-radius:50%; background:var(--red); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 4px var(--red)} 50%{opacity:0.4;box-shadow:0 0 1px var(--red)} }
+
+/* Stats grid */
+.stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.stat-card {
+  background:rgba(255,255,255,0.03); border:1px solid var(--border);
+  border-radius:6px; padding:8px 10px; text-align:center;
+}
+.stat-val { font-family:'Orbitron',monospace; font-size:18px; font-weight:700; }
+.stat-val.red { color:var(--red); }
+.stat-val.orange { color:var(--orange); }
+.stat-val.amber { color:var(--amber); }
+.stat-val.green { color:var(--green); }
+.stat-val.purple { color:var(--purple); }
+.stat-label { font-size:9px; color:var(--dim); text-transform:uppercase; letter-spacing:0.5px; margin-top:2px; }
+
+/* Facilities */
+.facility-row {
+  display:flex; align-items:center; gap:8px; padding:6px 0;
+  cursor:pointer; transition:background 0.2s; border-radius:4px; padding:6px 8px; margin:0 -8px;
+}
+.facility-row:hover { background:rgba(249,115,22,0.06); }
+.facility-icon { font-size:16px; }
+.facility-info { flex:1; }
+.facility-name { font-size:12px; font-weight:600; color:var(--text); }
+.facility-detail { font-size:10px; color:var(--dim); }
+.facility-badge {
+  font-size:9px; font-weight:700; padding:2px 8px; border-radius:3px; text-transform:uppercase;
+}
+.facility-badge.struck { background:rgba(239,68,68,0.15); color:var(--red); }
+.facility-badge.shutdown { background:rgba(234,179,8,0.15); color:var(--amber); }
+.facility-badge.blocked { background:rgba(168,85,247,0.15); color:var(--purple); }
+.facility-badge.operational { background:rgba(34,197,94,0.15); color:var(--green); }
+
+/* Event feed */
+.event-feed { flex:1; overflow-y:auto; }
+.event-feed::-webkit-scrollbar { width:4px; }
+.event-feed::-webkit-scrollbar-thumb { background:rgba(249,115,22,0.15); border-radius:2px; }
+.event-item {
+  padding:10px 16px; border-bottom:1px solid rgba(255,255,255,0.02);
+  display:flex; gap:8px; transition:background 0.2s;
+}
+.event-item:hover { background:rgba(249,115,22,0.03); }
+.event-sev {
+  width:3px; border-radius:2px; flex-shrink:0; min-height:40px;
+}
+.event-content { flex:1; }
+.event-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:3px; }
+.event-tags { display:flex; gap:3px; flex-wrap:wrap; }
+.event-tag {
+  font-size:8px; padding:1px 5px; border-radius:3px; font-weight:600; text-transform:uppercase;
+}
+.event-tag.attack { background:rgba(239,68,68,0.15); color:var(--red); }
+.event-tag.blockade { background:rgba(168,85,247,0.15); color:var(--purple); }
+.event-tag.shutdown { background:rgba(234,179,8,0.15); color:var(--amber); }
+.event-tag.price { background:rgba(34,197,94,0.15); color:var(--green); }
+.event-tag.military { background:rgba(59,130,246,0.15); color:var(--blue); }
+.event-tag.disruption { background:rgba(6,182,212,0.15); color:var(--cyan); }
+.event-tag.diplomatic { background:rgba(148,163,184,0.15); color:#94a3b8; }
+.event-tag.info { background:rgba(148,163,184,0.08); color:var(--dim); }
+.event-time { font-size:9px; color:var(--dim); white-space:nowrap; }
+.event-source { font-size:10px; font-weight:600; color:var(--orange); }
+.event-text { font-size:11px; color:var(--dim); line-height:1.45; margin-top:2px; }
+
+/* Map overlays */
+.leaflet-popup-content-wrapper { background:rgba(10,15,30,0.95)!important; color:var(--text)!important; border:1px solid rgba(249,115,22,0.3)!important; border-radius:8px!important; }
+.leaflet-popup-tip { background:rgba(10,15,30,0.95)!important; }
+.leaflet-popup-content { font-family:'Inter',sans-serif!important; font-size:12px!important; }
+
+/* HUD overlay on map */
+.map-hud {
+  position:absolute; top:12px; left:12px; z-index:800;
+  background:rgba(10,15,30,0.9); border:1px solid rgba(249,115,22,0.2);
+  border-radius:8px; padding:12px 16px; backdrop-filter:blur(8px);
+}
+.hud-title { font-family:'Orbitron',monospace; font-size:10px; color:var(--orange); letter-spacing:1px; margin-bottom:6px; }
+.hud-row { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--dim); margin:3px 0; }
+.hud-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* Layer toggles */
+.map-layers {
+  position:absolute; bottom:12px; left:12px; z-index:800;
+  display:flex; gap:6px; flex-wrap:wrap;
+}
+.layer-btn {
+  background:rgba(10,15,30,0.85); border:1px solid var(--border);
+  border-radius:6px; padding:5px 10px; font-size:10px; color:var(--dim);
+  cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif;
+}
+.layer-btn.active { border-color:rgba(249,115,22,0.5); color:var(--orange); background:rgba(249,115,22,0.1); }
+.layer-btn:hover { border-color:rgba(249,115,22,0.3); }
+
+/* Shipping lanes */
+@keyframes flowDash { to { stroke-dashoffset: -20; } }
+
+/* Mobile */
+@media(max-width:768px) {
+  .main { flex-direction:column; }
+  .map-container { height:45vh; }
+  .right-panel { width:100%; height:55vh; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-title">⛽ HORMUZ CRISIS TRACKER</span>
+  <div class="header-status">
+    <span class="status-chip critical" id="strait-status">⛔ STRAIT CLOSED</span>
+    <span class="status-chip warning" id="gas-price-chip">📈 Gas: $785</span>
+  </div>
+  <span class="header-clock" id="clock"></span>
+</div>
+
+<div class="main">
+  <div class="map-container">
+    <div id="map"></div>
+
+    <div class="map-hud">
+      <div class="hud-title">LEGEND</div>
+      <div class="hud-row"><div class="hud-dot" style="background:var(--red)"></div> Struck / Destroyed</div>
+      <div class="hud-row"><div class="hud-dot" style="background:var(--amber)"></div> Shutdown / Offline</div>
+      <div class="hud-row"><div class="hud-dot" style="background:var(--purple)"></div> Blocked / Closed</div>
+      <div class="hud-row"><div class="hud-dot" style="background:var(--green)"></div> Operational</div>
+      <div class="hud-row"><div class="hud-dot" style="background:var(--cyan)"></div> Shipping Lane</div>
+      <div class="hud-row"><div class="hud-dot" style="background:var(--blue)"></div> US Naval Asset</div>
+    </div>
+
+    <div class="map-layers" id="layer-toggles">
+      <button class="layer-btn active" data-layer="facilities">🏭 Facilities</button>
+      <button class="layer-btn active" data-layer="shipping">🚢 Shipping Lanes</button>
+      <button class="layer-btn active" data-layer="damage">💥 Damage</button>
+      <button class="layer-btn" data-layer="military">⚓ Naval</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="panel-section">
+      <div class="section-title"><span class="pulse"></span> CRISIS SUMMARY</div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+    <div class="panel-section" id="facilities-section">
+      <div class="section-title">🏭 AFFECTED FACILITIES</div>
+      <div id="facilities-list"></div>
+    </div>
+    <div class="panel-section" style="padding-bottom:4px">
+      <div class="section-title"><span class="pulse"></span> ENERGY NEWS FEED</div>
+    </div>
+    <div class="event-feed" id="event-feed"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ─── MAP INIT ───
+const map = L.map('map', {
+  center: [26.5, 54],
+  zoom: 6,
+  zoomControl: false,
+  attributionControl: false,
+});
+
+// Dark basemap
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  maxZoom: 18,
+}).addTo(map);
+
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+// ─── LAYERS ───
+const layers = {
+  facilities: L.layerGroup().addTo(map),
+  shipping: L.layerGroup().addTo(map),
+  damage: L.layerGroup().addTo(map),
+  military: L.layerGroup(),
+};
+
+// ─── SHIPPING LANES ───
+const shippingLanes = [
+  { name: 'Strait of Hormuz (Inbound)', color: '#06b6d4', coords: [[26.15,56.8],[26.35,56.45],[26.55,56.25],[26.85,56.15]], status: 'BLOCKED' },
+  { name: 'Strait of Hormuz (Outbound)', color: '#06b6d4', coords: [[26.95,56.15],[26.65,56.35],[26.45,56.55],[26.25,56.9]], status: 'BLOCKED' },
+  { name: 'Persian Gulf → Hormuz', color: '#3b82f6', coords: [[29.0,50.5],[28.0,51.5],[27.0,53.0],[26.5,55.0],[26.5,56.0]], status: 'BLOCKED' },
+  { name: 'Gulf of Oman → Arabian Sea', color: '#22c55e', coords: [[25.5,57.5],[24.5,59.0],[23.5,61.0]], status: 'DIVERTED' },
+  { name: 'Red Sea / Bab el-Mandeb', color: '#f59e0b', coords: [[12.5,43.3],[13.0,43.5],[14.0,42.5],[15.0,42.0]], status: 'ACTIVE' },
+  { name: 'Suez Canal', color: '#22c55e', coords: [[29.9,32.55],[30.2,32.58],[30.6,32.35],[31.0,32.32]], status: 'ACTIVE' },
+];
+
+shippingLanes.forEach(lane => {
+  const blocked = lane.status === 'BLOCKED';
+  const line = L.polyline(lane.coords, {
+    color: blocked ? '#ef4444' : lane.color,
+    weight: blocked ? 3 : 2,
+    opacity: blocked ? 0.7 : 0.4,
+    dashArray: blocked ? '8,8' : '4,8',
+  });
+  line.bindPopup(`<b>${lane.name}</b><br>Status: <b style="color:${blocked?'#ef4444':'#22c55e'}">${lane.status}</b>`);
+  line.addTo(layers.shipping);
+});
+
+// ─── ENERGY FACILITIES (static) ───
+const energyFacilities = [
+  // Iran
+  { name:'Kharg Island Terminal', lat:29.240, lon:50.330, type:'oil_terminal', desc:'90% of Iran oil exports', capacity:'5M bpd', status:'operational' },
+  { name:'South Pars Gas Field', lat:27.5, lon:52.6, type:'gas_field', desc:'World\'s largest gas field (shared with Qatar)', capacity:'~500 bcm/yr', status:'operational' },
+  { name:'Asaluyeh LNG Complex', lat:27.48, lon:52.61, type:'lng', desc:'Iran\'s main LNG processing hub', capacity:'Multi-train', status:'operational' },
+  { name:'Bandar Abbas Refinery', lat:27.19, lon:56.27, type:'refinery', desc:'Closest refinery to Hormuz', capacity:'320k bpd', status:'struck' },
+  { name:'Bushehr', lat:28.97, lon:50.84, type:'nuclear_energy', desc:'Nuclear plant + refinery complex', capacity:'1GW nuclear', status:'struck' },
+  { name:'Abadan Refinery', lat:30.339, lon:48.283, type:'refinery', desc:'Oldest & largest Iranian refinery', capacity:'400k bpd', status:'operational' },
+  { name:'Isfahan Refinery', lat:32.65, lon:51.68, type:'refinery', desc:'Central Iran refining hub', capacity:'375k bpd', status:'operational' },
+  { name:'Port of Jask', lat:25.64, lon:57.77, type:'oil_terminal', desc:'Bypass terminal outside Hormuz', capacity:'1M bpd (planned)', status:'struck' },
+  { name:'Neka Oil Terminal', lat:36.65, lon:53.30, type:'oil_terminal', desc:'Caspian Sea import terminal', capacity:'100k bpd', status:'operational' },
+  // UAE
+  { name:'Fujairah Oil Terminal', lat:25.13, lon:56.33, type:'oil_terminal', desc:'UAE\'s largest bunkering hub', capacity:'Storage 42M bbl', status:'struck' },
+  { name:'Ruwais Refinery (ADNOC)', lat:24.11, lon:52.73, type:'refinery', desc:'UAE mega-refinery', capacity:'922k bpd', status:'operational' },
+  { name:'Jebel Ali Port', lat:25.01, lon:55.06, type:'port', desc:'World\'s largest man-made port', capacity:'Mega-hub', status:'operational' },
+  // Qatar
+  { name:'Ras Laffan LNG', lat:25.93, lon:51.55, type:'lng', desc:'World\'s largest LNG export facility', capacity:'77M tons/yr', status:'operational' },
+  { name:'Qatar Energy Hub', lat:25.35, lon:51.18, type:'energy', desc:'Struck by Iranian forces', capacity:'—', status:'struck' },
+  // Saudi Arabia
+  { name:'Ras Tanura Terminal', lat:26.64, lon:50.16, type:'oil_terminal', desc:'World\'s largest offshore oil loading', capacity:'6.5M bpd', status:'operational' },
+  { name:'Abqaiq Processing', lat:25.94, lon:49.68, type:'processing', desc:'World\'s largest oil processing plant', capacity:'7M bpd', status:'operational' },
+  // Kuwait
+  { name:'Mina al-Ahmadi', lat:29.07, lon:48.17, type:'oil_terminal', desc:'Kuwait\'s main oil export terminal', capacity:'1.6M bpd', status:'operational' },
+  // Israel
+  { name:'Leviathan Gas Platform', lat:32.95, lon:34.15, type:'gas_field', desc:'Israel\'s largest gas field', capacity:'22 BCM', status:'shutdown' },
+  { name:'Haifa Refinery', lat:32.81, lon:35.01, type:'refinery', desc:'Previously struck by Iranian missiles', capacity:'197k bpd', status:'operational' },
+  // Oman
+  { name:'Port of Duqm', lat:19.67, lon:57.71, type:'port', desc:'Alternative to Hormuz-dependent ports', capacity:'Developing', status:'operational' },
+  // Strait
+  { name:'Strait of Hormuz', lat:26.57, lon:56.25, type:'chokepoint', desc:'21% of global oil transit', capacity:'~20M bpd normally', status:'blocked' },
+];
+
+function facilityEmoji(type) {
+  return { oil_terminal:'🛢️', gas_field:'⛽', lng:'🔷', refinery:'🏭', nuclear_energy:'☢️',
+    port:'🚢', processing:'⚙️', energy:'⚡', chokepoint:'⛔' }[type] || '🏭';
+}
+
+function statusColor(status) {
+  return { struck:'#ef4444', shutdown:'#eab308', blocked:'#a855f7', operational:'#22c55e' }[status] || '#64748b';
+}
+
+energyFacilities.forEach(f => {
+  const color = statusColor(f.status);
+  const isActive = f.status !== 'operational';
+  const size = isActive ? 28 : 18;
+  const marker = L.marker([f.lat, f.lon], {
+    icon: L.divIcon({
+      className: '',
+      html: `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;position:relative">
+        ${isActive ? `<div style="position:absolute;inset:-4px;border-radius:50%;background:${color};opacity:0.15;animation:facilityPulse 2s infinite"></div>` : ''}
+        <span style="font-size:${isActive?16:12}px;filter:drop-shadow(0 0 3px ${color})">${facilityEmoji(f.type)}</span>
+      </div>`,
+      iconSize: [size, size], iconAnchor: [size/2, size/2],
+    }),
+  });
+  marker.bindPopup(`<div>
+    <b style="color:${color}">${facilityEmoji(f.type)} ${f.name}</b><br>
+    <span style="font-size:11px">${f.desc}</span><br>
+    Capacity: ${f.capacity}<br>
+    Status: <b style="color:${color}">${f.status.toUpperCase()}</b>
+  </div>`);
+  marker.addTo(layers.facilities);
+});
+
+// ─── LOAD ENERGY DATA ───
+let energyData = null;
+
+function loadEnergy() {
+  fetch('energy-feed.json?v=' + Date.now())
+    .then(r => r.json())
+    .then(data => { energyData = data; render(); renderDamage(); })
+    .catch(e => console.warn('Energy feed error:', e));
+}
+
+function render() {
+  if (!energyData) return;
+  const d = energyData;
+  const cats = d.summary?.categories || {};
+
+  // Stats
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-val red">${cats.attack||0}</div><div class="stat-label">Attacks</div></div>
+    <div class="stat-card"><div class="stat-val purple">${cats.blockade||0}</div><div class="stat-label">Blockade</div></div>
+    <div class="stat-card"><div class="stat-val amber">${cats.shutdown||0}</div><div class="stat-label">Shutdown</div></div>
+    <div class="stat-card"><div class="stat-val green">${cats.price||0}</div><div class="stat-label">Price Impact</div></div>
+    <div class="stat-card"><div class="stat-val orange">${d.summary?.facilities_affected||0}</div><div class="stat-label">Facilities Hit</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--cyan)">${cats.disruption||0}</div><div class="stat-label">Disruptions</div></div>
+  `;
+
+  // Facilities
+  const facs = (d.facilities || []);
+  document.getElementById('facilities-list').innerHTML = facs.map(f => {
+    const badge = f.status === 'struck' ? 'struck' : 'shutdown';
+    return `<div class="facility-row" onclick="map.flyTo([${f.lat},${f.lon}],9,{duration:1})">
+      <span class="facility-icon">${f.status==='struck'?'💥':'🚫'}</span>
+      <div class="facility-info">
+        <div class="facility-name">${f.name}</div>
+        <div class="facility-detail">${f.event_count} reports</div>
+      </div>
+      <span class="facility-badge ${badge}">${f.status}</span>
+    </div>`;
+  }).join('');
+
+  // Events
+  const now = Date.now() / 1000;
+  document.getElementById('event-feed').innerHTML = (d.events || []).map(ev => {
+    const age = (now - ev.ts) / 3600;
+    const ageStr = age < 1 ? Math.round(age*60)+'m' : age < 24 ? Math.round(age)+'h' : Math.round(age/24)+'d';
+    const sevColor = ev.severity > 60 ? 'var(--red)' : ev.severity > 30 ? 'var(--orange)' : 'var(--dim)';
+    const tags = (ev.categories||[]).map(c => `<span class="event-tag ${c}">${c}</span>`).join('');
+    return `<div class="event-item">
+      <div class="event-sev" style="background:${sevColor}"></div>
+      <div class="event-content">
+        <div class="event-header">
+          <div class="event-tags">${tags}</div>
+          <span class="event-time">${ageStr} ago</span>
+        </div>
+        <span class="event-source">${ev.source||'unknown'}</span>
+        <div class="event-text">${ev.text}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Update header chips
+  const gasEvt = (d.events||[]).find(e => e.text && /\$\d+/.test(e.text) && e.categories.includes('price'));
+  if (gasEvt) {
+    const m = gasEvt.text.match(/\$(\d+)/);
+    if (m) document.getElementById('gas-price-chip').textContent = '📈 Gas: $' + m[1];
+  }
+}
+
+function renderDamage() {
+  layers.damage.clearLayers();
+  if (!energyData?.facilities) return;
+  energyData.facilities.forEach(f => {
+    const color = f.status === 'struck' ? '#ef4444' : '#eab308';
+    const r = Math.min(15 + f.event_count * 2, 40);
+    const circle = L.circleMarker([f.lat, f.lon], {
+      radius: r, color: color, fillColor: color, fillOpacity: 0.15,
+      weight: 2, opacity: 0.6, dashArray: '4,4',
+    });
+    circle.bindPopup(`<b style="color:${color}">${f.status==='struck'?'💥':'🚫'} ${f.name}</b><br>
+      ${f.event_count} reports<br>
+      Status: <b>${f.status.toUpperCase()}</b>`);
+    circle.addTo(layers.damage);
+  });
+}
+
+// ─── LAYER TOGGLES ───
+document.querySelectorAll('.layer-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.layer;
+    const layer = layers[key];
+    if (!layer) return;
+    if (map.hasLayer(layer)) {
+      map.removeLayer(layer);
+      btn.classList.remove('active');
+    } else {
+      map.addLayer(layer);
+      btn.classList.add('active');
+    }
+  });
+});
+
+// ─── CLOCK ───
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit', timeZoneName:'short' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ─── CSS ANIMATION ───
+const style = document.createElement('style');
+style.textContent = `@keyframes facilityPulse { 0%,100%{transform:scale(1);opacity:0.15} 50%{transform:scale(1.4);opacity:0.05} }`;
+document.head.appendChild(style);
+
+// ─── INIT ───
+loadEnergy();
+setInterval(loadEnergy, 300000); // 5min refresh
+
+// Visibility pause
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) loadEnergy();
+});
+</script>
+</body>
+</html>
