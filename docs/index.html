@@ -48,7 +48,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .title-us { color:#60a5fa; text-shadow: 0 0 20px rgba(59,130,246,0.5), 0 0 40px rgba(59,130,246,0.2); }
 .title-vs { color:rgba(255,255,255,0.4); font-weight:400; font-size:11px; margin:0 6px; }
 .title-iran { color:#f87171; text-shadow: 0 0 20px rgba(239,68,68,0.5), 0 0 40px rgba(239,68,68,0.2); }
-.title-iran-short { display:none; }
 
 /* ═══ MAP ═══ */
 #map { position:fixed; top:44px; left:54px; right:0; bottom:28px; z-index:1; background:var(--bg); }
@@ -60,16 +59,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   backdrop-filter: blur(8px);
   border-right: 1px solid var(--panel-border);
   display:flex; flex-direction:column; align-items:center;
-  padding:4px 0; gap:2px; overflow-y:auto; overflow-x:visible;
-  scrollbar-width:none;
+  padding:8px 0; gap:4px; overflow-y:auto;
 }
-#toolbar::-webkit-scrollbar { display:none; }
 .tb-btn {
-  width:34px; height:34px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.06);
+  width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.06);
   background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
   display:flex; align-items:center; justify-content:center;
-  cursor:pointer; font-size:14px; transition: all 0.2s; position:relative;
-  flex-shrink:0;
+  cursor:pointer; font-size:16px; transition: all 0.2s; position:relative;
 }
 .tb-btn:hover { border-color:rgba(255,255,255,0.15); background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03)); transform:scale(1.08); }
 .tb-btn.active { border-color:rgba(255,255,255,0.2); }
@@ -82,17 +78,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .tb-btn[data-color="purple"].active { box-shadow:0 0 12px rgba(168,85,247,0.5); border-color:rgba(168,85,247,0.5); }
 .tb-btn[data-color="orange"].active { box-shadow:0 0 12px rgba(249,115,22,0.5); border-color:rgba(249,115,22,0.5); }
 .tb-tooltip {
-  display:none;
-}
-#tb-tip {
-  position:fixed; left:58px;
+  position:absolute; left:48px; top:50%; transform:translateY(-50%);
   background:rgba(5,5,16,0.95); border:1px solid var(--panel-border);
   padding:4px 10px; border-radius:4px; font-size:11px; white-space:nowrap;
   pointer-events:none; opacity:0; transition:opacity 0.15s;
   font-family:var(--font-data); color:var(--text-dim);
-  backdrop-filter:blur(8px); z-index:99999;
+  backdrop-filter:blur(8px);
 }
-#tb-tip.show { opacity:1; }
+.tb-btn:hover .tb-tooltip { opacity:1; }
 
 /* ═══ MARKER STYLES ═══ */
 .custom-marker {
@@ -122,12 +115,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-iran-irgc:hover { box-shadow:0 0 20px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.2); }
 .marker-iran-energy { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
 .marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
-.marker-damaged { border-color:#ef4444 !important; z-index:800 !important; position:relative; }
-.marker-damaged::after { content:''; position:absolute; top:-4px; left:-4px; right:-4px; bottom:-4px; border:2px solid #ef4444; border-radius:50%; animation:damage-pulse 1.5s ease-in-out infinite; pointer-events:none; }
-.marker-shutdown { border-color:#f59e0b !important; z-index:790 !important; opacity:0.9; }
-.marker-shutdown::after { content:''; position:absolute; top:-4px; left:-4px; right:-4px; bottom:-4px; border:2px dashed #f59e0b; border-radius:50%; animation:damage-pulse 2s ease-in-out infinite; pointer-events:none; }
-.marker-blocked { border-color:#ef4444 !important; z-index:800 !important; }
-@keyframes damage-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.3)} }
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
 .marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
@@ -135,24 +122,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 /* ═══ SAM RANGE RINGS ═══ */
 .sam-ring { fill:none; stroke-dasharray:8,6; }
 .sam-ring-active { animation:defense-ring-pulse 2.5s ease-in-out infinite; }
-.siren-zone-ring { animation:defense-ring-pulse 1.5s ease-in-out infinite; }
-
-/* Ballistic missile animation */
-.ballistic-overlay { position:absolute; top:0; left:0; pointer-events:none; z-index:650; overflow:visible; }
-.ballistic-trail { fill:none; stroke-linecap:round; }
-.ballistic-trail-glow { stroke:rgba(255,140,50,0.5); }
-.ballistic-trail-core { stroke:rgba(255,200,80,0.9); }
-@keyframes missile-fly { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@keyframes missile-head-pulse { 0%,100% { r:3; opacity:1; } 50% { r:5; opacity:0.7; } }
-.missile-head { fill:#ffaa33; animation:missile-head-pulse 0.3s ease-in-out infinite; }
-@keyframes origin-ping { 0% { r:4; opacity:0.8; stroke-width:2; } 100% { r:20; opacity:0; stroke-width:0.5; } }
-.origin-ping { fill:none; stroke:rgba(255,140,50,0.6); animation:origin-ping 1.5s ease-out forwards; }
-@keyframes impact-ring { 0% { r:3; opacity:1; stroke-width:2; } 100% { r:25; opacity:0; stroke-width:0.5; } }
-.impact-ring { fill:none; stroke:rgba(255,80,80,0.7); animation:impact-ring 1s ease-out forwards; }
-@keyframes impact-ring2 { 0% { r:3; opacity:0.7; stroke-width:1.5; } 100% { r:18; opacity:0; stroke-width:0.3; } }
-.impact-ring2 { fill:none; stroke:rgba(255,160,60,0.5); animation:impact-ring2 0.8s ease-out 0.2s forwards; }
-@keyframes impact-dot { 0% { r:4; opacity:1; } 50% { r:6; opacity:0.8; } 100% { r:2; opacity:0.3; } }
-.impact-dot { fill:#ff6633; animation:impact-dot 2s ease-out forwards; }
 
 /* ═══ NEON GLOW (waterways) ═══ */
 .neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
@@ -261,21 +230,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .sb-section-title.iran { color:var(--red); }
 .sb-section-title.overlay { color:var(--green); }
 .sb-row {
-  display:flex; align-items:center; gap:10px; padding:7px 12px;
+  display:flex; align-items:center; gap:8px; padding:8px 12px;
   cursor:pointer; border-left:2px solid transparent; transition:all 0.15s;
-  border-radius:0 4px 4px 0; margin:1px 6px 1px 0;
 }
-.sb-row:hover { background:rgba(255,255,255,0.04); border-left-color:rgba(255,255,255,0.1); }
-.sb-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; transition:all 0.2s; }
-.sb-toggle { width:28px; height:14px; border-radius:7px; background:rgba(255,255,255,0.08); flex-shrink:0; position:relative; transition:all 0.2s; }
-.sb-toggle::after { content:''; position:absolute; top:2px; left:2px; width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,0.25); transition:all 0.2s; }
-.sb-row:not(.off) .sb-toggle { background:rgba(6,182,212,0.3); }
-.sb-row:not(.off) .sb-toggle::after { left:16px; background:#06b6d4; box-shadow:0 0 6px rgba(6,182,212,0.5); }
-.sb-row.off .sb-row-name { opacity:0.35; }
-.sb-row.off .sb-dot { opacity:0.2; }
-.sb-row.off .sb-row-count { opacity:0.2; }
-.sb-row-name { flex:1; font-size:12px; transition:opacity 0.2s; }
-.sb-row-count { font-family:var(--font-data); font-size:11px; color:var(--text-dim); margin-right:6px; }
+.sb-row:hover { background:rgba(255,255,255,0.02); border-left-color:rgba(255,255,255,0.08); }
+.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sb-row-name { flex:1; font-size:12px; }
+.sb-row-count { font-family:var(--font-data); font-size:11px; color:var(--text-dim); }
 .sb-actions {
   padding:10px 12px; border-top:1px solid rgba(255,255,255,0.04);
   display:flex; flex-direction:column; gap:6px;
@@ -312,7 +273,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 /* ═══ BASEMAP TOGGLE ═══ */
 #basemap-toggle {
-  position:fixed; top:80px; right:12px; z-index:1000;
+  position:fixed; top:54px; right:12px; z-index:800;
   display:flex; gap:0; border-radius:6px; overflow:hidden;
   border:1px solid var(--panel-border);
 }
@@ -339,8 +300,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .leaflet-control-zoom { border:1px solid var(--panel-border) !important; }
 .leaflet-control-zoom a { background:rgba(5,5,16,0.85) !important; color:var(--text) !important; border-color:var(--panel-border) !important; backdrop-filter:blur(4px); }
 .leaflet-control-zoom a:hover { background:rgba(20,25,40,0.9) !important; }
-.leaflet-control-attribution { background:transparent !important; color:rgba(255,255,255,0.15) !important; font-size:8px !important; }
-.leaflet-control-attribution a { color:rgba(255,255,255,0.2) !important; }
 .leaflet-popup-content-wrapper { background:rgba(10,15,30,0.95) !important; color:var(--text) !important; border:1px solid var(--panel-border) !important; border-radius:8px !important; backdrop-filter:blur(12px) !important; }
 .leaflet-popup-tip { background:rgba(10,15,30,0.95) !important; }
 .leaflet-popup-close-button { color:var(--text-dim) !important; }
@@ -432,76 +391,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 .oref-status.safe { color:var(--green); }
 .oref-status.danger { color:var(--red); font-weight:700; animation:siren-pulse 0.8s ease-in-out infinite alternate; }
+.oref-last-siren { font-size:10px; color:#888; margin-top:1px; }
 .oref-meta { font-size:9px; color:rgba(6,182,212,0.7); margin-top:2px; }
-
-/* Rocket Demo FAB */
-#rocket-fab {
-  position:fixed; bottom:24px; right:16px; z-index:950;
-  width:48px; height:48px; border-radius:50%;
-  background:rgba(239,68,68,0.15); border:2px solid rgba(239,68,68,0.5);
-  display:flex; align-items:center; justify-content:center;
-  font-size:22px; cursor:pointer; transition:all 0.2s;
-  backdrop-filter:blur(8px); box-shadow:0 0 16px rgba(239,68,68,0.2);
-}
-#rocket-fab:hover { transform:scale(1.1); box-shadow:0 0 24px rgba(239,68,68,0.4); background:rgba(239,68,68,0.25); }
-#rocket-fab:active { transform:scale(0.95); }
-#feed-fab {
-  position:fixed; bottom:24px; left:16px; z-index:950;
-  width:48px; height:48px; border-radius:50%;
-  background:rgba(0,229,255,0.1); border:2px solid rgba(0,229,255,0.5);
-  display:flex; align-items:center; justify-content:center;
-  font-size:20px; cursor:pointer; transition:all 0.2s;
-  backdrop-filter:blur(8px); box-shadow:0 0 16px rgba(0,229,255,0.15);
-}
-#feed-fab:hover { transform:scale(1.1); box-shadow:0 0 24px rgba(0,229,255,0.4); background:rgba(0,229,255,0.2); }
-#feed-fab:active { transform:scale(0.95); }
-#feed-fab .fab-ping {
-  position:absolute; width:100%; height:100%; border-radius:50%;
-  border:2px solid rgba(0,229,255,0.4);
-  animation:fab-ping 2s ease-out infinite;
-}
-@keyframes fab-ping {
-  0% { transform:scale(1); opacity:0.6; }
-  100% { transform:scale(1.8); opacity:0; }
-}
-#feed-fab.has-new { border-color:rgba(0,229,255,0.9); box-shadow:0 0 20px rgba(0,229,255,0.4); }
-#rocket-menu {
-  position:fixed; bottom:80px; right:16px; z-index:950;
-  background:rgba(5,5,16,0.95); border:1px solid rgba(239,68,68,0.3);
-  border-radius:8px; padding:6px 0; display:none; backdrop-filter:blur(12px);
-  min-width:160px; box-shadow:0 4px 20px rgba(0,0,0,0.5);
-}
-#rocket-menu.show { display:block; }
-.rocket-opt {
-  padding:8px 14px; font-size:12px; font-family:var(--font-mil);
-  cursor:pointer; transition:background 0.15s; color:var(--text-dim);
-  letter-spacing:0.5px; display:flex; align-items:center; gap:8px;
-}
-.rocket-opt:hover { background:rgba(239,68,68,0.1); color:#fff; }
-.rocket-opt .ro-flag { font-size:14px; }
-
-/* Threat Level Indicator */
-#threat-indicator {
-  position:fixed; top:44px; right:12px; z-index:860;
-  display:flex; align-items:center; gap:6px;
-  background:rgba(5,5,16,0.92); backdrop-filter:blur(8px);
-  border:1px solid var(--panel-border); border-radius:6px;
-  padding:5px 12px; font-family:var(--font-data);
-  transition:all 0.4s ease;
-}
-#threat-indicator.threat-green { border-color:rgba(34,197,94,0.4); }
-#threat-indicator.threat-elevated { border-color:rgba(234,179,8,0.5); background:rgba(30,25,5,0.92); }
-#threat-indicator.threat-high { border-color:rgba(239,68,68,0.5); background:rgba(40,10,10,0.92); animation:threat-glow-high 2s ease infinite; }
-#threat-indicator.threat-critical { border-color:rgba(239,68,68,0.8); background:rgba(80,5,5,0.95); animation:threat-glow-crit 1s ease infinite; }
-#threat-icon { font-size:16px; }
-#threat-label { font-size:12px; font-weight:700; letter-spacing:1.5px; font-family:var(--font-mil); }
-#threat-indicator.threat-green #threat-label { color:var(--green); }
-#threat-indicator.threat-elevated #threat-label { color:#eab308; }
-#threat-indicator.threat-high #threat-label { color:var(--red); }
-#threat-indicator.threat-critical #threat-label { color:#ff3333; text-shadow:0 0 8px rgba(255,50,50,0.6); }
-.threat-meta { font-size:9px; color:var(--text-dim); max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-@keyframes threat-glow-high { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.2)} 50%{box-shadow:0 0 16px rgba(239,68,68,0.4)} }
-@keyframes threat-glow-crit { 0%,100%{box-shadow:0 0 10px rgba(255,50,50,0.3)} 50%{box-shadow:0 0 24px rgba(255,50,50,0.6)} }
 
 /* Oref ticker mode (collapsed) */
 #oref-banner.ticker-mode {
@@ -604,9 +495,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 @keyframes tickerDotPulse { 0% { box-shadow:0 0 4px var(--red); } 100% { box-shadow:0 0 10px var(--red); } }
 
 @media (max-width:768px) {
-  #rocket-fab { bottom:62px; right:10px; width:42px; height:42px; font-size:20px; }
-  #feed-fab { bottom:62px; left:10px; width:42px; height:42px; font-size:18px; }
-  #rocket-menu { bottom:112px; right:10px; }
   #news-ticker { left:0; bottom:52px; height:24px; }
   .ticker-label { font-size:8px; padding:0 6px; }
   .ticker-item { font-size:10px; padding:0 14px; }
@@ -636,13 +524,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 @media (max-width:768px) {
   #toolbar { display:none; }
   #mobile-toolbar { display:flex; }
-  #oref-banner { left:0; top:82px; padding:5px 10px; z-index:890; }
+  #oref-banner { left:0; top:74px; padding:5px 10px; }
   #oref-banner .oref-title { font-size:10px; }
   #oref-banner .oref-status { font-size:11px; }
-  #threat-indicator { top:6px; right:6px; padding:3px 8px; z-index:1001; }
-  #threat-icon { font-size:12px; }
-  #threat-label { font-size:10px; }
-  .threat-meta { display:none; }
   #map { left:0; top:116px; bottom:76px; }
   #chips { left:8px; bottom:60px; gap:4px; }
   .chip { padding:4px 8px; }
@@ -652,11 +536,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   #basemap-toggle { top:120px; right:8px; }
   #statusbar { display:none; }
   #mobile-bar { display:flex; }
-  .title-text { font-size:10px; letter-spacing:1px; margin:0 4px 0 0; }
-  .title-flag { display:none; }
-  .title-iran-full { display:none; }
-  .title-iran-short { display:inline; }
-  #titlebar { height:40px; justify-content:flex-start; padding-left:12px; }
+  .title-text { font-size:10px; letter-spacing:1px; }
+  .title-flag { font-size:18px; }
+  #titlebar { height:40px; }
   .leaflet-popup-content-wrapper { max-width:280px !important; }
   #legend { bottom:60px; right:8px; max-width:220px; }
 }
@@ -823,7 +705,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <span class="title-text">
     <span class="title-us">U.S. & ALLIES</span>
     <span class="title-vs">vs.</span>
-    <span class="title-iran"><span class="title-iran-full">ISLAMIC REPUBLIC OF IRAN</span><span class="title-iran-short">IRAN</span></span>
+    <span class="title-iran">ISLAMIC REPUBLIC OF IRAN</span>
   </span>
   <span class="title-flag">🇮🇷</span>
 </div>
@@ -831,30 +713,23 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE HORIZONTAL TOOLBAR -->
 <div id="mobile-toolbar">
   <div class="mt-btn" onclick="toggleSidebar()">☰</div>
-  <div class="mt-btn active-red" onclick="toggleOrefBanner()">🚨</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn active" data-mt="borders" onclick="cycleBorders(this)">🗺</div>
-  <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">🎖️</div>
-  <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this);loadAircraft()">✈️</div>
+  <div class="mt-btn active" data-mt="borders" onclick="mtToggle('borders',this)">🗺</div>
+  <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">⭐</div>
+  <div class="mt-btn" data-mt="infra" onclick="mtToggle('infra',this)">🏗</div>
+  <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
   <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
-  <div class="mt-btn" data-mt="labels" onclick="mtToggle('labels',this)">🏷</div>
+  <div class="mt-btn" data-mt="sam" onclick="mtToggle('sam',this)">🛡</div>
   <div class="mt-btn" data-mt="patrol" onclick="mtToggle('patrol',this)">↻</div>
   <div class="mt-btn" data-mt="waterways" onclick="mtToggle('waterways',this)">🌊</div>
-  <div class="mt-btn" data-mt="gpsjam" onclick="mtToggle('gpsjam',this)">📡</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
-  <div class="mt-btn" data-mt="seismic" onclick="mtToggle('seismic',this);loadSeismic()">🌋</div>
-  <div class="mt-btn" data-mt="satellites" onclick="mtToggle('satellites',this)">🛰</div>
-  <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
+  <div class="mt-btn active-orange" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
+  <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
   <div class="mt-sep"></div>
-  <div class="mt-btn" data-mt="nuclear" onclick="mtToggle('nuclear',this)">☢️</div>
-  <div class="mt-btn active" data-mt="countryNames" onclick="mtToggle('countryNames',this)">🔤</div>
-  <div class="mt-sep"></div>
-  <div class="mt-btn" onclick="map.setView([28,52],5)" title="Reset view">🏠</div>
-  <div class="mt-btn" onclick="toggleLegend()">📋</div>
+  <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
   <div class="mt-btn" onclick="setBasemap(currentBasemap==='viirs'?'carto':'viirs')">🌗</div>
-  <div class="mt-btn" onclick="map.locate({setView:true,maxZoom:8})">📍</div>
+  <div class="mt-btn" onclick="document.getElementById('mobile-toolbar').querySelector('[data-mt=legend]'); map.locate({setView:true,maxZoom:8})">📍</div>
 </div>
 
 <!-- PIKUD HAOREF BANNER -->
@@ -865,19 +740,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim)" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
-
-</div>
-
-<div id="threat-indicator">
-  <span id="threat-icon">🟢</span>
-  <span id="threat-label">GREEN</span>
-  <span id="threat-reason" class="threat-meta"></span>
-  <span id="threat-age" class="threat-meta"></span>
+  <div class="oref-last-siren" id="oref-last-siren"></div>
+  <div class="oref-meta">Source: Red Alert · Pikud Haoref · <span id="oref-mode"></span> · <span id="oref-interval">~30s</span> refresh</div>
 </div>
 
 <!-- TOOLBAR -->
 <div id="toolbar">
-  <!-- Feed has its own FAB now -->
+  <div class="tb-btn active" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
+    <span>📡</span><div class="tb-tooltip">Live Feed</div>
+  </div>
   <div class="tb-btn active" data-layer="oref-toggle" data-color="red" onclick="toggleOrefBanner()">
     <span>🚨</span><div class="tb-tooltip">Pikud HaOref Banner</div>
   </div>
@@ -886,15 +757,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>☰</span><div class="tb-tooltip">Layers & Assets</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
-  <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="cycleBorders(this)">
-    <span>🗺</span><div class="tb-tooltip">Borders (click to cycle)</div>
+  <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="toggleLayer('borders')">
+    <span>🗺</span><div class="tb-tooltip">Country Borders</div>
   </div>
+  <div class="tb-btn" data-layer="infra" data-color="orange" onclick="toggleLayer('infra')">
+    <span>🏗</span><div class="tb-tooltip">Iran Infrastructure</div>
   </div>
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
-    <span>🎖️</span><div class="tb-tooltip">Military Bases</div>
+    <span>⭐</span><div class="tb-tooltip">Military Bases</div>
   </div>
-  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft');loadAircraft()" oncontextmenu="event.preventDefault();_acMilOnly=!_acMilOnly;loadAircraft();this.querySelector('.tb-tooltip').textContent=_acMilOnly?'Military Aircraft Only':'All Aircraft (FR24)'">
-    <span>✈️</span><div class="tb-tooltip">All Aircraft (FR24) · Right-click: Military Only</div>
+  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft')">
+    <span>✈️</span><div class="tb-tooltip">Live Aircraft (ADS-B)</div>
   </div>
   <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
     <span>🚢</span><div class="tb-tooltip">Ship Tracking (AIS)</div>
@@ -902,6 +775,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="labels" data-color="blue" onclick="toggleLayer('labels')">
     <span>🏷</span><div class="tb-tooltip">Base Labels</div>
   </div>
+  <div class="tb-btn" data-layer="sam" data-color="amber" onclick="toggleLayer('sam')">
+    <span>🛡</span><div class="tb-tooltip">SAM Range Rings</div>
   </div>
   <div class="tb-btn" data-layer="patrol" data-color="green" onclick="toggleLayer('patrol')">
     <span>↻</span><div class="tb-tooltip">Air Patrol Routes</div>
@@ -912,11 +787,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="gpsjam" data-color="red" onclick="toggleLayer('gpsjam')">
     <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
-  <div class="tb-btn" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
-    <span>🔥</span><div class="tb-tooltip" id="tt-fires">FIRMS Fires (high intensity)</div>
-  </div>
-  <div class="tb-btn" data-layer="seismic" data-color="amber" onclick="toggleLayer('seismic');loadSeismic()">
-    <span>🌋</span><div class="tb-tooltip">USGS Seismic (M2.5+)</div>
+  <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
+    <span>🔥</span><div class="tb-tooltip">FIRMS Fire Hotspots</div>
   </div>
   <div class="tb-btn" data-layer="satellites" data-color="cyan" onclick="toggleLayer('satellites')">
     <span>🛰</span><div class="tb-tooltip">Recon Satellites</div>
@@ -927,19 +799,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="sirens" data-color="red" onclick="toggleLayer('sirens')">
     <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
   </div>
-  <div class="tb-btn" data-color="red" onclick="demoBarrage()" style="border-color:rgba(239,68,68,0.5)">
-    <span>🚀</span><div class="tb-tooltip">Demo Barrage (Iran→Israel)</div>
-  </div>
-  <div class="tb-btn" onclick="map.setView([28,52],5)" style="border-color:rgba(255,255,255,0.2)">
-    <span>🏠</span><div class="tb-tooltip">Reset View</div>
-  </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
     <span>📋</span><div class="tb-tooltip">Legend</div>
   </div>
 </div>
 
-<div id="tb-tip"></div>
 <!-- SIDEBAR -->
 <div id="sidebar">
   <div class="sb-header">
@@ -957,33 +822,26 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div id="tab-layers">
     <div class="sb-search"><input type="text" placeholder="Search layers..." oninput="filterSidebarLayers(this.value)"></div>
     <div class="sb-section-title us">US FORCES</div>
-    <div class="sb-row" data-sb="military" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
-    <div class="sb-row" data-sb="ships" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
+    <div class="sb-row" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
+    <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
     <div class="sb-section-title iran">IRAN / ADVERSARY</div>
-    <div class="sb-row" data-sb="nuclear" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
-    <div class="sb-row" data-sb="missiles" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
-    <div class="sb-row" data-sb="naval" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
-    <div class="sb-row" data-sb="ad" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
-    <div class="sb-row" data-sb="airbases" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
-    <div class="sb-row" data-sb="irgc" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
-    <div class="sb-row" data-sb="energy" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Oil, Gas & Energy</span><span class="sb-row-count">78</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
-    <div class="sb-row" data-sb="sirens" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
-    <div class="sb-row" data-sb="waterways" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="patrol" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (significant)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
-    <div class="sb-row" data-sb="osint" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
-    <div class="sb-row" data-sb="seismic" onclick="toggleLayer('seismic')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">🌍 Seismic Activity</span><span class="sb-row-count" id="cnt-seismic">0</span></div>
-    <div class="sb-row" data-sb="aircraft" onclick="toggleLayer('aircraft')"><div class="sb-dot" style="background:#60a5fa"></div><span class="sb-row-name">✈️ Live Aircraft</span><span class="sb-row-count" id="cnt-aircraft">0</span></div>
-    <div class="sb-row" data-sb="gpsjam" onclick="toggleLayer('gpsjam')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">📡 GPS Jamming</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="satellites" onclick="toggleLayer('satellites')"><div class="sb-dot" style="background:#94a3b8"></div><span class="sb-row-name">🛰️ Satellites</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="borders" onclick="toggleLayer('borders')"><div class="sb-dot" style="background:#475569"></div><span class="sb-row-name">🗺️ Borders</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="countryNames" onclick="toggleLayer('countryNames')"><div class="sb-dot" style="background:#64748b"></div><span class="sb-row-name">🔤 Country Names</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-sb="labels" onclick="toggleLayer('labels')"><div class="sb-dot" style="background:#64748b"></div><span class="sb-row-name">🏷️ Labels</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
-      <div class="sb-action-btn" onclick="clearAllLayers()" style="border-color:rgba(239,68,68,0.3);color:#f87171">✕ Clear All</div>
-      <div class="sb-action-btn" onclick="resetLayerConfig()">↺ Reset Default</div>
-      <div class="sb-action-btn ta-save" onclick="saveLayerConfig()" style="border-color:rgba(6,182,212,0.3);color:#22d3ee">💾 Save Config</div>
+      <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
+      <div class="sb-action-btn" onclick="showUSOnly()" style="border-color:rgba(59,130,246,0.3);color:#60a5fa">US Forces Only</div>
+      <div class="sb-action-btn" onclick="showIranOnly()" style="border-color:rgba(239,68,68,0.3);color:#f87171">Iran Targets Only</div>
     </div>
   </div>
   <div id="tab-assets" style="display:none">
@@ -991,21 +849,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div id="asset-list"></div>
   </div>
   <div class="sb-footer">OSINT DATA · UNCLASSIFIED · MAGEN YEHUDA INTEL v2.0</div>
-</div>
-
-<!-- ROCKET DEMO -->
-<div id="feed-fab" onclick="toggleFeed()" title="Live Intel Feed">
-  <div class="fab-ping"></div>
-  📡
-</div>
-<div id="rocket-fab" onclick="toggleRocketMenu()" title="Simulate missile barrage">🚀</div>
-<div id="rocket-menu">
-  <div class="rocket-opt" onclick="fireDemo('iran')"><span class="ro-flag">🇮🇷</span> Iran → Israel</div>
-  <div class="rocket-opt" onclick="fireDemo('yemen')"><span class="ro-flag">🇾🇪</span> Yemen / Houthis</div>
-  <div class="rocket-opt" onclick="fireDemo('lebanon')"><span class="ro-flag">🇱🇧</span> Lebanon / Hezbollah</div>
-  <div class="rocket-opt" onclick="fireDemo('iraq')"><span class="ro-flag">🇮🇶</span> Iraq / Militias</div>
-  <div class="rocket-opt" onclick="fireDemo('syria')"><span class="ro-flag">🇸🇾</span> Syria</div>
-  <div class="rocket-opt" onclick="fireDemo('gaza')"><span class="ro-flag">🇵🇸</span> Gaza</div>
 </div>
 
 <!-- LEGEND -->
@@ -1023,27 +866,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>Iran Air Def</div>
     <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Iran Air Base</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>IRGC</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Oil, Gas & Energy</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Iran Oil & Gas</div>
     <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Waterway</div>
     <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Air Route</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ff8800"></div>Fire (FIRMS)</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ef4444;animation:siren-pulse 0.8s ease-in-out infinite alternate"></div>Active Siren</div>
-  </div>
-  <div class="legend-title" style="margin-top:8px">LIVE FEEDS</div>
-  <div class="legend-grid">
-    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>✈ US Military</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>✈ Israeli AF</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>✈ Civilian</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>OSINT Event</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>🌋 Seismic M2.5+</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>🌋 Seismic M5+</div>
-  </div>
-  <div class="legend-title" style="margin-top:8px">THREAT LEVEL</div>
-  <div class="legend-grid">
-    <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>🟢 GREEN</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div>🟡 ELEVATED</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>🔴 HIGH</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#333"></div>⚫ CRITICAL</div>
   </div>
 </div>
 
@@ -1087,12 +914,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     </div>
     <div class="feed-updated" id="feed-updated"><span class="refresh-spin" id="feed-spinner">↻</span> <span id="feed-age">connecting...</span></div>
     <div class="feed-time-bar" id="feed-time-bar">
-      <span class="feed-time-chip" data-hours="0.5">30M</span>
+      <span class="feed-time-chip" data-hours="0.25">15M</span>
       <span class="feed-time-chip active" data-hours="1">1H</span>
-      <span class="feed-time-chip" data-hours="2">2H</span>
-      <span class="feed-time-chip" data-hours="4">4H</span>
       <span class="feed-time-chip" data-hours="6">6H</span>
-      <span class="feed-time-chip" data-hours="12">12H</span>
+      <span class="feed-time-chip" data-hours="24">24H</span>
+      <span class="feed-time-chip" data-hours="48">48H</span>
+      <span class="feed-time-chip" data-hours="0">ALL</span>
     </div>
     <div class="feed-cat-bar" id="feed-cat-bar"></div>
   </div>
@@ -1102,10 +929,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn" onclick="mobileQuickToggle('sirens')"><span>🚨</span>SIRENS</button>
+  <button class="mob-btn" onclick="mobileQuickToggle('military')"><span>⭐</span>BASES</button>
+  <button class="mob-btn" onclick="toggleFeed()"><span>📡</span>FEED</button>
   <button class="mob-btn" onclick="mobileQuickToggle('fires')"><span>🔥</span>FIRES</button>
   <button class="mob-btn" onclick="mobileQuickToggle('osint')"><span>📌</span>OSINT</button>
-  <button class="mob-btn" onclick="mobileQuickToggle('seismic');loadSeismic()"><span>🌋</span>SEISMIC</button>
   <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
 </div>
 
@@ -1164,9 +991,6 @@ window.map = L.map('map', {
 });
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
-// Custom panes for z-ordering: OSINT above fires
-map.createPane('firesPane').style.zIndex = 650;
-map.createPane('osintPane').style.zIndex = 660;
 let currentBasemap = 'viirs';
 
 function setBasemap(name) {
@@ -1206,33 +1030,11 @@ const layers = {
   sam: L.layerGroup(),
   waterways: L.layerGroup(),
   patrol: L.layerGroup(),
-  fires: L.markerClusterGroup({
-    maxClusterRadius: 60,
-    disableClusteringAtZoom: 10,
-    chunkedLoading: true,
-    chunkInterval: 100,
-    chunkDelay: 10,
-    animate: false,
-    spiderfyOnMaxZoom: false,
-    clusterPane: 'firesPane',
-    iconCreateFunction: function(cluster) {
-      const count = cluster.getChildCount();
-      const sz = count > 200 ? 'large' : count > 50 ? 'medium' : 'small';
-      return L.divIcon({
-        html: `<div style="background:rgba(255,100,0,0.85);border:2px solid #ff4400;color:#fff;font-weight:bold;text-shadow:0 1px 2px #000;border-radius:50%;display:flex;align-items:center;justify-content:center;width:100%;height:100%">${count > 999 ? Math.round(count/100)/10+'k' : count}</div>`,
-        className: `marker-cluster marker-cluster-${sz}`,
-        iconSize: L.point(sz==='large'?50:sz==='medium'?40:30, sz==='large'?50:sz==='medium'?40:30)
-      });
-    }
-  }),
-  osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, zoomToBoundsOnClick: true, clusterPane: 'osintPane' }),
+  fires: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, iconCreateFunction: iranClusterIcon }),
+  osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7 }),
   sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7, iconCreateFunction: sirenClusterIcon }),
   labels: L.layerGroup(),
-  countryNames: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png', {
-    attribution:'', subdomains:'abcd', pane:'overlayPane', opacity:0.7, maxZoom:18
-  }),
   aircraft: L.layerGroup(),
-  seismic: L.layerGroup(),
   ships: L.layerGroup(),
   gpsjam: L.layerGroup(),
   satellites: L.layerGroup(),
@@ -1240,70 +1042,19 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: false, osint: true, sirens: true, nuclear: false, countryNames: true,
-  infra: false, missiles: false, naval: false,
+  borders: true, military: true, fires: true, osint: true, sirens: true,
+  infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
-  aircraft: false, seismic: false, ships: false, gpsjam: false, satellites: false,
+  aircraft: false, ships: false, gpsjam: false, satellites: false,
 };
 
 // Add default-on layers
-['borders', 'military', 'osint', 'sirens', 'countryNames'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'fires', 'osint', 'sirens'].forEach(k => layers[k].addTo(map));
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
 // ═══════════════════════════════════════════════════════════
-// Fire time range — independent of global time filter
-const FIRE_RANGES = [24];
-let _fireRangeIdx = 0;
-let _fireHours = 24;
-const FIRE_FRP_MIN = 10; // Only show fires >10 MW (filters out agricultural/brush)
-function cycleFireRange(btn) {
-  _fireRangeIdx = (_fireRangeIdx + 1) % FIRE_RANGES.length;
-  _fireHours = FIRE_RANGES[_fireRangeIdx];
-  const label = `FIRMS Fires (${_fireHours}h) — right-click to change`;
-  const tt = document.getElementById('tt-fires');
-  if (tt) tt.textContent = label;
-  const tbTip = document.getElementById('tb-tip');
-  if (tbTip && tbTip.classList.contains('show')) tbTip.textContent = label;
-  // Reload fires with new range
-  if (activeState.fires) loadFIRMS();
-}
-
-// Borders 3-state cycle: borders only → borders+names → off
-let _borderState = 1; // 0=borders, 1=borders+names, 2=off
-function cycleBorders(btn) {
-  _borderState = (_borderState + 1) % 3;
-  const tips = ['Borders Only', 'Borders + Names', 'Off'];
-  if (_borderState === 0) {
-    activeState.borders = true; layers.borders.addTo(map);
-    activeState.countryNames = false; map.removeLayer(layers.countryNames);
-  } else if (_borderState === 1) {
-    activeState.borders = true; layers.borders.addTo(map);
-    activeState.countryNames = true; layers.countryNames.addTo(map);
-  } else {
-    activeState.borders = false; map.removeLayer(layers.borders);
-    activeState.countryNames = false; map.removeLayer(layers.countryNames);
-  }
-  if (btn) {
-    btn.classList.toggle('active', _borderState !== 2);
-    const tt = btn.querySelector('.tb-tooltip');
-    if (tt) tt.textContent = tips[_borderState];
-  }
-  // Update global tooltip if visible
-  const tbTip = document.getElementById('tb-tip');
-  if (tbTip.classList.contains('show')) tbTip.textContent = tips[_borderState];
-  updateMobileButtons(); syncSidebarState();
-}
-
-function syncSidebarState() {
-  document.querySelectorAll('.sb-row[data-sb]').forEach(row => {
-    const key = row.dataset.sb;
-    const isOn = activeState[key];
-    row.classList.toggle('off', !isOn);
-  });
-}
-
 function toggleLayer(name) {
   if (!layers[name]) return;
   activeState[name] = !activeState[name];
@@ -1313,7 +1064,6 @@ function toggleLayer(name) {
   if (btn) btn.classList.toggle('active', activeState[name]);
   updateMobileButtons();
   updateLayerCount();
-  syncSidebarState();
 }
 
 function isolateIranLayer(name) {
@@ -1321,7 +1071,6 @@ function isolateIranLayer(name) {
   activeState[name] = !activeState[name];
   if (activeState[name]) layers[name].addTo(map); else map.removeLayer(layers[name]);
   updateLayerCount();
-  syncSidebarState();
 }
 
 function toggleSidebar() {
@@ -1385,16 +1134,16 @@ function loadFeed() {
   const staticUrl = `${STATIC_BASE}/intel-feed.json`;
 
   const fetchData = Promise.all([
-    apiUrl ? fetch(apiUrl, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null),
-    fetch(staticUrl, {signal: AbortSignal.timeout(8000)}).then(r => r.ok ? r.json() : null).catch(() => null),
+    apiUrl ? fetch(apiUrl).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null),
+    fetch(staticUrl).then(r => r.ok ? r.json() : null).catch(() => null),
   ]).then(([apiData, staticData]) => {
     const apiEvents = apiData ? (apiData.events || []) : [];
     const staticEvents = staticData ? (staticData.events || staticData || []) : [];
-    // Merge: dedup by src+text (ignore ts to catch re-scraped items)
+    // Merge: dedup by src+ts
     const seen = new Set();
     const merged = [];
     for (const e of [...apiEvents, ...staticEvents]) {
-      const key = `${e.src||e.source||''}|${(e.text||'').slice(0,60)}`;
+      const key = `${e.src||e.source||''}|${e.ts||e.timestamp||0}|${(e.text||'').slice(0,40)}`;
       if (!seen.has(key)) { seen.add(key); merged.push(e); }
     }
     return { events: merged };
@@ -1493,7 +1242,7 @@ function renderFeed() {
 
   const list = document.getElementById('feed-list');
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="feed-empty">No events in this timeframe<br><span style="font-size:9px;opacity:0.6;margin-top:4px;display:block">Try expanding to 2H or 6H</span></div>';
+    list.innerHTML = '<div class="feed-empty">No events in this timeframe<br><span style="font-size:9px;opacity:0.6;margin-top:4px;display:block">Try expanding to 1H or 6H</span></div>';
     return;
   }
 
@@ -1507,9 +1256,9 @@ function renderFeed() {
     const fullText = (e.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const needsTooltip = (e.text || '').length > 100;
     const timeStr = ts > 0 ? `${localTime(ts)} · ${ago}` : ago;
-    const srcLink = e.link || getSrcLink(e.src || '');
+    const srcLink = getSrcLink(e.src || '');
     const srcHtml = srcLink
-      ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)" onclick="event.stopPropagation()">${e.src || ''}</a>`
+      ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${e.src || ''}</a>`
       : (e.src || '');
     return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="">
       <div class="feed-item-header">
@@ -1529,7 +1278,6 @@ function renderFeed() {
 }
 
 function formatAgo(seconds) {
-  if (seconds < 0) return 'soon';  // Future timestamp — clock skew or TZ bug
   if (seconds < 60) return 'just now';
   if (seconds < 3600) return Math.floor(seconds/60) + 'm ago';
   if (seconds < 86400) return Math.floor(seconds/3600) + 'h ago';
@@ -1601,7 +1349,7 @@ function syncMapToFeed() {
   renderOSINTMarkers(filtered);
 }
 
-// Time chip click handler — GLOBAL filter: affects feed + all map data layers
+// Time chip click handler
 document.getElementById('feed-time-bar').addEventListener('click', e => {
   const chip = e.target.closest('.feed-time-chip');
   if (!chip) return;
@@ -1609,16 +1357,11 @@ document.getElementById('feed-time-bar').addEventListener('click', e => {
   document.querySelectorAll('.feed-time-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
   renderFeed();
-  // Re-filter all live data layers
-  if (window._osintEvents) renderOSINTMarkers(window._osintEvents);
-  loadFIRMS();
-  if (activeState.seismic) loadSeismic();
-  loadSirens();
 });
 
-// Auto-refresh feed every 30s (even if hidden — pre-loads data)
+// Auto-refresh feed every 30s
 setInterval(() => {
-  try { loadFeed(); } catch(e) { console.error('Feed refresh error:', e); }
+  if (document.getElementById('feed-panel').classList.contains('open')) loadFeed();
 }, 30000);
 
 function updateLayerCount() {
@@ -1626,57 +1369,33 @@ function updateLayerCount() {
   document.getElementById('layer-status').textContent = `Layers: ${count} active`;
 }
 
-const DEFAULT_LAYERS = { borders:true, military:true, fires:false, osint:true, sirens:true, nuclear:false, countryNames:true, infra:false, missiles:false, naval:false, ad:false, airbases:false, irgc:false, energy:false, sam:false, waterways:false, patrol:false, labels:false, aircraft:false, seismic:false, ships:false, gpsjam:false, satellites:false };
-
-function applyLayerState(state) {
+function showAllLayers() {
   Object.keys(activeState).forEach(k => {
-    const want = !!state[k];
-    if (activeState[k] !== want) {
-      activeState[k] = want;
-      if (want) layers[k].addTo(map); else map.removeLayer(layers[k]);
-    }
+    activeState[k] = true; layers[k].addTo(map);
+    const btn = document.querySelector(`.tb-btn[data-layer="${k}"]`);
+    if (btn) btn.classList.add('active');
   });
-  document.querySelectorAll('.tb-btn[data-layer]').forEach(b => {
+  updateLayerCount();
+}
+
+function showUSOnly() {
+  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
+  ['borders','military','labels','patrol'].forEach(k => { activeState[k] = true; layers[k].addTo(map); });
+  document.querySelectorAll('.tb-btn').forEach(b => {
     b.classList.toggle('active', activeState[b.dataset.layer] || false);
   });
-  updateMobileButtons(); updateLayerCount(); syncSidebarState();
+  updateLayerCount();
 }
 
-function clearAllLayers() {
-  const cleared = {};
-  Object.keys(activeState).forEach(k => cleared[k] = false);
-  applyLayerState(cleared);
-}
-
-function saveLayerConfig() {
-  const config = JSON.stringify(activeState);
-  document.cookie = `layerConfig=${encodeURIComponent(config)};max-age=${365*86400};path=/;SameSite=Lax`;
-  // Flash the save button
-  const btn = document.querySelector('.sb-action-btn.ta-save');
-  if (btn) {
-    const orig = btn.textContent;
-    btn.textContent = '✓ Saved!';
-    btn.style.color = '#22c55e';
-    btn.style.borderColor = 'rgba(34,197,94,0.5)';
-    setTimeout(() => { btn.textContent = orig; btn.style.color = '#22d3ee'; btn.style.borderColor = 'rgba(6,182,212,0.3)'; }, 1500);
-  }
-}
-
-function resetLayerConfig() {
-  document.cookie = 'layerConfig=;max-age=0;path=/';
-  applyLayerState(DEFAULT_LAYERS);
-}
-
-function loadSavedConfig() {
-  const match = document.cookie.match(/layerConfig=([^;]+)/);
-  if (match) {
-    try {
-      const saved = JSON.parse(decodeURIComponent(match[1]));
-      applyLayerState(saved);
-      return true;
-    } catch(e) {}
-  }
-  return false;
+function showIranOnly() {
+  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
+  ['borders','nuclear','missiles','naval','ad','airbases','irgc','energy','sam'].forEach(k => {
+    activeState[k] = true; layers[k].addTo(map);
+  });
+  document.querySelectorAll('.tb-btn').forEach(b => {
+    b.classList.toggle('active', activeState[b.dataset.layer] || false);
+  });
+  updateLayerCount();
 }
 
 function switchTab(tab) {
@@ -1789,11 +1508,24 @@ function renderAllLayers() {
     mkMarker(s.lat, s.lon, s.emoji, 'marker-iran-naval', 26, popup).addTo(layers.naval);
   });
 
-  // ─── IRAN AIR DEFENSE (markers only, no SAM rings — repurposed for siren zones) ───
+  // ─── IRAN AIR DEFENSE + SAM RINGS ───
   V2_DATA.IRAN_AIRDEFENSE.forEach(s => {
-    const rangeColor = s.range_km >= 200 ? '#ef4444' : s.range_km >= 100 ? '#f59e0b' : '#facc15';
-    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Engagement range: ${s.range_km}km<br>⚠️ Pre-war data — status unknown`, rangeColor);
+    const popup = mkPopup(`🛡️ ${s.name}`, s.system, `Range: ${s.range_km}km`, '#eab308');
     mkMarker(s.lat, s.lon, '🛡️', 'marker-iran-ad', 24, popup).addTo(layers.ad);
+    // SAM range ring
+    if (s.range_km > 0) {
+      const ring = L.circle([s.lat, s.lon], {
+        radius: s.range_km * 1000,
+        color: s.range_km >= 200 ? '#ef4444' : s.range_km >= 100 ? '#f59e0b' : '#facc15',
+        weight: 1.5,
+        fillColor: s.range_km >= 200 ? 'rgba(239,68,68,0.05)' : 'rgba(245,158,11,0.03)',
+        fillOpacity: 1,
+        dashArray: s.range_km >= 200 ? '' : '8,6',
+        className: 'sam-ring-active',
+        interactive: false,
+      });
+      ring.addTo(layers.sam);
+    }
   });
 
   // ─── IRAN AIR BASES ───
@@ -1813,30 +1545,6 @@ function renderAllLayers() {
     const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : s.type.includes('pipeline') ? '🔗' : '🛢';
     const popup = mkPopup(`${emoji} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#f97316');
     mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
-  });
-
-  // ─── REGIONAL ENERGY (non-Iran) ───
-  const FLAG = {QA:'🇶🇦',AE:'🇦🇪',SA:'🇸🇦',IQ:'🇮🇶',KW:'🇰🇼',BH:'🇧🇭',OM:'🇴🇲',IL:'🇮🇱',EG:'🇪🇬'};
-  if (V2_DATA.REGIONAL_ENERGY) V2_DATA.REGIONAL_ENERGY.forEach(s => {
-    const emoji = s.type.includes('lng') ? '🔥' : s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : '🛢';
-    const flag = FLAG[s.country] || '';
-    const popup = mkPopup(`${flag} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#06b6d4');
-    mkMarker(s.lat, s.lon, emoji, 'marker-regional-energy', 18, popup).addTo(layers.energy);
-  });
-
-  // ─── DAMAGED / ATTACKED FACILITIES ───
-  if (V2_DATA.DAMAGED_FACILITIES) V2_DATA.DAMAGED_FACILITIES.forEach(d => {
-    const icon = d.status === 'hit' ? '💥' : d.status === 'shutdown' ? '⚠️' : d.status === 'blocked' ? '🚫' : '❌';
-    const statusLabel = d.status === 'hit' ? '🔴 STRUCK' : d.status === 'shutdown' ? '🟡 SHUTDOWN' : d.status === 'blocked' ? '🔴 BLOCKED' : '❌ OFFLINE';
-    const statusColor = d.status === 'hit' ? '#ef4444' : d.status === 'shutdown' ? '#f59e0b' : '#ef4444';
-    const cssClass = `marker-${d.status || 'damaged'}`;
-    const popup = `<div style="font-family:var(--font-data);font-size:11px;min-width:200px">
-      <b style="color:${statusColor};font-size:13px">${icon} ${d.name}</b><br>
-      <span style="color:${statusColor};font-weight:bold">${statusLabel}</span> · ${d.type.toUpperCase()}<br>
-      📅 ${d.date} · By: <b>${d.by}</b><br>
-      ${d.desc}<br>
-    </div>`;
-    mkMarker(d.lat, d.lon, icon, cssClass, 28, popup).addTo(layers.energy);
   });
 
   // ─── STRATEGIC WATERWAYS ───
@@ -1880,7 +1588,6 @@ function renderAllLayers() {
   // ─── COUNTRY BORDERS ───
   fetch(NE_COUNTRIES).then(r => r.json()).then(geo => {
     L.geoJSON(geo, {
-      interactive: false,
       style: feature => {
         const name = (feature.properties.ADMIN || feature.properties.NAME || feature.properties.name || '').toLowerCase();
         const iso = (feature.properties.ISO_A2 || feature.properties.ISO_A3 || '').toUpperCase();
@@ -1890,6 +1597,10 @@ function renderAllLayers() {
         else if (['SA','AE','QA','BH','KW','OM','JO','IQ'].includes(iso)) { fillColor = '#3b82f6'; fillOpacity = 0.03; color = 'rgba(59,130,246,0.3)'; weight = 1; }
         else if (['SY','YE','LB'].includes(iso)) { fillColor = '#ef4444'; fillOpacity = 0.05; color = 'rgba(239,68,68,0.3)'; weight = 1; }
         return { fillColor, fillOpacity, color, weight, className: 'neon-glow' };
+      },
+      onEachFeature: (feature, layer) => {
+        const name = feature.properties.ADMIN || feature.properties.NAME || '';
+        if (name) layer.bindTooltip(name, { sticky: true, className: 'country-tooltip' });
       }
     }).addTo(layers.borders);
   }).catch(e => console.warn('Borders load failed:', e));
@@ -1901,30 +1612,8 @@ function renderAllLayers() {
   const totalAssets = V2_DATA.US_BASES.length + V2_DATA.IRAN_NUCLEAR.length + V2_DATA.IRAN_MISSILES.length +
     V2_DATA.IRAN_NAVAL.length + V2_DATA.IRAN_AIRDEFENSE.length + V2_DATA.IRAN_AIRBASES.length +
     V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length;
-    document.getElementById('asset-count').textContent = totalAssets;
+  document.getElementById('asset-count').textContent = totalAssets;
   document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
-  syncSidebarState();
-
-  // Inject toggle switches into sidebar rows
-  document.querySelectorAll('.sb-row[data-sb]').forEach(row => {
-    row.appendChild(Object.assign(document.createElement('div'), {className:'sb-toggle'}));
-  });
-
-  // Global toolbar tooltip (avoids overflow clipping)
-  const tbTip = document.getElementById('tb-tip');
-  document.querySelectorAll('.tb-btn').forEach(btn => {
-    const tt = btn.querySelector('.tb-tooltip');
-    if (!tt) return;
-    const text = tt.textContent;
-    btn.addEventListener('mouseenter', () => {
-      const r = btn.getBoundingClientRect();
-      tbTip.textContent = text;
-      tbTip.style.top = (r.top + r.height/2) + 'px';
-      tbTip.style.transform = 'translateY(-50%)';
-      tbTip.classList.add('show');
-    });
-    btn.addEventListener('mouseleave', () => tbTip.classList.remove('show'));
-  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1946,16 +1635,13 @@ function renderOSINTMarkers(events) {
   layers.osint.clearLayers();
   let count = 0;
   const now = Date.now()/1000;
-  const cutoff = feedTimeHours > 0 ? now - (feedTimeHours * 3600) : 0;
   events.forEach(ev => {
     if (!ev.lat || !ev.lon) return;
-    const ts = ev.timestamp || ev.ts || 0;
-    // Apply same time filter as feed panel
-    if (cutoff > 0 && ts && ts < cutoff) return;
     count++;
+    const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
     const srcName = ev.actor1 || ev.source || ev.src || '';
-    const srcUrl = ev.link || getSrcLink(srcName);
+    const srcUrl = getSrcLink(srcName);
     const srcHtml = srcUrl
       ? `<a href="${srcUrl}" target="_blank" rel="noopener" style="color:#06b6d4;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${srcName}</a>`
       : srcName;
@@ -1975,120 +1661,35 @@ function renderOSINTMarkers(events) {
   document.getElementById('cnt-osint').textContent = count;
 }
 
-function fireCircleMarker(lat, lon, frpVal, popupData) {
-  // Lightweight circleMarker sized by FRP; popup bound lazily on first click
-  const r = frpVal > 100 ? 10 : frpVal > 30 ? 7 : frpVal > 5 ? 5 : 3;
-  const fill = frpVal > 50 ? '#ff2200' : '#ff8800';
-  const m = L.circleMarker([lat, lon], {
-    radius: r, color: '#ff4400', weight: 1, opacity: 0.9,
-    fillColor: fill, fillOpacity: 0.75
-  });
-  // Lazy popup: build DOM only on first click
-  let bound = false;
-  m.on('click', function() {
-    if (!bound) {
-      bound = true;
-      m.bindPopup(mkPopup(popupData.title, popupData.sub, popupData.details, '#ff8800'), { maxWidth: 320 }).openPopup();
-    }
-  });
-  return m;
-}
-
-function updateFireTooltip(count) {
-  const tt = document.getElementById('tt-fires');
-  if (tt) tt.textContent = `FIRMS Fires${count > 0 ? ' (' + (count > 999 ? Math.round(count/100)/10+'k' : count) + ')' : ''}`;
-  document.getElementById('cnt-fires').textContent = count;
-}
-
 function loadFIRMS() {
-  // Primary: /api/fires (real-time FIRMS, 4 satellites)
-  // Fallback: intel-feed fire events
-  const apiUrl = API_URL ? `${API_URL}/api/fires` : null;
-  const cutoffMs = _fireHours > 0 ? Date.now() - (_fireHours * 3600000) : 0;
-  const loadFromApi = apiUrl ? fetch(apiUrl).then(r=>r.ok?r.json():null).catch(()=>null) : Promise.resolve(null);
-  loadFromApi.then(apiData => {
-    layers.fires.clearLayers();
+  const feedUrl = dataUrl('intel-feed');
+  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    const all = data.events || data || [];
+    const fires = all.filter(e => {
+      const t = (e.sub_event_type || e.type || '').toLowerCase();
+      return t.includes('fire') || t.includes('firms');
+    });
     let count = 0;
-    if (apiData && apiData.fires && apiData.fires.length > 0) {
-      const markers = [];
-      apiData.fires.forEach(f => {
-        if (!f.lat || !f.lon) return;
-        // Filter out low-intensity fires (agricultural/brush)
-        if (FIRE_FRP_MIN > 0 && (parseFloat(f.frp) || 0) < FIRE_FRP_MIN) return;
-        // Time filter: parse acquisition time if available
-        if (cutoffMs > 0 && f.acq) {
-          // FIRMS acq format: "YYYY-MM-DD HHMM" (no colon, HHMM can be 3 or 4 digits)
-          const acqParts = f.acq.split(' ');
-          let acqTime = 0;
-          if (acqParts.length === 2) {
-            const hhmm = acqParts[1].padStart(4, '0');
-            const iso = acqParts[0] + 'T' + hhmm.slice(0,2) + ':' + hhmm.slice(2) + ':00Z';
-            acqTime = new Date(iso).getTime();
-          }
-          if (acqTime && acqTime < cutoffMs) return;
-        }
-        count++;
-        const frpVal = parseFloat(f.frp) || 0;
-        const frp = f.frp ? `FRP: ${f.frp.toFixed(1)} MW` : '';
-        const conf = f.confidence ? `Confidence: ${f.confidence}` : '';
-        const sat = f.sat ? `Satellite: ${f.sat}` : '';
-        let acqLabel = '';
-        if (f.acq) {
-          const ap = f.acq.split(' ');
-          if (ap.length === 2) {
-            const hm = ap[1].padStart(4,'0');
-            const d = new Date(ap[0] + 'T' + hm.slice(0,2) + ':' + hm.slice(2) + ':00Z');
-            if (!isNaN(d)) acqLabel = 'Detected: ' + d.toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'UTC'}) + ' UTC';
-          }
-        }
-        const details = [conf, frp, sat, acqLabel].filter(Boolean).join('<br>');
-        markers.push(fireCircleMarker(f.lat, f.lon, frpVal, {
-          title: '🔥 Fire Hotspot', sub: details, details: ''
-        }));
-      });
-      layers.fires.addLayers(markers);  // Batch add — much faster with chunkedLoading
-    } else {
-      // Fallback to intel-feed fire events
-      const feedUrl = dataUrl('intel-feed');
-      fetch(feedUrl).then(r=>r.ok?r.json():null).then(data=>{
-        if(!data) return;
-        const all = data.events||data||[];
-        const nowS = Date.now()/1000;
-        const markers = [];
-        all.filter(e=>{
-          const t=(e.sub_event_type||e.type||'').toLowerCase();
-          if(!t.includes('fire')&&!t.includes('firms')) return false;
-          if(_fireHours>0 && e.timestamp && (nowS - e.timestamp) > _fireHours*3600) return false;
-          return true;
-        })
-        .forEach(f=>{
-          if(!f.lat||!f.lon) return; count++;
-          markers.push(fireCircleMarker(f.lat, f.lon, parseFloat(f.frp) || 0, {
-            title: '🔥 Fire Hotspot',
-            sub: `Confidence: ${f.confidence||'?'}`,
-            details: `📍 ${f.location||f.loc||''}<br>📅 ${f.date||''}`
-          }));
-        });
-        layers.fires.addLayers(markers);  // Batch add for fallback path too
-        updateFireTooltip(count);
-      }).catch(()=>{});
-    }
-    updateFireTooltip(count);
-  });
+    fires.forEach(f => {
+      if (!f.lat || !f.lon) return;
+      count++;
+      mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
+        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>📅 ${f.date || ''}`, '#ff8800')
+      ).addTo(layers.fires);
+    });
+    document.getElementById('cnt-fires').textContent = count;
+  }).catch(() => {});
 }
 
 function loadSirens() {
   const feedUrl = dataUrl('intel-feed');
-  const nowS = Date.now() / 1000;
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
-    layers.sirens.clearLayers();
     const events = data.events || data || [];
     const sirens = events.filter(e => {
       const t = (e.type || e.sub_event_type || '').toLowerCase();
-      if (!(t.includes('siren') || t.includes('alert') || t.includes('rocket') || t.includes('missile_alert') || t.includes('oref'))) return false;
-      if (feedTimeHours > 0 && e.timestamp && (nowS - e.timestamp) > feedTimeHours * 3600) return false;
-      return true;
+      return t.includes('siren') || t.includes('alert') || t.includes('rocket') || t.includes('missile_alert') || t.includes('oref');
     });
     let count = 0;
     sirens.forEach(s => {
@@ -2125,7 +1726,6 @@ function renderAssetList(filter) {
     ...V2_DATA.IRAN_AIRBASES.map(s => ({ ...s, category: 'Air Base', emoji: s.emoji, lon: s.lon })),
     ...V2_DATA.IRAN_IRGC.map(s => ({ ...s, category: 'IRGC', emoji: s.emoji, lon: s.lon })),
     ...V2_DATA.IRAN_ENERGY.map(s => ({ ...s, category: 'Energy', emoji: '🛢', lon: s.lon })),
-    ...(V2_DATA.REGIONAL_ENERGY||[]).map(s => ({ ...s, category: 'Energy', emoji: '🛢', lon: s.lon })),
   ];
   const filtered = filter ? allAssets.filter(a => (a.name||'').toLowerCase().includes(filter) || (a.category||'').toLowerCase().includes(filter)) : allAssets;
   el.innerHTML = filtered.slice(0, 100).map(a => `
@@ -2160,24 +1760,22 @@ renderAllLayers();
 loadFIRMS();
 loadSirens();
 pollOref();
-loadSavedConfig(); // restore user's saved layer config (cookie)
 updateLayerCount();
 updateMobileButtons();
 
-// Auto-open live feed on load + preload data
-setTimeout(() => { loadFeed(); toggleFeed(); }, 500);
+// Auto-open live feed on load
+setTimeout(() => toggleFeed(), 500);
 
 // ═══════════════════════════════════════════════════════════
 // NEWS TICKER
 // ═══════════════════════════════════════════════════════════
 function loadTicker() {
-  const apiUrl = API_URL ? `${API_URL}/api/intel-feed?hours=6&limit=50` : null;
-  const staticUrl = `${STATIC_BASE}/intel-feed.json`;
-  const fetchUrl = apiUrl || staticUrl;
-  fetch(fetchUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
+  const feedUrl = `${STATIC_BASE}/intel-feed.json`;
+  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const events = (data.events || data || []).sort((a,b) => (b.ts||0) - (a.ts||0));
     const now = Date.now() / 1000;
+    // Show last 6 hours in ticker
     const recent = events.filter(e => e.ts && (now - e.ts) < 21600).slice(0, 50);
     if (recent.length === 0) return;
 
@@ -2210,15 +1808,11 @@ function loadTicker() {
 }
 
 loadTicker();
-setInterval(loadTicker, 45000); // refresh ticker every 45s
+setInterval(loadTicker, 30000); // refresh ticker every 30s
 
 // Show data mode
-// oref mode display removed
-// Fetch last oref alert from DB for persistent "last alert" display
-if (API_URL) fetch(`${API_URL}/api/oref/last`).then(r=>r.ok?r.json():null).then(d=>{
-  if(d&&d.alert){window._lastOrefAlertTitle=OREF_CAT_EN[d.alert.cat]||d.alert.title||'Alert';window._lastOrefAlertTime=d.alert.ts?d.alert.ts*1000:null;}
-}).catch(()=>{});
-// oref mode/interval display removed
+document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
+document.getElementById('oref-interval').textContent = API_URL ? '~10s' : '~2min';
 
 // Auto-refresh live data every 60s
 setInterval(() => {
@@ -2228,108 +1822,14 @@ setInterval(() => {
   loadOSINT();
   loadFIRMS();
   loadSirens();
-  loadAircraft();
-  if(activeState.seismic) loadSeismic();
 }, 60000);
-
-// ═══════ LIVE AIRCRAFT (FR24 via API) ═══════
-let _acMilOnly = false;
-function loadAircraft() {
-  if (!API_URL) return;
-  const filt = _acMilOnly ? '?filter=military' : '';
-  fetch(`${API_URL}/api/aircraft${filt}`).then(r=>r.json()).then(d => {
-    layers.aircraft.clearLayers();
-    const aircraft = d.aircraft || [];
-    aircraft.forEach(ac => {
-      const isMil = ac.mil === 'us_mil' || ac.mil === 'il_mil';
-      const color = ac.mil === 'us_mil' ? '#22c55e' : ac.mil === 'il_mil' ? '#3b82f6' : '#facc15';
-      const size = isMil ? 14 : 10;
-      const heading = ac.heading || 0;
-      const icon = L.divIcon({
-        className: 'aircraft-icon' + (isMil ? ' aircraft-mil' : ''),
-        html: `<div style="transform:rotate(${heading}deg);color:${color};font-size:${size}px;text-shadow:0 0 6px ${color}80;line-height:1">✈</div>`,
-        iconSize: [size, size], iconAnchor: [size/2, size/2],
-      });
-      const m = L.marker([ac.lat, ac.lon], { icon });
-      const altFt = ac.alt ? `${ac.alt.toLocaleString()} ft` : '?';
-      const milTag = ac.mil === 'us_mil' ? ' 🇺🇸 US MIL' : ac.mil === 'il_mil' ? ' 🇮🇱 IAF' : '';
-      const route = (ac.from || ac.to) ? `<br>Route: ${ac.from||'?'} → ${ac.to||'?'}` : '';
-      m.bindPopup(`<div style="font-family:var(--font-data);font-size:11px;min-width:140px">
-        <b style="color:${color}">${ac.callsign || 'N/A'}${milTag}</b><br>
-        Type: ${ac.type || '?'} · Reg: ${ac.reg || '?'}<br>
-        Alt: ${altFt} · Speed: ${ac.speed || '?'} kts${route}
-      </div>`, {className:'dark-popup'});
-      m.addTo(layers.aircraft);
-    });
-    // Update button badge
-    const btn = document.querySelector('.tb-btn[data-layer="aircraft"]');
-    if (btn) {
-      const badge = btn.querySelector('.ac-badge') || document.createElement('span');
-      badge.className = 'ac-badge';
-      badge.style.cssText = 'position:absolute;top:-2px;right:-2px;font-size:8px;background:#22c55e;color:#000;border-radius:50%;padding:1px 3px;font-weight:700';
-      badge.textContent = d.mil_count || (d.count || 0);
-      if (!btn.querySelector('.ac-badge')) btn.appendChild(badge);
-    }
-  }).catch(()=>{});
-}
-// ═══════ USGS SEISMIC DATA ═══════
-const NUCLEAR_SITES = [
-  {name:"Natanz",lat:33.725,lon:51.727},{name:"Fordow",lat:34.88,lon:51.584},
-  {name:"Isfahan Nuclear",lat:32.678,lon:51.700},{name:"Bushehr",lat:28.831,lon:50.888},
-  {name:"Arak",lat:34.38,lon:49.243},{name:"Parchin",lat:35.52,lon:51.77},
-  {name:"Kharg Island Oil",lat:29.23,lon:50.31},{name:"Tehran",lat:35.69,lon:51.39},
-];
-function nearNuclear(lat,lon,threshKm=80){
-  for(const s of NUCLEAR_SITES){
-    const d=haversine(lat,lon,s.lat,s.lon);
-    if(d<threshKm) return {site:s.name,dist:Math.round(d)};
-  }
-  return null;
-}
-function haversine(lat1,lon1,lat2,lon2){
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-function loadSeismic(){
-  if(!API_URL) return;
-  // Seismic uses longer window than OSINT — earthquakes are rare events
-  // Show all quakes from API (7d) regardless of feed time filter
-  fetch(`${API_URL}/api/seismic`).then(r=>r.json()).then(d=>{
-    layers.seismic.clearLayers();
-    const quakes=d.quakes||[];
-    quakes.forEach(q=>{
-      const mag=q.mag||0;
-      const radius=Math.max(6,mag*4);
-      const color=mag>=5?'#ef4444':mag>=4?'#f97316':mag>=3?'#eab308':'#a3a3a3';
-      const nearSite=nearNuclear(q.lat,q.lon);
-      const siteWarn=nearSite?`<br>⚠️ <b style="color:#ef4444">${nearSite.dist}km from ${nearSite.site}</b>`:'';
-      const popup=`<div style="font-family:var(--font-data);font-size:11px;min-width:160px">
-        <b style="color:${color}">M${mag.toFixed(1)} Earthquake</b>${siteWarn}<br>
-        📍 ${q.place||'Unknown'}<br>
-        🕳️ Depth: ${q.depth?.toFixed(1)||'?'}km<br>
-        🕐 ${q.time?new Date(q.time*1000).toLocaleTimeString():'?'}<br>
-        ${q.url?`<a href="${q.url}" target="_blank" rel="noopener" style="color:#06b6d4">USGS Details</a>`:''}
-      </div>`;
-      const m=L.circleMarker([q.lat,q.lon],{
-        radius,color,fillColor:color,fillOpacity:0.4,weight:nearSite?3:1.5,
-        opacity:0.9,className:nearSite?'quake-near-nuclear':''
-      });
-      m.bindPopup(popup,{className:'dark-popup'});
-      m.addTo(layers.seismic);
-    });
-  }).catch(()=>{});
-}
-
-// Initial load
-loadAircraft();
 
 // Mobile toolbar toggle helper
 function mtToggle(name, el) {
   toggleLayer(name);
   // Update mobile toolbar button styling
   if (!el) return;
-  const colorMap = { sirens:'active-red', fires:'active-orange', osint:'active-red', military:'active', borders:'active', sam:'active-amber', patrol:'active-green', waterways:'active', aircraft:'active-green', ships:'active', infra:'active-orange', gpsjam:'active-red', nuclear:'active', countryNames:'active', labels:'active', seismic:'active-amber', satellites:'active' };
+  const colorMap = { sirens:'active-red', fires:'active-orange', osint:'active-red', military:'active', borders:'active', sam:'active-amber', patrol:'active-green', waterways:'active', aircraft:'active-green', ships:'active', infra:'active-orange', gpsjam:'active-red' };
   const cls = colorMap[name] || 'active';
   if (activeState[name]) { el.classList.add(cls); } else { el.classList.remove(cls,'active','active-red','active-orange','active-amber','active-green'); }
 }
@@ -2346,11 +1846,10 @@ function pollOref() {
     orefAlerts = alerts;
     updateOrefBanner(alerts, data.timestamp, data.note);
   }).catch(() => {
-    // Retry after 5s on failure
+    // No data available yet
     const status = document.getElementById('oref-status');
     status.className = 'oref-status safe';
-    status.textContent = 'Connecting to Pikud HaOref...';
-    setTimeout(pollOref, 5000);
+    status.textContent = 'Waiting for data feed...';
   });
 }
 
@@ -2369,586 +1868,67 @@ function updateOrefBanner(alerts, serverTs, note) {
   }
 
   if (alerts.length === 0) {
+    banner.classList.remove('alert-active');
+    status.className = 'oref-status safe';
+    status.textContent = note && note.includes('cached') ? 'No active alerts (cached)' : 'No active alerts in Israel.';
     document.getElementById('chip-alert').textContent = '0';
-    // If we had active alerts recently, show shelter advisory
-    const SHELTER_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-    if (window._lastOrefAlertTime && (Date.now() - window._lastOrefAlertTime) < SHELTER_WINDOW_MS) {
-      banner.classList.add('alert-active');
-      status.className = 'oref-status danger';
-      const minsAgo = Math.round((Date.now() - window._lastOrefAlertTime) / 60000);
-      status.textContent = `⚠️ Sirens ended ${minsAgo || '<1'}m ago — Stay in shelter until instructed by Pikud HaOref`;
-    } else {
-      banner.classList.remove('alert-active');
-      status.className = 'oref-status safe';
-      if (window._lastOrefAlertTitle && window._lastOrefAlertTime) {
-        const minsAgo = Math.round((Date.now() - window._lastOrefAlertTime) / 60000);
-        const timeStr = minsAgo < 60 ? `${minsAgo}m ago` : `${Math.floor(minsAgo/60)}h ${minsAgo%60}m ago`;
-        status.textContent = `No active alerts (last: ${window._lastOrefAlertTitle} · ${timeStr})`;
-      } else {
-        status.textContent = 'No active alerts in Israel.';
-      }
-    }
+    fetchLastSiren();
   } else {
-    window._lastOrefAlertTime = Date.now();
-    window._lastOrefAlertTitle = OREF_CAT_EN[alerts[0].cat] || alerts[0].title || 'Alert';
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
     const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
     status.textContent = `🚨 ACTIVE: ${alerts.length} alert${alerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
     document.getElementById('chip-alert').textContent = alerts.length;
+    document.getElementById('oref-last-siren').textContent = '';
+    lastSirenCache = null;
   }
-  // Update breathing siren zone circles
-  updateSirensFromOref(alerts);
-  // Fire ballistic animation on active sirens
-  maybeFireBarrage(alerts);
 }
 
-// Israeli city/area geocoder (approximate centers) — shared by siren zones + ballistic animation
-const IL_GEO = {
-  'תל אביב':[32.08,34.78],'tel aviv':[32.08,34.78],'חיפה':[32.79,34.99],'haifa':[32.79,34.99],
-  'ירושלים':[31.77,35.21],'jerusalem':[31.77,35.21],'באר שבע':[31.25,34.79],'beer sheva':[31.25,34.79],'beersheba':[31.25,34.79],
-  'אשדוד':[31.80,34.65],'ashdod':[31.80,34.65],'אשקלון':[31.67,34.57],'ashkelon':[31.67,34.57],
-  'נתניה':[32.33,34.86],'netanya':[32.33,34.86],'הרצליה':[32.16,34.78],'herzliya':[32.16,34.78],
-  'רחובות':[31.90,34.81],'rehovot':[31.90,34.81],'פתח תקוה':[32.09,34.89],'petah tikva':[32.09,34.89],
-  'ראשון לציון':[31.97,34.79],'rishon':[31.97,34.79],'נצרת':[32.70,35.30],'nazareth':[32.70,35.30],
-  'עכו':[32.93,35.08],'acre':[32.93,35.08],'akko':[32.93,35.08],
-  'טבריה':[32.79,35.53],'tiberias':[32.79,35.53],'צפת':[32.97,35.50],'safed':[32.97,35.50],'tzfat':[32.97,35.50],
-  'קריית שמונה':[33.21,35.57],'kiryat shmona':[33.21,35.57],'כרמיאל':[32.91,35.30],'karmiel':[32.91,35.30],
-  'מגידו':[32.58,35.18],'megiddo':[32.58,35.18],'עפולה':[32.61,35.29],'afula':[32.61,35.29],
-  'שדרות':[31.52,34.59],'sderot':[31.52,34.59],'גוש דן':[32.05,34.79],'gush dan':[32.05,34.79],
-  'שרון':[32.30,34.86],'sharon':[32.30,34.86],'השפלה':[31.85,34.85],'shfela':[31.85,34.85],
-  'נגב':[30.85,34.78],'negev':[30.85,34.78],'גליל עליון':[33.05,35.50],'upper galilee':[33.05,35.50],
-  'גליל תחתון':[32.75,35.35],'lower galilee':[32.75,35.35],'עמק יזרעאל':[32.60,35.25],'jezreel':[32.60,35.25],
-  'גולן':[32.95,35.75],'golan':[32.95,35.75],'מטה בנימין':[31.90,35.25],'binyamin':[31.90,35.25],
-  'אילת':[29.56,34.95],'eilat':[29.56,34.95],'מודיעין':[31.90,35.01],"modi'in":[31.90,35.01],
-  'רמת גן':[32.07,34.82],'ramat gan':[32.07,34.82],'בני ברק':[32.08,34.83],'bnei brak':[32.08,34.83],
-  'הוד השרון':[32.15,34.88],'hod hasharon':[32.15,34.88],'רעננה':[32.18,34.87],'raanana':[32.18,34.87],
-  'כפר סבא':[32.17,34.91],'kfar saba':[32.17,34.91],'לוד':[31.95,34.89],'lod':[31.95,34.89],
-  'רמלה':[31.93,34.87],'ramla':[31.93,34.87],
-};
+const SIREN_TITLES = {'1':'Rockets & Missiles','2':'Hostile Aircraft Intrusion','3':'Tsunami','4':'Earthquake','5':'Radiological','6':'Hazardous Materials','10':'Missiles (event ended)','101':'Drill'};
+const SIREN_TITLE_HE = {'\u05d9\u05e8\u05d9 \u05e8\u05e7\u05d8\u05d5\u05ea \u05d5\u05d8\u05d9\u05dc\u05d9\u05dd':'Rockets & Missiles','\u05d7\u05d3\u05d9\u05e8\u05ea \u05db\u05dc\u05d9 \u05d8\u05d9\u05e1 \u05e2\u05d5\u05d9\u05df':'Hostile Aircraft Intrusion','\u05e6\u05d5\u05e0\u05de\u05d9':'Tsunami','\u05e8\u05e2\u05d9\u05d3\u05ea \u05d0\u05d3\u05de\u05d4':'Earthquake'};
+let lastSirenCache = null;
+function fetchLastSiren() {
+  const el = document.getElementById('oref-last-siren');
+  if (lastSirenCache) { el.textContent = lastSirenCache; return; }
+  if (API_URL) {
+    fetch(`${API_URL}/api/oref/history?limit=1`, {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      if (!d.alerts || !d.alerts.length) { el.textContent = ''; return; }
+      const a = d.alerts[0];
+      const title = SIREN_TITLE_HE[a.title] || a.title || SIREN_TITLES[a.cat] || `Category ${a.cat}`;
+      const ts = a.ts * 1000;
+      const ago = formatAgo(Math.round((Date.now() - ts) / 1000));
+      lastSirenCache = `(last: ${title} · ${ago})`;
+      el.textContent = lastSirenCache;
+    }).catch(()=>{ el.textContent = ''; });
+  } else {
+    // Static fallback: oref-alerts.json may have last_siren_ts/last_siren_title
+    fetch(dataUrl('oref') + '?t=' + Date.now(), {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      if (!d.last_siren_ts) { el.textContent = ''; return; }
+      const title = d.last_siren_title || 'Alert';
+      const parts = d.last_siren_ts.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+      if (!parts) { el.textContent = ''; return; }
+      const ts = new Date(`${parts[1]}-${parts[2]}-${parts[3]}T${parts[4]}:${parts[5]}:${parts[6]}+03:00`).getTime();
+      const ago = formatAgo(Math.round((Date.now() - ts) / 1000));
+      lastSirenCache = `(last: ${title} · ${ago})`;
+      el.textContent = lastSirenCache;
+    }).catch(()=>{ el.textContent = ''; });
+  }
+}
 
 function updateSirensFromOref(alerts) {
-  // Place breathing red circles on active siren areas
-  layers.sam.clearLayers();
-  if (!alerts || alerts.length === 0) return;
-
-  // Auto-enable siren zones layer when sirens active
-  if (!activeState.sam) {
-    activeState.sam = true;
-    layers.sam.addTo(map);
-    const btn = document.querySelector('.tb-btn[data-layer="sam"]');
-    if (btn) btn.classList.add('active-red');
-  }
-
-  const geocoded = new Map(); // dedup by location key
-  alerts.forEach(a => {
-    const area = (a.data || a.title || a.area || '').trim();
-    if (!area) return;
-    const areaLower = area.toLowerCase();
-    let coords = null;
-    // Try exact match first, then substring
-    for (const [key, ll] of Object.entries(IL_GEO)) {
-      if (areaLower.includes(key) || key.includes(areaLower)) {
-        coords = ll;
-        break;
-      }
-    }
-    if (!coords) return;
-    const locKey = `${coords[0]},${coords[1]}`;
-    if (geocoded.has(locKey)) {
-      geocoded.get(locKey).areas.push(area);
-    } else {
-      geocoded.set(locKey, { lat: coords[0], lon: coords[1], areas: [area] });
-    }
-  });
-
-  geocoded.forEach(loc => {
-    // Breathing red circle
-    const ring = L.circle([loc.lat, loc.lon], {
-      radius: 8000, // 8km radius
-      color: '#ef4444',
-      weight: 2,
-      fillColor: 'rgba(239,68,68,0.15)',
-      fillOpacity: 1,
-      className: 'siren-zone-ring',
-    });
-    ring.bindPopup(`<div style="font-family:var(--font-data);font-size:11px">
-      <b style="color:#ef4444">🚨 ACTIVE SIREN</b><br>
-      ${loc.areas.join('<br>')}<br>
-      <span style="color:var(--text-dim);font-size:9px">Take cover immediately</span>
-    </div>`, {className:'dark-popup'});
-    ring.addTo(layers.sam);
-  });
+  // Clear and re-add siren markers from Oref data
+  // This requires geocoding Oref area names — use a basic lookup
+  // For now, rely on intel-feed.json which is geocoded by the watcher
 }
 
 // Poll Oref — faster with API, slower with static
-// ═══════ BALLISTIC MISSILE ANIMATION ═══════
-// Animated arcing trails from launch sites → target areas
-// Triggers on Oref siren alerts + manual demo
-
-const ballisticLayer = L.layerGroup().addTo(map);
-let _ballisticSvg = null;
-
-function getBallisticSvg() {
-  if (_ballisticSvg) return _ballisticSvg;
-  const container = map.getContainer();
-  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('class','ballistic-overlay');
-  svg.style.width = container.offsetWidth + 'px';
-  svg.style.height = container.offsetHeight + 'px';
-  svg.style.position = 'absolute';
-  svg.style.top = '0';
-  svg.style.left = '0';
-  svg.style.zIndex = '650';
-  svg.style.pointerEvents = 'none';
-  svg.style.overflow = 'visible';
-  container.appendChild(svg);
-  _ballisticSvg = svg;
-  // Resize on window resize
-  window.addEventListener('resize', () => {
-    svg.style.width = container.offsetWidth + 'px';
-    svg.style.height = container.offsetHeight + 'px';
-  });
-  // Clear missiles on user zoom/pan — pixel coords become stale
-  let _barrageActive = false;
-  map.on('zoomstart movestart', () => {
-    if (!_barrageActive) svg.innerHTML = '';
-  });
-  return svg;
-}
-
-function projectPoint(lat, lon) {
-  const pt = map.latLngToContainerPoint([lat, lon]);
-  return { x: pt.x, y: pt.y };
-}
-
-function buildArcPath(from, to) {
-  const p1 = projectPoint(from[0], from[1]);
-  const p2 = projectPoint(to[0], to[1]);
-  const dx = p2.x - p1.x, dy = p2.y - p1.y;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  // Control point for arc — peak height scales with distance
-  const mx = (p1.x + p2.x) / 2;
-  const my = (p1.y + p2.y) / 2 - dist * 0.4; // arc upward
-  return { path: `M${p1.x},${p1.y} Q${mx},${my} ${p2.x},${p2.y}`, p1, p2, cp: {x:mx,y:my}, dist };
-}
-
-function animateMissile(fromCoord, toCoord, delayMs, durationMs, onAllDone) {
-  const svg = getBallisticSvg();
-  const arc = buildArcPath(fromCoord, toCoord);
-  durationMs = durationMs || Math.max(4000, Math.min(8000, arc.dist * 6));
-  const WAVES = 5;
-  const WAVE_GAP = durationMs * 0.7;
-
-  const arcGroup = document.createElementNS('http://www.w3.org/2000/svg','g');
-  const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
-  glowPath.setAttribute('d', arc.path);
-  glowPath.setAttribute('class','ballistic-trail ballistic-trail-glow');
-  glowPath.setAttribute('stroke-width','12');
-  arcGroup.appendChild(glowPath);
-  const corePath = document.createElementNS('http://www.w3.org/2000/svg','path');
-  corePath.setAttribute('d', arc.path);
-  corePath.setAttribute('class','ballistic-trail ballistic-trail-core');
-  corePath.setAttribute('stroke-width','2.5');
-  arcGroup.appendChild(corePath);
-
-  let completed = 0;
-  function launchHead(delay) {
-    setTimeout(() => {
-      const head = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      head.setAttribute('cx', arc.p1.x); head.setAttribute('cy', arc.p1.y);
-      head.setAttribute('r','4'); head.setAttribute('class','missile-head');
-      arcGroup.appendChild(head);
-      const tail = document.createElementNS('http://www.w3.org/2000/svg','line');
-      tail.setAttribute('stroke','rgba(255,200,60,0.5)'); tail.setAttribute('stroke-width','3');
-      tail.setAttribute('stroke-linecap','round');
-      arcGroup.appendChild(tail);
-
-      const startTime = performance.now();
-      function tick(now) {
-        const t = Math.min(1, (now - startTime) / durationMs);
-        const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
-        const u = ease;
-        const hx = (1-u)*(1-u)*arc.p1.x + 2*(1-u)*u*arc.cp.x + u*u*arc.p2.x;
-        const hy = (1-u)*(1-u)*arc.p1.y + 2*(1-u)*u*arc.cp.y + u*u*arc.p2.y;
-        head.setAttribute('cx', hx); head.setAttribute('cy', hy);
-        const ut = Math.max(0, u - 0.08);
-        const tx = (1-ut)*(1-ut)*arc.p1.x + 2*(1-ut)*ut*arc.cp.x + ut*ut*arc.p2.x;
-        const ty = (1-ut)*(1-ut)*arc.p1.y + 2*(1-ut)*ut*arc.cp.y + ut*ut*arc.p2.y;
-        tail.setAttribute('x1', hx); tail.setAttribute('y1', hy);
-        tail.setAttribute('x2', tx); tail.setAttribute('y2', ty);
-
-        if (t < 1) {
-          requestAnimationFrame(tick);
-        } else {
-          head.remove(); tail.remove();
-          ['impact-ring','impact-ring2'].forEach(cls => {
-            const r = document.createElementNS('http://www.w3.org/2000/svg','circle');
-            r.setAttribute('cx', arc.p2.x); r.setAttribute('cy', arc.p2.y);
-            r.setAttribute('r','3'); r.setAttribute('class', cls);
-            arcGroup.appendChild(r);
-            setTimeout(() => r.remove(), 2000);
-          });
-          completed++;
-          if (completed >= WAVES && onAllDone) onAllDone();
-        }
-      }
-      requestAnimationFrame(tick);
-    }, delay);
-  }
-
-  setTimeout(() => {
-    svg.appendChild(arcGroup);
-    for (let i = 0; i < WAVES; i++) {
-      launchHead(i * WAVE_GAP);
-    }
-  }, delayMs || 0);
-
-  return arcGroup;
-}
-
-// Pick plausible launch sites based on range to target
-// Known launch origins with approximate coordinates and keywords
-const LAUNCH_ORIGINS = {
-  iran:     { lat:33.5, lon:48.8, label:'Iran',     bounds:[[25,44],[38,56]], keywords:['iran','tehran','irgc','persian','isfahan','tehran','shahab','emad','sejjil','khorramshahr','ghadr','بایران','ایران'] },
-  yemen:    { lat:15.4, lon:44.2, label:'Yemen/Houthis', bounds:[[12,42],[20,48]], keywords:['yemen','houthi','ansar','sanaa','hodeidah','תימן','חות\'י'] },
-  lebanon:  { lat:33.85,lon:35.85,label:'Lebanon/Hezbollah', bounds:[[31,34],[34.5,36.5]], keywords:['lebanon','hezbollah','nasrallah','beirut','south lebanon','לבנון','חיזבאללה'] },
-  iraq:     { lat:33.3, lon:44.4, label:'Iraq/Militias', bounds:[[29,43],[37,48]], keywords:['iraq','iraqi','militia','pmu','hashd','kataib','עיראק'] },
-  syria:    { lat:33.5, lon:36.3, label:'Syria',    bounds:[[32,35],[37,42]], keywords:['syria','syrian','damascus','סוריה','דמשק'] },
-  gaza:     { lat:31.4, lon:34.38,label:'Gaza',     bounds:[[31,34],[31.6,34.6]], keywords:['gaza','hamas','pij','islamic jihad','עזה','חמאס'] },
-};
-
-// Detect launch source — AI classification first, keyword fallback
-function detectLaunchSource() {
-  // Prefer AI classification from watcher (via threat API)
-  if (_attackClass && _attackClass.source && _attackClass.source !== 'unknown') {
-    const ageS = _attackClass.ts ? (Date.now()/1000 - _attackClass.ts) : 0;
-    if (ageS < 900) return _attackClass.source; // Use if < 15min old
-  }
-
-  // Fallback: keyword scan of recent OSINT
-  const events = window._osintEvents || [];
-  const now = Date.now() / 1000;
-  // Only check events from last 15 minutes
-  const recent = events.filter(e => e.timestamp && (now - e.timestamp) < 900);
-  const recentText = recent.map(e => (e.text || '').toLowerCase()).join(' ');
-
-  // Also check Oref alert text
-  const orefText = (orefAlerts || []).map(a => (a.data || a.title || a.area || '').toLowerCase()).join(' ');
-  const allText = recentText + ' ' + orefText;
-
-  // Score each origin by keyword matches
-  let best = null, bestScore = 0;
-  for (const [key, origin] of Object.entries(LAUNCH_ORIGINS)) {
-    let score = 0;
-    origin.keywords.forEach(kw => {
-      const matches = (allText.match(new RegExp(kw, 'gi')) || []).length;
-      score += matches;
-    });
-    if (score > bestScore) { bestScore = score; best = key; }
-  }
-
-  // Default to Iran if no strong signal
-  return best || 'iran';
-}
-
-function pickLaunchSites(targetCoord, count, source) {
-  count = count || 3;
-  const origin = LAUNCH_ORIGINS[source] || LAUNCH_ORIGINS.iran;
-
-  if (source === 'iran') {
-    // Use actual missile base data
-    const sites = (V2_DATA.IRAN_MISSILES || []).filter(m => m.range >= 500);
-    return sites.map(s => {
-      const dlat = s.lat - targetCoord[0], dlon = s.lon - targetCoord[1];
-      const distKm = Math.sqrt(dlat*dlat + dlon*dlon) * 111;
-      return { ...s, distKm };
-    }).filter(s => s.distKm <= s.range && s.distKm > 100)
-      .sort((a,b) => a.distKm - b.distKm)
-      .slice(0, count);
-  }
-
-  // For non-Iran sources, generate launch points around the origin with some spread
-  const spread = source === 'gaza' ? 0.05 : source === 'lebanon' ? 0.15 : 0.3;
-  const sites = [];
-  for (let i = 0; i < count; i++) {
-    sites.push({
-      lat: origin.lat + (Math.random() - 0.5) * spread,
-      lon: origin.lon + (Math.random() - 0.5) * spread,
-      name: `${origin.label} launch site`,
-    });
-  }
-  return sites;
-}
-
-function fireBallisticBarrage(targetCoords, source, profile) {
-  // Clear previous trails (keep SVG container)
-  if (_ballisticSvg) _ballisticSvg.innerHTML = '';
-
-  source = source || detectLaunchSource();
-  profile = profile || THREAT_PROFILES[`ballistic_${source}`] || THREAT_PROFILES.default;
-  const origin = LAUNCH_ORIGINS[source] || LAUNCH_ORIGINS.iran;
-
-  // Zoom to show launch origin + Israel
-  const allLats = [...targetCoords.map(t=>t[0]), origin.lat];
-  const allLons = [...targetCoords.map(t=>t[1]), origin.lon];
-  const sw = [Math.min(...allLats) - 2, Math.min(...allLons) - 2];
-  const ne = [Math.max(...allLats) + 2, Math.max(...allLons) + 2];
-  map.fitBounds([sw, ne], { padding:[40,40], maxZoom:7, animate:true, duration:1 });
-
-  // Fire arcs — all arcs stay until every missile in the barrage has landed
-  _barrageActive = true;
-  setTimeout(() => {
-    let delay = 0;
-    const allArcs = [];
-    let totalArcs = 0;
-    let doneArcs = 0;
-
-    function onArcDone() {
-      doneArcs++;
-      if (doneArcs >= totalArcs) {
-        // ALL arcs finished — now fade everything together
-        setTimeout(() => {
-          allArcs.forEach(g => {
-            g.style.transition = 'opacity 10s';
-            g.style.opacity = '0';
-          });
-          setTimeout(() => {
-            allArcs.forEach(g => g.remove());
-            _barrageActive = false;
-          }, 10000);
-        }, 3000);
-      }
-    }
-
-    targetCoords.forEach(tc => {
-      const launchers = pickLaunchSites(tc, 2 + Math.floor(Math.random()*2), source);
-      launchers.forEach((l, i) => {
-        totalArcs++;
-        const stagger = delay + (i * (400 + Math.random()*800));
-        const duration = (profile.animMin + Math.random() * (profile.animMax - profile.animMin)) * 2;
-        const arcEl = animateMissile([l.lat, l.lon], tc, stagger, duration, onArcDone);
-        allArcs.push(arcEl);
-      });
-      delay += 600 + Math.random()*1200;
-    });
-  }, 1500);
-}
-
-// Hook into Oref alerts — fire barrage when sirens detected
-// Threat type → animation behavior
-// Oref cat: 1=missiles/rockets, 6=hostile aircraft (UAV)
-const OREF_CAT_EN = {1:'Rockets & Missiles',2:'Tsunami',3:'Earthquake',4:'Radiological',5:'Hostile Aircraft Intrusion',6:'Hostile Aircraft Intrusion',7:'Unconventional Warfare',13:'Tsunami'};
-// Source distance determines flight animation duration
-const THREAT_PROFILES = {
-  // source → { animDuration: ms range, repeatInterval: ms, maxDuration: ms (auto-shutoff) }
-  ballistic_iran:    { animMin:3000, animMax:5000, repeatMs:15000, maxMs:900000  }, // 15min total
-  cruise_iran:       { animMin:5000, animMax:8000, repeatMs:30000, maxMs:3600000 }, // 60min total
-  ballistic_iraq:    { animMin:2000, animMax:3500, repeatMs:12000, maxMs:600000  }, // 10min
-  rocket_lebanon:    { animMin:800,  animMax:1500, repeatMs:5000,  maxMs:180000  }, // 3min
-  rocket_gaza:       { animMin:500,  animMax:1000, repeatMs:3000,  maxMs:120000  }, // 2min
-  uav_yemen:         { animMin:6000, animMax:10000,repeatMs:60000, maxMs:32400000},// 9hr (but we cap display)
-  uav_iran:          { animMin:5000, animMax:8000, repeatMs:45000, maxMs:7200000 }, // 2hr
-  default:           { animMin:3000, animMax:5000, repeatMs:20000, maxMs:600000  }, // 10min fallback
-};
-
-function detectThreatType(alerts, source) {
-  // Prefer AI classification weapon type
-  if (_attackClass && _attackClass.weapon && _attackClass.weapon !== 'unknown') {
-    const wpn = _attackClass.weapon;
-    const src = _attackClass.source || source;
-    if (wpn.includes('uav') || wpn.includes('drone')) return `uav_${src === 'yemen' ? 'yemen' : 'iran'}`;
-    if (wpn.includes('cruise')) return 'cruise_iran';
-    if (wpn.includes('rocket')) return `rocket_${src === 'gaza' ? 'gaza' : src === 'lebanon' ? 'lebanon' : 'default'}`;
-    if (wpn.includes('ballistic')) return `ballistic_${src === 'iraq' ? 'iraq' : 'iran'}`;
-  }
-
-  // Fallback: keyword scan
-  const orefCats = (alerts || []).map(a => parseInt(a.cat || 0)).filter(c => c > 0);
-  const recentText = (window._osintEvents || [])
-    .filter(e => e.timestamp && (Date.now()/1000 - e.timestamp) < 900)
-    .map(e => (e.text || '').toLowerCase()).join(' ');
-  const orefText = (alerts || []).map(a => `${a.title||''} ${a.desc||''}`).join(' ').toLowerCase();
-  const allText = recentText + ' ' + orefText;
-
-  const hasUav = /uav|drone|כטב|מזל"ט|shahed|samad/i.test(allText) || orefCats.includes(6);
-  const hasCruise = /cruise|soumar|hoveyz|טיל שיוט/i.test(allText);
-  const hasRocket = /rocket|רקט|qassam|katyusha|grad/i.test(allText);
-
-  if (hasUav) return `uav_${source === 'yemen' ? 'yemen' : 'iran'}`;
-  if (hasCruise) return `cruise_iran`;
-  if (hasRocket && (source === 'gaza' || source === 'lebanon')) return `rocket_${source}`;
-  if (source === 'iraq') return 'ballistic_iraq';
-  return `ballistic_${source === 'iran' ? 'iran' : 'default'}`;
-}
-
-let _lastBarrageTs = 0;
-let _barrageTimer = null;
-let _barrageShutoffTimer = null;
-
-function maybeFireBarrage(alerts) {
-  if (!alerts || alerts.length === 0) {
-    // Sirens cleared — stop any ongoing barrage
-    clearBarrage();
-    return;
-  }
-  const now = Date.now();
-  if (now - _lastBarrageTs < 30000) return; // Debounce 30s
-  _lastBarrageTs = now;
-
-  const source = detectLaunchSource();
-  const threatType = detectThreatType(alerts, source);
-  const profile = THREAT_PROFILES[threatType] || THREAT_PROFILES.default;
-
-  // Geocode alert areas to targets
-  const targets = [];
-  const seen = new Set();
-  alerts.forEach(a => {
-    const area = (a.data || a.title || a.area || '').toLowerCase();
-    for (const [key, ll] of Object.entries(IL_GEO)) {
-      if (area.includes(key) || key.includes(area)) {
-        const k = `${ll[0]},${ll[1]}`;
-        if (!seen.has(k)) { seen.add(k); targets.push(ll); }
-        break;
-      }
-    }
-  });
-  if (targets.length === 0) return;
-
-  // Clear any existing barrage timers
-  clearBarrage();
-
-  // Fire initial salvo
-  fireBallisticBarrage(targets, source, profile);
-
-  // For sustained attacks, repeat at interval (new waves)
-  if (profile.repeatMs && profile.repeatMs < profile.maxMs) {
-    _barrageTimer = setInterval(() => {
-      fireBallisticBarrage(targets, source, profile);
-    }, profile.repeatMs);
-  }
-
-  // Auto-shutoff based on threat type
-  const shutoffMs = Math.min(profile.maxMs, 900000); // Cap at 15min display regardless
-  _barrageShutoffTimer = setTimeout(() => {
-    clearBarrage();
-  }, shutoffMs);
-}
-
-function clearBarrage() {
-  if (_barrageTimer) { clearInterval(_barrageTimer); _barrageTimer = null; }
-  if (_barrageShutoffTimer) { clearTimeout(_barrageShutoffTimer); _barrageShutoffTimer = null; }
-  // Fade out remaining SVG elements
-  if (_ballisticSvg && _ballisticSvg.children.length > 0) {
-    _ballisticSvg.style.transition = 'opacity 2s';
-    _ballisticSvg.style.opacity = '0';
-    setTimeout(() => {
-      if (_ballisticSvg) { _ballisticSvg.innerHTML = ''; _ballisticSvg.style.opacity = '1'; }
-    }, 2000);
-  }
-}
-
-// Demo functions — callable from console
-function toggleRocketMenu() {
-  document.getElementById('rocket-menu').classList.toggle('show');
-}
-function fireDemo(src) {
-  document.getElementById('rocket-menu').classList.remove('show');
-  // Close feed panel so animation is visible
-  document.getElementById('feed-panel').classList.remove('open');
-  demoBarrage(src);
-}
-// Close menu on outside click
-document.addEventListener('click', e => {
-  if (!e.target.closest('#rocket-fab') && !e.target.closest('#rocket-menu'))
-    document.getElementById('rocket-menu').classList.remove('show');
-});
-
-function demoBarrage(source) {
-  // Simulate barrage from specified source (default: auto-detect → iran fallback)
-  fireBallisticBarrage([[32.08,34.78],[32.79,34.99],[31.77,35.21]], source || 'iran');
-}
-function demoYemen() { fireBallisticBarrage([[32.08,34.78],[29.56,34.95]], 'yemen'); }
-function demoLebanon() { fireBallisticBarrage([[32.79,34.99],[33.21,35.57]], 'lebanon'); }
-function demoGaza() { fireBallisticBarrage([[31.25,34.79],[31.67,34.57]], 'gaza'); }
-
-// Refresh SVG positions on map move (paths are in pixel space)
-map.on('moveend zoomend', () => {
-  if (_ballisticSvg && _ballisticSvg.children.length > 0) {
-    // SVG paths are in pixel coords — they go stale after pan/zoom
-    // For simplicity, clear any in-progress animations on map interaction
-    // Active barrages will be re-triggered by the next poll cycle if sirens persist
-  }
-});
-
 setInterval(pollOref, API_URL ? 10000 : 30000);
-
-// ═══════ THREAT LEVEL INDICATOR ═══════
-const THREAT_ICONS = { GREEN:'🟢', ELEVATED:'🟡', HIGH:'🔴', CRITICAL:'⚫', UNKNOWN:'⚪' };
-// Store latest AI attack classification from threat API
-let _attackClass = null;
-
-function pollThreat() {
-  if (!API_URL) return;
-  fetch(`${API_URL}/api/threat`).then(r=>r.json()).then(d => {
-    const el = document.getElementById('threat-indicator');
-    const level = (d.level || 'UNKNOWN').toUpperCase();
-    const icon = THREAT_ICONS[level] || '⚪';
-    document.getElementById('threat-icon').textContent = icon;
-    document.getElementById('threat-label').textContent = level;
-    el.className = 'threat-' + level.toLowerCase();
-    el.style.display = level === 'GREEN' ? 'none' : '';
-    // Store AI classification if present
-    if (d.attack_class && d.attack_class.source && d.attack_class.source !== 'unknown') {
-      _attackClass = d.attack_class;
-    }
-    // Reason — show AI classification if available
-    const reasonEl = document.getElementById('threat-reason');
-    if (_attackClass && _attackClass.source !== 'unknown' && (level === 'HIGH' || level === 'CRITICAL')) {
-      const src = (_attackClass.source || '').toUpperCase();
-      const wpn = (_attackClass.weapon || '').replace(/_/g,' ');
-      const conf = _attackClass.confidence ? ` (${Math.round(_attackClass.confidence*100)}%)` : '';
-      reasonEl.textContent = `${src} — ${wpn}${conf}`;
-      reasonEl.style.display = '';
-    } else if (d.reason && d.reason !== 'watcher startup') {
-      reasonEl.textContent = d.reason;
-      reasonEl.style.display = '';
-    } else { reasonEl.style.display = 'none'; }
-    // Age
-    const ageEl = document.getElementById('threat-age');
-    if (d.ts) {
-      const ageSec = (Date.now()/1000) - d.ts;
-      if (ageSec < 120) ageEl.textContent = `${Math.round(ageSec)}s ago`;
-      else if (ageSec < 7200) ageEl.textContent = `${Math.round(ageSec/60)}m ago`;
-      else ageEl.textContent = `${Math.round(ageSec/3600)}h ago`;
-      ageEl.style.color = ageSec > 600 ? '#f59e0b' : '';
-    }
-  }).catch(()=>{});
-}
-pollThreat();
-setInterval(pollThreat, 30000);
-
-// Pause polling when tab is hidden (saves mobile battery + bandwidth)
-let _pollsPaused = false;
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { _pollsPaused = true; }
-  else { _pollsPaused = false; pollOref(); pollThreat(); loadFeed(); loadTicker(); }
-});
-// Wrap existing intervals to respect visibility
-const _origPollOref = pollOref, _origPollThreat = pollThreat;
-pollOref = () => { if (!_pollsPaused) _origPollOref(); };
-pollThreat = () => { if (!_pollsPaused) _origPollThreat(); };
 
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
   // Don't fire shortcuts when typing in inputs
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Escape') {
-    // Close sidebar if open, otherwise toggle feed
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar.classList.contains('open')) { sidebar.classList.remove('open'); }
-    else { toggleFeed(); }
-  }
+  if (e.key === 'Escape') { document.getElementById('sidebar').classList.remove('open'); }
   if (e.key === 'l' || e.key === 'L') toggleLegend();
   if (e.key === 's' || e.key === 'S') toggleSidebar();
 });
