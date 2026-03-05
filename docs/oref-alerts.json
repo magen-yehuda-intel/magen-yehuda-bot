@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-03-05T20:15:01Z",
+  "timestamp": "2026-03-05T20:20:01Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_ts": "2026-03-05 21:11:58 IST",
+  "last_siren_ts": "2026-03-05 22:17:18 IST",
   "last_siren_title": "האירוע הסתיים"
 }
