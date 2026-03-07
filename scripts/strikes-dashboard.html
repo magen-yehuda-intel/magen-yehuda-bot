@@ -1334,6 +1334,11 @@ function feedSortKey(ev) {
   return ev.timestamp ? ev.timestamp : (new Date(ev.date + 'T00:00:00').getTime() / 1000);
 }
 
+function isFirmsEvent(ev) {
+  // NASA FIRMS satellite fire data — keep on map but exclude from news feed
+  return (ev.sub_event_type || '').includes('FIRMS') || (ev.actor1 || '').toLowerCase() === 'nasa-firms';
+}
+
 function initSearch() {
   const box = document.getElementById('search-box');
   const results = document.getElementById('search-results');
@@ -1449,7 +1454,7 @@ function initSizeControls() {
 function renderFeed(container) {
   const el = container || document.getElementById('feed');
   if (!el) return;
-  const sorted = [...filteredEvents].sort((a,b) => feedSortKey(b) - feedSortKey(a)).filter(e => e.location || e.notes);
+  const sorted = [...filteredEvents].sort((a,b) => feedSortKey(b) - feedSortKey(a)).filter(e => (e.location || e.notes) && !isFirmsEvent(e));
   // Deduplicate by date+actor+location+notes
   const seen = new Set();
   const recent = [];
@@ -1505,7 +1510,7 @@ function renderFeed(container) {
 
 function renderMobileFeed(el) {
   if (!el) return;
-  const sorted = [...filteredEvents].sort((a,b) => feedSortKey(b) - feedSortKey(a)).filter(e => e.location || e.notes);
+  const sorted = [...filteredEvents].sort((a,b) => feedSortKey(b) - feedSortKey(a)).filter(e => (e.location || e.notes) && !isFirmsEvent(e));
   const seen = new Set();
   const recent = [];
   for (const e of sorted) {
