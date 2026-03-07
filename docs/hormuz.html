@@ -897,6 +897,15 @@ function renderOilChart() {
     normalTotal: { type: 'line', yMin: 53, yMax: 53, borderColor: '#fb923c44', borderWidth: 1, borderDash: [4,4], label: { display: true, content: 'Normal crude tankers (~53/day)', color: '#fb923c88', backgroundColor: 'transparent', font: { size: 9 }, position: 'start' } },
   };
 
+  // Auto-scale Y axis to data range (not baselines)
+  const allOilVals = datasets.flatMap(ds => ds.data.filter(v => v != null));
+  const oilMax = Math.max(...allOilVals, 1);
+  const showOilBaselines = oilMax >= 30;
+  const oilYMax = Math.ceil((oilMax * 1.25) / 5) * 5;
+  const oilAnnotations = {};
+  if (oilMax >= 10) oilAnnotations.normalTransit = annotations.normalTransit;
+  if (showOilBaselines) oilAnnotations.normalTotal = annotations.normalTotal;
+
   charts.oil = new Chart(ctx, {
     type: 'line',
     data: { labels, datasets },
@@ -905,12 +914,12 @@ function renderOilChart() {
       interaction: { mode: 'index', intersect: false },
       scales: {
         x: { type: snapshots.length > 1 ? 'time' : 'category', time: { tooltipFormat: 'MMM d, HH:mm', displayFormats: { hour: 'MMM d HH:mm' } }, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 10 } } },
-        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' }, title: { display: true, text: 'Crude Oil Tankers', color: '#fb923c', font: { size: 11 } }, suggestedMin: 0 }
+        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' }, title: { display: true, text: 'Crude Oil Tankers', color: '#fb923c', font: { size: 11 } }, min: 0, suggestedMax: oilYMax }
       },
       plugins: {
         legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'SF Mono, monospace' }, usePointStyle: true, pointStyle: 'line', padding: 12 } },
         tooltip: { backgroundColor: '#1e293b', titleColor: '#e2e8f0', bodyColor: '#94a3b8', borderColor: '#fb923c', borderWidth: 1 },
-        annotation: { annotations }
+        annotation: { annotations: oilAnnotations }
       }
     }
   });
