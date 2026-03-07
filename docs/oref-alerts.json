@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-03-07T21:00:01Z",
+  "timestamp": "2026-03-07T21:05:00Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
   "last_siren_ts": "2026-03-07 20:12:23 IST",
-  "last_siren_title": "האירוע הסתיים"
+  "last_siren_title": "ירי רקטות וטילים"
 }
