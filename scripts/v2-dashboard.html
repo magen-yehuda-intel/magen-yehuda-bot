@@ -1150,7 +1150,11 @@ function loadFeed() {
   });
 
   fetchData.then(data => {
-    feedEvents = (data.events || data || []).filter(e => (e.text||'').trim() || (e.src||'').trim()).sort((a,b) => (b.ts||0) - (a.ts||0));
+    feedEvents = (data.events || data || []).filter(e => {
+      // Skip raw fire/seismic detections with no text content (nasa-firms, usgs floods)
+      if (e.type === 'fire' || e.type === 'seismic') return (e.text||'').trim().length > 10;
+      return (e.text||'').trim().length > 5 || ((e.src||'').trim() && (e.loc||'').trim());
+    }).sort((a,b) => (b.ts||0) - (a.ts||0));
     feedLastUpdate = Date.now();
 
     // Flash if new events arrived
@@ -1547,6 +1551,14 @@ function renderAllLayers() {
     mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
   });
 
+  // ─── GULF & REGIONAL OIL/GAS ───
+  V2_DATA.GULF_ENERGY.forEach(s => {
+    const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('lng') ? '🔥' : s.type.includes('oil') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('processing') ? '🏗' : '🛢';
+    const struckBadge = s.struck ? ' 💥 STRUCK' : '';
+    const popup = mkPopup(`${emoji} ${s.name}${struckBadge}`, `${s.country} — ${s.type.replace(/_/g,' ').toUpperCase()}`, s.desc, s.struck ? '#ef4444' : '#f59e0b');
+    mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-gulf-energy', 22, popup).addTo(layers.energy);
+  });
+
   // ─── STRATEGIC WATERWAYS ───
   V2_DATA.WATERWAYS.forEach(w => {
     const latlngs = w.coords.map(c => [c[0], c[1]]);
@@ -1611,7 +1623,8 @@ function renderAllLayers() {
   // ─── Update counts ───
   const totalAssets = V2_DATA.US_BASES.length + V2_DATA.IRAN_NUCLEAR.length + V2_DATA.IRAN_MISSILES.length +
     V2_DATA.IRAN_NAVAL.length + V2_DATA.IRAN_AIRDEFENSE.length + V2_DATA.IRAN_AIRBASES.length +
-    V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length;
+    V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length +
+    V2_DATA.GULF_ENERGY.length;
   document.getElementById('asset-count').textContent = totalAssets;
   document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
 }
@@ -1726,6 +1739,7 @@ function renderAssetList(filter) {
     ...V2_DATA.IRAN_AIRBASES.map(s => ({ ...s, category: 'Air Base', emoji: s.emoji, lon: s.lon })),
     ...V2_DATA.IRAN_IRGC.map(s => ({ ...s, category: 'IRGC', emoji: s.emoji, lon: s.lon })),
     ...V2_DATA.IRAN_ENERGY.map(s => ({ ...s, category: 'Energy', emoji: '🛢', lon: s.lon })),
+    ...V2_DATA.GULF_ENERGY.map(s => ({ ...s, category: 'Gulf Energy', emoji: '🛢', lon: s.lon })),
   ];
   const filtered = filter ? allAssets.filter(a => (a.name||'').toLowerCase().includes(filter) || (a.category||'').toLowerCase().includes(filter)) : allAssets;
   el.innerHTML = filtered.slice(0, 100).map(a => `
