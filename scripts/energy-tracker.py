@@ -76,6 +76,30 @@ FACILITY_COORDS = {
     'suez': (30.01, 32.58, 'Suez Canal'),
     'kuwait': (29.31, 47.48, 'Kuwait'),
     'qatar': (25.35, 51.18, 'Qatar'),
+    # Saudi oil infrastructure
+    'ras tanura': (26.63, 50.16, 'Ras Tanura Refinery/Terminal (Saudi Aramco)'),
+    'jubail': (27.01, 49.66, 'Jubail Industrial City/Refinery (Saudi)'),
+    'yanbu': (24.09, 38.06, 'Yanbu Refinery/Terminal (Saudi)'),
+    'dhahran': (26.27, 50.21, 'Dhahran (Aramco HQ)'),
+    'abqaiq': (25.94, 49.68, 'Abqaiq Oil Processing (Saudi Aramco)'),
+    'ras laffan': (25.93, 51.53, 'Ras Laffan LNG Terminal (Qatar)'),
+    'mesaieed': (24.99, 51.55, 'Mesaieed Industrial/LNG (Qatar)'),
+    # Iraq oil infrastructure
+    'basrah': (30.51, 47.78, 'Basrah Oil Terminal (Iraq)'),
+    'basra': (30.51, 47.78, 'Basrah Oil Terminal (Iraq)'),
+    'kirkuk': (35.47, 44.39, 'Kirkuk Oil Fields (Iraq)'),
+    # UAE
+    'ruwais': (24.11, 52.73, 'Ruwais Refinery (ADNOC, UAE)'),
+    'jebel dhanna': (24.19, 52.58, 'Jebel Dhanna Terminal (UAE)'),
+    'das island': (25.15, 52.87, 'Das Island Oil/Gas (UAE)'),
+    # Iran additional
+    'lavan': (26.81, 53.36, 'Lavan Island Oil Terminal (Iran)'),
+    'bandar imam': (30.43, 49.08, 'Bandar Imam Khomeini Petrochemical (Iran)'),
+    'shiraz': (29.59, 52.58, 'Shiraz Refinery (Iran)'),
+    'kermanshah': (34.33, 47.08, 'Kermanshah Refinery (Iran)'),
+    # Israel additional
+    'ashdod': (31.80, 34.65, 'Ashdod Oil Terminal/Refinery (Israel)'),
+    'ashkelon': (31.67, 34.57, 'Ashkelon Desalination/Energy (Israel)'),
 }
 
 

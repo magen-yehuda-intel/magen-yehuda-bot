@@ -76,6 +76,32 @@ KNOWN_SITES = [
     {"name": "Jask (Naval)", "lat": 25.64, "lon": 57.77, "type": "military"},
     {"name": "Imam Khomeini Space Center", "lat": 35.23, "lon": 53.95, "type": "military"},
     {"name": "Shahrud Missile Base", "lat": 36.42, "lon": 55.00, "type": "military"},
+    # Saudi oil/refinery infrastructure
+    {"name": "Ras Tanura Refinery (Saudi Aramco)", "lat": 26.63, "lon": 50.16, "type": "oil"},
+    {"name": "Jubail Refinery (Saudi)", "lat": 27.01, "lon": 49.66, "type": "oil"},
+    {"name": "Abqaiq Oil Processing (Saudi Aramco)", "lat": 25.94, "lon": 49.68, "type": "oil"},
+    {"name": "Yanbu Refinery (Saudi)", "lat": 24.09, "lon": 38.06, "type": "oil"},
+    {"name": "Dhahran (Aramco HQ)", "lat": 26.27, "lon": 50.21, "type": "oil"},
+    # Qatar LNG
+    {"name": "Ras Laffan LNG Terminal (Qatar)", "lat": 25.93, "lon": 51.53, "type": "oil"},
+    {"name": "Mesaieed Industrial/LNG (Qatar)", "lat": 24.99, "lon": 51.55, "type": "oil"},
+    # Iraq oil
+    {"name": "Basrah Oil Terminal (Iraq)", "lat": 30.51, "lon": 47.78, "type": "oil"},
+    {"name": "Kirkuk Oil Fields (Iraq)", "lat": 35.47, "lon": 44.39, "type": "oil"},
+    # UAE
+    {"name": "Ruwais Refinery (ADNOC, UAE)", "lat": 24.11, "lon": 52.73, "type": "oil"},
+    {"name": "Jebel Dhanna Terminal (UAE)", "lat": 24.19, "lon": 52.58, "type": "oil"},
+    {"name": "Das Island Oil/Gas (UAE)", "lat": 25.15, "lon": 52.87, "type": "oil"},
+    {"name": "Fujairah Oil Terminal (UAE)", "lat": 25.13, "lon": 56.33, "type": "oil"},
+    # Iran additional
+    {"name": "Tehran Refinery", "lat": 35.69, "lon": 51.39, "type": "oil"},
+    {"name": "Bandar Imam Khomeini Petrochemical", "lat": 30.43, "lon": 49.08, "type": "oil"},
+    {"name": "Lavan Island Oil Terminal", "lat": 26.81, "lon": 53.36, "type": "oil"},
+    {"name": "Kermanshah Refinery", "lat": 34.33, "lon": 47.08, "type": "oil"},
+    {"name": "Asaluyeh Petrochemical Zone", "lat": 27.48, "lon": 52.61, "type": "oil"},
+    # Israel
+    {"name": "Haifa Refinery (Israel)", "lat": 32.81, "lon": 35.01, "type": "oil"},
+    {"name": "Ashdod Oil Terminal (Israel)", "lat": 31.80, "lon": 34.65, "type": "oil"},
 ]
 
 FIRMS_SOURCES = [
