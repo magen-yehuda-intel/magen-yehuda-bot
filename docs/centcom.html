@@ -1894,25 +1894,57 @@ function loadShips() {
   layers.ships.clearLayers();
   let count = 0;
 
-  // Known fleet positions (always show)
+  // Known fleet positions — US Navy CENTCOM/5th Fleet + allied + IRGCN
   const fleetPositions = [
-    { name: 'USS Eisenhower CSG', lat: 25.5, lon: 57.0, desc: 'Carrier Strike Group, Persian Gulf/Arabian Sea', emoji: '⚓', side: 'us' },
-    { name: 'USS Bataan ARG', lat: 26.2, lon: 56.5, desc: 'Amphibious Ready Group, Gulf of Oman', emoji: '⚓', side: 'us' },
-    { name: 'USS Harry S. Truman CSG', lat: 23.5, lon: 58.5, desc: 'Carrier Strike Group, Arabian Sea', emoji: '⚓', side: 'us' },
-    { name: 'IRGCN Fast Boats (Bandar Abbas)', lat: 27.18, lon: 56.27, desc: 'IRGC Navy fast attack craft base', emoji: '🔴', side: 'iran' },
-    { name: 'IRGCN Fast Boats (Abu Musa)', lat: 25.87, lon: 55.03, desc: 'IRGC Navy island base', emoji: '🔴', side: 'iran' },
-    { name: 'IRGCN Jask Naval Base', lat: 25.65, lon: 57.77, desc: 'IRGC Navy base, mouth of Strait of Hormuz', emoji: '🔴', side: 'iran' },
-    { name: 'INS Magen (Israeli Sub)', lat: 24.0, lon: 59.0, desc: 'Dolphin-class submarine, Arabian Sea (estimated)', emoji: '🔵', side: 'israel' },
+    // US Carrier Strike Groups
+    { name: 'USS Dwight D. Eisenhower (CVN-69) CSG', lat: 25.3, lon: 56.8, desc: 'Nimitz-class carrier · Carrier Strike Group 2<br>Carrier Air Wing 3 · ~75 aircraft<br>Escorts: CG-54 Antietam, DDG-61 Ramage, DDG-79 Oscar Austin', emoji: '⚓', side: 'us', type: 'carrier' },
+    { name: 'USS Harry S. Truman (CVN-75) CSG', lat: 23.2, lon: 58.8, desc: 'Nimitz-class carrier · Carrier Strike Group 8<br>Carrier Air Wing 1 · ~75 aircraft<br>Arabian Sea patrol', emoji: '⚓', side: 'us', type: 'carrier' },
+    { name: 'USS Abraham Lincoln (CVN-72) CSG', lat: 21.5, lon: 60.5, desc: 'Nimitz-class carrier · Carrier Strike Group 3<br>Surged from Pacific · North Arabian Sea', emoji: '⚓', side: 'us', type: 'carrier' },
+    // Amphibious Ready Groups
+    { name: 'USS Bataan (LHD-5) ARG/MEU', lat: 26.0, lon: 56.2, desc: 'Wasp-class amphibious assault ship<br>26th Marine Expeditionary Unit<br>Gulf of Oman', emoji: '⚓', side: 'us', type: 'amphib' },
+    { name: 'USS Boxer (LHD-4) ARG', lat: 24.8, lon: 57.5, desc: 'Wasp-class amphibious assault ship<br>13th MEU · Arabian Sea', emoji: '⚓', side: 'us', type: 'amphib' },
+    // Destroyers & Cruisers (Strait patrol)
+    { name: 'USS Arleigh Burke (DDG-51)', lat: 26.55, lon: 56.15, desc: 'Arleigh Burke-class destroyer<br>Strait of Hormuz patrol · BMD capable', emoji: '🔷', side: 'us', type: 'escort' },
+    { name: 'USS Carney (DDG-64)', lat: 26.3, lon: 56.4, desc: 'Arleigh Burke-class destroyer<br>Anti-air warfare · Strait escort', emoji: '🔷', side: 'us', type: 'escort' },
+    { name: 'USS Mason (DDG-87)', lat: 25.8, lon: 57.3, desc: 'Arleigh Burke-class destroyer<br>Gulf of Oman · Tomahawk strike capable', emoji: '🔷', side: 'us', type: 'escort' },
+    { name: 'USS Laboon (DDG-58)', lat: 27.2, lon: 51.5, desc: 'Arleigh Burke-class destroyer<br>Persian Gulf patrol', emoji: '🔷', side: 'us', type: 'escort' },
+    // Submarines (estimated)
+    { name: 'USS Florida (SSGN-728)', lat: 24.5, lon: 59.5, desc: 'Ohio-class guided missile submarine<br>154 Tomahawk cruise missiles<br>Arabian Sea (estimated)', emoji: '🫧', side: 'us', type: 'sub' },
+    { name: 'USS Georgia (SSGN-729)', lat: 25.0, lon: 61.0, desc: 'Ohio-class guided missile submarine<br>154 Tomahawk cruise missiles<br>North Arabian Sea (estimated)', emoji: '🫧', side: 'us', type: 'sub' },
+    // Support ships
+    { name: 'USNS Supply (T-AOE-6)', lat: 25.5, lon: 55.5, desc: 'Supply-class fast combat support ship<br>Fleet replenishment · Persian Gulf', emoji: '📦', side: 'us', type: 'support' },
+    { name: 'USS Lewis B. Puller (ESB-3)', lat: 26.8, lon: 50.2, desc: 'Expeditionary Sea Base<br>NSA Bahrain forward staging<br>Mine countermeasures + SOF ops', emoji: '🏗', side: 'us', type: 'support' },
+    // 5th Fleet HQ
+    { name: 'NSA Bahrain (5th Fleet HQ)', lat: 26.22, lon: 50.59, desc: 'Naval Support Activity Bahrain<br>US 5th Fleet headquarters<br>Commander: VADM', emoji: '⭐', side: 'us', type: 'base' },
+    // Israeli Navy
+    { name: 'INS Magen (Sa\'ar 6)', lat: 24.0, lon: 59.0, desc: 'Sa\'ar 6-class corvette<br>Arabian Sea deployment (estimated)<br>Barak-8 air defense', emoji: '🔵', side: 'israel', type: 'escort' },
+    { name: 'INS Dolphin-class Sub', lat: 23.5, lon: 60.5, desc: 'Dolphin-class submarine<br>Cruise missile capable<br>Indian Ocean (estimated)', emoji: '🫧', side: 'israel', type: 'sub' },
+    // UK Royal Navy
+    { name: 'HMS Diamond (D34)', lat: 25.0, lon: 57.8, desc: 'Type 45 Daring-class destroyer<br>Air defense · Gulf of Oman', emoji: '🇬🇧', side: 'us', type: 'escort' },
+    // French Navy
+    { name: 'FS Alsace (D656)', lat: 24.2, lon: 58.2, desc: 'FREMM-class frigate<br>French Navy · Arabian Sea', emoji: '🇫🇷', side: 'us', type: 'escort' },
+    // IRGC Navy
+    { name: 'IRGCN Bandar Abbas', lat: 27.18, lon: 56.27, desc: 'IRGC Navy main base<br>Fast attack craft, midget subs<br>Anti-ship missiles · Strait of Hormuz', emoji: '🔴', side: 'iran', type: 'base' },
+    { name: 'IRGCN Abu Musa Island', lat: 25.87, lon: 55.03, desc: 'IRGC Navy island fortress<br>Anti-ship missiles + radar<br>Controls central Strait approach', emoji: '🔴', side: 'iran', type: 'base' },
+    { name: 'IRGCN Jask', lat: 25.65, lon: 57.77, desc: 'IRGC Navy base<br>Mouth of Strait of Hormuz<br>Fast boats + mine laying', emoji: '🔴', side: 'iran', type: 'base' },
+    { name: 'IRGCN Bushehr', lat: 28.97, lon: 50.84, desc: 'IRGC Navy base<br>Northern Persian Gulf<br>Fast attack craft', emoji: '🔴', side: 'iran', type: 'base' },
+    { name: 'IRIN Bandar Abbas (Regular Navy)', lat: 27.12, lon: 56.35, desc: 'Islamic Republic of Iran Navy<br>Frigates, corvettes, Kilo-class subs<br>Main fleet base', emoji: '🔴', side: 'iran', type: 'base' },
+    { name: 'IRIN Chabahar', lat: 25.30, lon: 60.64, desc: 'Iran Navy eastern base<br>Gulf of Oman access<br>Submarines + destroyers', emoji: '🔴', side: 'iran', type: 'base' },
   ];
   fleetPositions.forEach(f => {
     count++;
     const color = f.side === 'iran' ? '#ef4444' : f.side === 'israel' ? '#3b82f6' : '#60a5fa';
+    const iconMap = { carrier: '⚓', amphib: '🚢', escort: '🔷', sub: '🫧', support: '📦', base: '🏴' };
+    const em = iconMap[f.type] || f.emoji;
+    const sz = (f.type === 'carrier' || f.type === 'base') ? 26 : 20;
+    const glow = f.type === 'carrier' ? 12 : 6;
     const icon = L.divIcon({
       className: '',
-      html: `<div style="font-size:20px;filter:drop-shadow(0 0 8px ${color})">${f.emoji === '🔴' ? '🚤' : f.emoji === '🔵' ? '🫧' : '⚓'}</div>`,
-      iconSize: [24, 24], iconAnchor: [12, 12]
+      html: `<div style="font-size:${sz}px;filter:drop-shadow(0 0 ${glow}px ${color})">${em}</div>`,
+      iconSize: [sz+4, sz+4], iconAnchor: [(sz+4)/2, (sz+4)/2]
     });
-    const popup = mkPopup(`${f.emoji} ${f.name}`, f.side.toUpperCase(), f.desc, color);
+    const sideLabel = { us: '🇺🇸 US Navy', iran: '🇮🇷 IRIN/IRGCN', israel: '🇮🇱 Israeli Navy' }[f.side] || f.side;
+    const popup = mkPopup(`${em} ${f.name}`, sideLabel, f.desc, color);
     L.marker([f.lat, f.lon], { icon }).bindPopup(popup).addTo(layers.ships);
   });
 
