@@ -268,77 +268,43 @@ IRAN_ENERGY: [
 ],
 
 // ═══════════════════════════════════════════════════════════
-// REGIONAL ENERGY INFRASTRUCTURE (non-Iran)
+// GULF & REGIONAL OIL/GAS (Saudi, UAE, Qatar, Iraq, Israel)
 // ═══════════════════════════════════════════════════════════
-REGIONAL_ENERGY: [
-  // QATAR
-  { name: "North Field (North Dome)", lat: 26.000, lon: 52.000, type: "gasfield", country: "QA", desc: "World's largest gas field (shared w/ Iran South Pars)" },
-  { name: "Ras Laffan LNG Complex", lat: 25.920, lon: 51.540, type: "lng", country: "QA", desc: "World's largest LNG export facility" },
-  { name: "Dukhan Oil Field", lat: 25.420, lon: 50.780, type: "oilfield", country: "QA", desc: "Qatar's oldest onshore field" },
-  { name: "Pearl GTL Plant", lat: 25.930, lon: 51.550, type: "gas_processing", country: "QA", desc: "World's largest GTL plant (Shell)" },
+GULF_ENERGY: [
+  // Saudi Arabia
+  { name: "Ras Tanura Refinery/Terminal", lat: 26.630, lon: 50.160, type: "refinery", country: "Saudi Arabia", desc: "550k bpd, world's largest offshore oil loading. Drone-attacked Mar 4, 2026", struck: true },
+  { name: "Jubail Refinery (SATORP)", lat: 27.010, lon: 49.660, type: "refinery", country: "Saudi Arabia", desc: "400k bpd, Saudi Aramco/Total JV" },
+  { name: "Abqaiq Oil Processing", lat: 25.940, lon: 49.680, type: "processing", country: "Saudi Arabia", desc: "World's largest oil stabilization, 7M bpd capacity. Houthi-attacked 2019" },
+  { name: "Yanbu Refinery (YASREF)", lat: 24.090, lon: 38.060, type: "refinery", country: "Saudi Arabia", desc: "400k bpd, Red Sea coast export terminal" },
+  { name: "Dhahran (Aramco HQ)", lat: 26.270, lon: 50.210, type: "hq", country: "Saudi Arabia", desc: "Saudi Aramco headquarters" },
+  { name: "Ras al-Khair (Riyadh Refinery)", lat: 27.280, lon: 49.240, type: "refinery", country: "Saudi Arabia", desc: "400k bpd integrated refinery" },
+  { name: "Jazan Refinery", lat: 16.910, lon: 42.570, type: "refinery", country: "Saudi Arabia", desc: "400k bpd, near Yemen border. Houthi target zone" },
+  { name: "Ghawar Oil Field", lat: 25.370, lon: 49.420, type: "oilfield", country: "Saudi Arabia", desc: "World's largest oil field, ~3.8M bpd" },
+  { name: "Shaybah Oil Field", lat: 22.520, lon: 54.000, type: "oilfield", country: "Saudi Arabia", desc: "Remote Rub' al-Khali, 1M bpd. Houthi-attacked 2019" },
+  // Qatar
+  { name: "Ras Laffan LNG Terminal", lat: 25.930, lon: 51.530, type: "lng_terminal", country: "Qatar", desc: "World's largest LNG export hub, 77M tons/year" },
+  { name: "Mesaieed Industrial City", lat: 24.990, lon: 51.550, type: "lng_terminal", country: "Qatar", desc: "QatarEnergy LNG, petrochemicals" },
+  { name: "North Field (Qatar)", lat: 26.000, lon: 52.000, type: "gasfield", country: "Qatar", desc: "World's largest gas field (shared w/ Iran South Pars)" },
   // UAE
-  { name: "ADNOC Ruwais Refinery", lat: 24.100, lon: 52.730, type: "refinery", country: "AE", desc: "922k bpd, world's 4th largest" },
-  { name: "Upper Zakum Field", lat: 24.850, lon: 53.700, type: "offshore", country: "AE", desc: "4th largest oil field globally" },
-  { name: "Das Island LNG", lat: 25.152, lon: 52.872, type: "lng", country: "AE", desc: "ADNOC LNG export terminal" },
-  { name: "Jebel Ali Free Zone", lat: 25.000, lon: 55.080, type: "petrochemical", country: "AE", desc: "Major industrial/petrochemical hub" },
-  { name: "Habshan Gas Plant", lat: 23.850, lon: 53.300, type: "gas_processing", country: "AE", desc: "ADNOC sour gas processing" },
-  // SAUDI ARABIA
-  { name: "Ghawar Oil Field", lat: 25.400, lon: 49.600, type: "oilfield", country: "SA", desc: "World's largest oil field" },
-  { name: "Ras Tanura Terminal", lat: 26.640, lon: 50.160, type: "oil_terminal", country: "SA", desc: "World's largest offshore oil loading" },
-  { name: "Abqaiq Processing", lat: 25.940, lon: 49.680, type: "gas_processing", country: "SA", desc: "World's largest oil processing, Houthi drone target 2019" },
-  { name: "Yanbu Refinery", lat: 24.100, lon: 38.050, type: "refinery", country: "SA", desc: "400k bpd, Red Sea coast" },
-  { name: "Shaybah Oil Field", lat: 22.500, lon: 54.000, type: "oilfield", country: "SA", desc: "Remote Rub' al Khali field" },
-  { name: "Safaniya Field (Offshore)", lat: 28.200, lon: 49.200, type: "offshore", country: "SA", desc: "World's largest offshore oil field" },
-  { name: "Ras al-Khair Desalination + Gas", lat: 27.130, lon: 49.250, type: "gas_processing", country: "SA", desc: "Massive desal + power + gas" },
-  { name: "Jazan Refinery", lat: 16.900, lon: 42.560, type: "refinery", country: "SA", desc: "400k bpd, near Yemen border" },
-  // IRAQ
-  { name: "Basra Oil Terminal", lat: 29.700, lon: 48.850, type: "oil_terminal", country: "IQ", desc: "Iraq's main export terminal" },
-  { name: "Rumaila Oil Field", lat: 30.600, lon: 47.350, type: "oilfield", country: "IQ", desc: "Iraq's largest field, BP operated" },
-  { name: "West Qurna Field", lat: 31.000, lon: 47.200, type: "oilfield", country: "IQ", desc: "Supergiant, ExxonMobil/Lukoil" },
-  { name: "Baiji Refinery", lat: 34.930, lon: 43.480, type: "refinery", country: "IQ", desc: "Iraq's largest refinery (war-damaged)" },
-  { name: "Kirkuk Oil Field", lat: 35.450, lon: 44.400, type: "oilfield", country: "IQ", desc: "Supergiant, disputed territory" },
-  // KUWAIT
-  { name: "Burgan Oil Field", lat: 28.950, lon: 47.920, type: "oilfield", country: "KW", desc: "World's 2nd largest field" },
-  { name: "Mina Al-Ahmadi Refinery", lat: 29.080, lon: 48.150, type: "refinery", country: "KW", desc: "466k bpd" },
-  { name: "Al-Zour LNG Terminal", lat: 28.730, lon: 48.400, type: "lng", country: "KW", desc: "Kuwait's LNG import facility" },
-  // BAHRAIN
-  { name: "Bahrain Petroleum (BAPCO) Refinery", lat: 26.020, lon: 50.560, type: "refinery", country: "BH", desc: "267k bpd, Sitra" },
-  { name: "Bahrain LNG Import Terminal", lat: 26.000, lon: 50.600, type: "lng", country: "BH", desc: "Offshore import facility" },
-  // OMAN
-  { name: "Oman LNG (Qalhat)", lat: 22.950, lon: 59.370, type: "lng", country: "OM", desc: "10.4 MTPA LNG export" },
-  { name: "Sohar Refinery", lat: 24.350, lon: 56.700, type: "refinery", country: "OM", desc: "198k bpd" },
-  // ISRAEL
-  { name: "Leviathan Gas Platform", lat: 32.950, lon: 34.100, type: "offshore", country: "IL", desc: "Israel's largest gas field, 22 TCF" },
-  { name: "Tamar Gas Platform", lat: 32.600, lon: 34.000, type: "offshore", country: "IL", desc: "Major gas field, 10 TCF" },
-  { name: "Karish Gas Platform", lat: 33.100, lon: 33.800, type: "offshore", country: "IL", desc: "Energean, Hezbollah target threats" },
-  { name: "Haifa Oil Refinery", lat: 32.820, lon: 35.060, type: "refinery", country: "IL", desc: "Israel's main refinery (closing)" },
-  { name: "Ashdod Oil Terminal", lat: 31.830, lon: 34.630, type: "oil_terminal", country: "IL", desc: "Israel's main oil import terminal" },
-  // EGYPT
-  { name: "Zohr Gas Field", lat: 31.900, lon: 32.500, type: "offshore", country: "EG", desc: "Eastern Mediterranean supergiant" },
-  { name: "Idku LNG Plant", lat: 31.350, lon: 30.250, type: "lng", country: "EG", desc: "Egypt's LNG export" },
-  { name: "Suez Oil Refinery", lat: 29.960, lon: 32.550, type: "refinery", country: "EG", desc: "Near Suez Canal" },
-],
-
-// ═══════════════════════════════════════════════════════════
-// DAMAGED / ATTACKED FACILITIES (explosion overlay markers)
-// ═══════════════════════════════════════════════════════════
-DAMAGED_FACILITIES: [
-  // NATURAL GAS — ATTACKED / HIT
-  { name: "South Pars Gas Field (Phase 14)", lat: 26.620, lon: 52.200, status: "hit", date: "2025-06-15", by: "IDF", type: "gas", desc: "Struck by Israeli forces Jun 2025, fire at Phase 14. Resumed ops after repairs." },
-  { name: "South Pars Processing (Asaluyeh)", lat: 27.469, lon: 52.599, status: "hit", date: "2025-06-15", by: "IDF", type: "gas", desc: "Processing units damaged in Jun 2025 strikes, partial production suspension." },
-
-  // NATURAL GAS — PRECAUTIONARY SHUTDOWN
-  { name: "Leviathan Gas Field", lat: 32.950, lon: 34.100, status: "shutdown", date: "2026-02-28", by: "precautionary", type: "gas", desc: "Shut down by Israel Energy Ministry Feb 28, Chevron operated. Gas exports to Egypt halted." },
-  { name: "Karish Gas Platform", lat: 33.100, lon: 33.800, status: "shutdown", date: "2026-02-28", by: "precautionary", type: "gas", desc: "Shut down by Israel Energy Ministry Feb 28, Energean operated. Hezbollah threat target." },
-  { name: "Tamar Gas Platform", lat: 32.600, lon: 34.000, status: "shutdown", date: "2026-02-28", by: "precautionary", type: "gas", desc: "Likely shut down alongside Leviathan/Karish per security assessment." },
-
-  // OIL — ATTACKED / HIT
-  { name: "Kharg Island Terminal", lat: 29.240, lon: 50.330, status: "hit", date: "2026-02-28", by: "US/IDF", type: "oil", desc: "Struck in Operation Roaring Lion / Epic Fury. 90% of Iran oil exports. 7M bpd capacity." },
-  { name: "Haifa Oil Refinery", lat: 32.820, lon: 35.060, status: "hit", date: "2026-02-28", by: "Iran/IRGC", type: "oil", desc: "Hit by Iranian missile strikes. Some units shut down." },
-  { name: "Isfahan Oil & Gas Refinery", lat: 32.590, lon: 51.630, status: "hit", date: "2026-02-28", by: "US/IDF", type: "oil", desc: "Confirmed damage from Operation Roaring Lion strikes. 375k bpd." },
-
-  // SHIPPING — DISRUPTED
-  { name: "Strait of Hormuz (LNG Halt)", lat: 26.570, lon: 56.250, status: "blocked", date: "2026-02-28", by: "IRGC", type: "shipping", desc: "LNG tanker crossings halted Feb 28. IRGC warned all tankers. 150+ anchored in open Gulf." },
+  { name: "Ruwais Refinery (ADNOC)", lat: 24.110, lon: 52.730, type: "refinery", country: "UAE", desc: "837k bpd, largest in UAE. Houthi-attacked 2022" },
+  { name: "Jebel Dhanna Terminal", lat: 24.190, lon: 52.580, type: "oil_terminal", country: "UAE", desc: "ADNOC crude oil export" },
+  { name: "Das Island (ADNOC)", lat: 25.150, lon: 52.870, type: "oil_terminal", country: "UAE", desc: "Offshore oil/gas processing" },
+  { name: "Fujairah Oil Terminal", lat: 25.130, lon: 56.330, type: "oil_terminal", country: "UAE", desc: "World's largest bunkering hub, outside Hormuz" },
+  // Iraq
+  { name: "Basrah Oil Terminal (ABOT)", lat: 29.680, lon: 48.820, type: "oil_terminal", country: "Iraq", desc: "Al-Basrah Oil Terminal, 1.6M bpd export capacity" },
+  { name: "Khor al-Amaya Terminal", lat: 29.780, lon: 48.830, type: "oil_terminal", country: "Iraq", desc: "Secondary Iraqi oil export terminal" },
+  { name: "Kirkuk Oil Fields", lat: 35.470, lon: 44.390, type: "oilfield", country: "Iraq", desc: "Major northern Iraq field" },
+  { name: "Baiji Refinery", lat: 34.930, lon: 43.490, type: "refinery", country: "Iraq", desc: "Iraq's largest refinery, 310k bpd. Damaged in ISIS war" },
+  // Kuwait
+  { name: "Mina al-Ahmadi Refinery", lat: 29.070, lon: 48.150, type: "refinery", country: "Kuwait", desc: "466k bpd, Kuwait's largest refinery" },
+  { name: "Mina Abdullah Refinery", lat: 29.000, lon: 48.180, type: "refinery", country: "Kuwait", desc: "270k bpd" },
+  { name: "Al-Zour Refinery", lat: 28.730, lon: 48.360, type: "refinery", country: "Kuwait", desc: "615k bpd, new mega-refinery" },
+  // Israel
+  { name: "Haifa Oil Refinery", lat: 32.810, lon: 35.010, type: "refinery", country: "Israel", desc: "Bazan Group, 197k bpd. Iranian missile damage Feb 28, 2026", struck: true },
+  { name: "Ashdod Oil Terminal", lat: 31.800, lon: 34.650, type: "oil_terminal", country: "Israel", desc: "Eilat-Ashkelon Pipeline terminus" },
+  { name: "Leviathan Gas Platform", lat: 32.950, lon: 34.150, type: "gasfield", country: "Israel", desc: "Largest Israeli gas field. Precautionary shutdown Feb 28, 2026" },
+  { name: "Karish Gas Platform", lat: 32.780, lon: 34.120, type: "gasfield", country: "Israel", desc: "Energean platform. Precautionary shutdown Feb 28, 2026" },
+  { name: "Tamar Gas Platform", lat: 32.600, lon: 34.030, type: "gasfield", country: "Israel", desc: "Major gas platform. Precautionary shutdown Feb 28, 2026" },
 ],
 
 // ═══════════════════════════════════════════════════════════
