@@ -183,14 +183,25 @@
 <div style="max-width:1440px;margin:16px auto 0;padding:0 20px">
   <div style="background:linear-gradient(135deg,#0f172a 0%,#1a0f0f 100%);border:1px solid #e05252;border-radius:10px;padding:20px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-      <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fda4af;margin:0">🔴 Live Situation Report — Mar 7, 2026</h3>
-      <span style="font-size:11px;color:#64748b">Last updated: 01:00 EST</span>
+      <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fda4af;margin:0">🔴 Live Situation Report — Mar 8, 2026</h3>
+      <span style="font-size:11px;color:#64748b">Last updated: 01:20 EST</span>
     </div>
 
     <!-- Status Change Timeline -->
     <div style="margin-bottom:16px">
       <h4 style="font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:#f59e0b;margin-bottom:10px">⚠️ Status Changes (Last 48h) — Facilities That Went Offline</h4>
       <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:stretch;gap:0;font-size:12px">
+          <div style="width:100px;flex-shrink:0;background:#dc2626;color:#fff;font-weight:700;padding:10px 12px;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center">Mar 8</div>
+          <div style="flex:1;background:#1e293b;border:1px solid #dc2626;border-left:none;border-radius:0 6px 6px 0;padding:10px 14px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+              <span style="color:#f87171;font-weight:700">💥 Tehran Oil Depots Bombed</span>
+              <span style="background:#dc2626;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:3px">STRUCK</span>
+            </div>
+            <div style="color:#94a3b8;font-size:11px">Tehran Refinery (250k bpd) — Israel bombed Tehran oil depots. Iran attacks continue on Gulf states (UAE, Saudi, Qatar). 1,332+ dead in Iran from US-Israeli strikes (Day 8).</div>
+            <div style="color:#64748b;font-size:10px;margin-top:2px">Source: Al Jazeera, NPR</div>
+          </div>
+        </div>
         <div style="display:flex;align-items:stretch;gap:0;font-size:12px">
           <div style="width:100px;flex-shrink:0;background:#e05252;color:#fff;font-weight:700;padding:10px 12px;border-radius:6px 0 0 6px;display:flex;align-items:center;justify-content:center">Mar 6</div>
           <div style="flex:1;background:#1e293b;border:1px solid #e05252;border-left:none;border-radius:0 6px 6px 0;padding:10px 14px">
@@ -1464,7 +1475,7 @@ setInterval(tryFetchMetrics, 60000);
     { name: "Bushehr", country: "Iran", type: "Nuclear/Energy", capacity: "1GW", lat: 28.97, lon: 50.84, status: "struck", date: "2026-03-04", source: "Energy Feed", note: "Confirmed hit" },
     { name: "Bandar Abbas Refinery", country: "Iran", type: "Refinery", capacity: "320k bpd", lat: 27.19, lon: 56.27, status: "struck", date: "2026-03-04", source: "Energy Feed", note: "Near Hormuz, strategic target" },
     { name: "Abadan Refinery", country: "Iran", type: "Refinery", capacity: "400k bpd", lat: 30.34, lon: 48.28, status: "operational", note: "No confirmed strikes" },
-    { name: "Tehran Refinery", country: "Iran", type: "Refinery", capacity: "250k bpd", lat: 35.59, lon: 51.37, status: "operational", note: "Inland, not struck" },
+    { name: "Tehran Refinery", country: "Iran", type: "Refinery", capacity: "250k bpd", lat: 35.59, lon: 51.37, status: "struck", note: "Oil depots bombed Mar 7-8 by Israel (Al Jazeera)" },
     { name: "Tabriz Refinery", country: "Iran", type: "Refinery", capacity: "110k bpd", lat: 38.00, lon: 46.30, status: "operational", note: "Northwest, not struck" },
     { name: "Asaluyeh Petrochemical", country: "Iran", type: "Petrochemical", capacity: "Major hub", lat: 27.48, lon: 52.61, status: "operational", note: "Near South Pars" },
     { name: "Lavan Island", country: "Iran", type: "Oil Terminal", capacity: "200k bpd", lat: 26.80, lon: 53.36, status: "operational", note: "" },
@@ -1564,6 +1575,7 @@ setInterval(tryFetchMetrics, 60000);
     { date: '2026-03-05', struck: 8, shutdown: 6, label: 'Kuwait Mina al-Ahmadi struck, Mesaieed shutdown, Doha explosions' },
     { date: '2026-03-06', struck: 8, shutdown: 7, label: 'North Field shutdown — Qatar warns total halt' },
     { date: '2026-03-07', struck: 8, shutdown: 7, label: 'Current state' },
+    { date: '2026-03-08', struck: 9, shutdown: 7, label: 'Tehran oil depots bombed by Israel' },
   ];
 
   const ctx = document.getElementById('facilityChart').getContext('2d');
