@@ -1109,6 +1109,18 @@ const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
 
 const COUNTRY_FLAGS = {iran:'🇮🇷',israel:'🇮🇱',kuwait:'🇰🇼',qatar:'🇶🇦',uae:'🇦🇪',saudi:'🇸🇦','saudi arabia':'🇸🇦',iraq:'🇮🇶',syria:'🇸🇾',lebanon:'🇱🇧',yemen:'🇾🇪',jordan:'🇯🇴',bahrain:'🇧🇭',oman:'🇴🇲',turkey:'🇹🇷',egypt:'🇪🇬',pakistan:'🇵🇰',usa:'🇺🇸',russia:'🇷🇺',tehran:'🇮🇷',baghdad:'🇮🇶',beirut:'🇱🇧',damascus:'🇸🇾',riyadh:'🇸🇦',doha:'🇶🇦',dubai:'🇦🇪','abu dhabi':'🇦🇪',gaza:'🇵🇸',haifa:'🇮🇱','tel aviv':'🇮🇱'};
+const COUNTRY_COORDS = {iran:[32.43,53.69],israel:[31.77,35.22],kuwait:[29.38,47.99],qatar:[25.28,51.53],uae:[24.47,54.37],saudi:[24.71,46.68],'saudi arabia':[24.71,46.68],iraq:[33.22,43.68],syria:[34.80,38.99],lebanon:[33.85,35.86],yemen:[15.55,48.52],jordan:[31.95,35.93],bahrain:[26.07,50.55],oman:[23.59,58.55],turkey:[39.93,32.86],egypt:[26.82,30.80],pakistan:[30.38,69.35],gaza:[31.35,34.31],tehran:[35.69,51.39],baghdad:[33.31,44.37],beirut:[33.89,35.50],damascus:[33.51,36.29],riyadh:[24.69,46.72],doha:[25.29,51.53],dubai:[25.20,55.27],'abu dhabi':[24.45,54.65],haifa:[32.79,34.99],'tel aviv':[32.08,34.78]};
+function smartFlyCoords(e) {
+  const txt = (e.text || '').toLowerCase();
+  const locLower = ((e.loc || '') + '').toLowerCase().trim();
+  const isSideAsLoc = locLower === (e.side || '') || locLower === 'iran' || locLower === 'israel' || locLower === 'us';
+  if (isSideAsLoc || !e.loc) {
+    for (const [key, coords] of Object.entries(COUNTRY_COORDS)) {
+      if (txt.includes(key) && key !== (e.side || '').toLowerCase()) return coords;
+    }
+  }
+  return [e.lat, e.lon];
+}
 function smartLoc(e) {
   const loc = e.loc || '';
   const txt = (e.text || '').toLowerCase();
@@ -1297,11 +1309,12 @@ function renderFeed() {
     const fullText = (e.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const needsTooltip = (e.text || '').length > 100;
     const timeStr = ts > 0 ? `${localTime(ts)} · ${ago}` : ago;
+    const [flyLat, flyLon] = smartFlyCoords(e);
     const srcLink = getSrcLink(e.src || '');
     const srcHtml = srcLink
       ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${e.src || ''}</a>`
       : (e.src || '');
-    return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="">
+    return `<div class="feed-item${breaking}" onclick="flyToEvent(${flyLat},${flyLon})" title="">
       <div class="feed-item-header">
         <span class="feed-item-source">${srcHtml}</span>
         <span class="feed-item-time">${timeStr}</span>
@@ -1996,7 +2009,8 @@ function loadTicker() {
       const ago = e.ts ? formatAgo(now - e.ts) : '';
       const text = (e.text || '').length > 120 ? e.text.substring(0, 120) + '…' : (e.text || '');
       const brk = e.breaking ? ' breaking' : '';
-      return `<span class="ticker-item${brk}" onclick="flyToEvent(${e.lat},${e.lon})"><span class="ti-dot" style="background:${sideColor}"></span><span class="ti-src">${e.src||''}</span>${text}<span class="ti-time">${ago}</span></span><span class="ticker-sep">◆</span>`;
+      const [tLat, tLon] = smartFlyCoords(e);
+      return `<span class="ticker-item${brk}" onclick="flyToEvent(${tLat},${tLon})"><span class="ti-dot" style="background:${sideColor}"></span><span class="ti-src">${e.src||''}</span>${text}<span class="ti-time">${ago}</span></span><span class="ticker-sep">◆</span>`;
     }).join('');
 
     const content = document.getElementById('ticker-content');
