@@ -1834,10 +1834,19 @@ function loadAircraft() {
       const milBadge = isMil ? ' 🎖 MIL' : '';
       const color = isMil ? '#ef4444' : '#22c55e';
       const size = isMil ? 22 : 16;
+      const icao24 = s[0] || '';
+      const fr24Link = callsign ? `https://www.flightradar24.com/${callsign}` : '';
+      const faLink = callsign ? `https://www.flightaware.com/live/flight/${callsign}` : '';
+      const adsLink = icao24 ? `https://globe.adsbexchange.com/?icao=${icao24}` : '';
+      const links = [
+        fr24Link ? `<a href="${fr24Link}" target="_blank" style="color:#06b6d4">FR24</a>` : '',
+        faLink ? `<a href="${faLink}" target="_blank" style="color:#22c55e">FlightAware</a>` : '',
+        adsLink ? `<a href="${adsLink}" target="_blank" style="color:#f59e0b">ADS-B Exch</a>` : '',
+      ].filter(Boolean).join(' · ');
       const popup = mkPopup(
         `✈️ ${callsign || 'Unknown'}${milBadge}`,
         `🌍 ${origin}`,
-        `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}`,
+        `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}<br>${links}`,
         color
       );
       const icon = L.divIcon({
