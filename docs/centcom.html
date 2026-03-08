@@ -1792,6 +1792,83 @@ function loadSirens() {
 }
 
 // ═══════════════════════════════════════════════════════════
+// AIRCRAFT & SHIPS LIVE DATA
+// ═══════════════════════════════════════════════════════════
+const MIL_CALLSIGN_PREFIXES = ['RCH','FORTE','JAKE','HOMER','NCHO','DUKE','SAM','AF1','AF2','EXEC','RETRO','DARK','GORDO','TOPCT','SPAR','REACH','EVAC','TITAN','HAVOC','VIPER','IAF','STING','GOLD','SILVER','BRONZE','ARROW','HAWK','NIGHT'];
+const MIL_TYPES = ['C17A','C5M','KC135','KC46A','KC10','E3CF','E3TF','E8C','RC135','P8A','EP3E','MQ9','RQ4','C130','C130J','B52','B1B','B2','F35','F22','F15','F16','F18','A10','C2A','E2C','E2D','V22','MH60','H60'];
+
+function loadAircraft() {
+  // OpenSky API: Middle East bounding box (lat 12-42, lon 24-62)
+  fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
+  .then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    layers.aircraft.clearLayers();
+    let count = 0;
+    const states = data.states || [];
+    states.forEach(s => {
+      const callsign = (s[1] || '').trim();
+      const lon = s[5], lat = s[6], alt = s[7], speed = s[9], heading = s[10];
+      const origin = s[2] || '';
+      if (!lat || !lon) return;
+      // Filter: show military-looking callsigns or known types
+      const isMil = MIL_CALLSIGN_PREFIXES.some(p => callsign.toUpperCase().startsWith(p));
+      const typecode = (s[17] || '').toUpperCase();
+      const isMilType = MIL_TYPES.some(t => typecode.includes(t));
+      if (!isMil && !isMilType) return;
+      count++;
+      const altFt = alt ? Math.round(alt * 3.281) : '?';
+      const spdKn = speed ? Math.round(speed * 1.944) : '?';
+      const hdg = heading ? Math.round(heading) + '°' : '';
+      const popup = mkPopup(
+        `✈️ ${callsign || 'Unknown'}`,
+        `${origin} ${isMil ? '🎖 MIL' : ''}`,
+        `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}<br>Type: ${typecode || '?'}`,
+        '#22c55e'
+      );
+      const icon = L.divIcon({
+        className: 'marker-aircraft',
+        html: `<div style="font-size:18px;transform:rotate(${heading||0}deg);filter:drop-shadow(0 0 6px rgba(34,197,94,0.8))">✈️</div>`,
+        iconSize: [24, 24], iconAnchor: [12, 12]
+      });
+      L.marker([lat, lon], { icon }).bindPopup(popup).addTo(layers.aircraft);
+    });
+    document.querySelectorAll('.sb-row[data-layer="aircraft"] .sb-row-count').forEach(e => e.textContent = count);
+  }).catch(() => {
+    console.log('OpenSky API unavailable');
+  });
+}
+
+function loadShips() {
+  // Use intel-feed for naval/ship events
+  const feedUrl = dataUrl('intel-feed');
+  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    layers.ships.clearLayers();
+    let count = 0;
+    const events = data.events || data || [];
+    events.forEach(e => {
+      if (!e.lat || !e.lon) return;
+      const t = (e.sub_event_type || e.type || e.text || '').toLowerCase();
+      if (!(t.includes('ship') || t.includes('naval') || t.includes('vessel') || t.includes('navy') || t.includes('carrier') || t.includes('destroyer') || t.includes('fleet') || t.includes('frigate') || t.includes('submarine'))) return;
+      count++;
+      const popup = mkPopup('🚢 Naval Event', e.src || '', `📍 ${e.location || e.loc || ''}<br>${e.text || e.notes || ''}`, '#06b6d4');
+      mkMarker(e.lat, e.lon, '🚢', 'marker-naval', 22, popup).addTo(layers.ships);
+    });
+    document.querySelectorAll('.sb-row[data-layer="ships"] .sb-row-count').forEach(e => e.textContent = count || '—');
+  }).catch(() => {});
+}
+
+// Load aircraft & ships when toggled on
+const _origToggle = toggleLayer;
+toggleLayer = function(name) {
+  _origToggle(name);
+  if (name === 'aircraft' && activeState.aircraft && layers.aircraft.getLayers().length === 0) loadAircraft();
+  if (name === 'ships' && activeState.ships && layers.ships.getLayers().length === 0) loadShips();
+};
+
+// Auto-refresh aircraft every 30s if layer is active
+setInterval(() => { if (activeState.aircraft) loadAircraft(); }, 30000);
+
 // ASSET LIST (sidebar)
 // ═══════════════════════════════════════════════════════════
 function renderAssetList(filter) {
