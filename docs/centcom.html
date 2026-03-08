@@ -1202,7 +1202,16 @@ function loadFeed() {
   });
 
   fetchData.then(data => {
-    feedEvents = (data.events || data || []).filter(e => {
+    feedEvents = (data.events || data || []).map(e => {
+      // Normalize: text may be array (siren locations) — join to string
+      if (Array.isArray(e.text)) e.text = e.text.join(', ');
+      if (!e.side) {
+        if (e.type === 'siren' || e.src === 'oref') e.side = 'israel';
+        else if (e.type === 'fire') e.side = 'unknown';
+        else e.side = e.side || 'unknown';
+      }
+      return e;
+    }).filter(e => {
       // Skip raw fire/seismic detections with no text content (nasa-firms, usgs floods)
       if (e.type === 'fire' || e.type === 'seismic') return (e.text||'').trim().length > 10;
       return (e.text||'').trim().length > 5 || ((e.src||'').trim() && (e.loc||'').trim());
