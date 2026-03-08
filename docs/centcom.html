@@ -768,7 +768,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>⭐</span><div class="tb-tooltip">Military Bases</div>
   </div>
   <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft')">
-    <span>✈️</span><div class="tb-tooltip">Live Aircraft (ADS-B)</div>
+    <span>✈️</span><div class="tb-tooltip">All Aircraft (ADS-B)</div>
+  </div>
+  <div class="tb-btn" data-layer="mil-aircraft" data-color="red" onclick="toggleMilFilter()">
+    <span>🎖</span><div class="tb-tooltip">Military Only Filter</div>
   </div>
   <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
     <span>🚢</span><div class="tb-tooltip">Ship Tracking (AIS)</div>
@@ -1825,55 +1828,66 @@ function loadSirens() {
 // ═══════════════════════════════════════════════════════════
 const MIL_CALLSIGN_PREFIXES = ['RCH','FORTE','JAKE','HOMER','NCHO','DUKE','SAM','AF1','AF2','EXEC','RETRO','DARK','GORDO','TOPCT','SPAR','REACH','EVAC','TITAN','HAVOC','VIPER','IAF','STING','GOLD','SILVER','BRONZE','ARROW','HAWK','NIGHT'];
 const MIL_TYPES = ['C17A','C5M','KC135','KC46A','KC10','E3CF','E3TF','E8C','RC135','P8A','EP3E','MQ9','RQ4','C130','C130J','B52','B1B','B2','F35','F22','F15','F16','F18','A10','C2A','E2C','E2D','V22','MH60','H60'];
+let aircraftMilOnly = false;
+let aircraftCache = []; // cache last fetch
+
+function toggleMilFilter() {
+  aircraftMilOnly = !aircraftMilOnly;
+  const btn = document.querySelector('.tb-btn[data-layer="mil-aircraft"]');
+  if (btn) btn.classList.toggle('active', aircraftMilOnly);
+  if (activeState.aircraft) renderAircraftFromCache();
+}
+
+function renderAircraftFromCache() {
+  layers.aircraft.clearLayers();
+  let count = 0, milCount = 0;
+  aircraftCache.forEach(s => {
+    const callsign = (s[1] || '').trim();
+    const lon = s[5], lat = s[6], alt = s[7], speed = s[9], heading = s[10];
+    const origin = s[2] || '';
+    if (!lat || !lon) return;
+    const isMil = MIL_CALLSIGN_PREFIXES.some(p => callsign.toUpperCase().startsWith(p));
+    if (isMil) milCount++;
+    if (aircraftMilOnly && !isMil) return;
+    count++;
+    const altFt = alt ? Math.round(alt * 3.281) : '?';
+    const spdKn = speed ? Math.round(speed * 1.944) : '?';
+    const hdg = heading ? Math.round(heading) + '°' : '';
+    const milBadge = isMil ? ' 🎖 MIL' : '';
+    const color = isMil ? '#ef4444' : '#22c55e';
+    const size = isMil ? 22 : 16;
+    const icao24 = s[0] || '';
+    const fr24Link = callsign ? `https://www.flightradar24.com/${callsign}` : '';
+    const faLink = callsign ? `https://www.flightaware.com/live/flight/${callsign}` : '';
+    const adsLink = icao24 ? `https://globe.adsbexchange.com/?icao=${icao24}` : '';
+    const links = [
+      fr24Link ? `<a href="${fr24Link}" target="_blank" style="color:#06b6d4">FR24</a>` : '',
+      faLink ? `<a href="${faLink}" target="_blank" style="color:#22c55e">FlightAware</a>` : '',
+      adsLink ? `<a href="${adsLink}" target="_blank" style="color:#f59e0b">ADS-B Exch</a>` : '',
+    ].filter(Boolean).join(' · ');
+    const popup = mkPopup(
+      `✈️ ${callsign || 'Unknown'}${milBadge}`,
+      `🌍 ${origin}`,
+      `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}<br>${links}`,
+      color
+    );
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="font-size:${size}px;transform:rotate(${heading||0}deg);filter:drop-shadow(0 0 ${isMil?8:4}px ${color});opacity:${isMil?1:0.7}">✈️</div>`,
+      iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
+    });
+    L.marker([lat, lon], { icon }).bindPopup(popup).addTo(layers.aircraft);
+  });
+  document.querySelectorAll('.sb-row[data-layer="aircraft"] .sb-row-count').forEach(e => e.textContent = aircraftMilOnly ? `${count} mil` : `${count} (${milCount} mil)`);
+}
 
 function loadAircraft() {
-  // OpenSky API: Middle East bounding box (lat 12-42, lon 24-62)
   fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
   .then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
-    layers.aircraft.clearLayers();
-    let count = 0;
-    const states = data.states || [];
-    states.forEach(s => {
-      const callsign = (s[1] || '').trim();
-      const lon = s[5], lat = s[6], alt = s[7], speed = s[9], heading = s[10];
-      const origin = s[2] || '';
-      if (!lat || !lon) return;
-      const isMil = MIL_CALLSIGN_PREFIXES.some(p => callsign.toUpperCase().startsWith(p));
-      count++;
-      const altFt = alt ? Math.round(alt * 3.281) : '?';
-      const spdKn = speed ? Math.round(speed * 1.944) : '?';
-      const hdg = heading ? Math.round(heading) + '°' : '';
-      const milBadge = isMil ? ' 🎖 MIL' : '';
-      const color = isMil ? '#ef4444' : '#22c55e';
-      const size = isMil ? 22 : 16;
-      const icao24 = s[0] || '';
-      const fr24Link = callsign ? `https://www.flightradar24.com/${callsign}` : '';
-      const faLink = callsign ? `https://www.flightaware.com/live/flight/${callsign}` : '';
-      const adsLink = icao24 ? `https://globe.adsbexchange.com/?icao=${icao24}` : '';
-      const links = [
-        fr24Link ? `<a href="${fr24Link}" target="_blank" style="color:#06b6d4">FR24</a>` : '',
-        faLink ? `<a href="${faLink}" target="_blank" style="color:#22c55e">FlightAware</a>` : '',
-        adsLink ? `<a href="${adsLink}" target="_blank" style="color:#f59e0b">ADS-B Exch</a>` : '',
-      ].filter(Boolean).join(' · ');
-      const popup = mkPopup(
-        `✈️ ${callsign || 'Unknown'}${milBadge}`,
-        `🌍 ${origin}`,
-        `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}<br>${links}`,
-        color
-      );
-      const icon = L.divIcon({
-        className: '',
-        html: `<div style="font-size:${size}px;transform:rotate(${heading||0}deg);filter:drop-shadow(0 0 ${isMil?8:4}px ${color});opacity:${isMil?1:0.7}">✈️</div>`,
-        iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
-      });
-      L.marker([lat, lon], { icon }).bindPopup(popup).addTo(layers.aircraft);
-    });
-    // Update count in sidebar
-    document.querySelectorAll('.sb-row[data-layer="aircraft"] .sb-row-count').forEach(e => e.textContent = count);
-  }).catch(() => {
-    console.log('OpenSky API unavailable');
-  });
+    aircraftCache = data.states || [];
+    renderAircraftFromCache();
+  }).catch(() => { console.log('OpenSky API unavailable'); });
 }
 
 function loadShips() {
