@@ -59,7 +59,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   backdrop-filter: blur(8px);
   border-right: 1px solid var(--panel-border);
   display:flex; flex-direction:column; align-items:center;
-  padding:8px 0; gap:4px; overflow-y:auto;
+  padding:8px 0; gap:4px; overflow:visible;
 }
 .tb-btn {
   width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.06);
@@ -83,7 +83,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   padding:4px 10px; border-radius:4px; font-size:11px; white-space:nowrap;
   pointer-events:none; opacity:0; transition:opacity 0.15s;
   font-family:var(--font-data); color:var(--text-dim);
-  backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px); z-index:9999;
 }
 .tb-btn:hover .tb-tooltip { opacity:1; }
 
