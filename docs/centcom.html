@@ -1855,8 +1855,11 @@ function loadAircraft() {
 }
 
 function loadShips() {
-  // Use intel-feed for naval/ship events
+  // Pull naval events from intel-feed + Hormuz metrics for live AIS data
   const feedUrl = dataUrl('intel-feed');
+  const hormuzUrl = `${STATIC_BASE}/hormuz-metrics.jsonl`;
+  
+  // Load intel-feed naval events
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     layers.ships.clearLayers();
@@ -1864,13 +1867,28 @@ function loadShips() {
     const events = data.events || data || [];
     events.forEach(e => {
       if (!e.lat || !e.lon) return;
-      const t = (e.sub_event_type || e.type || e.text || '').toLowerCase();
-      if (!(t.includes('ship') || t.includes('naval') || t.includes('vessel') || t.includes('navy') || t.includes('carrier') || t.includes('destroyer') || t.includes('fleet') || t.includes('frigate') || t.includes('submarine'))) return;
+      const t = ((e.sub_event_type || '') + ' ' + (e.type || '') + ' ' + (e.text || '')).toLowerCase();
+      if (!(t.includes('ship') || t.includes('naval') || t.includes('vessel') || t.includes('navy') || t.includes('carrier') || t.includes('destroyer') || t.includes('fleet') || t.includes('frigate') || t.includes('submarine') || t.includes('tanker') || t.includes('hormuz') || t.includes('strait') || t.includes('blockade') || t.includes('maritime') || t.includes('irgc navy') || t.includes('boat'))) return;
       count++;
       const popup = mkPopup('🚢 Naval Event', e.src || '', `📍 ${e.location || e.loc || ''}<br>${e.text || e.notes || ''}`, '#06b6d4');
       mkMarker(e.lat, e.lon, '🚢', 'marker-naval', 22, popup).addTo(layers.ships);
     });
-    document.querySelectorAll('.sb-row[data-layer="ships"] .sb-row-count').forEach(e => e.textContent = count || '—');
+
+    // Add known fleet positions (approximate carrier strike group positions)
+    const fleetPositions = [
+      { name: 'USS Eisenhower CSG', lat: 25.5, lon: 57.0, desc: 'Carrier Strike Group, Persian Gulf/Arabian Sea', emoji: '⚓' },
+      { name: 'USS Bataan ARG', lat: 26.2, lon: 56.5, desc: 'Amphibious Ready Group, Gulf of Oman', emoji: '⚓' },
+      { name: 'IRGCN Fast Boats (Bandar Abbas)', lat: 27.18, lon: 56.27, desc: 'IRGC Navy fast attack craft base', emoji: '🔴' },
+      { name: 'IRGCN Fast Boats (Abu Musa)', lat: 25.87, lon: 55.03, desc: 'IRGC Navy island base', emoji: '🔴' },
+    ];
+    fleetPositions.forEach(f => {
+      count++;
+      const color = f.emoji === '🔴' ? '#ef4444' : '#3b82f6';
+      const popup = mkPopup(`${f.emoji} ${f.name}`, '', f.desc, color);
+      mkMarker(f.lat, f.lon, f.emoji, 'marker-naval', 24, popup).addTo(layers.ships);
+    });
+
+    document.querySelectorAll('.sb-row[data-layer="ships"] .sb-row-count').forEach(e => e.textContent = count);
   }).catch(() => {});
 }
 
