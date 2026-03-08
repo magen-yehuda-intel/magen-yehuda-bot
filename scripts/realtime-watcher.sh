@@ -420,8 +420,21 @@ check_oref() {
   local oref_url="https://www.oref.org.il/WarningMessages/alert/alerts.json"
   local oref_headers=(-H "X-Requested-With: XMLHttpRequest" -H "Referer: https://www.oref.org.il/")
 
-  # Strategy: try direct first (works from Azure/cloud), fall back to proxy if configured
-  alerts=$(curl -sf --max-time 8 "$oref_url" "${oref_headers[@]}" 2>/dev/null || echo "")
+  # Strategy: try API backend first (always works from Azure), then direct, then proxy
+  alerts=$(curl -sf --max-time 8 "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/oref" 2>/dev/null | python3 -c "
+import json,sys
+try:
+    d=json.load(sys.stdin)
+    a=d.get('alerts',[])
+    if a: print(json.dumps(a))
+    else: print('')
+except: print('')
+" 2>/dev/null || echo "")
+
+  # If API backend returned nothing, try direct Oref
+  if [ -z "$alerts" ]; then
+    alerts=$(curl -sf --max-time 8 "$oref_url" "${oref_headers[@]}" 2>/dev/null || echo "")
+  fi
 
   # If direct failed and proxy is configured, try via proxy
   if [ -z "$alerts" ] && [ -n "$OREF_PROXY_ARGS" ]; then
