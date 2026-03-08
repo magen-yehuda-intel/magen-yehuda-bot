@@ -1044,13 +1044,13 @@ const layers = {
 const activeState = {
   borders: true, military: true, fires: true, osint: true, sirens: true,
   infra: false, nuclear: false, missiles: false, naval: false,
-  ad: false, airbases: false, irgc: false, energy: false,
+  ad: false, airbases: false, irgc: false, energy: true,
   sam: false, waterways: false, patrol: false, labels: false,
   aircraft: false, ships: false, gpsjam: false, satellites: false,
 };
 
 // Add default-on layers
-['borders', 'military', 'fires', 'osint', 'sirens'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'fires', 'osint', 'sirens', 'energy'].forEach(k => layers[k].addTo(map));
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
