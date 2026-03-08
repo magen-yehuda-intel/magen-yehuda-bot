@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-03-08T09:35:00Z",
+  "timestamp": "2026-03-08T09:40:00Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_ts": "2026-03-08 09:21:57 IST",
-  "last_siren_title": "האירוע הסתיים"
+  "last_siren_ts": "2026-03-08 11:38:42 IST",
+  "last_siren_title": "\\u05d7\\u05d3\\u05d9\\u05e8\\u05ea \\u05db\\u05dc\\u05d9 \\u05d8\\u05d9\\u05e1 \\u05e2\\u05d5\\u05d9\\u05df"
 }
