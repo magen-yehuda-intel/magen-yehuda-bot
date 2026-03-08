@@ -157,6 +157,35 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   to { stroke-dashoffset: -20; }
 }
 @keyframes spin { 100% { transform:rotate(360deg); } }
+@keyframes strike-glow { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.4); opacity:0.7; } }
+.strike-pulse { animation: strike-glow 2s ease-in-out infinite; }
+.strike-pulse-critical { animation: strike-glow 1s ease-in-out infinite; }
+.strike-popup .leaflet-popup-content-wrapper { background:rgba(10,10,20,0.95); color:#e2e8f0; border:1px solid rgba(255,0,64,0.3); border-radius:8px; }
+.strike-popup .leaflet-popup-tip { background:rgba(10,10,20,0.95); }
+
+/* ═══ NEWS TICKER ═══ */
+#news-ticker {
+  position:fixed; bottom:0; left:54px; right:0; height:28px; z-index:900;
+  background: linear-gradient(180deg, rgba(5,5,16,0.9), rgba(5,5,16,0.95));
+  border-top: 1px solid rgba(255,0,64,0.2);
+  display:flex; align-items:center; overflow:hidden;
+}
+#news-ticker .ticker-label {
+  flex-shrink:0; padding:0 12px; font-family:var(--font-title); font-size:10px; font-weight:700;
+  color:#ff4444; letter-spacing:1px; border-right:1px solid rgba(255,255,255,0.1);
+  text-shadow: 0 0 8px rgba(255,0,0,0.5);
+}
+#news-ticker .ticker-scroll {
+  flex:1; overflow:hidden; white-space:nowrap;
+}
+#news-ticker .ticker-content {
+  display:inline-block; animation: ticker-scroll 60s linear infinite; padding-left:100%;
+  font-family:var(--font-data); font-size:11px; color:rgba(255,255,255,0.7);
+}
+#news-ticker .ticker-content .t-critical { color:#ff4444; font-weight:700; }
+#news-ticker .ticker-content .t-high { color:#ff8800; }
+#news-ticker .ticker-content .t-sep { color:rgba(255,255,255,0.2); margin:0 16px; }
+@keyframes ticker-scroll { 0% { transform:translateX(0); } 100% { transform:translateX(-100%); } }
 
 /* ═══ COUNTER CHIPS (bottom-left) ═══ */
 #chips {
@@ -799,6 +828,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="sirens" data-color="red" onclick="toggleLayer('sirens')">
     <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
   </div>
+  <div class="tb-btn active" data-layer="strikes" data-color="red" onclick="toggleLayer('strikes')">
+    <span>💥</span><div class="tb-tooltip">Recent Strikes (Feb 28–Mar 8)</div>
+  </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
     <span>📋</span><div class="tb-tooltip">Legend</div>
@@ -834,6 +866,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
     <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('strikes')"><div class="sb-dot" style="background:#ff2222"></div><span class="sb-row-name">💥 Recent Strikes</span><span class="sb-row-count" id="cnt-strikes">0</span></div>
     <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
@@ -1038,11 +1071,12 @@ const layers = {
   ships: L.layerGroup(),
   gpsjam: L.layerGroup(),
   satellites: L.layerGroup(),
+  strikes: L.layerGroup(),
 };
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: true, osint: true, sirens: true,
+  borders: true, military: true, fires: true, osint: true, sirens: true, strikes: true,
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
@@ -1050,7 +1084,7 @@ const activeState = {
 };
 
 // Add default-on layers
-['borders', 'military', 'fires', 'osint', 'sirens'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'fires', 'osint', 'sirens', 'strikes'].forEach(k => layers[k].addTo(map));
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
@@ -1617,6 +1651,40 @@ function renderAllLayers() {
     }).addTo(layers.borders);
   }).catch(e => console.warn('Borders load failed:', e));
 
+  // ─── RECENT STRIKES from V2_DATA ───
+  if (V2_DATA.RECENT_EVENTS) {
+    const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
+    const typeIcons = { strike: '💥', missile: '🚀', naval: '⚓', energy: '⚡', political: '📢' };
+    let strikeCount = 0;
+    V2_DATA.RECENT_EVENTS.forEach(ev => {
+      const color = severityColors[ev.severity] || '#ff4444';
+      const icon = typeIcons[ev.type] || '💥';
+      const pulseClass = ev.severity === 'critical' ? 'strike-pulse-critical' : 'strike-pulse';
+      const size = ev.severity === 'critical' ? 24 : 18;
+      const marker = L.marker([ev.lat, ev.lon], {
+        icon: L.divIcon({
+          className: '',
+          html: `<div class="${pulseClass}" style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${size-4}px;filter:drop-shadow(0 0 6px ${color})">${icon}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2],
+        }),
+        zIndexOffset: ev.severity === 'critical' ? 2000 : 1000,
+      });
+      const popupHtml = `
+        <div style="font-family:var(--font-body);min-width:220px;max-width:320px">
+          <div style="font-family:var(--font-title);font-size:11px;color:${color};letter-spacing:1px;margin-bottom:4px">${ev.date} · ${ev.actor}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px">${ev.target}</div>
+          <div style="font-size:12px;opacity:0.8">${ev.desc}</div>
+          <div style="margin-top:6px;font-size:10px;text-transform:uppercase;color:${color};font-weight:700">${ev.severity} · ${ev.type}</div>
+        </div>`;
+      marker.bindPopup(popupHtml, { className: 'strike-popup' });
+      marker.addTo(layers.strikes);
+      strikeCount++;
+    });
+    const cntEl = document.getElementById('cnt-strikes');
+    if (cntEl) cntEl.textContent = strikeCount;
+  }
+
   // ─── OSINT from intel-feed.json ───
   loadOSINT();
 
@@ -1791,8 +1859,34 @@ function loadTicker() {
     const now = Date.now() / 1000;
     // Show last 6 hours in ticker
     const recent = events.filter(e => e.ts && (now - e.ts) < 21600).slice(0, 50);
-    if (recent.length === 0) return;
+    if (recent.length === 0) return loadTickerFallback();
+    renderTickerItems(recent, false);
+  }).catch(() => { loadTickerFallback(); });
+}
 
+function loadTickerFallback() {
+  // Use static RECENT_EVENTS when no live feed is available
+  if (!V2_DATA.RECENT_EVENTS || V2_DATA.RECENT_EVENTS.length === 0) return;
+  const label = document.getElementById('ticker-label');
+  const hasCritical = V2_DATA.RECENT_EVENTS.some(e => e.severity === 'critical');
+  label.textContent = hasCritical ? '🚨 BREAKING' : 'INTEL';
+  if (hasCritical) label.classList.add('alert');
+
+  const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
+  const items = V2_DATA.RECENT_EVENTS.slice().reverse().map(e => {
+    const color = severityColors[e.severity] || '#6b7280';
+    const sevClass = e.severity === 'critical' ? ' breaking' : '';
+    return `<span class="ticker-item${sevClass}" onclick="map.flyTo([${e.lat},${e.lon}],8)"><span class="ti-dot" style="background:${color}"></span><span class="ti-src">${e.actor}</span>${e.target}: ${e.desc}<span class="ti-time">${e.date}</span></span><span class="ticker-sep">◆</span>`;
+  }).join('');
+
+  const content = document.getElementById('ticker-content');
+  content.innerHTML = items + items;
+  const duration = Math.max(120, V2_DATA.RECENT_EVENTS.length * 8);
+  content.style.setProperty('--ticker-duration', duration + 's');
+}
+
+function renderTickerItems(recent, isStatic) {
+    const now = Date.now() / 1000;
     const hasBreaking = recent.some(e => e.breaking);
     const label = document.getElementById('ticker-label');
     if (hasBreaking) {
@@ -1818,7 +1912,6 @@ function loadTicker() {
     // Adjust speed based on content width
     const duration = Math.max(120, recent.length * 16);
     content.style.setProperty('--ticker-duration', duration + 's');
-  }).catch(() => {});
 }
 
 loadTicker();

@@ -1,7 +1,48 @@
 // V2 Dashboard — Static data: US bases, Iran military, SAM, waterways, patrol routes
 // This file is loaded inline in the dashboard HTML
+// Last updated: 2026-03-08
 
 var V2_DATA = {
+
+// ═══════════════════════════════════════════════════════════
+// RECENT STRIKES & KEY EVENTS (Feb 28 – Mar 8, 2026)
+// ═══════════════════════════════════════════════════════════
+RECENT_EVENTS: [
+  // Feb 28 — Opening Salvo
+  { date: "2026-02-28", lat: 35.690, lon: 51.390, type: "strike", actor: "US/Israel", target: "Tehran — Khamenei compound", desc: "Supreme Leader Khamenei killed in precision strike on leadership compound", severity: "critical" },
+  { date: "2026-02-28", lat: 32.616, lon: 51.697, type: "strike", actor: "Israel", target: "Isfahan — Nuclear & air facilities", desc: "Strikes on Natanz approach + Isfahan air base infrastructure", severity: "critical" },
+  { date: "2026-02-28", lat: 29.240, lon: 50.330, type: "strike", actor: "US/Israel", target: "Kharg Island oil terminal", desc: "Strike on Iran's primary oil export terminal (90% of exports)", severity: "critical" },
+  { date: "2026-02-28", lat: 35.590, lon: 51.410, type: "strike", actor: "Israel", target: "Tehran Refinery (Rey)", desc: "Oil reservoirs burning, fires continued for days", severity: "high" },
+  { date: "2026-02-28", lat: 32.590, lon: 51.630, type: "strike", actor: "Israel", target: "Isfahan Refinery", desc: "375k bpd refinery struck", severity: "high" },
+  { date: "2026-02-28", lat: 32.870, lon: 59.220, type: "strike", actor: "Israel", target: "South Pars gas infrastructure", desc: "Strike on world's largest gas field processing", severity: "high" },
+  { date: "2026-02-28", lat: 33.725, lon: 51.727, type: "strike", actor: "US/Israel", target: "Natanz enrichment facility", desc: "Strikes near primary uranium enrichment complex", severity: "critical" },
+  // Feb 28 — Iran Retaliation
+  { date: "2026-02-28", lat: 32.085, lon: 34.781, type: "missile", actor: "Iran/IRGC", target: "Tel Aviv metro area", desc: "Ballistic missile barrage, intercepted by Arrow/David's Sling", severity: "critical" },
+  { date: "2026-02-28", lat: 31.208, lon: 34.937, type: "missile", actor: "Iran/IRGC", target: "Nevatim Air Base", desc: "Missile strike on F-35I base", severity: "high" },
+  { date: "2026-02-28", lat: 32.794, lon: 34.989, type: "missile", actor: "Hezbollah", target: "Haifa Refinery", desc: "Missile strike on Haifa oil refinery", severity: "high" },
+  // Mar 1-2 — Escalation
+  { date: "2026-03-01", lat: 33.854, lon: 35.862, type: "strike", actor: "Israel", target: "Beirut — Hezbollah targets", desc: "IDF struck Quds Force Lebanon Corps commanders in Beirut", severity: "high" },
+  { date: "2026-03-01", lat: 26.50, lon: 56.50, type: "naval", actor: "IRGC", target: "Strait of Hormuz", desc: "IRGC halted LNG transit through Strait of Hormuz", severity: "critical" },
+  { date: "2026-03-01", lat: 31.000, lon: 34.500, type: "energy", actor: "Israel", target: "Leviathan/Karish/Tamar platforms", desc: "Precautionary shutdown of Israel gas platforms", severity: "high" },
+  // Mar 3 — US embassies attacked
+  { date: "2026-03-03", lat: 29.376, lon: 47.977, type: "missile", actor: "Iran/IRGC", target: "US forces in Kuwait", desc: "IRGC missile attack on US military in Kuwait", severity: "critical" },
+  { date: "2026-03-03", lat: 25.276, lon: 55.296, type: "missile", actor: "Iran proxies", target: "US Consulate/Embassy attacks", desc: "US embassies and consulates under attack across region", severity: "high" },
+  // Mar 4-5 — Continued strikes
+  { date: "2026-03-04", lat: 33.854, lon: 35.862, type: "strike", actor: "Israel", target: "Beirut — Hezbollah stronghold", desc: "Air strike hits Hezbollah Beirut stronghold after warning", severity: "high" },
+  // Mar 6-7 — Latest
+  { date: "2026-03-07", lat: 32.616, lon: 51.697, type: "strike", actor: "Israel", target: "Isfahan Airport — F-14 jets", desc: "IDF struck F-14 fighter jets at Isfahan airport", severity: "high" },
+  { date: "2026-03-07", lat: 35.690, lon: 51.410, type: "strike", actor: "Israel", target: "Tehran fuel storages", desc: "Oil reservoirs continue to burn in Tehran", severity: "high" },
+  { date: "2026-03-07", lat: 33.854, lon: 35.862, type: "strike", actor: "Israel", target: "Beirut hotel (3 killed)", desc: "Three people died in strike against hotel in Beirut", severity: "medium" },
+  { date: "2026-03-07", lat: 35.556, lon: 45.435, type: "strike", actor: "Unknown", target: "Sulaymaniyah — ex-UN HQ", desc: "Ex-UN headquarters attacked twice by drones", severity: "medium" },
+  { date: "2026-03-08", lat: 29.376, lon: 47.977, type: "missile", actor: "Iran/IRGC", target: "US forces in Kuwait (2nd wave)", desc: "IRGC launched missile attack against US forces in Kuwait", severity: "critical" },
+  // Political
+  { date: "2026-03-07", lat: 24.453, lon: 54.377, type: "political", actor: "UAE", target: "UAE declaration", desc: "UAE President declares 'state of war'", severity: "high" },
+  { date: "2026-03-07", lat: 38.897, lon: -77.036, type: "political", actor: "US", target: "Trump statement", desc: "Trump demands Iran 'unconditional surrender'", severity: "high" },
+  { date: "2026-03-07", lat: 55.751, lon: 37.617, type: "political", actor: "Russia", target: "Intel sharing", desc: "Washington asked Russia not to transfer intel to Iran; Russia reportedly providing Iran intel to target US forces", severity: "high" },
+  // Iranian leadership
+  { date: "2026-03-08", lat: 35.700, lon: 51.400, type: "political", actor: "Iran", target: "Mojtaba Khamenei succession", desc: "Sources claim Mojtaba Khamenei selected as new Supreme Leader", severity: "critical" },
+  { date: "2026-03-08", lat: 35.324, lon: 46.992, type: "strike", actor: "Unknown", target: "Senendaj, Kurdistan", desc: "Explosions and smoke clouds in Senendaj, western Iran", severity: "medium" },
+],
 
 // ═══════════════════════════════════════════════════════════
 // US & ALLIED MILITARY BASES
