@@ -12,3 +12,4 @@ watcher-twitter-seen.json
 __pycache__/
 *.pyc
 .env
+secrets/
