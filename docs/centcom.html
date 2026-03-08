@@ -1884,38 +1884,37 @@ function renderAircraftFromCache() {
 }
 
 function loadAircraft() {
-  // FlightRadar24 public feed — 2-3x more aircraft than OpenSky, includes type + route
-  fetch('https://data-cloud.flightradar24.com/zones/fcgi/feed.js?bounds=42,12,24,62&faa=1&satellite=1&mlat=1&flarm=1&adsb=1&gnd=0&air=1&vehicles=0&estimated=1&maxage=14400&gliders=0&stats=0')
-  .then(r => r.ok ? r.json() : Promise.reject('no'))
-  .then(data => {
-    const states = [];
-    for (const [k, v] of Object.entries(data)) {
-      if (!Array.isArray(v) || v.length < 13) continue;
-      states.push({
-        id: k,
-        lat: v[1], lon: v[2], heading: v[3], alt: v[4], speed: v[5],
-        squawk: v[6], radar: v[7], actype: v[8] || '', reg: v[9] || '',
-        time: v[10], origin: v[11] || '', dest: v[12] || '',
-        flight: v[13] || '', onGround: v[14], vspeed: v[15],
-        callsign: (v[16] || '').trim(), acSource: v[17] || ''
-      });
-    }
-    aircraftCache = states;
+  // OpenSky API (CORS-friendly, works from browser)
+  fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
+  .then(r => r.ok ? r.json() : Promise.reject('opensky-fail'))
+  .then(d => {
+    aircraftCache = (d.states || []).map(s => ({
+      id: s[0] || '', callsign: (s[1]||'').trim(), lat: s[6], lon: s[5],
+      alt: s[7] ? Math.round(s[7]*3.281) : null, speed: s[9] ? Math.round(s[9]*1.944) : null,
+      heading: s[10], origin: s[2]||'', dest: '', actype: '', reg: ''
+    }));
     renderAircraftFromCache();
-  }).catch(() => {
-    // Fallback to OpenSky
-    fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
-    .then(r => r.ok ? r.json() : Promise.reject('no'))
-    .then(d => {
-      aircraftCache = (d.states || []).map(s => ({
-        id: s[0], callsign: (s[1]||'').trim(), lat: s[6], lon: s[5],
-        alt: s[7] ? Math.round(s[7]*3.281) : null, speed: s[9] ? Math.round(s[9]*1.944) : null,
-        heading: s[10], origin: s[2]||'', dest: '', actype: '', reg: '',
-        squawk: '', flight: '', isFR24: false
-      }));
+    // Try FR24 via static cache as supplement
+    fetch(`${STATIC_BASE}/fr24-cache.json`).then(r=>r.ok?r.json():null).then(fr24=>{
+      if (!fr24 || !fr24.aircraft) return;
+      // Merge FR24 data: enrich OpenSky entries with type/route, add missing planes
+      const osMap = new Map(aircraftCache.map(a=>[a.callsign.toUpperCase(), a]));
+      fr24.aircraft.forEach(f => {
+        const cs = (f.callsign||'').toUpperCase();
+        if (osMap.has(cs)) {
+          const o = osMap.get(cs);
+          o.actype = f.actype || o.actype;
+          o.origin = f.origin || o.origin;
+          o.dest = f.dest || o.dest;
+          o.reg = f.reg || o.reg;
+          o.fr24id = f.id;
+        } else if (f.lat && f.lon) {
+          aircraftCache.push({...f, id: f.id||''});
+        }
+      });
       renderAircraftFromCache();
-    }).catch(() => console.log('Both FR24 and OpenSky unavailable'));
-  });
+    }).catch(()=>{});
+  }).catch(() => { console.log('OpenSky unavailable'); });
 }
 
 function loadShips() {
