@@ -1842,38 +1842,40 @@ function renderAircraftFromCache() {
   layers.aircraft.clearLayers();
   let count = 0, milCount = 0;
   aircraftCache.forEach(s => {
-    const callsign = (s[1] || '').trim();
-    const lon = s[5], lat = s[6], alt = s[7], speed = s[9], heading = s[10];
-    const origin = s[2] || '';
+    const callsign = s.callsign || '';
+    const lat = s.lat, lon = s.lon;
     if (!lat || !lon) return;
-    const isMil = MIL_CALLSIGN_PREFIXES.some(p => callsign.toUpperCase().startsWith(p));
+    const isMil = MIL_CALLSIGN_PREFIXES.some(p => callsign.toUpperCase().startsWith(p))
+      || MIL_TYPES.some(t => (s.actype || '').toUpperCase().includes(t));
     if (isMil) milCount++;
     if (aircraftMilOnly && !isMil) return;
     count++;
-    const altFt = alt ? Math.round(alt * 3.281) : '?';
-    const spdKn = speed ? Math.round(speed * 1.944) : '?';
-    const hdg = heading ? Math.round(heading) + '°' : '';
+    const altFt = s.alt ? (s.alt > 1000 ? s.alt : Math.round(s.alt * 3.281)) : '?';
+    const spdKn = s.speed ? (s.speed > 100 ? s.speed : Math.round(s.speed * 1.944)) : '?';
+    const hdg = s.heading ? Math.round(s.heading) + '°' : '';
     const milBadge = isMil ? ' 🎖 MIL' : '';
     const color = isMil ? '#ef4444' : '#22c55e';
-    const size = isMil ? 22 : 16;
-    const icao24 = s[0] || '';
-    const fr24Link = callsign ? `https://www.flightradar24.com/${callsign}` : '';
+    const size = isMil ? 22 : 14;
+    const route = (s.origin || s.dest) ? `<br>✈ ${s.origin || '?'} → ${s.dest || '?'}` : '';
+    const typeStr = s.actype ? `Type: ${s.actype}` : '';
+    const regStr = s.reg ? ` · Reg: ${s.reg}` : '';
+    const fr24Link = s.id ? `https://www.flightradar24.com/${s.id}` : (callsign ? `https://www.flightradar24.com/${callsign}` : '');
     const faLink = callsign ? `https://www.flightaware.com/live/flight/${callsign}` : '';
-    const adsLink = icao24 ? `https://globe.adsbexchange.com/?icao=${icao24}` : '';
+    const adsLink = `https://globe.adsbexchange.com/?lat=${lat}&lon=${lon}&zoom=9`;
     const links = [
       fr24Link ? `<a href="${fr24Link}" target="_blank" style="color:#06b6d4">FR24</a>` : '',
       faLink ? `<a href="${faLink}" target="_blank" style="color:#22c55e">FlightAware</a>` : '',
-      adsLink ? `<a href="${adsLink}" target="_blank" style="color:#f59e0b">ADS-B Exch</a>` : '',
+      `<a href="${adsLink}" target="_blank" style="color:#f59e0b">ADS-B</a>`,
     ].filter(Boolean).join(' · ');
     const popup = mkPopup(
-      `✈️ ${callsign || 'Unknown'}${milBadge}`,
-      `🌍 ${origin}`,
-      `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}<br>${links}`,
+      `✈️ ${callsign || s.flight || 'Unknown'}${milBadge}`,
+      `${typeStr}${regStr}`,
+      `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}${route}<br>${links}`,
       color
     );
     const icon = L.divIcon({
       className: '',
-      html: `<div style="font-size:${size}px;transform:rotate(${heading||0}deg);filter:drop-shadow(0 0 ${isMil?8:4}px ${color});opacity:${isMil?1:0.7}">✈️</div>`,
+      html: `<div style="font-size:${size}px;transform:rotate(${s.heading||0}deg);filter:drop-shadow(0 0 ${isMil?8:4}px ${color});opacity:${isMil?1:0.7}">✈️</div>`,
       iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
     });
     L.marker([lat, lon], { icon }).bindPopup(popup).addTo(layers.aircraft);
@@ -1882,12 +1884,38 @@ function renderAircraftFromCache() {
 }
 
 function loadAircraft() {
-  fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
+  // FlightRadar24 public feed — 2-3x more aircraft than OpenSky, includes type + route
+  fetch('https://data-cloud.flightradar24.com/zones/fcgi/feed.js?bounds=42,12,24,62&faa=1&satellite=1&mlat=1&flarm=1&adsb=1&gnd=0&air=1&vehicles=0&estimated=1&maxage=14400&gliders=0&stats=0')
   .then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
-    aircraftCache = data.states || [];
+    const states = [];
+    for (const [k, v] of Object.entries(data)) {
+      if (!Array.isArray(v) || v.length < 13) continue;
+      states.push({
+        id: k,
+        lat: v[1], lon: v[2], heading: v[3], alt: v[4], speed: v[5],
+        squawk: v[6], radar: v[7], actype: v[8] || '', reg: v[9] || '',
+        time: v[10], origin: v[11] || '', dest: v[12] || '',
+        flight: v[13] || '', onGround: v[14], vspeed: v[15],
+        callsign: (v[16] || '').trim(), acSource: v[17] || ''
+      });
+    }
+    aircraftCache = states;
     renderAircraftFromCache();
-  }).catch(() => { console.log('OpenSky API unavailable'); });
+  }).catch(() => {
+    // Fallback to OpenSky
+    fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
+    .then(r => r.ok ? r.json() : Promise.reject('no'))
+    .then(d => {
+      aircraftCache = (d.states || []).map(s => ({
+        id: s[0], callsign: (s[1]||'').trim(), lat: s[6], lon: s[5],
+        alt: s[7] ? Math.round(s[7]*3.281) : null, speed: s[9] ? Math.round(s[9]*1.944) : null,
+        heading: s[10], origin: s[2]||'', dest: '', actype: '', reg: '',
+        squawk: '', flight: '', isFR24: false
+      }));
+      renderAircraftFromCache();
+    }).catch(() => console.log('Both FR24 and OpenSky unavailable'));
+  });
 }
 
 function loadShips() {
