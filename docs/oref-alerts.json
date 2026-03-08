@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-03-08T00:15:00Z",
+  "timestamp": "2026-03-08T00:20:00Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_title": "האירוע הסתיים"
+  "last_siren_title": "בדקות הקרובות צפויות להתקבל התרעות באזורך"
 }
