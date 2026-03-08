@@ -1105,6 +1105,28 @@ let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
 
+const COUNTRY_FLAGS = {iran:'🇮🇷',israel:'🇮🇱',kuwait:'🇰🇼',qatar:'🇶🇦',uae:'🇦🇪',saudi:'🇸🇦','saudi arabia':'🇸🇦',iraq:'🇮🇶',syria:'🇸🇾',lebanon:'🇱🇧',yemen:'🇾🇪',jordan:'🇯🇴',bahrain:'🇧🇭',oman:'🇴🇲',turkey:'🇹🇷',egypt:'🇪🇬',pakistan:'🇵🇰',usa:'🇺🇸',russia:'🇷🇺',tehran:'🇮🇷',baghdad:'🇮🇶',beirut:'🇱🇧',damascus:'🇸🇾',riyadh:'🇸🇦',doha:'🇶🇦',dubai:'🇦🇪','abu dhabi':'🇦🇪',gaza:'🇵🇸',haifa:'🇮🇱','tel aviv':'🇮🇱'};
+function smartLoc(e) {
+  const loc = e.loc || '';
+  const txt = (e.text || '').toLowerCase();
+  // If loc is just the side name (e.g. "Iran") but text mentions a different country, extract it
+  const locLower = loc.toLowerCase().trim();
+  const isSideAsLoc = locLower === (e.side || '') || locLower === 'iran' || locLower === 'israel' || locLower === 'us';
+  if (isSideAsLoc || !loc) {
+    // Try to find a more specific country/city from the text
+    for (const [key, flag] of Object.entries(COUNTRY_FLAGS)) {
+      if (txt.includes(key) && key !== (e.side || '').toLowerCase()) {
+        return `${flag} ${key.charAt(0).toUpperCase() + key.slice(1)}`;
+      }
+    }
+  }
+  // Add flag to existing loc if we can match
+  for (const [key, flag] of Object.entries(COUNTRY_FLAGS)) {
+    if (locLower.includes(key)) return `${flag} ${loc}`;
+  }
+  return loc || (SIDE_LABELS[e.side] || '');
+}
+
 function toggleFeed() {
   const panel = document.getElementById('feed-panel');
   const isOpen = panel.classList.toggle('open');
@@ -1283,7 +1305,7 @@ function renderFeed() {
       </div>
       <div class="feed-item-loc">
         <span class="feed-item-side" style="background:${sideColor}"></span>
-        ${e.loc || ''}
+        ${smartLoc(e)}
       </div>
       <div class="feed-item-text">${text}</div>
       ${needsTooltip ? `<div class="feed-tooltip">${fullText}</div>` : ''}
