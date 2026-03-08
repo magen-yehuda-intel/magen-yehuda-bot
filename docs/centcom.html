@@ -115,6 +115,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-iran-irgc:hover { box-shadow:0 0 20px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.2); }
 .marker-iran-energy { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
 .marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
+.marker-struck { filter:drop-shadow(0 0 12px rgba(239,68,68,0.9)); border:2px solid #ef4444; background:rgba(239,68,68,0.25); animation:struck-pulse 1.2s ease-in-out infinite; }
+@keyframes struck-pulse { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.6)} 50%{box-shadow:0 0 24px rgba(239,68,68,0.9), 0 0 48px rgba(239,68,68,0.3)} }
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
 .marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
@@ -1547,8 +1549,9 @@ function renderAllLayers() {
   // ─── IRAN ENERGY ───
   V2_DATA.IRAN_ENERGY.forEach(s => {
     const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : s.type.includes('pipeline') ? '🔗' : '🛢';
-    const popup = mkPopup(`${emoji} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#f97316');
-    mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
+    const struckBadge = s.struck ? ' 💥 STRUCK' : '';
+    const popup = mkPopup(`${emoji} ${s.name}${struckBadge}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, s.struck ? '#ef4444' : '#f97316');
+    mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-iran-energy', 22, popup).addTo(layers.energy);
   });
 
   // ─── GULF & REGIONAL OIL/GAS ───
