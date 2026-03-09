@@ -961,8 +961,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="feed-updated" id="feed-updated"><span class="refresh-spin" id="feed-spinner">↻</span> <span id="feed-age">connecting...</span></div>
     <div class="feed-time-bar" id="feed-time-bar">
       <span class="feed-time-chip" data-hours="0.25">15M</span>
-      <span class="feed-time-chip active" data-hours="1">1H</span>
-      <span class="feed-time-chip" data-hours="6">6H</span>
+      <span class="feed-time-chip" data-hours="1">1H</span>
+      <span class="feed-time-chip active" data-hours="6">6H</span>
       <span class="feed-time-chip" data-hours="24">24H</span>
       <span class="feed-time-chip" data-hours="48">48H</span>
       <span class="feed-time-chip" data-hours="0">ALL</span>
@@ -1149,7 +1149,7 @@ function toggleLegend() {
 // LIVE FEED
 // ═══════════════════════════════════════════════════════════
 let feedEvents = [];
-let feedTimeHours = 1;
+let feedTimeHours = 6;
 let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
@@ -1362,7 +1362,8 @@ function localDate(ts) {
 
 const TG_CHANNELS = ['warmonitors','intelslava','idfofficial','iranintl_en','military_fr',
   'AbuAliEnglishChannel','RWApodcast','SputnikInt','TassAgency_en','IsraelRadar_en',
-  'CIG_telegram','sentdefender','endgameww3'];
+  'CIG_telegram','sentdefender','endgameww3','beholdisraelchannel','beholdisrael',
+  'idfonline','IDFarabic','danielamramnoarmy','haaborim','channel8200','zaborona'];
 const TWITTER_ACCTS = ['IntelDoge','sentdefender','alaborjiss','MiddleEastOSINT',
   'IranIntl_En','IsraelRadar_en','ELINTNews','Faytuks','aurora_intel','manikiansen',
   'claborjiss','Maborjiss','Conflicts'];
