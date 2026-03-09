@@ -1057,9 +1057,15 @@ function sirenClusterIcon(cluster) {
 }
 
 function fireClusterIcon(cluster) {
-  const count = cluster.getChildCount();
-  const size = count < 10 ? 32 : count < 50 ? 40 : 48;
-  return L.divIcon({ html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:rgba(255,136,0,0.25);border:2px solid #ff8800;border-radius:50%;color:#ff8800;font-weight:bold;font-size:13px;text-shadow:0 0 4px #000">🔥${count}</div>`, className: '', iconSize: L.point(size,size) });
+  const children = cluster.getAllChildMarkers();
+  const count = children.length;
+  // Cluster color = hottest fire in cluster
+  let minAge = Infinity;
+  children.forEach(m => { const p = m.getPopup(); if (p) { const match = p.getContent().match(/(\d+\.?\d*)([mh]) ago/); if (match) minAge = Math.min(minAge, match[2]==='h' ? match[1]*60 : +match[1]); }});
+  const color = minAge < 60 ? '#ff2200' : minAge < 180 ? '#ff8800' : '#cc8800';
+  const bg = minAge < 60 ? 'rgba(255,34,0,0.35)' : minAge < 180 ? 'rgba(255,136,0,0.25)' : 'rgba(204,136,0,0.15)';
+  const size = count < 10 ? 34 : count < 50 ? 42 : 50;
+  return L.divIcon({ html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:${bg};border:2px solid ${color};border-radius:50%;color:${color};font-weight:bold;font-size:13px;text-shadow:0 0 4px #000">🔥${count}</div>`, className: '', iconSize: L.point(size,size) });
 }
 const layers = {
   borders: L.layerGroup(),
@@ -1789,16 +1795,31 @@ function loadFIRMS() {
     let count = 0;
     fires.forEach(f => {
       if (!f.lat || !f.lon) return;
-      count++;
       const ts = f.timestamp || f.ts || 0;
-      const age = ts ? Math.round((now - ts) / 60) : 0;
-      const timeStr = ts ? `${age < 60 ? age + 'm' : Math.round(age/60) + 'h'} ago · ${localTime(ts)}` : 'Unknown';
+      const ageMin = ts ? (now - ts) / 60 : 9999;
+      if (ageMin > 360) return; // filter: max 6h
+      count++;
+      // Gradient: <1h = bright red, 1-3h = orange, 3-6h = dim amber
+      let color, glow, opacity, cls, label;
+      if (ageMin < 60) {
+        color = '#ff2200'; glow = 'rgba(255,34,0,0.9)'; opacity = 1.0; cls = 'marker-fire-hot'; label = 'ACTIVE';
+      } else if (ageMin < 180) {
+        color = '#ff8800'; glow = 'rgba(255,136,0,0.7)'; opacity = 0.75; cls = 'marker-fire-warm'; label = 'RECENT';
+      } else {
+        color = '#cc8800'; glow = 'rgba(204,136,0,0.4)'; opacity = 0.5; cls = 'marker-fire-cool'; label = 'FADING';
+      }
+      const ageStr = ageMin < 60 ? Math.round(ageMin) + 'm' : (ageMin/60).toFixed(1) + 'h';
+      const timeStr = ts ? `${ageStr} ago · ${localTime(ts)}` : 'Unknown';
       const conf = f.confidence || '?';
       const confLabel = conf === 'h' ? 'HIGH' : conf === 'n' ? 'NOMINAL' : conf === 'l' ? 'LOW' : conf;
       const frp = f.frp || f.bright_ti4 || '';
       const frpStr = frp ? `<br>🔥 Power: ${frp} MW` : '';
-      mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 24,
-        mkPopup('🔥 NASA FIRMS Detection', '', `🕐 ${timeStr}<br>📊 Confidence: ${confLabel}${frpStr}<br>📍 ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°`, '#ff8800')
+      const icon = L.divIcon({
+        html: `<div style="font-size:${ageMin<60?20:ageMin<180?16:14}px;opacity:${opacity};filter:drop-shadow(0 0 ${ageMin<60?10:6}px ${glow})">🔥</div>`,
+        className: '', iconSize: [24,24], iconAnchor: [12,12]
+      });
+      L.marker([f.lat, f.lon], {icon}).bindPopup(
+        mkPopup(`🔥 ${label}`, '', `🕐 ${timeStr}<br>📊 Confidence: ${confLabel}${frpStr}<br>📍 ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°`, color)
       ).addTo(layers.fires);
     });
     document.getElementById('cnt-fires').textContent = count;
