@@ -807,7 +807,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
     <span>⭐</span><div class="tb-tooltip">Military Bases</div>
   </div>
-  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft')">
+  <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="cycleAircraft()">
     <span>✈️</span><div class="tb-tooltip">Live Aircraft (ADS-B)</div>
   </div>
   <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
@@ -842,6 +842,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   </div>
   <div class="tb-btn active" data-layer="strikes" data-color="red" onclick="toggleLayer('strikes')">
     <span>💥</span><div class="tb-tooltip">Recent Strikes (Feb 28–Mar 8)</div>
+  </div>
+  <div class="tb-btn active" data-layer="seismic" data-color="purple" onclick="toggleLayer('seismic')">
+    <span>🔴</span><div class="tb-tooltip">Earthquakes (USGS)</div>
+  </div>
+  <div class="tb-btn active" data-layer="correlations" data-color="red" onclick="toggleLayer('correlations')">
+    <span>⚡</span><div class="tb-tooltip">Strike Correlations (Fire+Quake)</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
@@ -1127,6 +1133,8 @@ function toggleLayer(name) {
   updateMobileButtons();
   updateLayerCount();
   if (name === 'aircraft' && activeState.aircraft) loadAircraft();
+  if (name === 'osint' && activeState.osint) loadOSINT();
+  if (name === 'seismic' && activeState.seismic) loadSeismic();
 }
 
 function isolateIranLayer(name) {
@@ -1145,6 +1153,30 @@ function toggleLegend() {
   el.classList.toggle('visible');
   const btn = document.querySelector('.tb-btn[data-layer="legend"]');
   if (btn) btn.classList.toggle('active', el.classList.contains('visible'));
+}
+
+// Aircraft filter mode: 0=off, 1=all, 2=military, 3=civilian
+let aircraftMode = 0;
+const AIRCRAFT_MODES = ['OFF', 'ALL', 'MIL', 'CIV'];
+const AIRCRAFT_COLORS = ['', '#00ffc8', '#ff4444', '#00ffc8'];
+function cycleAircraft() {
+  aircraftMode = (aircraftMode + 1) % 4;
+  const btn = document.querySelector('.tb-btn[data-layer="aircraft"]');
+  const tooltip = btn ? btn.querySelector('.tb-tooltip') : null;
+  if (aircraftMode === 0) {
+    activeState.aircraft = false;
+    map.removeLayer(layers.aircraft);
+    if (btn) btn.classList.remove('active');
+    if (tooltip) tooltip.textContent = 'Aircraft: OFF';
+  } else {
+    activeState.aircraft = true;
+    layers.aircraft.addTo(map);
+    if (btn) btn.classList.add('active');
+    if (tooltip) tooltip.textContent = `Aircraft: ${AIRCRAFT_MODES[aircraftMode]}`;
+    loadAircraft();
+  }
+  updateMobileButtons();
+  updateLayerCount();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2168,6 +2200,9 @@ function loadAircraft() {
       const onGround = s[8];
       if (onGround) return; // skip ground aircraft
       const isMil = MIL_CALLSIGNS.test(callsign) || MIL_TYPES.test(callsign);
+      // Filter by aircraft mode: 2=military only, 3=civilian only
+      if (aircraftMode === 2 && !isMil) return;
+      if (aircraftMode === 3 && isMil) return;
       count++;
       const icon = L.divIcon({
         html: aircraftSvg(heading, isMil),
