@@ -1130,7 +1130,7 @@ const activeState = {
 };
 
 // Add default-on layers
-['borders', 'military', 'fires', 'osint', 'sirens', 'strikes'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'fires', 'osint', 'sirens', 'strikes', 'seismic', 'correlations', 'ships', 'satellites', 'gpsjam'].forEach(k => { if (layers[k] && activeState[k]) layers[k].addTo(map); });
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
