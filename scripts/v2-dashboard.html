@@ -2379,28 +2379,40 @@ function toggleOrefHistory() {
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
   panel.style.display = 'block';
   const el = document.getElementById('oref-history-content');
-  el.innerHTML = '<span style="color:#888">Loading siren data...</span>';
-  // Fetch from oref-alerts table via intel-feed (siren type)
-  fetch(`${API_URL}/api/oref`).then(r => r.json()).then(data => {
-    const alerts = data.alerts || [];
-    if (!alerts.length) {
-      // Show last-known from the existing oref-last-siren text
-      const lastText = document.getElementById('oref-last-siren')?.textContent || '';
-      el.innerHTML = `<div style="color:#888;margin-bottom:6px">No active siren alerts.</div>${lastText ? '<div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:6px;color:#aaa">'+lastText+'</div>' : '<div style="color:#666">Siren history will appear here during active alerts.</div>'}`;
-      return;
-    }
-    el.innerHTML = alerts.slice(0,3).map((a,i) => {
-      const cities = (a.cities || a.data || 'Unknown location').substring(0,120);
-      const time = a.time || a.timestamp || '';
-      const threat = a.cat || a.threat || 'Unknown';
-      return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;${i===0?'color:#ff4444;':''}">`+
-        `<div style="font-weight:700;font-size:11px">${i===0?'🔴':'⚪'} ${threat}</div>`+
-        `<div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div>`+
-        `<div style="font-size:9px;color:#666">${time}</div></div>`;
+  
+  // Build status from current state
+  const connEl = document.getElementById('oref-conn');
+  const connStatus = connEl ? connEl.textContent : '';
+  const isLive = connStatus.includes('Live');
+  const lastSiren = lastSirenCache || document.getElementById('oref-last-siren')?.textContent || '';
+  const updatedEl = document.getElementById('oref-updated');
+  const updated = updatedEl ? updatedEl.textContent : '';
+  
+  let html = '';
+  // Connection status
+  html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">`;
+  html += `<span style="color:${isLive ? 'var(--green)' : '#ef4444'}">●</span>`;
+  html += `<span style="color:${isLive ? 'var(--green)' : '#ef4444'};font-weight:600">${isLive ? 'Connected to Pikud HaOref' : 'Connection issue'}</span>`;
+  html += `</div>`;
+  if (updated) html += `<div style="color:#888;font-size:9px;margin-bottom:8px">${updated}</div>`;
+  
+  // Current alert state
+  if (orefAlerts.length > 0) {
+    html += orefAlerts.slice(0,5).map((a,i) => {
+      const cities = (a.cities || a.data || 'Unknown').substring(0,120);
+      const threat = SIREN_TITLES[a.cat] || a.cat || 'Alert';
+      return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;color:${i===0?'#ff4444':'#ccc'}">`+
+        `<div style="font-weight:700">🔴 ${threat}</div>`+
+        `<div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div></div>`;
     }).join('');
-  }).catch(() => {
-    el.innerHTML = '<span style="color:#ff4444">Failed to load siren data</span>';
-  });
+  } else {
+    html += `<div style="color:var(--green);font-weight:600;margin-bottom:6px">✅ All Clear — No active alerts</div>`;
+    if (lastSiren) {
+      html += `<div style="color:#aaa;font-size:10px;margin-top:4px">${lastSiren}</div>`;
+    }
+    html += `<div style="color:#666;font-size:9px;margin-top:8px">Polling every ${API_URL ? '10' : '30'}s · Source: Pikud HaOref API</div>`;
+  }
+  el.innerHTML = html;
 }
 
 function loadGPSJam() {
@@ -2714,25 +2726,28 @@ let orefAlerts = [];
 function pollOref() {
   const url = dataUrl('oref') + (API_URL ? '' : '?t=' + Date.now());
   fetch(url, { cache: 'no-store' })
-  .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(data => {
-    const alerts = data.alerts || [];
-    orefAlerts = alerts;
-    updateOrefBanner(alerts, data.timestamp, data.note);
+    try {
+      const alerts = data.alerts || [];
+      orefAlerts = alerts;
+      updateOrefBanner(alerts, data.timestamp, data.note);
+    } catch(e) { console.error('Oref banner update error:', e); }
     const connEl = document.getElementById('oref-conn');
     if (connEl) { connEl.textContent = '● Live'; connEl.style.color = 'var(--green)'; }
   }).catch(err => {
-    console.warn('Oref poll failed:', err, '- retrying in 5s');
+    console.warn('Oref poll failed:', err);
     const connEl = document.getElementById('oref-conn');
+    if (connEl && connEl.textContent === '● Live') return; // Don't downgrade if last poll was OK
     if (connEl) { connEl.textContent = '● Reconnecting...'; connEl.style.color = '#f59e0b'; }
-    // Retry once after 5s
     setTimeout(() => {
       fetch(url, { cache: 'no-store' })
-      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(data => {
-        const alerts = data.alerts || [];
-        orefAlerts = alerts;
-        updateOrefBanner(alerts, data.timestamp, data.note);
+        try {
+          orefAlerts = data.alerts || [];
+          updateOrefBanner(orefAlerts, data.timestamp, data.note);
+        } catch(e) { console.error('Oref retry banner error:', e); }
         const c = document.getElementById('oref-conn');
         if (c) { c.textContent = '● Live'; c.style.color = 'var(--green)'; }
       }).catch(() => {
