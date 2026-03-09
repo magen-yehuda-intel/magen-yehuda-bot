@@ -1797,7 +1797,7 @@ function loadFIRMS() {
       const confLabel = conf === 'h' ? 'HIGH' : conf === 'n' ? 'NOMINAL' : conf === 'l' ? 'LOW' : conf;
       const frp = f.frp || f.bright_ti4 || '';
       const frpStr = frp ? `<br>🔥 Power: ${frp} MW` : '';
-      mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
+      mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 24,
         mkPopup('🔥 NASA FIRMS Detection', '', `🕐 ${timeStr}<br>📊 Confidence: ${confLabel}${frpStr}<br>📍 ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°`, '#ff8800')
       ).addTo(layers.fires);
     });
