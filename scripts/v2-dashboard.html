@@ -1239,6 +1239,8 @@ function toggleLegend() {
 // Aircraft filter mode: 0=off, 1=all, 2=military, 3=civilian
 let aircraftMode = 0;
 let _activeTrail = null; // Aircraft trail polyline
+const MIL_CALLSIGNS = /^(RCH|FORTE|HOMER|JAKE|DOOM|SAM|AF[12]|NAVY|TOPCAT|IAF|BOLT|VIPER|TREND|NCHO|EVAC|IRON|REAP|HAWK|DUKE|TITAN|COBRA|GHOST|RAZOR|BLADE|SNTRY|AWACS|MAGIC|HAVOC|DECOY)/i;
+const MIL_TYPES = /^(C-17|C-5|C-130|KC-135|KC-46|KC-10|E-3|E-8|RC-135|RQ-4|MQ-9|P-8|F-15|F-16|F-35|F-22|B-52|B-1|B-2|A-10|V-22|C-40|C-32|C-37|KC-767|G550|E-2|E-6|EP-3|MC-130)/i;
 const AIRCRAFT_MODES = ['OFF', 'ALL', 'MIL', 'CIV'];
 
 // Fire filter mode: 0=off, 1=<1h ACTIVE, 2=1-3h RECENT, 3=3-6h FADING, 4=ALL
@@ -2376,9 +2378,7 @@ document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Stati
 document.getElementById('oref-interval').textContent = API_URL ? '~10s' : '~2min';
 
 // ── Live Aircraft (OpenSky) ──
-const MIL_CALLSIGNS = /^(RCH|FORTE|HOMER|JAKE|DOOM|SAM|AF[12]|NAVY|TOPCAT|IAF|BOLT|VIPER|TREND|NCHO|EVAC|IRON|REAP|HAWK|DUKE|TITAN|COBRA|GHOST|RAZOR|BLADE|SNTRY|AWACS|MAGIC|HAVOC|DECOY)/i;
-const MIL_TYPES = /^(C-17|C-5|C-130|KC-135|KC-46|KC-10|E-3|E-8|RC-135|RQ-4|MQ-9|P-8|F-15|F-16|F-35|F-22|B-52|B-1|B-2|A-10|V-22|C-40|C-32|C-37|KC-767|G550|E-2|E-6|EP-3|MC-130)/i;
-// _activeTrail declared early (moved from here to top of script to avoid TDZ errors)
+// MIL_CALLSIGNS, MIL_TYPES, _activeTrail moved to top of script (avoid TDZ)
 
 function strikeJetSvg() {
   // F-15E Strike Eagle silhouette — red with glow
