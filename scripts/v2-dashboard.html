@@ -2741,7 +2741,7 @@ function pollOref() {
   .then(data => {
     orefFailCount = 0;
     const connEl = document.getElementById('oref-conn');
-    if (connEl) { connEl.textContent = '● Live'; connEl.style.color = 'var(--green)'; }
+    if (connEl) { connEl.textContent = '● Live'; connEl.style.color = '#22c55e'; }
     try {
       const alerts = data.alerts || [];
       orefAlerts = alerts;
