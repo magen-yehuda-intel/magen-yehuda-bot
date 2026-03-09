@@ -74,9 +74,9 @@ summary = " · ".join(summary_parts)
 msg = []
 
 # ═══ HEADER ═══
-msg.append(f"{'━' * 28}")
+msg.append("")
 msg.append(f"{level_icon} <b>{html.escape(channel_name.upper())} — SITREP</b>")
-msg.append(f"{'━' * 28}")
+msg.append("")
 msg.append(f"📅 {now}")
 msg.append(f"{level_bar} <b>{level_label}</b>")
 msg.append(f"<i>{html.escape(summary)}</i>")
@@ -164,7 +164,7 @@ if commodities:
     msg.append("")
 
 # ═══ FOOTER ═══
-msg.append(f"{'━' * 28}")
+msg.append("")
 if channel_handle:
     msg.append(f"📡 <b>{html.escape(channel_handle)}</b> | {html.escape(channel_name)}")
 else:

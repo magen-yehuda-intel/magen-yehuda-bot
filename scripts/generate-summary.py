@@ -236,7 +236,7 @@ def generate_hebrew(events, stats, now_str):
         "",
         f"{te} <b>רמת איום: {threat_he}</b>",
         "",
-        "━━━━━━━━━━━━━━━━━━━━━━",
+        "",
     ]
 
     # Sirens
@@ -292,7 +292,7 @@ def generate_hebrew(events, stats, now_str):
             lines.append(f"  • {tc[:120]}")
 
     lines.append("")
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━")
+    lines.append("")
 
     # Analyst assessment — confident Israeli style
     lines.append("")
@@ -342,7 +342,7 @@ def generate_english(events, stats, now_str):
         "",
         f"{te} <b>Threat Level: {stats['threat']}</b>",
         "",
-        "━━━━━━━━━━━━━━━━━━━━━━",
+        "",
     ]
 
     # Sirens
@@ -398,7 +398,7 @@ def generate_english(events, stats, now_str):
             lines.append(f"  • {tc[:120]}")
 
     lines.append("")
-    lines.append("━━━━━━━━━━━━━━━━━━━━━━")
+    lines.append("")
 
     # Analyst assessment
     lines.append("")

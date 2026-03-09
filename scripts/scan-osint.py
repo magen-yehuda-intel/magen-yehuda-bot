@@ -70,9 +70,28 @@ def fetch_via_proxy(url, proxy_url, timeout=15):
     except Exception:
         return None
 
+RSS_EXCLUDE_PHRASES = [
+    'ukraine', 'ukrainian', 'kiev', 'kyiv', 'zelensky', 'zelenskyy',
+    'donbas', 'donetsk', 'luhansk', 'kherson', 'zaporizhzhia',
+    'crimea', 'crimean', 'belgorod', 'kursk region',
+    'nato expansion', 'north korea', 'pyongyang',
+]
+
 def matches_keywords(text, keywords):
     text_lower = text.lower()
     return any(kw in text_lower for kw in keywords)
+
+
+def is_irrelevant_rss(title):
+    """Filter out Russia-Ukraine and other non-ME noise from RSS feeds."""
+    t = title.lower()
+    # Must NOT match any exclude phrase (unless it also mentions Iran/Israel/ME)
+    me_anchors = ['iran', 'israel', 'tehran', 'idf', 'irgc', 'hezbollah',
+                  'houthi', 'gaza', 'beirut', 'syria', 'iraq', 'hormuz',
+                  'gulf', 'centcom', 'middle east']
+    has_exclude = any(phrase in t for phrase in RSS_EXCLUDE_PHRASES)
+    has_me = any(anchor in t for anchor in me_anchors)
+    return has_exclude and not has_me
 
 
 # ── Breaking news detection ──
@@ -452,6 +471,9 @@ def scan_rss(config, state_dir):
                 if (link or title) in prev_links:
                     continue
                 
+                if is_irrelevant_rss(title):
+                    continue
+                
                 if not matches_keywords(title, keywords):
                     continue
                 
@@ -467,7 +489,9 @@ def scan_rss(config, state_dir):
                     'breaking_topic': breaking_topic,
                 })
             
-            seen[name] = current_links[:30]
+            # Accumulate seen IDs (don't overwrite — merge with previous)
+            merged = list(prev_links | set(current_links))
+            seen[name] = merged[-200:]  # cap at 200 per source
             time.sleep(0.2)
             
         except Exception:

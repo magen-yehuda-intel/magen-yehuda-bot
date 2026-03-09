@@ -221,7 +221,7 @@ def format_telegram(correlations):
     
     lines = [
         "🎯🎯🎯 <b>STRIKE CORRELATION DETECTED</b> 🎯🎯🎯",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
         f"<i>Fire + Seismic events correlated — possible military strike</i>",
         "",
     ]

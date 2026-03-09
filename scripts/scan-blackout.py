@@ -31,9 +31,17 @@ IRAN_ASNS = {
 
 # Iranian endpoints to probe (government/news sites)
 IRAN_PROBE_URLS = [
-    "https://www.irna.ir",          # IRNA state news
-    "https://president.ir",         # Presidency
-    "https://en.mehrnews.com",      # Mehr News
+    "https://www.irna.ir",          # IRNA state news (govt)
+    "https://president.ir",         # Presidency (govt)
+    "https://en.mehrnews.com",      # Mehr News (semi-govt)
+]
+
+# Civilian/commercial sites — these go down FIRST during throttling
+IRAN_CIVILIAN_PROBES = [
+    "https://www.digikala.com",     # Iran's largest e-commerce (like Amazon)
+    "https://www.aparat.com",       # Iran's YouTube equivalent
+    "https://www.namnak.com",       # Popular lifestyle portal
+    "https://www.varzesh3.com",     # Sports news (very high traffic)
 ]
 
 
@@ -135,7 +143,35 @@ def probe_iranian_endpoints():
     }
 
 
-def assess_blackout(ioda, cloudflare, probes, state_dir):
+def probe_civilian_endpoints():
+    """Probe Iranian civilian/commercial sites — these drop BEFORE govt sites during throttling."""
+    results = []
+    for url in IRAN_CIVILIAN_PROBES:
+        start = time.time()
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                code = resp.status
+                latency = round((time.time() - start) * 1000)
+                results.append({"url": url, "status": code, "latency_ms": latency, "reachable": True})
+        except urllib.error.HTTPError as e:
+            latency = round((time.time() - start) * 1000)
+            results.append({"url": url, "status": e.code, "latency_ms": latency, "reachable": True})
+        except Exception as e:
+            latency = round((time.time() - start) * 1000)
+            results.append({"url": url, "status": 0, "latency_ms": latency, "reachable": False, "error": str(e)[:100]})
+
+    reachable = sum(1 for r in results if r["reachable"])
+    return {
+        "source": "civilian_probe",
+        "status": "ok",
+        "reachable": reachable,
+        "total": len(results),
+        "probes": results,
+    }
+
+
+def assess_blackout(ioda, cloudflare, probes, state_dir, civilian_probes=None):
     """Assess overall internet status and detect blackouts."""
     score = 0  # 0 = normal, higher = more likely blackout
     signals = []
@@ -157,15 +193,39 @@ def assess_blackout(ioda, cloudflare, probes, state_dir):
                 signals.append(f"IODA {ds}: {drop}% drop")
             ioda_details.append({"source": ds, "drop_pct": round(drop, 1)})
     
-    # Probe results
+    # Probe results (government sites)
     if probes.get("total", 0) > 0:
         unreachable_pct = ((probes["total"] - probes["reachable"]) / probes["total"]) * 100
         if unreachable_pct >= 100:
             score += 30
-            signals.append(f"All {probes['total']} Iranian endpoints unreachable")
+            signals.append(f"All {probes['total']} Iranian govt endpoints unreachable")
         elif unreachable_pct >= 50:
             score += 15
-            signals.append(f"{probes['total'] - probes['reachable']}/{probes['total']} Iranian endpoints down")
+            signals.append(f"{probes['total'] - probes['reachable']}/{probes['total']} Iranian govt endpoints down")
+    
+    # Civilian probe results — selective throttling detection
+    # Iran blocks civilian internet while keeping govt sites up
+    if civilian_probes and civilian_probes.get("total", 0) > 0:
+        civ_total = civilian_probes["total"]
+        civ_down = civ_total - civilian_probes["reachable"]
+        civ_pct = (civ_down / civ_total) * 100
+        if civ_pct >= 75:
+            score += 25
+            signals.append(f"{civ_down}/{civ_total} civilian sites down (selective throttling)")
+        elif civ_pct >= 50:
+            score += 15
+            signals.append(f"{civ_down}/{civ_total} civilian sites down")
+        elif civ_pct >= 25:
+            score += 8
+            signals.append(f"{civ_down}/{civ_total} civilian sites degraded")
+    
+    # Cross-check: govt up but civilian down = selective throttling (bonus score)
+    if (probes.get("reachable", 0) == probes.get("total", 0) and
+        civilian_probes and civilian_probes.get("total", 0) > 0):
+        civ_down = civilian_probes["total"] - civilian_probes["reachable"]
+        if civ_down >= 2:
+            score += 10
+            signals.append("Selective throttling: govt sites up, civilian down")
     
     # Classify
     if score >= 50:
@@ -255,10 +315,13 @@ def main():
     print(f"  Cloudflare: {cloudflare.get('status', '?')}", file=sys.stderr)
     
     probes = probe_iranian_endpoints()
-    print(f"  Probes: {probes['reachable']}/{probes['total']} reachable", file=sys.stderr)
+    print(f"  Govt probes: {probes['reachable']}/{probes['total']} reachable", file=sys.stderr)
+    
+    civilian = probe_civilian_endpoints()
+    print(f"  Civilian probes: {civilian['reachable']}/{civilian['total']} reachable", file=sys.stderr)
     
     # Assess
-    assessment = assess_blackout(ioda, cloudflare, probes, state_dir)
+    assessment = assess_blackout(ioda, cloudflare, probes, state_dir, civilian_probes=civilian)
     print(f"  Assessment: {assessment['emoji']} {assessment['level']} (score: {assessment['score']})", file=sys.stderr)
     
     result = {
@@ -267,6 +330,7 @@ def main():
         "ioda": ioda,
         "cloudflare": cloudflare,
         "probes": probes,
+        "civilian_probes": civilian,
         "seed_mode": seed_mode,
     }
     

@@ -59,7 +59,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   backdrop-filter: blur(8px);
   border-right: 1px solid var(--panel-border);
   display:flex; flex-direction:column; align-items:center;
-  padding:8px 0; gap:4px; overflow:visible;
+  padding:8px 0; gap:4px; overflow-y:auto;
 }
 .tb-btn {
   width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(255,255,255,0.06);
@@ -83,7 +83,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   padding:4px 10px; border-radius:4px; font-size:11px; white-space:nowrap;
   pointer-events:none; opacity:0; transition:opacity 0.15s;
   font-family:var(--font-data); color:var(--text-dim);
-  backdrop-filter:blur(8px); z-index:9999;
+  backdrop-filter:blur(8px);
 }
 .tb-btn:hover .tb-tooltip { opacity:1; }
 
@@ -115,11 +115,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-iran-irgc:hover { box-shadow:0 0 20px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.2); }
 .marker-iran-energy { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
 .marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
-.marker-struck { filter:drop-shadow(0 0 12px rgba(239,68,68,0.9)); border:2px solid #ef4444; background:rgba(239,68,68,0.25); animation:struck-pulse 1.2s ease-in-out infinite; }
-@keyframes struck-pulse { 0%,100%{box-shadow:0 0 8px rgba(239,68,68,0.6)} 50%{box-shadow:0 0 24px rgba(239,68,68,0.9), 0 0 48px rgba(239,68,68,0.3)} }
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
 .marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
+.marker-osint-strike { filter:drop-shadow(0 0 14px rgba(255,0,0,0.9)); border-color:#ff0000; animation:strike-blink 1s ease-in-out infinite; z-index:9000!important; }
+@keyframes strike-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.3)} }
 
 /* ═══ SAM RANGE RINGS ═══ */
 .sam-ring { fill:none; stroke-dasharray:8,6; }
@@ -159,6 +159,35 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   to { stroke-dashoffset: -20; }
 }
 @keyframes spin { 100% { transform:rotate(360deg); } }
+@keyframes strike-glow { 0%,100% { transform:scale(1); opacity:1; } 50% { transform:scale(1.4); opacity:0.7; } }
+.strike-pulse { animation: strike-glow 2s ease-in-out infinite; }
+.strike-pulse-critical { animation: strike-glow 1s ease-in-out infinite; }
+.strike-popup .leaflet-popup-content-wrapper { background:rgba(10,10,20,0.95); color:#e2e8f0; border:1px solid rgba(255,0,64,0.3); border-radius:8px; }
+.strike-popup .leaflet-popup-tip { background:rgba(10,10,20,0.95); }
+
+/* ═══ NEWS TICKER ═══ */
+#news-ticker {
+  position:fixed; bottom:0; left:54px; right:0; height:28px; z-index:900;
+  background: linear-gradient(180deg, rgba(5,5,16,0.9), rgba(5,5,16,0.95));
+  border-top: 1px solid rgba(255,0,64,0.2);
+  display:flex; align-items:center; overflow:hidden;
+}
+#news-ticker .ticker-label {
+  flex-shrink:0; padding:0 12px; font-family:var(--font-title); font-size:10px; font-weight:700;
+  color:#ff4444; letter-spacing:1px; border-right:1px solid rgba(255,255,255,0.1);
+  text-shadow: 0 0 8px rgba(255,0,0,0.5);
+}
+#news-ticker .ticker-scroll {
+  flex:1; overflow:hidden; white-space:nowrap;
+}
+#news-ticker .ticker-content {
+  display:inline-block; animation: ticker-scroll 60s linear infinite; padding-left:100%;
+  font-family:var(--font-data); font-size:11px; color:rgba(255,255,255,0.7);
+}
+#news-ticker .ticker-content .t-critical { color:#ff4444; font-weight:700; }
+#news-ticker .ticker-content .t-high { color:#ff8800; }
+#news-ticker .ticker-content .t-sep { color:rgba(255,255,255,0.2); margin:0 16px; }
+@keyframes ticker-scroll { 0% { transform:translateX(0); } 100% { transform:translateX(-100%); } }
 
 /* ═══ COUNTER CHIPS (bottom-left) ═══ */
 #chips {
@@ -236,9 +265,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   cursor:pointer; border-left:2px solid transparent; transition:all 0.15s;
 }
 .sb-row:hover { background:rgba(255,255,255,0.02); border-left-color:rgba(255,255,255,0.08); }
-.sb-row.active { background:rgba(255,255,255,0.04); border-left-color:var(--cyan); }
-.sb-row.active .sb-dot { box-shadow:0 0 6px currentColor, 0 0 12px currentColor; transform:scale(1.2); }
-.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; transition:all 0.15s; }
+.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
 .sb-row-name { flex:1; font-size:12px; }
 .sb-row-count { font-family:var(--font-data); font-size:11px; color:var(--text-dim); }
 .sb-actions {
@@ -720,7 +747,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-sep"></div>
   <div class="mt-btn active" data-mt="borders" onclick="mtToggle('borders',this)">🗺</div>
   <div class="mt-btn active" data-mt="military" onclick="mtToggle('military',this)">⭐</div>
-  <div class="mt-btn" data-mt="energy" onclick="mtToggle('energy',this)">🛢</div>
+  <div class="mt-btn" data-mt="infra" onclick="mtToggle('infra',this)">🏗</div>
   <div class="mt-btn" data-mt="aircraft" onclick="mtToggle('aircraft',this)">✈️</div>
   <div class="mt-btn" data-mt="ships" onclick="mtToggle('ships',this)">🚢</div>
   <div class="mt-btn" data-mt="sam" onclick="mtToggle('sam',this)">🛡</div>
@@ -764,14 +791,14 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="borders" data-color="blue" onclick="toggleLayer('borders')">
     <span>🗺</span><div class="tb-tooltip">Country Borders</div>
   </div>
+  <div class="tb-btn" data-layer="infra" data-color="orange" onclick="toggleLayer('infra')">
+    <span>🏗</span><div class="tb-tooltip">Iran Infrastructure</div>
+  </div>
   <div class="tb-btn active" data-layer="military" data-color="blue" onclick="toggleLayer('military')">
     <span>⭐</span><div class="tb-tooltip">Military Bases</div>
   </div>
   <div class="tb-btn" data-layer="aircraft" data-color="green" onclick="toggleLayer('aircraft')">
-    <span>✈️</span><div class="tb-tooltip">All Aircraft (ADS-B)</div>
-  </div>
-  <div class="tb-btn" data-layer="mil-aircraft" data-color="red" onclick="toggleMilFilter()">
-    <span>🎖</span><div class="tb-tooltip">Military Only Filter</div>
+    <span>✈️</span><div class="tb-tooltip">Live Aircraft (ADS-B)</div>
   </div>
   <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
     <span>🚢</span><div class="tb-tooltip">Ship Tracking (AIS)</div>
@@ -788,17 +815,23 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="waterways" data-color="cyan" onclick="toggleLayer('waterways')">
     <span>🌊</span><div class="tb-tooltip">Strategic Waterways</div>
   </div>
-  <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
-    <span>🔥</span><div class="tb-tooltip">FIRMS Fire Hotspots</div>
+  <div class="tb-btn" data-layer="gpsjam" data-color="red" onclick="toggleLayer('gpsjam')">
+    <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
-  <div class="tb-btn active" data-layer="energy" data-color="orange" onclick="toggleLayer('energy')">
-    <span>🛢</span><div class="tb-tooltip">Oil & Gas Facilities</div>
+  <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
+    <span>🔥</span><div class="tb-tooltip">FIRMS Fires (last 2h)</div>
+  </div>
+  <div class="tb-btn" data-layer="satellites" data-color="cyan" onclick="toggleLayer('satellites')">
+    <span>🛰</span><div class="tb-tooltip">Recon Satellites</div>
   </div>
   <div class="tb-btn active" data-layer="osint" data-color="red" onclick="toggleLayer('osint')">
     <span>📌</span><div class="tb-tooltip">OSINT Events</div>
   </div>
   <div class="tb-btn active" data-layer="sirens" data-color="red" onclick="toggleLayer('sirens')">
     <span>🚨</span><div class="tb-tooltip">Sirens / Alerts</div>
+  </div>
+  <div class="tb-btn active" data-layer="strikes" data-color="red" onclick="toggleLayer('strikes')">
+    <span>💥</span><div class="tb-tooltip">Recent Strikes (Feb 28–Mar 8)</div>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
@@ -823,31 +856,27 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div id="tab-layers">
     <div class="sb-search"><input type="text" placeholder="Search layers..." oninput="filterSidebarLayers(this.value)"></div>
     <div class="sb-section-title us">US FORCES</div>
-    <div class="sb-row" data-layer="military" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
-    <div class="sb-row" data-layer="ships" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
+    <div class="sb-row" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
+    <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
     <div class="sb-section-title iran">IRAN / ADVERSARY</div>
-    <div class="sb-row" data-layer="nuclear" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
-    <div class="sb-row" data-layer="missiles" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
-    <div class="sb-row" data-layer="naval" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
-    <div class="sb-row" data-layer="ad" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
-    <div class="sb-row" data-layer="airbases" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
-    <div class="sb-row" data-layer="irgc" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
-    <div class="sb-row" data-layer="energy" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
-    <div class="sb-section-title us">GULF / REGIONAL</div>
-    <div class="sb-row" data-layer="energy" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Gulf Oil & Gas</span><span class="sb-row-count">29</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('naval')"><div class="sb-dot" style="background:#ec4899"></div><span class="sb-row-name">Iran Naval Bases</span><span class="sb-row-count">9</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
-    <div class="sb-row" data-layer="sirens" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
-    <div class="sb-row" data-layer="waterways" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-layer="patrol" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" data-layer="fires" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
-    <div class="sb-row" data-layer="osint" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('strikes')"><div class="sb-dot" style="background:#ff2222"></div><span class="sb-row-name">💥 Recent Strikes</span><span class="sb-row-count" id="cnt-strikes">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
+    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (2h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
-      <div class="sb-action-btn" onclick="clearAllLayers()" style="border-color:rgba(239,68,68,0.3);color:#f87171">Clear All</div>
-      <div class="sb-action-btn" onclick="resetLayers()" style="border-color:rgba(6,182,212,0.3);color:#22d3ee">⟲ Reset Default</div>
       <div class="sb-action-btn" onclick="showUSOnly()" style="border-color:rgba(59,130,246,0.3);color:#60a5fa">US Forces Only</div>
       <div class="sb-action-btn" onclick="showIranOnly()" style="border-color:rgba(239,68,68,0.3);color:#f87171">Iran Targets Only</div>
-      <div class="sb-action-btn" onclick="showEnergyOnly()" style="border-color:rgba(249,115,22,0.3);color:#fb923c">🛢 Oil & Gas Only</div>
     </div>
   </div>
   <div id="tab-assets" style="display:none">
@@ -1044,19 +1073,20 @@ const layers = {
   ships: L.layerGroup(),
   gpsjam: L.layerGroup(),
   satellites: L.layerGroup(),
+  strikes: L.layerGroup(),
 };
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: true, osint: true, sirens: true,
+  borders: true, military: true, fires: true, osint: true, sirens: true, strikes: true,
   infra: false, nuclear: false, missiles: false, naval: false,
-  ad: false, airbases: false, irgc: false, energy: true,
+  ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
   aircraft: false, ships: false, gpsjam: false, satellites: false,
 };
 
 // Add default-on layers
-['borders', 'military', 'fires', 'osint', 'sirens', 'energy'].forEach(k => layers[k].addTo(map));
+['borders', 'military', 'fires', 'osint', 'sirens', 'strikes'].forEach(k => layers[k].addTo(map));
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
@@ -1070,10 +1100,6 @@ function toggleLayer(name) {
   if (btn) btn.classList.toggle('active', activeState[name]);
   updateMobileButtons();
   updateLayerCount();
-  syncSidebarActive();
-  // Lazy-load aircraft/ships on first toggle
-  if (name === 'aircraft' && activeState.aircraft) loadAircraft();
-  if (name === 'ships' && activeState.ships) loadShips();
 }
 
 function isolateIranLayer(name) {
@@ -1081,14 +1107,6 @@ function isolateIranLayer(name) {
   activeState[name] = !activeState[name];
   if (activeState[name]) layers[name].addTo(map); else map.removeLayer(layers[name]);
   updateLayerCount();
-  syncSidebarActive();
-}
-
-function syncSidebarActive() {
-  document.querySelectorAll('.sb-row[data-layer]').forEach(row => {
-    const layer = row.dataset.layer;
-    row.classList.toggle('active', !!activeState[layer]);
-  });
 }
 
 function toggleSidebar() {
@@ -1110,40 +1128,6 @@ let feedTimeHours = 1;
 let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
-
-const COUNTRY_FLAGS = {iran:'🇮🇷',israel:'🇮🇱',kuwait:'🇰🇼',qatar:'🇶🇦',uae:'🇦🇪',saudi:'🇸🇦','saudi arabia':'🇸🇦',iraq:'🇮🇶',syria:'🇸🇾',lebanon:'🇱🇧',yemen:'🇾🇪',jordan:'🇯🇴',bahrain:'🇧🇭',oman:'🇴🇲',turkey:'🇹🇷',egypt:'🇪🇬',pakistan:'🇵🇰',usa:'🇺🇸',russia:'🇷🇺',tehran:'🇮🇷',baghdad:'🇮🇶',beirut:'🇱🇧',damascus:'🇸🇾',riyadh:'🇸🇦',doha:'🇶🇦',dubai:'🇦🇪','abu dhabi':'🇦🇪',gaza:'🇵🇸',haifa:'🇮🇱','tel aviv':'🇮🇱'};
-const COUNTRY_COORDS = {iran:[32.43,53.69],israel:[31.77,35.22],kuwait:[29.38,47.99],qatar:[25.28,51.53],uae:[24.47,54.37],saudi:[24.71,46.68],'saudi arabia':[24.71,46.68],iraq:[33.22,43.68],syria:[34.80,38.99],lebanon:[33.85,35.86],yemen:[15.55,48.52],jordan:[31.95,35.93],bahrain:[26.07,50.55],oman:[23.59,58.55],turkey:[39.93,32.86],egypt:[26.82,30.80],pakistan:[30.38,69.35],gaza:[31.35,34.31],tehran:[35.69,51.39],baghdad:[33.31,44.37],beirut:[33.89,35.50],damascus:[33.51,36.29],riyadh:[24.69,46.72],doha:[25.29,51.53],dubai:[25.20,55.27],'abu dhabi':[24.45,54.65],haifa:[32.79,34.99],'tel aviv':[32.08,34.78]};
-function smartFlyCoords(e) {
-  const txt = (e.text || '').toLowerCase();
-  const locLower = ((e.loc || '') + '').toLowerCase().trim();
-  const isSideAsLoc = locLower === (e.side || '') || locLower === 'iran' || locLower === 'israel' || locLower === 'us';
-  if (isSideAsLoc || !e.loc) {
-    for (const [key, coords] of Object.entries(COUNTRY_COORDS)) {
-      if (txt.includes(key) && key !== (e.side || '').toLowerCase()) return coords;
-    }
-  }
-  return [e.lat, e.lon];
-}
-function smartLoc(e) {
-  const loc = e.loc || '';
-  const txt = (e.text || '').toLowerCase();
-  // If loc is just the side name (e.g. "Iran") but text mentions a different country, extract it
-  const locLower = loc.toLowerCase().trim();
-  const isSideAsLoc = locLower === (e.side || '') || locLower === 'iran' || locLower === 'israel' || locLower === 'us';
-  if (isSideAsLoc || !loc) {
-    // Try to find a more specific country/city from the text
-    for (const [key, flag] of Object.entries(COUNTRY_FLAGS)) {
-      if (txt.includes(key) && key !== (e.side || '').toLowerCase()) {
-        return `${flag} ${key.charAt(0).toUpperCase() + key.slice(1)}`;
-      }
-    }
-  }
-  // Add flag to existing loc if we can match
-  for (const [key, flag] of Object.entries(COUNTRY_FLAGS)) {
-    if (locLower.includes(key)) return `${flag} ${loc}`;
-  }
-  return loc || (SIDE_LABELS[e.side] || '');
-}
 
 function toggleFeed() {
   const panel = document.getElementById('feed-panel');
@@ -1202,16 +1186,7 @@ function loadFeed() {
   });
 
   fetchData.then(data => {
-    feedEvents = (data.events || data || []).map(e => {
-      // Normalize: text may be array (siren locations) — join to string
-      if (Array.isArray(e.text)) e.text = e.text.join(', ');
-      if (!e.side) {
-        if (e.type === 'siren' || e.src === 'oref') e.side = 'israel';
-        else if (e.type === 'fire') e.side = 'unknown';
-        else e.side = e.side || 'unknown';
-      }
-      return e;
-    }).filter(e => {
+    feedEvents = (data.events || data || []).filter(e => {
       // Skip raw fire/seismic detections with no text content (nasa-firms, usgs floods)
       if (e.type === 'fire' || e.type === 'seismic') return (e.text||'').trim().length > 10;
       return (e.text||'').trim().length > 5 || ((e.src||'').trim() && (e.loc||'').trim());
@@ -1321,19 +1296,18 @@ function renderFeed() {
     const fullText = (e.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const needsTooltip = (e.text || '').length > 100;
     const timeStr = ts > 0 ? `${localTime(ts)} · ${ago}` : ago;
-    const [flyLat, flyLon] = smartFlyCoords(e);
     const srcLink = getSrcLink(e.src || '');
     const srcHtml = srcLink
       ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${e.src || ''}</a>`
       : (e.src || '');
-    return `<div class="feed-item${breaking}" onclick="flyToEvent(${flyLat},${flyLon})" title="">
+    return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon})" title="">
       <div class="feed-item-header">
         <span class="feed-item-source">${srcHtml}</span>
         <span class="feed-item-time">${timeStr}</span>
       </div>
       <div class="feed-item-loc">
         <span class="feed-item-side" style="background:${sideColor}"></span>
-        ${smartLoc(e)}
+        ${e.loc || ''}
       </div>
       <div class="feed-item-text">${text}</div>
       ${needsTooltip ? `<div class="feed-tooltip">${fullText}</div>` : ''}
@@ -1359,10 +1333,10 @@ function localDate(ts) {
 
 const TG_CHANNELS = ['warmonitors','intelslava','idfofficial','iranintl_en','military_fr',
   'AbuAliEnglishChannel','RWApodcast','SputnikInt','TassAgency_en','IsraelRadar_en',
-  'CIG_telegram','sentdefender','endgameww3','behikiansChannel'];
+  'CIG_telegram','sentdefender','endgameww3'];
 const TWITTER_ACCTS = ['IntelDoge','sentdefender','alaborjiss','MiddleEastOSINT',
   'IranIntl_En','IsraelRadar_en','ELINTNews','Faytuks','aurora_intel','manikiansen',
-  'claborjiss','Maborjiss','Conflicts','BeholdIsrael'];
+  'claborjiss','Maborjiss','Conflicts'];
 
 function getSrcLink(src) {
   if (!src) return '';
@@ -1375,16 +1349,13 @@ function getSrcLink(src) {
   for (const tw of TWITTER_ACCTS) {
     if (s === tw.toLowerCase().replace(/[\s_-]/g,'')) return `https://x.com/${tw}`;
   }
-  // Known news outlets + personalities
+  // Known news outlets
   const newsLinks = {
     'reuters': 'https://www.reuters.com/world/middle-east/',
     'aljazeera': 'https://www.aljazeera.com/tag/iran/',
     'jerusalempost': 'https://www.jpost.com/',
     'timesofisrael': 'https://www.timesofisrael.com/',
     'bbc': 'https://www.bbc.com/news/world/middle_east',
-    'amirtsarfati': 'https://www.beholdisrael.org/',
-    'beholdisrael': 'https://www.beholdisrael.org/',
-    'aharon': 'https://t.me/s/behikiansChannel',
   };
   for (const [key, url] of Object.entries(newsLinks)) {
     if (s.includes(key)) return url;
@@ -1445,33 +1416,6 @@ function showAllLayers() {
     if (btn) btn.classList.add('active');
   });
   updateLayerCount();
-  syncSidebarActive();
-}
-
-function clearAllLayers() {
-  Object.keys(activeState).forEach(k => {
-    activeState[k] = false; map.removeLayer(layers[k]);
-  });
-  document.querySelectorAll('.tb-btn').forEach(b => b.classList.remove('active'));
-  // Keep borders
-  activeState.borders = true; layers.borders.addTo(map);
-  const bb = document.querySelector('.tb-btn[data-layer="borders"]');
-  if (bb) bb.classList.add('active');
-  updateLayerCount();
-  syncSidebarActive();
-}
-
-const DEFAULT_ACTIVE = { borders: true, military: true, fires: true, osint: true, sirens: true, energy: true };
-function resetLayers() {
-  Object.keys(activeState).forEach(k => {
-    const shouldBeOn = !!DEFAULT_ACTIVE[k];
-    activeState[k] = shouldBeOn;
-    if (shouldBeOn) layers[k].addTo(map); else map.removeLayer(layers[k]);
-    const btn = document.querySelector(`.tb-btn[data-layer="${k}"]`);
-    if (btn) btn.classList.toggle('active', shouldBeOn);
-  });
-  updateLayerCount();
-  syncSidebarActive();
 }
 
 function showUSOnly() {
@@ -1481,7 +1425,6 @@ function showUSOnly() {
     b.classList.toggle('active', activeState[b.dataset.layer] || false);
   });
   updateLayerCount();
-  syncSidebarActive();
 }
 
 function showIranOnly() {
@@ -1493,17 +1436,6 @@ function showIranOnly() {
     b.classList.toggle('active', activeState[b.dataset.layer] || false);
   });
   updateLayerCount();
-  syncSidebarActive();
-}
-
-function showEnergyOnly() {
-  Object.keys(activeState).forEach(k => { activeState[k] = false; map.removeLayer(layers[k]); });
-  ['borders','energy','waterways'].forEach(k => { activeState[k] = true; layers[k].addTo(map); });
-  document.querySelectorAll('.tb-btn').forEach(b => {
-    b.classList.toggle('active', activeState[b.dataset.layer] || false);
-  });
-  updateLayerCount();
-  syncSidebarActive();
 }
 
 function switchTab(tab) {
@@ -1651,9 +1583,8 @@ function renderAllLayers() {
   // ─── IRAN ENERGY ───
   V2_DATA.IRAN_ENERGY.forEach(s => {
     const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : s.type.includes('pipeline') ? '🔗' : '🛢';
-    const struckBadge = s.struck ? ' 💥 STRUCK' : '';
-    const popup = mkPopup(`${emoji} ${s.name}${struckBadge}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, s.struck ? '#ef4444' : '#f97316');
-    mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-iran-energy', 22, popup).addTo(layers.energy);
+    const popup = mkPopup(`${emoji} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#f97316');
+    mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
   });
 
   // ─── GULF & REGIONAL OIL/GAS ───
@@ -1722,6 +1653,40 @@ function renderAllLayers() {
     }).addTo(layers.borders);
   }).catch(e => console.warn('Borders load failed:', e));
 
+  // ─── RECENT STRIKES from V2_DATA ───
+  if (V2_DATA.RECENT_EVENTS) {
+    const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
+    const typeIcons = { strike: '💥', missile: '🚀', naval: '⚓', energy: '⚡', political: '📢' };
+    let strikeCount = 0;
+    V2_DATA.RECENT_EVENTS.forEach(ev => {
+      const color = severityColors[ev.severity] || '#ff4444';
+      const icon = typeIcons[ev.type] || '💥';
+      const pulseClass = ev.severity === 'critical' ? 'strike-pulse-critical' : 'strike-pulse';
+      const size = ev.severity === 'critical' ? 24 : 18;
+      const marker = L.marker([ev.lat, ev.lon], {
+        icon: L.divIcon({
+          className: '',
+          html: `<div class="${pulseClass}" style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${size-4}px;filter:drop-shadow(0 0 6px ${color})">${icon}</div>`,
+          iconSize: [size, size],
+          iconAnchor: [size/2, size/2],
+        }),
+        zIndexOffset: ev.severity === 'critical' ? 2000 : 1000,
+      });
+      const popupHtml = `
+        <div style="font-family:var(--font-body);min-width:220px;max-width:320px">
+          <div style="font-family:var(--font-title);font-size:11px;color:${color};letter-spacing:1px;margin-bottom:4px">${ev.date} · ${ev.actor}</div>
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px">${ev.target}</div>
+          <div style="font-size:12px;opacity:0.8">${ev.desc}</div>
+          <div style="margin-top:6px;font-size:10px;text-transform:uppercase;color:${color};font-weight:700">${ev.severity} · ${ev.type}</div>
+        </div>`;
+      marker.bindPopup(popupHtml, { className: 'strike-popup' });
+      marker.addTo(layers.strikes);
+      strikeCount++;
+    });
+    const cntEl = document.getElementById('cnt-strikes');
+    if (cntEl) cntEl.textContent = strikeCount;
+  }
+
   // ─── OSINT from intel-feed.json ───
   loadOSINT();
 
@@ -1751,16 +1716,18 @@ function loadOSINT() {
 
 function renderOSINTMarkers(events) {
   layers.osint.clearLayers();
+  // Remove old OSINT-based blinking strike markers
+  if (window._osintStrikeMarkers) window._osintStrikeMarkers.forEach(m => layers.strikes.removeLayer(m));
+  window._osintStrikeMarkers = [];
   let count = 0;
   const now = Date.now()/1000;
+  const strikeKeywords = ['strike','struck','attack','hit','bomb','missile','rocket','explosion','shelling','airstrike','barrage','intercept'];
   events.forEach(ev => {
     if (!ev.lat || !ev.lon) return;
-    // Skip fire/seismic — they have dedicated layers (fires, sirens)
-    const evType = (ev.sub_event_type || ev.type || '').toLowerCase();
-    if (evType.includes('fire') || evType.includes('firms') || evType.includes('nasa')) return;
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
+    const veryRecent = ts && (now - ts) < 7200; // last 2h
     const srcName = ev.actor1 || ev.source || ev.src || '';
     const srcUrl = getSrcLink(srcName);
     const srcHtml = srcUrl
@@ -1778,6 +1745,22 @@ function renderOSINTMarkers(events) {
     );
     mkMarker(ev.lat, ev.lon, '📌', recent ? 'marker-osint' : 'marker-osint', recent ? 22 : 18, popup)
       .addTo(layers.osint);
+    
+    // Blinking strike marker: must be <2h old, have a location name, and match strike keywords
+    const loc = (ev.location || ev.loc || '').trim();
+    const text = ((ev.notes || ev.text || '') + ' ' + (ev.sub_event_type || ev.type || '')).toLowerCase();
+    const isStrike = strikeKeywords.some(kw => text.includes(kw));
+    if (veryRecent && loc.length > 2 && isStrike) {
+      const strikePopup = mkPopup(
+        `💥 REPORTED STRIKE`,
+        srcHtml,
+        `📍 ${loc}<br>🕐 ${timeDisplay}<br>${ev.notes || ev.text || ''}`,
+        '#ff0000'
+      );
+      const sm = mkMarker(ev.lat, ev.lon, '💥', 'marker-osint-strike', 28, strikePopup);
+      sm.addTo(layers.strikes);
+      window._osintStrikeMarkers.push(sm);
+    }
   });
   document.getElementById('cnt-osint').textContent = count;
 }
@@ -1787,16 +1770,23 @@ function loadFIRMS() {
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const all = data.events || data || [];
+    const now = Date.now()/1000;
+    const twoHoursAgo = now - 7200;
     const fires = all.filter(e => {
       const t = (e.sub_event_type || e.type || '').toLowerCase();
-      return t.includes('fire') || t.includes('firms');
+      if (!t.includes('fire') && !t.includes('firms')) return false;
+      const ts = e.timestamp || e.ts || 0;
+      return ts > twoHoursAgo;
     });
     let count = 0;
     fires.forEach(f => {
       if (!f.lat || !f.lon) return;
       count++;
+      const ts = f.timestamp || f.ts || 0;
+      const age = Math.round((now - ts) / 60);
+      const timeStr = ts ? `${age}m ago · ${localTime(ts)}` : '';
       mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
-        mkPopup('🔥 Fire Hotspot', `Confidence: ${{l:'Low',n:'Nominal',h:'High'}[f.confidence] || f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>📅 ${f.date || ''}`, '#ff8800')
+        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>🕐 ${timeStr}`, '#ff8800')
       ).addTo(layers.fires);
     });
     document.getElementById('cnt-fires').textContent = count;
@@ -1833,179 +1823,6 @@ function loadSirens() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// AIRCRAFT & SHIPS LIVE DATA
-// ═══════════════════════════════════════════════════════════
-const MIL_CALLSIGN_PREFIXES = ['RCH','FORTE','JAKE','HOMER','NCHO','DUKE','SAM','AF1','AF2','EXEC','RETRO','DARK','GORDO','TOPCT','SPAR','REACH','EVAC','TITAN','HAVOC','VIPER','IAF','STING','GOLD','SILVER','BRONZE','ARROW','HAWK','NIGHT'];
-const MIL_TYPES = ['C17A','C5M','KC135','KC46A','KC10','E3CF','E3TF','E8C','RC135','P8A','EP3E','MQ9','RQ4','C130','C130J','B52','B1B','B2','F35','F22','F15','F16','F18','A10','C2A','E2C','E2D','V22','MH60','H60'];
-let aircraftMilOnly = false;
-let aircraftCache = []; // cache last fetch
-
-function toggleMilFilter() {
-  aircraftMilOnly = !aircraftMilOnly;
-  const btn = document.querySelector('.tb-btn[data-layer="mil-aircraft"]');
-  if (btn) btn.classList.toggle('active', aircraftMilOnly);
-  if (activeState.aircraft) renderAircraftFromCache();
-}
-
-function renderAircraftFromCache() {
-  layers.aircraft.clearLayers();
-  let count = 0, milCount = 0;
-  aircraftCache.forEach(s => {
-    const callsign = s.callsign || '';
-    const lat = s.lat, lon = s.lon;
-    if (!lat || !lon) return;
-    const isMil = MIL_CALLSIGN_PREFIXES.some(p => callsign.toUpperCase().startsWith(p))
-      || MIL_TYPES.some(t => (s.actype || '').toUpperCase().includes(t));
-    if (isMil) milCount++;
-    if (aircraftMilOnly && !isMil) return;
-    count++;
-    const altFt = s.alt ? (s.alt > 1000 ? s.alt : Math.round(s.alt * 3.281)) : '?';
-    const spdKn = s.speed ? (s.speed > 100 ? s.speed : Math.round(s.speed * 1.944)) : '?';
-    const hdg = s.heading ? Math.round(s.heading) + '°' : '';
-    const milBadge = isMil ? ' 🎖 MIL' : '';
-    const color = isMil ? '#ef4444' : '#22c55e';
-    const size = isMil ? 22 : 14;
-    const route = (s.origin || s.dest) ? `<br>✈ ${s.origin || '?'} → ${s.dest || '?'}` : '';
-    const typeStr = s.actype ? `Type: ${s.actype}` : '';
-    const regStr = s.reg ? ` · Reg: ${s.reg}` : '';
-    const fr24Link = s.id ? `https://www.flightradar24.com/${s.id}` : (callsign ? `https://www.flightradar24.com/${callsign}` : '');
-    const faLink = callsign ? `https://www.flightaware.com/live/flight/${callsign}` : '';
-    const adsLink = `https://globe.adsbexchange.com/?lat=${lat}&lon=${lon}&zoom=9`;
-    const links = [
-      fr24Link ? `<a href="${fr24Link}" target="_blank" style="color:#06b6d4">FR24</a>` : '',
-      faLink ? `<a href="${faLink}" target="_blank" style="color:#22c55e">FlightAware</a>` : '',
-      `<a href="${adsLink}" target="_blank" style="color:#f59e0b">ADS-B</a>`,
-    ].filter(Boolean).join(' · ');
-    const popup = mkPopup(
-      `✈️ ${callsign || s.flight || 'Unknown'}${milBadge}`,
-      `${typeStr}${regStr}`,
-      `Alt: ${altFt} ft · Speed: ${spdKn} kn ${hdg}${route}<br>${links}`,
-      color
-    );
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="font-size:${size}px;transform:rotate(${s.heading||0}deg);filter:drop-shadow(0 0 ${isMil?8:4}px ${color});opacity:${isMil?1:0.7}">✈️</div>`,
-      iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
-    });
-    L.marker([lat, lon], { icon }).bindPopup(popup).addTo(layers.aircraft);
-  });
-  document.querySelectorAll('.sb-row[data-layer="aircraft"] .sb-row-count').forEach(e => e.textContent = aircraftMilOnly ? `${count} mil` : `${count} (${milCount} mil)`);
-}
-
-function loadAircraft() {
-  // OpenSky API (CORS-friendly, works from browser)
-  fetch('https://opensky-network.org/api/states/all?lamin=12&lomin=24&lamax=42&lomax=62')
-  .then(r => r.ok ? r.json() : Promise.reject('opensky-fail'))
-  .then(d => {
-    aircraftCache = (d.states || []).map(s => ({
-      id: s[0] || '', callsign: (s[1]||'').trim(), lat: s[6], lon: s[5],
-      alt: s[7] ? Math.round(s[7]*3.281) : null, speed: s[9] ? Math.round(s[9]*1.944) : null,
-      heading: s[10], origin: s[2]||'', dest: '', actype: '', reg: ''
-    }));
-    renderAircraftFromCache();
-    // Try FR24 via static cache as supplement
-    fetch(`${STATIC_BASE}/fr24-cache.json`).then(r=>r.ok?r.json():null).then(fr24=>{
-      if (!fr24 || !fr24.aircraft) return;
-      // Merge FR24 data: enrich OpenSky entries with type/route, add missing planes
-      const osMap = new Map(aircraftCache.map(a=>[a.callsign.toUpperCase(), a]));
-      fr24.aircraft.forEach(f => {
-        const cs = (f.callsign||'').toUpperCase();
-        if (osMap.has(cs)) {
-          const o = osMap.get(cs);
-          o.actype = f.actype || o.actype;
-          o.origin = f.origin || o.origin;
-          o.dest = f.dest || o.dest;
-          o.reg = f.reg || o.reg;
-          o.fr24id = f.id;
-        } else if (f.lat && f.lon) {
-          aircraftCache.push({...f, id: f.id||''});
-        }
-      });
-      renderAircraftFromCache();
-    }).catch(()=>{});
-  }).catch(() => { console.log('OpenSky unavailable'); });
-}
-
-function loadShips() {
-  layers.ships.clearLayers();
-  let count = 0;
-
-  // Known fleet positions — US Navy CENTCOM/5th Fleet + allied + IRGCN
-  const fleetPositions = [
-    // US Carrier Strike Groups
-    { name: 'USS Dwight D. Eisenhower (CVN-69) CSG', lat: 25.3, lon: 56.8, desc: 'Nimitz-class carrier · Carrier Strike Group 2<br>Carrier Air Wing 3 · ~75 aircraft<br>Escorts: CG-54 Antietam, DDG-61 Ramage, DDG-79 Oscar Austin', emoji: '⚓', side: 'us', type: 'carrier' },
-    { name: 'USS Harry S. Truman (CVN-75) CSG', lat: 23.2, lon: 58.8, desc: 'Nimitz-class carrier · Carrier Strike Group 8<br>Carrier Air Wing 1 · ~75 aircraft<br>Arabian Sea patrol', emoji: '⚓', side: 'us', type: 'carrier' },
-    { name: 'USS Abraham Lincoln (CVN-72) CSG', lat: 21.5, lon: 60.5, desc: 'Nimitz-class carrier · Carrier Strike Group 3<br>Surged from Pacific · North Arabian Sea', emoji: '⚓', side: 'us', type: 'carrier' },
-    // Amphibious Ready Groups
-    { name: 'USS Bataan (LHD-5) ARG/MEU', lat: 26.0, lon: 56.2, desc: 'Wasp-class amphibious assault ship<br>26th Marine Expeditionary Unit<br>Gulf of Oman', emoji: '⚓', side: 'us', type: 'amphib' },
-    { name: 'USS Boxer (LHD-4) ARG', lat: 24.8, lon: 57.5, desc: 'Wasp-class amphibious assault ship<br>13th MEU · Arabian Sea', emoji: '⚓', side: 'us', type: 'amphib' },
-    // Destroyers & Cruisers (Strait patrol)
-    { name: 'USS Arleigh Burke (DDG-51)', lat: 26.55, lon: 56.15, desc: 'Arleigh Burke-class destroyer<br>Strait of Hormuz patrol · BMD capable', emoji: '🔷', side: 'us', type: 'escort' },
-    { name: 'USS Carney (DDG-64)', lat: 26.3, lon: 56.4, desc: 'Arleigh Burke-class destroyer<br>Anti-air warfare · Strait escort', emoji: '🔷', side: 'us', type: 'escort' },
-    { name: 'USS Mason (DDG-87)', lat: 25.8, lon: 57.3, desc: 'Arleigh Burke-class destroyer<br>Gulf of Oman · Tomahawk strike capable', emoji: '🔷', side: 'us', type: 'escort' },
-    { name: 'USS Laboon (DDG-58)', lat: 27.2, lon: 51.5, desc: 'Arleigh Burke-class destroyer<br>Persian Gulf patrol', emoji: '🔷', side: 'us', type: 'escort' },
-    // Submarines (estimated)
-    { name: 'USS Florida (SSGN-728)', lat: 24.5, lon: 59.5, desc: 'Ohio-class guided missile submarine<br>154 Tomahawk cruise missiles<br>Arabian Sea (estimated)', emoji: '🫧', side: 'us', type: 'sub' },
-    { name: 'USS Georgia (SSGN-729)', lat: 25.0, lon: 61.0, desc: 'Ohio-class guided missile submarine<br>154 Tomahawk cruise missiles<br>North Arabian Sea (estimated)', emoji: '🫧', side: 'us', type: 'sub' },
-    // Support ships
-    { name: 'USNS Supply (T-AOE-6)', lat: 25.5, lon: 55.5, desc: 'Supply-class fast combat support ship<br>Fleet replenishment · Persian Gulf', emoji: '📦', side: 'us', type: 'support' },
-    { name: 'USS Lewis B. Puller (ESB-3)', lat: 26.8, lon: 50.2, desc: 'Expeditionary Sea Base<br>NSA Bahrain forward staging<br>Mine countermeasures + SOF ops', emoji: '🏗', side: 'us', type: 'support' },
-    // 5th Fleet HQ
-    { name: 'NSA Bahrain (5th Fleet HQ)', lat: 26.22, lon: 50.59, desc: 'Naval Support Activity Bahrain<br>US 5th Fleet headquarters<br>Commander: VADM', emoji: '⭐', side: 'us', type: 'base' },
-    // Israeli Navy
-    { name: 'INS Magen (Sa\'ar 6)', lat: 24.0, lon: 59.0, desc: 'Sa\'ar 6-class corvette<br>Arabian Sea deployment (estimated)<br>Barak-8 air defense', emoji: '🔵', side: 'israel', type: 'escort' },
-    { name: 'INS Dolphin-class Sub', lat: 23.5, lon: 60.5, desc: 'Dolphin-class submarine<br>Cruise missile capable<br>Indian Ocean (estimated)', emoji: '🫧', side: 'israel', type: 'sub' },
-    // UK Royal Navy
-    { name: 'HMS Diamond (D34)', lat: 25.0, lon: 57.8, desc: 'Type 45 Daring-class destroyer<br>Air defense · Gulf of Oman', emoji: '🇬🇧', side: 'us', type: 'escort' },
-    // French Navy
-    { name: 'FS Alsace (D656)', lat: 24.2, lon: 58.2, desc: 'FREMM-class frigate<br>French Navy · Arabian Sea', emoji: '🇫🇷', side: 'us', type: 'escort' },
-    // IRGC Navy
-    { name: 'IRGCN Bandar Abbas', lat: 27.18, lon: 56.27, desc: 'IRGC Navy main base<br>Fast attack craft, midget subs<br>Anti-ship missiles · Strait of Hormuz', emoji: '🔴', side: 'iran', type: 'base' },
-    { name: 'IRGCN Abu Musa Island', lat: 25.87, lon: 55.03, desc: 'IRGC Navy island fortress<br>Anti-ship missiles + radar<br>Controls central Strait approach', emoji: '🔴', side: 'iran', type: 'base' },
-    { name: 'IRGCN Jask', lat: 25.65, lon: 57.77, desc: 'IRGC Navy base<br>Mouth of Strait of Hormuz<br>Fast boats + mine laying', emoji: '🔴', side: 'iran', type: 'base' },
-    { name: 'IRGCN Bushehr', lat: 28.97, lon: 50.84, desc: 'IRGC Navy base<br>Northern Persian Gulf<br>Fast attack craft', emoji: '🔴', side: 'iran', type: 'base' },
-    { name: 'IRIN Bandar Abbas (Regular Navy)', lat: 27.12, lon: 56.35, desc: 'Islamic Republic of Iran Navy<br>Frigates, corvettes, Kilo-class subs<br>Main fleet base', emoji: '🔴', side: 'iran', type: 'base' },
-    { name: 'IRIN Chabahar', lat: 25.30, lon: 60.64, desc: 'Iran Navy eastern base<br>Gulf of Oman access<br>Submarines + destroyers', emoji: '🔴', side: 'iran', type: 'base' },
-  ];
-  fleetPositions.forEach(f => {
-    count++;
-    const color = f.side === 'iran' ? '#ef4444' : f.side === 'israel' ? '#3b82f6' : '#60a5fa';
-    const iconMap = { carrier: '⚓', amphib: '🚢', escort: '🔷', sub: '🫧', support: '📦', base: '🏴' };
-    const em = iconMap[f.type] || f.emoji;
-    const sz = (f.type === 'carrier' || f.type === 'base') ? 26 : 20;
-    const glow = f.type === 'carrier' ? 12 : 6;
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="font-size:${sz}px;filter:drop-shadow(0 0 ${glow}px ${color})">${em}</div>`,
-      iconSize: [sz+4, sz+4], iconAnchor: [(sz+4)/2, (sz+4)/2]
-    });
-    const sideLabel = { us: '🇺🇸 US Navy', iran: '🇮🇷 IRIN/IRGCN', israel: '🇮🇱 Israeli Navy' }[f.side] || f.side;
-    const popup = mkPopup(`${em} ${f.name}`, sideLabel, f.desc, color);
-    L.marker([f.lat, f.lon], { icon }).bindPopup(popup).addTo(layers.ships);
-  });
-
-  // Also pull naval intel events from feed
-  fetch(dataUrl('intel-feed')).then(r => r.ok ? r.json() : Promise.reject('no'))
-  .then(data => {
-    const events = data.events || data || [];
-    events.forEach(e => {
-      if (!e.lat || !e.lon) return;
-      const t = ((e.sub_event_type || '') + ' ' + (e.type || '') + ' ' + (e.text || '')).toLowerCase();
-      if (!(t.includes('ship') || t.includes('naval') || t.includes('vessel') || t.includes('navy') || t.includes('carrier') || t.includes('destroyer') || t.includes('fleet') || t.includes('frigate') || t.includes('submarine') || t.includes('tanker') || t.includes('hormuz') || t.includes('strait') || t.includes('blockade') || t.includes('maritime') || t.includes('irgc navy') || t.includes('boat'))) return;
-      count++;
-      const popup = mkPopup('🚢 Naval Intel', e.src || '', `📍 ${e.loc || ''}<br>${(e.text || '').substring(0, 200)}`, '#06b6d4');
-      mkMarker(e.lat, e.lon, '🚢', '', 18, popup).addTo(layers.ships);
-    });
-    document.querySelectorAll('.sb-row[data-layer="ships"] .sb-row-count').forEach(el => el.textContent = count);
-  }).catch(err => {
-    console.warn('Ships feed load failed:', err);
-    document.querySelectorAll('.sb-row[data-layer="ships"] .sb-row-count').forEach(el => el.textContent = count);
-  });
-}
-
-// Auto-refresh aircraft every 30s if layer is active
-setInterval(() => { if (activeState.aircraft) loadAircraft(); }, 30000);
-
 // ASSET LIST (sidebar)
 // ═══════════════════════════════════════════════════════════
 function renderAssetList(filter) {
@@ -2057,7 +1874,6 @@ loadSirens();
 pollOref();
 updateLayerCount();
 updateMobileButtons();
-syncSidebarActive();
 
 // Auto-open live feed on load
 setTimeout(() => toggleFeed(), 500);
@@ -2073,8 +1889,34 @@ function loadTicker() {
     const now = Date.now() / 1000;
     // Show last 6 hours in ticker
     const recent = events.filter(e => e.ts && (now - e.ts) < 21600).slice(0, 50);
-    if (recent.length === 0) return;
+    if (recent.length === 0) return loadTickerFallback();
+    renderTickerItems(recent, false);
+  }).catch(() => { loadTickerFallback(); });
+}
 
+function loadTickerFallback() {
+  // Use static RECENT_EVENTS when no live feed is available
+  if (!V2_DATA.RECENT_EVENTS || V2_DATA.RECENT_EVENTS.length === 0) return;
+  const label = document.getElementById('ticker-label');
+  const hasCritical = V2_DATA.RECENT_EVENTS.some(e => e.severity === 'critical');
+  label.textContent = hasCritical ? '🚨 BREAKING' : 'INTEL';
+  if (hasCritical) label.classList.add('alert');
+
+  const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
+  const items = V2_DATA.RECENT_EVENTS.slice().reverse().map(e => {
+    const color = severityColors[e.severity] || '#6b7280';
+    const sevClass = e.severity === 'critical' ? ' breaking' : '';
+    return `<span class="ticker-item${sevClass}" onclick="map.flyTo([${e.lat},${e.lon}],8)"><span class="ti-dot" style="background:${color}"></span><span class="ti-src">${e.actor}</span>${e.target}: ${e.desc}<span class="ti-time">${e.date}</span></span><span class="ticker-sep">◆</span>`;
+  }).join('');
+
+  const content = document.getElementById('ticker-content');
+  content.innerHTML = items + items;
+  const duration = Math.max(120, V2_DATA.RECENT_EVENTS.length * 8);
+  content.style.setProperty('--ticker-duration', duration + 's');
+}
+
+function renderTickerItems(recent, isStatic) {
+    const now = Date.now() / 1000;
     const hasBreaking = recent.some(e => e.breaking);
     const label = document.getElementById('ticker-label');
     if (hasBreaking) {
@@ -2091,8 +1933,7 @@ function loadTicker() {
       const ago = e.ts ? formatAgo(now - e.ts) : '';
       const text = (e.text || '').length > 120 ? e.text.substring(0, 120) + '…' : (e.text || '');
       const brk = e.breaking ? ' breaking' : '';
-      const [tLat, tLon] = smartFlyCoords(e);
-      return `<span class="ticker-item${brk}" onclick="flyToEvent(${tLat},${tLon})"><span class="ti-dot" style="background:${sideColor}"></span><span class="ti-src">${e.src||''}</span>${text}<span class="ti-time">${ago}</span></span><span class="ticker-sep">◆</span>`;
+      return `<span class="ticker-item${brk}" onclick="flyToEvent(${e.lat},${e.lon})"><span class="ti-dot" style="background:${sideColor}"></span><span class="ti-src">${e.src||''}</span>${text}<span class="ti-time">${ago}</span></span><span class="ticker-sep">◆</span>`;
     }).join('');
 
     const content = document.getElementById('ticker-content');
@@ -2101,7 +1942,6 @@ function loadTicker() {
     // Adjust speed based on content width
     const duration = Math.max(120, recent.length * 16);
     content.style.setProperty('--ticker-duration', duration + 's');
-  }).catch(() => {});
 }
 
 loadTicker();

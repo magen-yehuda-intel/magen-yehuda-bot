@@ -189,73 +189,29 @@ def generate_status_en(config, state):
     now = datetime.now(timezone.utc)
     t = state["threat_level"]
     td = THREAT_DATA.get(t, THREAT_DATA["GREEN"])
-    f = SCAN_FREQ.get(t, SCAN_FREQ["GREEN"])
     w = state["watcher_running"]
     bl = BLACKOUT_ICONS.get(state["blackout_level"], "⚪")
-    on = "✅" if w else "❌"
     siren_str = state["last_siren"] or "None"
 
-    return f"""🛡 <b>MAGEN YEHUDA</b> 🛡
+    return f"""🛡 <b>MAGEN YEHUDA</b>
 <i>Real-Time Intelligence Monitor</i>
-
-━━━━━━━━━━━━━━━━━
 
 {td['emoji']} <b>THREAT: {td['en']}</b>
 {td['bar']}
 
-━━━━━━━━━━━━━━━━━
-
-⚙️ <b>SYSTEM</b>
-
-{on} Engine {'Online' if w else 'Offline'}
-🕐 Sync: {now.strftime("%H:%M:%S")} UTC
+{'🟢' if w else '🔴'} Engine {'Online' if w else 'Offline'}  ·  📊 {state['intel_events_1h']} events/hr
 🚨 Last Siren: {siren_str}
-📊 Events (1h): {state['intel_events_1h']}
 
-━━━━━━━━━━━━━━━━━
+🇮🇷 <b>IRAN WATCH</b>
+🔥 {state['fires_tracked']} fires  ·  🌍 {state['quakes_tracked']} quakes  ·  ✈️ {state['mil_flights']} mil. flights
+{bl} Internet: {state['blackout_level']}  ·  🎯 {state['strike_corr']} correlations
 
-🎯 <b>COLLECTION</b>
+☢️ Natanz · Fordow · Isfahan · Bushehr · Arak
+🎯 Parchin · Shahrud · Bandar Abbas
 
-{on} 🚀 <b>Sirens</b> — live
-{on} 📢 <b>Telegram</b> — 10 channels
-{on} 🐦 <b>X / Twitter</b> — 11 accounts
-{on} 📰 <b>RSS</b> — 5 feeds
-{on} 📊 <b>Polymarket</b> — live
-{on} 🔥 <b>FIRMS</b> — 4 satellites
-{on} 🌍 <b>Seismic</b> — M2.5+
-{on} 🗺 <b>Intel Map</b> — auto
-{on} ✈️ <b>Mil. Flights</b> — live
-{on} 🌐 <b>Iran Internet</b> — IODA
-{on} 🎯 <b>Correlations</b> — auto
-{on} 🛡 <b>Cyber Intel</b> — 30+ groups
+📡 85+ sources  ·  4 satellites  ·  30+ cyber groups
 
-━━━━━━━━━━━━━━━━━
-
-🇮🇷 <b>IRAN THEATER</b>
-
-🔥 Fires: <b>{state['fires_tracked']}</b> tracked
-🌍 Quakes: <b>{state['quakes_tracked']}</b> tracked
-✈️ Military: <b>{state['mil_flights']}</b> flights
-{bl} Internet: <b>{state['blackout_level']}</b>
-🎯 Correlations: <b>{state['strike_corr']}</b>
-
-☢️ <b>Nuclear:</b> Natanz · Fordow · Isfahan · Bushehr · Arak
-🎯 <b>Military:</b> Parchin · Shahrud · Bandar Abbas
-🏛 Tehran  ·  🛢 Kharg Island
-
-━━━━━━━━━━━━━━━━━
-
-⚡ <b>SCAN RATE</b>
-
-🚀 Sirens: <b>live</b>
-📡 OSINT: every <b>{f['osint']}</b>
-🛰 Satellite: every <b>{f['sat']}</b>
-
-━━━━━━━━━━━━━━━━━
-
-🗺️ <a href="https://magen-yehuda-intel.github.io/magen-yehuda-bot/">Interactive Strikes Dashboard</a>
-
-🤖 <i>24/7 Automated Intelligence</i>
+🗺 <a href="https://magen-yehuda-intel.github.io/magen-yehuda-bot/">Live Dashboard</a>
 ⏱ <i>{now.strftime("%Y-%m-%d %H:%M:%S")} UTC</i>
 🇮🇱 <b>Am Yisrael Chai</b> 🇮🇱"""
 
@@ -268,75 +224,30 @@ def generate_status_he(config, state):
     now = datetime.now(timezone.utc)
     t = state["threat_level"]
     td = THREAT_DATA.get(t, THREAT_DATA["GREEN"])
-    f = SCAN_FREQ_HE.get(t, SCAN_FREQ_HE["GREEN"])
     w = state["watcher_running"]
     bl = BLACKOUT_ICONS.get(state["blackout_level"], "⚪")
-    on = "✅" if w else "❌"
     siren_str = state["last_siren"] or "אין"
 
-    # Right-to-Left Mark
     R = "\u200F"
-    return f"""{R}🛡 <b>מגן יהודה</b> 🛡
+    return f"""{R}🛡 <b>מגן יהודה</b>
 {R}<i>מערכת מודיעין בזמן אמת</i>
-
-{R}━━━━━━━━━━━━━━━━━
 
 {R}{td['emoji']} <b>איום: {td['he']}</b>
 {td['bar']}
 
-{R}━━━━━━━━━━━━━━━━━
-
-{R}⚙️ <b>מערכת</b>
-
-{R}{on} מנוע {'פעיל' if w else 'כבוי'}
-{R}🕐 סנכרון: {now.strftime("%H:%M:%S")} UTC
+{R}{'🟢' if w else '🔴'} מנוע {'פעיל' if w else 'כבוי'}  ·  📊 {state['intel_events_1h']} אירועים/שעה
 {R}🚨 צפירה אחרונה: {siren_str}
-{R}📊 אירועים (שעה): {state['intel_events_1h']}
-
-{R}━━━━━━━━━━━━━━━━━
-
-{R}🎯 <b>איסוף מודיעין</b>
-
-{R}🚀 צבע אדום — {on} חי
-{R}📢 ערוצי טלגרם — {on} 10 ערוצים
-{R}🐦 חשבונות טוויטר — {on} 11 חשבונות
-{R}📰 פידי חדשות — {on} 5 פידים
-{R}📊 שוק הימורים — {on} חי
-{R}🔥 לוויני שריפות — {on} 4 לוויינים
-{R}🌍 רעידות אדמה — {on} מעל 2.5
-{R}🗺 מפת מודיעין — {on} אוטו
-{R}✈️ טיסות צבאיות — {on} חי
-{R}🌐 אינטרנט איראן — {on} בדיקות
-{R}🎯 קורלציית תקיפות — {on} אוטו
-{R}🛡 מודיעין סייבר — {on} 30+ קבוצות
-
-{R}━━━━━━━━━━━━━━━━━
 
 {R}🇮🇷 <b>זירת איראן</b>
+{R}🔥 {state['fires_tracked']} שריפות  ·  🌍 {state['quakes_tracked']} רעידות  ·  ✈️ {state['mil_flights']} טיסות צבאיות
+{R}{bl} אינטרנט: {state['blackout_level']}  ·  🎯 {state['strike_corr']} קורלציות
 
-{R}🔥 שריפות: <b>{state['fires_tracked']}</b> במעקב
-{R}🌍 רעידות: <b>{state['quakes_tracked']}</b> במעקב
-{R}✈️ צבאי: <b>{state['mil_flights']}</b> טיסות
-{R}{bl} אינטרנט: <b>{state['blackout_level']}</b>
-{R}🎯 קורלציות: <b>{state['strike_corr']}</b>
+{R}☢️ נתנז · פורדו · אספהאן · בושהר · אראק
+{R}🎯 פרצ׳ין · שאהרוד · בנדר עבאס
 
-{R}☢️ <b>גרעין:</b> נתנז · פורדו · אספהאן · בושהר · אראק
-{R}🎯 <b>צבאי:</b> פרצ׳ין · שאהרוד · בנדר עבאס
-{R}🏛 טהרן  ·  🛢 אי חארג
+{R}📡 85+ מקורות  ·  4 לוויינים  ·  30+ קבוצות סייבר
 
-{R}━━━━━━━━━━━━━━━━━
-
-{R}⚡ <b>תדירות סריקה</b>
-
-{R}🚀 צפירות: <b>חי</b>
-{R}📡 מודיעין: כל <b>{f['osint']}</b>
-{R}🛰 לוויין: כל <b>{f['sat']}</b>
-
-{R}━━━━━━━━━━━━━━━━━
-
-{R}🗺️ <a href="https://magen-yehuda-intel.github.io/magen-yehuda-bot/">לוח מבצעים אינטראקטיבי</a>
-
-{R}🤖 <i>מודיעין אוטומטי 24/7</i>
+{R}🗺 <a href="https://magen-yehuda-intel.github.io/magen-yehuda-bot/">לוח מבצעים</a>
 {R}⏱ <i>{now.strftime("%Y-%m-%d %H:%M:%S")} UTC</i>
 {R}🇮🇱 <b>עם ישראל חי</b> 🇮🇱"""
 

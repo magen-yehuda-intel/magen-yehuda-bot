@@ -100,7 +100,7 @@ config_file = sys.argv[2]
 
 en = (
     f'🗺️ <b>INTERACTIVE STRIKES DASHBOARD</b>\n'
-    f'━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
+    f'\n'
     f'48,500+ geolocated events since Oct 7, 2023\n'
     f'📍 US/Coalition bases · Iran military sites · Event filters\n'
     f'📰 Live news feed · Zoomable timeline · Conflict phase presets\n\n'
@@ -108,7 +108,6 @@ en = (
 )
 he = (
     f'\u200F🗺️ <b>לוח מבצעים אינטראקטיבי</b>\n'
-    f'\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'
     f'\u200F48,500+ אירועים ממופים מאז 7 באוקטובר 2023\n'
     f'\u200F📍 בסיסי ברית · אתרים צבאיים איראניים · סינון אירועים\n'
     f'\u200F📰 פיד חדשות · ציר זמן · שלבי עימות\n\n'

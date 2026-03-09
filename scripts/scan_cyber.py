@@ -857,8 +857,7 @@ def format_cyber_summary(alerts: list) -> dict:
     sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
     alerts.sort(key=lambda a: sev_order.get(a.get("severity", "MEDIUM"), 2))
 
-    lines_en = ["🛡️ <b>CYBER INTELLIGENCE</b>", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
-    lines_he = ["\u200F🛡️ <b>מודיעין סייבר</b>", "\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━"]
+    lines_en = ["🛡️ <b>CYBER INTELLIGENCE</b>"]
 
     # Stats header
     targeting_israel = sum(1 for a in alerts if a.get("target_side") == "israel")

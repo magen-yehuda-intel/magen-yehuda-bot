@@ -199,29 +199,16 @@ set_threat_level() {
 
     # Post threat level change to Telegram
     local threat_msg_en="$new_emoji <b>THREAT LEVEL: $new_level</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⏱️ $(TZ="$DISPLAY_TZ_EN" date '+%H:%M:%S %Z')
 $old_emoji $old_level → $new_emoji $new_level
 
-📋 <i>$reason</i>
-
-⚡ Monitoring frequency adjusted:
-• Oref: every ${EFFECTIVE_OREF}s
-• OSINT (TG+X+RSS): every ${EFFECTIVE_OSINT}s
-• Polymarket: every ${EFFECTIVE_POLY}s
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
+📋 <i>$reason</i>"
     local threat_msg_he
     threat_msg_he="${RLM}${new_emoji} <b>רמת איום: ${new_he}</b>
-${RLM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${RLM}⏱️ $(TZ="$DISPLAY_TZ_HE" date '+%H:%M:%S %Z')
 ${RLM}${old_emoji} ${old_he} → ${new_emoji} ${new_he}
 
-${RLM}📋 <i>${reason_hebrew}</i>
-
-${RLM}⚡ תדירות סריקה עודכנה
-${RLM}━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    
+${RLM}📋 <i>${reason_hebrew}</i>"
     emit_alert "threat_change" "HIGH" "$threat_msg_he" "$threat_msg_en"
     
     # Immediately update pinned status on threat level change
@@ -455,19 +442,19 @@ except: print('')
       _ts_en=$(ts_en)
     _ts_he=$(ts_he)
       local _clear_he="ℹ️ <b>אין התרעות חדשות</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he}
 
 פיקוד העורף הפסיק לשדר התרעות חדשות.
 ⚠️ <b>יש להישאר במרחב מוגן עד להנחיית פיקוד העורף.</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
       local _clear_en="ℹ️ <b>NO NEW ALERTS BROADCASTING</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en}
 
 Pikud HaOref is no longer broadcasting new alerts.
 ⚠️ <b>Stay in shelter until instructed otherwise by Pikud HaOref.</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
       emit_alert "siren_clear" "MEDIUM" "$_clear_he" "$_clear_en"
     fi
     echo "" > "$OREF_LAST"
@@ -607,21 +594,21 @@ except:
       local _te
       _te=$(threat_emoji "$THREAT_LEVEL")
       local _sd_he="✅ <b>פיקוד העורף — ניתן לצאת</b> ✅
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he} | ${_te} $(threat_level_he "$THREAT_LEVEL")
 
 ${details}
 
 🔗 https://www.oref.org.il/
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
       local _sd_en="✅ <b>PIKUD HAOREF — STAND DOWN</b> ✅
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en} | ${_te} $THREAT_LEVEL
 
 ${details}
 
 🔗 https://www.oref.org.il/
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
       emit_alert "siren_standdown" "LOW" "$_sd_he" "$_sd_en"
 
       log_intel "{\"type\":\"siren_standdown\",\"details\":$(echo "$details" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '\"\"')}"
@@ -741,23 +728,23 @@ except Exception as e:
 
     # Siren alerts are already in Hebrew from Oref — details contain Hebrew location data
     local _siren_he="🚨🚨🚨 <b>צבע אדום — פיקוד העורף</b> 🚨🚨🚨
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${details}
 
 ⚡ התרעה בזמן אמת מפיקוד העורף
 🔗 https://www.oref.org.il/
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     local _siren_en="🚨🚨🚨 <b>ACTIVE SIRENS — PIKUD HAOREF</b> 🚨🚨🚨
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${details}
 
 ⚡ Real-time alert from Pikud HaOref
 🔗 https://www.oref.org.il/
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     emit_alert "siren" "CRITICAL" "$_siren_he" "$_siren_en"
     
     # Log intel
@@ -888,21 +875,21 @@ except Exception as ex:
     _ts_he=$(ts_he)
     log "📊 Polymarket spike detected"
     local _poly_he="📊 <b>תנועה בשוקי ההימורים</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${alert_text}
 
 🔗 https://polymarket.com
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     local _poly_en="📊 <b>MARKET MOVEMENT DETECTED</b>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${alert_text}
 
 🔗 https://polymarket.com
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     emit_alert "polymarket" "MEDIUM" "$_poly_he" "$_poly_en"
     
     # Log intel
@@ -1089,22 +1076,22 @@ for a in alerts:
 
     with open('/tmp/magen-breaking-he.txt', 'w') as f:
         f.write(f"""\u200F🚨🚨🚨 <b>{'ידיעה מאומתת' if is_confirmed else 'ידיעה חדשותית דחופה'}</b> 🚨🚨🚨
-\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 \u200F⚡ <b>מקור:</b> {channel} ({source})
 
 \u200F{text}{link_tag}
 
-\u200F━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 {footer_he}""")
 
     with open('/tmp/magen-breaking-en.txt', 'w') as f:
         f.write(f"""🚨🚨🚨 <b>{'CONFIRMED' if is_confirmed else 'BREAKING NEWS'}</b> 🚨🚨🚨
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⚡ <b>Source:</b> {channel} ({source})
 
 {text}{link_tag}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 {footer_en}""")
 
 # Save corroboration state
@@ -1148,19 +1135,19 @@ print(len(seismic), file=sys.stderr)
     _ts_en=$(ts_en)
     _ts_he=$(ts_he)
     local _seis_he="🌍🌍🌍 <b>פעילות סייסמית — איראן</b> 🌍🌍🌍
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${seismic_alerts}
 ⚠️ רעידות רדודות בעוצמה גבוהה או סוג 'פיצוץ' עלולות להצביע על ניסוי גרעיני תת-קרקעי או תקיפה קונבנציונלית.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     local _seis_en="🌍🌍🌍 <b>SEISMIC ACTIVITY — IRAN REGION</b> 🌍🌍🌍
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${seismic_alerts}
 ⚠️ Shallow high-magnitude events or 'explosion' type may indicate underground nuclear tests or large conventional strikes.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     emit_alert "seismic" "HIGH" "$_seis_he" "$_seis_en"
     log "🌍 SEISMIC: $seismic_count events in Iran region"
     
@@ -1187,17 +1174,17 @@ ${seismic_alerts}
 
     log "📡 OSINT: $osint_count updates ($summary)"
     local _osint_he="📡 <b>עדכון מודיעין</b> ($osint_count חדשים)
-━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he} | $level_emoji $(threat_level_he "$THREAT_LEVEL")
 
 ${text_he}
-━━━━━━━━━━━━━━━━━━━━━"
+"
     local _osint_en="📡 <b>OSINT INTEL</b> ($osint_count new)
-━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en} | $level_emoji $THREAT_LEVEL
 
 ${text_en}
-━━━━━━━━━━━━━━━━━━━━━"
+"
     emit_alert "osint" "MEDIUM" "$_osint_he" "$_osint_en"
     
     log_intel "{\"type\":\"osint\",\"count\":$osint_count,\"summary\":$(echo "$summary" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),\"alerts\":$raw_json}"
@@ -1387,7 +1374,7 @@ elif level == 'DEGRADED':
     lines.append('⚠️⚠️⚠️ <b>IRAN INTERNET DEGRADED</b> ⚠️⚠️⚠️')
 else:
     lines.append('🌐 <b>IRAN INTERNET STATUS</b> 🌐')
-lines.append('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+lines.append('')
 lines.append('')
 
 # Big status
@@ -1425,7 +1412,7 @@ elif level == 'MINOR_ISSUES':
     lines.append('<i>not indicate military activity.</i>')
     lines.append('')
 
-lines.append('━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+lines.append('')
 lines.append('📡 <b>${CHAT_ID}</b> | ${CHANNEL_NAME}')
 
 print('\n'.join(lines))
@@ -1499,21 +1486,21 @@ for c, n in sorted(cats.items()):
     _ts_en=$(ts_en)
     _ts_he=$(ts_he)
     local _mil_he="✈️✈️✈️ <b>מטוסים צבאיים — המפרץ הפרסי</b> ✈️✈️✈️
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_he} | $mil_count מטוסים במעקב
 
 ${details}
 
 <i>⚠️ פעילות מוגברת של מתדלקים/מפציצים עשויה להצביע על גיחת תקיפה</i>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     local _mil_en="✈️✈️✈️ <b>MILITARY AIRCRAFT — PERSIAN GULF</b> ✈️✈️✈️
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ⏱️ ${_ts_en} | $mil_count aircraft tracked
 
 ${details}
 
 <i>⚠️ Heavy tanker/bomber activity may indicate imminent strike sortie</i>
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+"
     emit_alert "military_flights" "HIGH" "$_mil_he" "$_mil_en"
     
     log_intel "{\"type\":\"military_flights\",\"total\":$mil_count,\"new\":$new_count}"

@@ -49,10 +49,10 @@ case "${1:-help}" in
 
   stop)
     # Stop the real-time watcher
+    # 1. Kill the tracked PID + children
     if [ -f "$PID_FILE" ]; then
       PID=$(cat "$PID_FILE")
       if kill -0 "$PID" 2>/dev/null; then
-        # Kill the whole process group
         pkill -P "$PID" 2>/dev/null || true
         kill "$PID" 2>/dev/null || true
         echo "✅ Watcher stopped (PID $PID)"
@@ -62,6 +62,26 @@ case "${1:-help}" in
       rm -f "$PID_FILE"
     else
       echo "⚠️  No watcher PID file found"
+    fi
+    # 2. Kill any orphaned watcher instances for THIS skill directory
+    _orphans=""
+    for _p in $(pgrep -f "realtime-watcher\\.sh" 2>/dev/null); do
+      if ps -p "$_p" -o args= 2>/dev/null | grep -q "$SKILL_DIR"; then
+        _orphans="$_orphans $_p"
+      fi
+    done
+    if [ -n "$_orphans" ]; then
+      # First pass: SIGTERM all orphans + their children
+      for _p in $_orphans; do
+        pkill -P "$_p" 2>/dev/null || true
+        kill "$_p" 2>/dev/null || true
+      done
+      sleep 1
+      # Second pass: SIGKILL any survivors
+      for _p in $_orphans; do
+        kill -0 "$_p" 2>/dev/null && kill -9 "$_p" 2>/dev/null || true
+      done
+      echo "🧹 Killed orphaned watcher(s):$_orphans"
     fi
     ;;
 

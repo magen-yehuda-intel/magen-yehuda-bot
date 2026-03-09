@@ -118,6 +118,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
 .marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
+.marker-osint-strike { filter:drop-shadow(0 0 14px rgba(255,0,0,0.9)); border-color:#ff0000; animation:strike-blink 1s ease-in-out infinite; z-index:9000!important; }
+@keyframes strike-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.3)} }
 
 /* ═══ SAM RANGE RINGS ═══ */
 .sam-ring { fill:none; stroke-dasharray:8,6; }
@@ -817,7 +819,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
   <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
-    <span>🔥</span><div class="tb-tooltip">FIRMS Fire Hotspots</div>
+    <span>🔥</span><div class="tb-tooltip">FIRMS Fires (last 2h)</div>
   </div>
   <div class="tb-btn" data-layer="satellites" data-color="cyan" onclick="toggleLayer('satellites')">
     <span>🛰</span><div class="tb-tooltip">Recon Satellites</div>
@@ -869,7 +871,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="toggleLayer('strikes')"><div class="sb-dot" style="background:#ff2222"></div><span class="sb-row-name">💥 Recent Strikes</span><span class="sb-row-count" id="cnt-strikes">0</span></div>
     <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fire Hotspots</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (2h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
     <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
@@ -1714,13 +1716,18 @@ function loadOSINT() {
 
 function renderOSINTMarkers(events) {
   layers.osint.clearLayers();
+  // Remove old OSINT-based blinking strike markers
+  if (window._osintStrikeMarkers) window._osintStrikeMarkers.forEach(m => layers.strikes.removeLayer(m));
+  window._osintStrikeMarkers = [];
   let count = 0;
   const now = Date.now()/1000;
+  const strikeKeywords = ['strike','struck','attack','hit','bomb','missile','rocket','explosion','shelling','airstrike','barrage','intercept'];
   events.forEach(ev => {
     if (!ev.lat || !ev.lon) return;
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
+    const veryRecent = ts && (now - ts) < 7200; // last 2h
     const srcName = ev.actor1 || ev.source || ev.src || '';
     const srcUrl = getSrcLink(srcName);
     const srcHtml = srcUrl
@@ -1738,6 +1745,22 @@ function renderOSINTMarkers(events) {
     );
     mkMarker(ev.lat, ev.lon, '📌', recent ? 'marker-osint' : 'marker-osint', recent ? 22 : 18, popup)
       .addTo(layers.osint);
+    
+    // Blinking strike marker: must be <2h old, have a location name, and match strike keywords
+    const loc = (ev.location || ev.loc || '').trim();
+    const text = ((ev.notes || ev.text || '') + ' ' + (ev.sub_event_type || ev.type || '')).toLowerCase();
+    const isStrike = strikeKeywords.some(kw => text.includes(kw));
+    if (veryRecent && loc.length > 2 && isStrike) {
+      const strikePopup = mkPopup(
+        `💥 REPORTED STRIKE`,
+        srcHtml,
+        `📍 ${loc}<br>🕐 ${timeDisplay}<br>${ev.notes || ev.text || ''}`,
+        '#ff0000'
+      );
+      const sm = mkMarker(ev.lat, ev.lon, '💥', 'marker-osint-strike', 28, strikePopup);
+      sm.addTo(layers.strikes);
+      window._osintStrikeMarkers.push(sm);
+    }
   });
   document.getElementById('cnt-osint').textContent = count;
 }
@@ -1747,16 +1770,23 @@ function loadFIRMS() {
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const all = data.events || data || [];
+    const now = Date.now()/1000;
+    const twoHoursAgo = now - 7200;
     const fires = all.filter(e => {
       const t = (e.sub_event_type || e.type || '').toLowerCase();
-      return t.includes('fire') || t.includes('firms');
+      if (!t.includes('fire') && !t.includes('firms')) return false;
+      const ts = e.timestamp || e.ts || 0;
+      return ts > twoHoursAgo;
     });
     let count = 0;
     fires.forEach(f => {
       if (!f.lat || !f.lon) return;
       count++;
+      const ts = f.timestamp || f.ts || 0;
+      const age = Math.round((now - ts) / 60);
+      const timeStr = ts ? `${age}m ago · ${localTime(ts)}` : '';
       mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
-        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>📅 ${f.date || ''}`, '#ff8800')
+        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>🕐 ${timeStr}`, '#ff8800')
       ).addTo(layers.fires);
     });
     document.getElementById('cnt-fires').textContent = count;

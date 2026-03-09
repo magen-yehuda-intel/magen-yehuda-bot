@@ -233,7 +233,7 @@ def format_telegram(military_vessels, total_vessels):
     
     lines = [
         "🚢🚢🚢 <b>NAVAL ACTIVITY — PERSIAN GULF</b> 🚢🚢🚢",
-        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        "",
         f"<i>{datetime.now(timezone.utc).strftime('%H:%M UTC')} | {total_vessels} vessels tracked</i>",
         "",
         f"⚓ <b>{len(military_vessels)} military vessel(s) detected</b>",
