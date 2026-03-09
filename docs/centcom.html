@@ -1173,16 +1173,22 @@ function cycleFires() {
   fireMode = (fireMode + 1) % 5;
   const btn = document.querySelector('.tb-btn[data-layer="fires"]');
   const tooltip = btn ? btn.querySelector('.tb-tooltip') : null;
+  const dot = btn ? btn.querySelector('span') : null;
+  // Color feedback: <1H=red, 1-3H=orange, 3-6H=grey, ALL=orange, OFF=dim
+  const modeColors = ['', '#ff2200', '#ff8800', '#888888', '#ff8800'];
+  const modeDots = ['⬤', '🔴', '🟠', '⚫', '🔥'];
   if (fireMode === 0) {
     activeState.fires = false;
     map.removeLayer(layers.fires);
-    if (btn) btn.classList.remove('active');
+    if (btn) { btn.classList.remove('active'); btn.style.opacity = '0.4'; }
     if (tooltip) tooltip.textContent = 'Fires: OFF';
+    if (dot) dot.textContent = '🔥';
   } else {
     activeState.fires = true;
     layers.fires.addTo(map);
-    if (btn) btn.classList.add('active');
+    if (btn) { btn.classList.add('active'); btn.style.opacity = '1'; }
     if (tooltip) tooltip.textContent = `Fires: ${FIRE_MODES[fireMode]}`;
+    if (dot) dot.innerHTML = `<span style="color:${modeColors[fireMode]};font-size:16px">⬤</span>`;
     loadFIRMS();
   }
   updateMobileButtons();
@@ -1618,6 +1624,36 @@ function mkPopup(title, subtitle, details, color) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// VIEWPORT-BASED RENDERING (performance optimization)
+// ═══════════════════════════════════════════════════════════
+function getBufferedBounds(bufferFactor) {
+  // Returns bounds padded by bufferFactor (1.0 = same as viewport, 2.0 = 2x wider)
+  const b = map.getBounds();
+  const latSpan = b.getNorth() - b.getSouth();
+  const lngSpan = b.getEast() - b.getWest();
+  const latBuf = latSpan * (bufferFactor - 1) / 2;
+  const lngBuf = lngSpan * (bufferFactor - 1) / 2;
+  return L.latLngBounds(
+    [b.getSouth() - latBuf, b.getWest() - lngBuf],
+    [b.getNorth() + latBuf, b.getEast() + lngBuf]
+  );
+}
+function inViewport(lat, lon, bounds) {
+  return bounds.contains([lat, lon]);
+}
+
+// Re-render visible data on pan/zoom (debounced)
+let _viewportTimer = null;
+map.on('moveend zoomend', () => {
+  clearTimeout(_viewportTimer);
+  _viewportTimer = setTimeout(() => {
+    // Re-render heavy layers with viewport filter
+    if (window._osintEvents && activeState.osint) renderOSINTMarkers(window._osintEvents);
+    if (activeState.fires) loadFIRMS();
+  }, 300);
+});
+
 // RENDER STATIC LAYERS
 // ═══════════════════════════════════════════════════════════
 function renderAllLayers() {
@@ -1838,6 +1874,7 @@ function renderOSINTMarkers(events) {
   window._osintStrikeMarkers = [];
   let count = 0;
   const now = Date.now()/1000;
+  const bounds = getBufferedBounds(2.0); // 2x viewport buffer
   const strikeKeywords = ['strike','struck','attack','hit','bomb','missile','rocket','explosion','shelling','airstrike','barrage','intercept'];
   events.forEach(ev => {
     if (!ev.lat || !ev.lon) return;
@@ -1845,6 +1882,7 @@ function renderOSINTMarkers(events) {
     const evType = (ev.sub_event_type || ev.type || '').toLowerCase();
     const evSrc = (ev.source || ev.src || '').toLowerCase();
     if (evType.includes('fire') || evType.includes('firms') || evSrc.includes('firms') || evSrc.includes('nasa')) return;
+    if (!inViewport(ev.lat, ev.lon, bounds)) return; // viewport culling
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
@@ -1900,8 +1938,10 @@ function loadFIRMS() {
       return t.includes('fire') || t.includes('firms');
     });
     let count = 0;
+    const bounds = getBufferedBounds(2.0);
     fires.forEach(f => {
       if (!f.lat || !f.lon) return;
+      if (!inViewport(f.lat, f.lon, bounds)) return; // viewport culling
       const ts = f.timestamp || f.ts || 0;
       const ageMin = ts ? (now - ts) / 60 : 9999;
       if (ageMin > 360) return; // filter: max 6h
