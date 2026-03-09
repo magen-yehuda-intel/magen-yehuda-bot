@@ -2298,15 +2298,36 @@ function loadShips() {
     const color = typeColors[ship.type] || '#06b6d4';
     let iconHtml;
     if (ship.type === 'CSG') {
-      // Aircraft carrier SVG silhouette
-      iconHtml = `<svg width="36" height="36" viewBox="0 0 36 36"><g transform="translate(18,18) rotate(0)"><path d="M0-16 L4-12 L5-4 L8 0 L8 6 L6 10 L4 12 L-4 12 L-6 10 L-8 6 L-8 0 L-5-4 L-4-12 Z" fill="${color}" stroke="#fff" stroke-width="0.8" opacity="0.9"/><rect x="-6" y="-8" width="12" height="2" fill="#fff" opacity="0.6" rx="1"/><line x1="-3" y1="-2" x2="-3" y2="8" stroke="#fff" stroke-width="0.5" opacity="0.4"/><line x1="3" y1="-2" x2="3" y2="8" stroke="#fff" stroke-width="0.5" opacity="0.4"/><text x="0" y="2" text-anchor="middle" font-size="6" fill="#fff" font-weight="700" font-family="monospace">CV</text></g></svg>`;
+      // Aircraft carrier SVG - side profile with flight deck, island, jets, waves
+      iconHtml = `<svg width="48" height="32" viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.95">
+<!-- Hull -->
+<path d="M10,52 L18,42 L105,42 L110,52 L108,58 L12,58 Z" fill="${color}" stroke="#fff" stroke-width="1"/>
+<!-- Flight deck -->
+<path d="M15,42 L8,38 L108,38 L112,42 Z" fill="${color}" stroke="#fff" stroke-width="0.8" opacity="0.85"/>
+<!-- Deck lines -->
+<line x1="20" y1="40" x2="100" y2="40" stroke="#fff" stroke-width="0.5" opacity="0.4" stroke-dasharray="4,3"/>
+<!-- Island/superstructure -->
+<rect x="72" y="26" width="12" height="12" fill="${color}" stroke="#fff" stroke-width="0.8" rx="1"/>
+<rect x="74" y="22" width="3" height="4" fill="${color}" stroke="#fff" stroke-width="0.5"/>
+<line x1="76" y1="18" x2="76" y2="22" stroke="#fff" stroke-width="0.8"/>
+<line x1="73" y1="20" x2="79" y2="20" stroke="#fff" stroke-width="0.5"/>
+<!-- Jet 1 - taking off -->
+<polygon points="30,36 24,33 22,36 24,37 30,37" fill="#fff" opacity="0.7"/>
+<line x1="24" y1="34" x2="20" y2="33" stroke="#fff" stroke-width="0.5" opacity="0.6"/>
+<!-- Jet 2 - on deck -->
+<polygon points="52,36 46,33 44,36 46,37 52,37" fill="#fff" opacity="0.5"/>
+<!-- Waves -->
+<path d="M5,62 Q12,58 20,62 Q28,66 36,62 Q44,58 52,62 Q60,66 68,62 Q76,58 84,62 Q92,66 100,62 Q108,58 115,62" fill="none" stroke="${color}" stroke-width="1.2" opacity="0.5"/>
+<path d="M8,68 Q16,64 24,68 Q32,72 40,68 Q48,64 56,68 Q64,72 72,68 Q80,64 88,68 Q96,72 104,68 Q112,64 118,68" fill="none" stroke="${color}" stroke-width="0.8" opacity="0.3"/>
+</g></svg>`;
     } else if (ship.type === 'SSGN' || ship.type === 'SSK') {
       iconHtml = `<svg width="28" height="28" viewBox="0 0 28 28"><ellipse cx="14" cy="14" rx="10" ry="5" fill="${color}" stroke="#fff" stroke-width="0.6" opacity="0.85" transform="rotate(-30,14,14)"/><circle cx="14" cy="12" r="2" fill="#fff" opacity="0.5"/><text x="14" y="18" text-anchor="middle" font-size="5" fill="#fff" font-weight="700" font-family="monospace">${ship.type}</text></svg>`;
     } else {
       const size = ship.type === 'ARG' ? 18 : 14;
       iconHtml = `<div style="font-size:${size}px;text-shadow:0 0 8px ${color};filter:drop-shadow(0 0 6px ${color})">${ship.icon}</div>`;
     }
-    const iconSize = ship.type === 'CSG' ? [36,36] : ship.type === 'SSGN' || ship.type === 'SSK' ? [28,28] : [18,18];
+    const iconSize = ship.type === 'CSG' ? [48,32] : ship.type === 'SSGN' || ship.type === 'SSK' ? [28,28] : [18,18];
     const icon = L.divIcon({
       html: iconHtml,
       className: '', iconSize, iconAnchor: [iconSize[0]/2, iconSize[1]/2]
