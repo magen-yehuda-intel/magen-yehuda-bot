@@ -2382,6 +2382,9 @@ function loadTickerFallback() {
 }
 
 function renderTickerItems(recent, isStatic) {
+    if (recent.length === 0) return;
+    const ticker = document.getElementById('news-ticker');
+    if (ticker) ticker.style.display = 'flex';
     const now = Date.now() / 1000;
     const hasBreaking = recent.some(e => e.breaking);
     const label = document.getElementById('ticker-label');

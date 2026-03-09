@@ -431,6 +431,10 @@ except: print('')
   # Strip BOM and whitespace
   alerts=$(echo "$alerts" | tr -d '\r\n' | sed 's/^\xEF\xBB\xBF//' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
+  # Save to temp file for reliable Hebrew passing to Python (heredoc <<< fails with Unicode)
+  local _alerts_tmp="$STATE_DIR/.oref-alerts-current.json"
+  printf '%s' "$alerts" > "$_alerts_tmp"
+
   local prev
   prev=$(cat "$OREF_LAST" 2>/dev/null || echo "")
 
@@ -547,9 +551,39 @@ try:
         print('UNKNOWN')
 except:
     print('UNKNOWN')
-" <<< "$alerts" 2>/dev/null)
+" < "$_alerts_tmp" 2>/dev/null)
 
-  log "  Oref alert type: $alert_type"
+  log "  Oref alert type: $alert_type (alerts_len=${#alerts})"
+  if [ -z "$alert_type" ] || [ "$alert_type" = "" ]; then
+    alert_type=$(echo "$alerts" | python3 -c "
+import json, sys
+STAND_DOWN_PHRASES = ['ניתן לצאת','ניתן לחזור','הותר','שגרה','אין צורך','הסתיים','בוטל','תרגיל']
+PRE_ALERT_PHRASES = ['צפויות להתקבל','בדקות הקרובות','היערכות','לשפר את המיקום','למיגון המיטבי','להיכנס למרחב המוגן','להישאר במרחב המוגן','לשהות בו עד']
+THREAT_CATS = {1, 2, 3, 4, 5, 6, 7}
+try:
+    raw = sys.stdin.read().strip()
+    if raw.startswith('\ufeff'): raw = raw[1:]
+    alerts = json.loads(raw)
+    if not isinstance(alerts, list): alerts = [alerts]
+    has_threat = has_standdown = False
+    for a in alerts:
+        cat = int(a.get('cat', 0))
+        title = a.get('title', '')
+        desc = a.get('desc', '')
+        combined = f'{title} {desc}'
+        is_prealert = any(p in combined for p in PRE_ALERT_PHRASES)
+        is_standdown = any(p in combined for p in STAND_DOWN_PHRASES)
+        if is_prealert: has_threat = True
+        elif is_standdown: has_standdown = True
+        elif cat in THREAT_CATS: has_threat = True
+    if has_threat: print('THREAT')
+    elif has_standdown: print('STANDDOWN')
+    else: print('UNKNOWN')
+except: print('UNKNOWN')
+" 2>/dev/null)
+  fi
+
+  log "  Oref alert type: $alert_type (alerts_len=${#alerts})"
 
   if [ "$alert_type" = "STANDDOWN" ]; then
     # This is an informational/stand-down message — do NOT escalate
@@ -586,7 +620,7 @@ try:
             print(f'     <i>{desc[:200]}</i>')
 except:
     print('  ℹ️ Stand-down message received')
-" <<< "$alerts" 2>/dev/null)
+" < "$_alerts_tmp" 2>/dev/null)
 
       local _ts
       _ts_en=$(ts_en)
@@ -621,6 +655,7 @@ ${details}
   fi
 
   # ─── ACTIVE THREAT: update siren timestamps and escalate ───
+
   LAST_SIREN_TIME=$(date +%s)
 
   # Check if critical cities are in the alert (Python for reliable Hebrew matching)
@@ -632,7 +667,7 @@ critical = ['תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'פ�
             'רמת גן', 'בני ברק', 'חולון', 'בת ים', 'הרצליה', 'נתניה',
             'אשדוד', 'אשקלון', 'רחובות', 'מודיעין', 'גבעתיים']
 print('1' if any(c in raw for c in critical) else '0')
-" <<< "$alerts" 2>/dev/null)
+" < "$_alerts_tmp" 2>/dev/null)
   if [ "$is_critical" = "1" ]; then
     LAST_SIREN_CRITICAL=$(date +%s)
   fi
@@ -662,7 +697,7 @@ for a in alerts:
         'areas': a.get('data', []),
         'ts': time.time()
     })
-" <<< "$alerts" 2>/dev/null &
+" < "$_alerts_tmp" 2>/dev/null &
 
     # Parse alert details via temp file
     local alert_tmp="$STATE_DIR/oref-alert-tmp.json"
@@ -764,7 +799,7 @@ try:
     print(json.dumps({'alerts': alerts}))
 except:
     print(json.dumps({'alerts': []}))
-" <<< "$alerts" 2>/dev/null)
+" < "$_alerts_tmp" 2>/dev/null)
   curl -sf --max-time 5 -X POST \
     "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" \
     -H "Content-Type: application/json" \
@@ -786,7 +821,7 @@ try:
     print(','.join([a for a in areas if a]))
 except:
     print('')
-" <<< "$alerts" 2>/dev/null)
+" < "$_alerts_tmp" 2>/dev/null)
       
       local classification
       classification=$(python3 "$SCRIPT_DIR/classify-attack.py" --oref-areas "$oref_areas" 2>/dev/null)
