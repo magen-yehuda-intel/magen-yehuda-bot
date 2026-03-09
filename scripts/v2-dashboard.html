@@ -1743,14 +1743,25 @@ function renderAllLayers() {
 // LIVE DATA LOADERS
 // ═══════════════════════════════════════════════════════════
 function loadOSINT() {
-  const feedUrl = dataUrl('intel-feed');
-  fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no feed'))
-  .then(data => {
-    const events = data.events || data || [];
-    window._osintEvents = events; // store for feed-linked filtering
-    renderOSINTMarkers(events);
-  }).catch(() => {
-    console.log('No intel-feed.json available, OSINT layer empty');
+  // OSINT events come from static intel-feed.json (API only has fires/seismic)
+  const staticUrl = `${STATIC_BASE}/intel-feed.json`;
+  const apiUrl = API_URL ? `${API_URL}/api/intel-feed?hours=48&limit=2000` : null;
+  // Fetch both and merge
+  Promise.all([
+    fetch(staticUrl).then(r => r.ok ? r.json() : null).catch(() => null),
+    apiUrl ? fetch(apiUrl).then(r => r.ok ? r.json() : null).catch(() => null) : Promise.resolve(null),
+  ]).then(([staticData, apiData]) => {
+    const staticEvents = staticData ? (Array.isArray(staticData) ? staticData : staticData.events || []) : [];
+    const apiEvents = apiData ? (apiData.events || []) : [];
+    // Merge, dedup by src+ts
+    const seen = new Set();
+    const merged = [];
+    for (const e of [...staticEvents, ...apiEvents]) {
+      const key = `${e.src||e.source||''}|${e.ts||e.timestamp||0}|${(e.text||'').slice(0,40)}`;
+      if (!seen.has(key)) { seen.add(key); merged.push(e); }
+    }
+    window._osintEvents = merged;
+    renderOSINTMarkers(merged);
   });
 }
 
