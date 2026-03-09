@@ -24,6 +24,9 @@ from math import radians, sin, cos, sqrt, atan2
 # Iran approximate polygon (simplified) - points roughly tracing the border
 # We use a bounding box for API fetch, then filter with point-in-polygon for Iran proper
 # Plus Persian Gulf and Gulf of Oman water areas
+# Full Middle East bounding box (Israel to Afghanistan, Yemen to Turkey)
+ME_BBOX = {"west": 24, "south": 12, "east": 64, "north": 42}
+# Legacy Iran-only bbox kept for reference
 IRAN_BBOX = {"west": 44, "south": 25, "east": 63.5, "north": 40}
 
 # Simplified Iran border polygon (lon, lat pairs) - rough but functional
@@ -295,7 +298,7 @@ def main():
     # Fetch from all FIRMS sources
     all_fires = []
     for source in FIRMS_SOURCES:
-        rows = fetch_firms_data(map_key, source, IRAN_BBOX, days=1)
+        rows = fetch_firms_data(map_key, source, ME_BBOX, days=1)
         print(f"  {source}: {len(rows)} detections", file=sys.stderr)
         for row in rows:
             row["_source"] = source
@@ -303,30 +306,29 @@ def main():
     
     print(f"  Total raw detections: {len(all_fires)}", file=sys.stderr)
     
-    # Filter to Iran + water zones and deduplicate
-    iran_fires = []
+    # Deduplicate and tag region
+    me_fires = []
     seen_keys = set()
     for row in all_fires:
         lat = float(row["latitude"])
         lon = float(row["longitude"])
-        region = in_iran_region(lat, lon)
-        if not region:
-            continue
         
         key = fire_key(row)
         if key in seen_keys:
             continue
         seen_keys.add(key)
         
-        row["_region"] = region
+        # Tag region for context
+        region = in_iran_region(lat, lon)
+        row["_region"] = region or "middle_east"
         row["_key"] = key
-        iran_fires.append(row)
+        me_fires.append(row)
     
-    print(f"  Iran region fires (deduped): {len(iran_fires)}", file=sys.stderr)
+    print(f"  ME region fires (deduped): {len(me_fires)}", file=sys.stderr)
     
     # Find NEW fires (not in state)
     new_fires = []
-    for row in iran_fires:
+    for row in me_fires:
         if row["_key"] not in state["seen"]:
             new_fires.append(row)
     
@@ -393,7 +395,7 @@ def main():
     result = {
         "scan_time": datetime.now(timezone.utc).isoformat(),
         "total_detections": len(all_fires),
-        "iran_region_fires": len(iran_fires),
+        "me_region_fires": len(me_fires),
         "new_fires": len(processed),
         "seed_mode": seed_mode,
         "fires": [] if seed_mode else processed,
