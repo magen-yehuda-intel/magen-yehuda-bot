@@ -787,12 +787,12 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="oref-status safe" id="oref-status">✅ All Clear</div>
   <div class="oref-last-siren" id="oref-last-siren"></div>
 </div>
-<div id="oref-history" style="display:none;position:fixed;left:10px;top:150px;width:320px;max-height:280px;overflow-y:auto;background:rgba(10,15,25,0.92);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:12px;z-index:2000;backdrop-filter:blur(10px);font-family:var(--font-data);font-size:11px;color:#ccc;">
+<div id="oref-history" style="display:none;position:fixed;left:10px;top:110px;width:320px;max-height:280px;overflow-y:auto;background:rgba(10,15,25,0.92);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:12px;z-index:2000;backdrop-filter:blur(10px);font-family:var(--font-data);font-size:11px;color:#ccc;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
     <span style="color:#06b6d4;font-weight:700;font-size:12px">🚨 Recent Sirens</span>
     <span onclick="document.getElementById('oref-history').style.display='none';event.stopPropagation()" style="cursor:pointer;color:#888;font-size:14px">✕</span>
   </div>
-  <div id="oref-history-content" style="color:#aaa">Loading...</div>
+  <div id="oref-history-content" style="color:#aaa"></div>
 </div>
 
 <!-- TOOLBAR -->
@@ -2380,39 +2380,45 @@ function toggleOrefHistory() {
   panel.style.display = 'block';
   const el = document.getElementById('oref-history-content');
   
-  // Build status from current state
   const connEl = document.getElementById('oref-conn');
-  const connStatus = connEl ? connEl.textContent : '';
-  const isLive = connStatus.includes('Live');
+  const isLive = connEl && connEl.textContent.includes('Live');
   const lastSiren = lastSirenCache || document.getElementById('oref-last-siren')?.textContent || '';
   const updatedEl = document.getElementById('oref-updated');
   const updated = updatedEl ? updatedEl.textContent : '';
   
   let html = '';
-  // Connection status
   html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">`;
-  html += `<span style="color:${isLive ? 'var(--green)' : '#ef4444'}">●</span>`;
-  html += `<span style="color:${isLive ? 'var(--green)' : '#ef4444'};font-weight:600">${isLive ? 'Connected to Pikud HaOref' : 'Connection issue'}</span>`;
+  html += `<span style="color:${isLive ? 'var(--green)' : '#f59e0b'}">●</span>`;
+  html += `<span style="color:${isLive ? 'var(--green)' : '#f59e0b'};font-weight:600">${isLive ? 'Connected to Pikud HaOref' : 'Connecting...'}</span>`;
   html += `</div>`;
   if (updated) html += `<div style="color:#888;font-size:9px;margin-bottom:8px">${updated}</div>`;
   
-  // Current alert state
   if (orefAlerts.length > 0) {
     html += orefAlerts.slice(0,5).map((a,i) => {
       const cities = (a.cities || a.data || 'Unknown').substring(0,120);
       const threat = SIREN_TITLES[a.cat] || a.cat || 'Alert';
-      return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;color:${i===0?'#ff4444':'#ccc'}">`+
-        `<div style="font-weight:700">🔴 ${threat}</div>`+
-        `<div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div></div>`;
+      return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;color:${i===0?'#ff4444':'#ccc'}"><div style="font-weight:700">🔴 ${threat}</div><div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div></div>`;
     }).join('');
   } else {
     html += `<div style="color:var(--green);font-weight:600;margin-bottom:6px">✅ All Clear — No active alerts</div>`;
-    if (lastSiren) {
-      html += `<div style="color:#aaa;font-size:10px;margin-top:4px">${lastSiren}</div>`;
-    }
-    html += `<div style="color:#666;font-size:9px;margin-top:8px">Polling every ${API_URL ? '10' : '30'}s · Source: Pikud HaOref API</div>`;
+    if (lastSiren) html += `<div style="color:#aaa;font-size:10px;margin-top:4px">Last known: ${lastSiren}</div>`;
   }
   el.innerHTML = html;
+  
+  // Also try to fetch siren history from API
+  if (API_URL) {
+    fetch(`${API_URL}/api/oref/history?limit=3`, {cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
+      if (!d || !d.alerts || !d.alerts.length) return;
+      let hHtml = '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:8px;color:#888;font-size:10px;font-weight:600">Recent Siren History</div>';
+      d.alerts.forEach(a => {
+        const title = SIREN_TITLE_HE[a.title] || SIREN_TITLES[a.cat] || a.title || 'Alert';
+        const cities = (a.data || a.cities || '').substring(0,100);
+        const ts = a.ts ? new Date(a.ts*1000).toLocaleString() : '';
+        hHtml += `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="color:#aaa">${title}</div><div style="font-size:9px;color:#666">${cities} · ${ts}</div></div>`;
+      });
+      el.innerHTML += hHtml;
+    }).catch(()=>{});
+  }
 }
 
 function loadGPSJam() {
