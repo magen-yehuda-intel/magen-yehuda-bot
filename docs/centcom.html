@@ -115,6 +115,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-iran-irgc:hover { box-shadow:0 0 20px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.2); }
 .marker-iran-energy { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
 .marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
+.marker-struck { filter:drop-shadow(0 0 10px rgba(239,68,68,0.8)); border-color:#ef4444; animation:struck-pulse 1.5s ease-in-out infinite alternate; }
+@keyframes struck-pulse { from { filter:drop-shadow(0 0 8px rgba(239,68,68,0.6)); } to { filter:drop-shadow(0 0 16px rgba(239,68,68,1)); } }
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
 .marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
 .correlation-pulse { animation: correlationPulse 1.5s ease-in-out infinite; }
@@ -892,7 +894,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="isolateIranLayer('ad')"><div class="sb-dot" style="background:#eab308"></div><span class="sb-row-name">Iran Air Defense</span><span class="sb-row-count">26</span></div>
     <div class="sb-row" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
     <div class="sb-row" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
-    <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count">38</span></div>
+    <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count" id="cnt-iran-energy">38</span></div>
+    <div style="padding-left:28px;font-size:9px;color:#ef4444;letter-spacing:0.5px" id="struck-count"></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
     <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
     <div class="sb-row" onclick="toggleLayer('strikes')"><div class="sb-dot" style="background:#ff2222"></div><span class="sb-row-name">💥 Recent Strikes</span><span class="sb-row-count" id="cnt-strikes">0</span></div>
@@ -937,6 +940,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Iran Air Base</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>IRGC</div>
     <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Iran Oil & Gas</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444;animation:struck-pulse 1.5s ease-in-out infinite alternate"></div>Struck Facility</div>
     <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Waterway</div>
     <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Air Route</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ff8800"></div>Fire (FIRMS)</div>
@@ -1802,8 +1806,9 @@ function renderAllLayers() {
   // ─── IRAN ENERGY ───
   V2_DATA.IRAN_ENERGY.forEach(s => {
     const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('petro') ? '🏗' : s.type.includes('pipeline') ? '🔗' : '🛢';
-    const popup = mkPopup(`${emoji} ${s.name}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, '#f97316');
-    mkMarker(s.lat, s.lon, emoji, 'marker-iran-energy', 22, popup).addTo(layers.energy);
+    const struckBadge = s.struck ? ' 💥 STRUCK' : '';
+    const popup = mkPopup(`${emoji} ${s.name}${struckBadge}`, s.type.replace(/_/g,' ').toUpperCase(), s.desc, s.struck ? '#ef4444' : '#f97316');
+    mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-iran-energy', 22, popup).addTo(layers.energy);
   });
 
   // ─── GULF & REGIONAL OIL/GAS ───
@@ -1813,6 +1818,12 @@ function renderAllLayers() {
     const popup = mkPopup(`${emoji} ${s.name}${struckBadge}`, `${s.country} — ${s.type.replace(/_/g,' ').toUpperCase()}`, s.desc, s.struck ? '#ef4444' : '#f59e0b');
     mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-gulf-energy', 22, popup).addTo(layers.energy);
   });
+
+  // Update struck infrastructure count
+  const iranStruck = (V2_DATA.IRAN_ENERGY||[]).filter(s => s.struck).length;
+  const gulfStruck = (V2_DATA.GULF_ENERGY||[]).filter(s => s.struck).length;
+  const struckEl = document.getElementById('struck-count');
+  if (struckEl && (iranStruck + gulfStruck) > 0) struckEl.textContent = `💥 ${iranStruck + gulfStruck} facilities struck`;
 
   // ─── STRATEGIC WATERWAYS ───
   V2_DATA.WATERWAYS.forEach(w => {
@@ -2084,42 +2095,11 @@ function loadSeismic() {
       const shallow = depth <= 5;
       const suspicious = shallow && mag >= 3.5;
       const color = suspicious ? '#ff0040' : depth <= 10 ? '#a855f7' : '#7c3aed';
-      const sz = Math.max(22, Math.round(mag * 6));
-      // SVG: cracked ground with seismic waves
-      const quakeSvg = `<svg width="${sz}" height="${sz}" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-<g opacity="${suspicious ? 1 : 0.85}">
-<!-- Ground blocks splitting apart -->
-<path d="M2,36 L10,28 L18,24 L20,30 L16,36 Z" fill="${color}" opacity="0.8" stroke="#fff" stroke-width="0.6"/>
-<path d="M28,24 L36,28 L46,36 L32,36 L28,30 Z" fill="${color}" opacity="0.8" stroke="#fff" stroke-width="0.6"/>
-<!-- Jagged crack through center -->
-<path d="M24,6 L22,14 L26,18 L21,24 L25,30 L22,36 L24,44" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<path d="M22,14 L18,16" fill="none" stroke="#fff" stroke-width="1" opacity="0.6"/>
-<path d="M26,18 L30,17" fill="none" stroke="#fff" stroke-width="1" opacity="0.6"/>
-<path d="M21,24 L17,25" fill="none" stroke="#fff" stroke-width="1" opacity="0.5"/>
-<!-- Seismic wave arcs (left of crack) -->
-<path d="M14,18 A8,8 0 0,1 14,10" fill="none" stroke="${color}" stroke-width="1.8" opacity="0.6"/>
-<path d="M11,20 A12,12 0 0,1 11,8" fill="none" stroke="${color}" stroke-width="1.4" opacity="0.4"/>
-<path d="M8,22 A16,16 0 0,1 8,6" fill="none" stroke="${color}" stroke-width="1" opacity="0.25"/>
-<!-- Tilting building (top right) -->
-<g transform="translate(34,8) rotate(12)">
-<rect x="0" y="0" width="7" height="10" fill="${color}" stroke="#fff" stroke-width="0.6"/>
-<polygon points="0,0 3.5,-4 7,0" fill="${color}" stroke="#fff" stroke-width="0.6"/>
-<rect x="2" y="3" width="1.5" height="2" fill="#fff" opacity="0.4"/>
-<rect x="4" y="3" width="1.5" height="2" fill="#fff" opacity="0.4"/>
-</g>
-<!-- Debris chunks -->
-<polygon points="8,38 11,37 10,40 7,40" fill="${color}" opacity="0.5"/>
-<polygon points="14,39 16,38 17,40 14,41" fill="${color}" opacity="0.4"/>
-<polygon points="34,39 36,38 37,41 33,40" fill="${color}" opacity="0.4"/>
-<circle cx="40" cy="40" r="1.2" fill="${color}" opacity="0.3"/>
-<!-- Epicenter flash -->
-<circle cx="24" cy="24" r="${suspicious ? 3.5 : 2.5}" fill="${color}" opacity="0.9"/>
-${suspicious ? '<circle cx="24" cy="24" r="6" fill="none" stroke="#ff0040" stroke-width="1.2" opacity="0.5"><animate attributeName="r" from="4" to="14" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" from="0.7" to="0" dur="1.5s" repeatCount="indefinite"/></circle>' : ''}
-<!-- Mag label -->
-<text x="38" y="46" font-size="9" fill="#fff" font-weight="700" font-family="monospace" opacity="0.9" text-anchor="end">${mag.toFixed(1)}</text>
-</g></svg>`;
-      const icon = L.divIcon({ html: quakeSvg, className: '', iconSize: [sz,sz], iconAnchor: [sz/2,sz/2] });
-      const marker = L.marker([q.lat, q.lon], { icon });
+      const radius = Math.max(6, mag * 4);
+      const fillOpacity = suspicious ? 0.5 : 0.25;
+      const marker = L.circleMarker([q.lat, q.lon], {
+        radius, color, fillColor: color, fillOpacity, weight: suspicious ? 2 : 1.5, opacity: 0.8
+      });
       const suspTag = suspicious ? '<br><span style="color:#ff0040;font-weight:700">⚠️ SHALLOW — POSSIBLE EXPLOSION</span>' : '';
       const usgsLink = q.url ? `<br><a href="${q.url}" target="_blank" rel="noopener" style="color:#a855f7">🔗 USGS Details</a>` : '';
       marker.bindPopup(mkPopup(

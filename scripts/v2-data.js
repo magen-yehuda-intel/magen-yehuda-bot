@@ -268,9 +268,9 @@ IRAN_IRGC: [
 // IRAN OIL & GAS (38 major facilities)
 // ═══════════════════════════════════════════════════════════
 IRAN_ENERGY: [
-  { name: "Kharg Island Terminal", lat: 29.240, lon: 50.330, type: "oil_terminal", desc: "90% of oil exports" },
+  { name: "Kharg Island Terminal", lat: 29.240, lon: 50.330, type: "oil_terminal", desc: "90% of oil exports. Struck Feb 28, 2026", struck: true },
   { name: "Abadan Refinery", lat: 30.339, lon: 48.283, type: "refinery", desc: "Oldest, 400k bpd capacity" },
-  { name: "Isfahan Refinery", lat: 32.590, lon: 51.630, type: "refinery", desc: "375k bpd" },
+  { name: "Isfahan Refinery", lat: 32.590, lon: 51.630, type: "refinery", desc: "375k bpd. Struck Feb 28, 2026", struck: true },
   { name: "Bandar Abbas Refinery", lat: 27.149, lon: 56.267, type: "refinery", desc: "320k bpd" },
   { name: "Tehran Refinery", lat: 35.590, lon: 51.410, type: "refinery", desc: "250k bpd, Rey" },
   { name: "Arak Refinery (Shazand)", lat: 33.980, lon: 49.440, type: "refinery", desc: "250k bpd" },
@@ -278,7 +278,7 @@ IRAN_ENERGY: [
   { name: "Lavan Refinery", lat: 26.810, lon: 53.356, type: "refinery", desc: "60k bpd, island" },
   { name: "Shiraz Refinery", lat: 29.530, lon: 52.480, type: "refinery", desc: "60k bpd" },
   { name: "Persian Star Refinery (Siraf)", lat: 27.620, lon: 52.340, type: "refinery", desc: "480k bpd mega-project" },
-  { name: "South Pars Gas Field", lat: 26.620, lon: 52.200, type: "gasfield", desc: "World's largest gas field (shared w/ Qatar)" },
+  { name: "South Pars Gas Field", lat: 26.620, lon: 52.200, type: "gasfield", desc: "World's largest gas field (shared w/ Qatar). Struck Jun 2025", struck: true },
   { name: "South Pars Phases 1-5 (Asaluyeh)", lat: 27.469, lon: 52.599, type: "gas_processing", desc: "Major LNG processing" },
   { name: "Asaluyeh Petrochemical Zone", lat: 27.480, lon: 52.610, type: "petrochemical", desc: "Massive petrochemical complex" },
   { name: "Mahshahr Petrochemical Zone", lat: 30.500, lon: 49.160, type: "petrochemical", desc: "Major petrochemical hub" },
