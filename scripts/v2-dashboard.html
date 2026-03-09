@@ -963,7 +963,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- LIVE NEWS TICKER -->
 <div id="news-ticker">
-  <div class="ticker-label" id="ticker-label">LIVE</div>
+  <div class="ticker-label" id="ticker-label" onclick="dismissBreaking()">LIVE</div>
   <div class="ticker-track">
     <div class="ticker-content" id="ticker-content" onclick="this.classList.toggle('paused')"></div>
   </div>
@@ -981,7 +981,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="feed-time-bar" id="feed-time-bar">
       <span class="feed-time-chip" data-hours="0.25">15M</span>
       <span class="feed-time-chip" data-hours="1">1H</span>
-      <span class="feed-time-chip active" data-hours="6">6H</span>
+      <span class="feed-time-chip active" data-hours="2">2H</span>
+      <span class="feed-time-chip" data-hours="6">6H</span>
       <span class="feed-time-chip" data-hours="24">24H</span>
       <span class="feed-time-chip" data-hours="48">48H</span>
       <span class="feed-time-chip" data-hours="0">ALL</span>
@@ -1226,7 +1227,7 @@ function cycleAircraft() {
 // LIVE FEED
 // ═══════════════════════════════════════════════════════════
 let feedEvents = [];
-let feedTimeHours = 6;
+let feedTimeHours = 2;
 let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
@@ -2165,6 +2166,14 @@ setTimeout(() => toggleFeed(), 500);
 // ═══════════════════════════════════════════════════════════
 // NEWS TICKER
 // ═══════════════════════════════════════════════════════════
+function dismissBreaking() {
+  const label = document.getElementById('ticker-label');
+  if (label && label.classList.contains('alert')) {
+    label.classList.remove('alert');
+    label.textContent = 'LIVE';
+  }
+}
+
 function loadTicker() {
   const feedUrl = `${STATIC_BASE}/intel-feed.json`;
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
@@ -2654,21 +2663,34 @@ function mtToggle(name, el) {
 // ═══════════════════════════════════════════════════════════
 let orefAlerts = [];
 function pollOref() {
-  fetch(dataUrl('oref') + (API_URL ? '' : '?t=' + Date.now()), { cache: 'no-store' })
-  .then(r => r.ok ? r.json() : Promise.reject('no'))
+  const url = dataUrl('oref') + (API_URL ? '' : '?t=' + Date.now());
+  fetch(url, { cache: 'no-store' })
+  .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
   .then(data => {
     const alerts = data.alerts || [];
     orefAlerts = alerts;
     updateOrefBanner(alerts, data.timestamp, data.note);
-    // Show connected indicator
     const connEl = document.getElementById('oref-conn');
-    if (connEl) { connEl.textContent = '● Connected'; connEl.style.color = 'var(--green)'; }
-  }).catch(() => {
-    const status = document.getElementById('oref-status');
-    status.className = 'oref-status safe';
-    status.textContent = '✅ All Clear';
+    if (connEl) { connEl.textContent = '● Live'; connEl.style.color = 'var(--green)'; }
+  }).catch(err => {
+    console.warn('Oref poll failed:', err, '- retrying in 5s');
     const connEl = document.getElementById('oref-conn');
-    if (connEl) { connEl.textContent = '● Offline'; connEl.style.color = '#f59e0b'; }
+    if (connEl) { connEl.textContent = '● Reconnecting...'; connEl.style.color = '#f59e0b'; }
+    // Retry once after 5s
+    setTimeout(() => {
+      fetch(url, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        const alerts = data.alerts || [];
+        orefAlerts = alerts;
+        updateOrefBanner(alerts, data.timestamp, data.note);
+        const c = document.getElementById('oref-conn');
+        if (c) { c.textContent = '● Live'; c.style.color = 'var(--green)'; }
+      }).catch(() => {
+        const c = document.getElementById('oref-conn');
+        if (c) { c.textContent = '● Offline'; c.style.color = '#ef4444'; }
+      });
+    }, 5000);
   });
 }
 
