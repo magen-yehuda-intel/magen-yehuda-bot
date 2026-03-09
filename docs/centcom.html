@@ -2740,13 +2740,13 @@ function pollOref() {
   .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
   .then(data => {
     orefFailCount = 0;
+    const connEl = document.getElementById('oref-conn');
+    if (connEl) { connEl.textContent = '● Live'; connEl.style.color = 'var(--green)'; }
     try {
       const alerts = data.alerts || [];
       orefAlerts = alerts;
       updateOrefBanner(alerts, data.timestamp, data.note);
     } catch(e) { console.error('Oref banner update error:', e); }
-    const connEl = document.getElementById('oref-conn');
-    if (connEl) { connEl.textContent = '● Live'; connEl.style.color = 'var(--green)'; }
   }).catch(err => {
     orefFailCount++;
     console.warn(`Oref poll failed (${orefFailCount}x):`, err);
