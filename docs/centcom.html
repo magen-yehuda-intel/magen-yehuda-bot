@@ -123,6 +123,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 @keyframes strikeJetPulse { 0%,100% { transform:scale(1); filter:drop-shadow(0 0 12px rgba(255,34,0,0.8)); } 50% { transform:scale(1.15); filter:drop-shadow(0 0 20px rgba(255,34,0,1)); } }
 .gpsjam-pulse { animation: gpsjamPulse 3s ease-in-out infinite; }
 @keyframes gpsjamPulse { 0%,100% { opacity:0.5; } 50% { opacity:0.2; } }
+@keyframes satPulse { 0%,100% { box-shadow:0 0 10px #00ff88; } 50% { box-shadow:0 0 20px #00ff88,0 0 30px rgba(0,255,136,0.3); } }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
 .marker-osint-strike { filter:drop-shadow(0 0 14px rgba(255,0,0,0.9)); border-color:#ff0000; animation:strike-blink 1s ease-in-out infinite; z-index:9000!important; }
 @keyframes strike-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.3)} }
@@ -815,7 +816,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="ships" data-color="cyan" onclick="toggleLayer('ships')">
     <span>🚢</span><div class="tb-tooltip">Ship Tracking (AIS)</div>
   </div>
-  <div class="tb-btn" data-layer="labels" data-color="blue" onclick="toggleLayer('labels')">
+  <div class="tb-btn active" data-layer="labels" data-color="blue" onclick="toggleLayer('labels')">
     <span>🏷</span><div class="tb-tooltip">Base Labels</div>
   </div>
   <div class="tb-btn" data-layer="sam" data-color="amber" onclick="toggleLayer('sam')">
@@ -893,6 +894,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (6h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
     <div class="sb-row" onclick="toggleLayer('seismic')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Earthquakes</span><span class="sb-row-count" id="cnt-seismic">0</span></div>
     <div class="sb-row" onclick="toggleLayer('correlations')"><div class="sb-dot" style="background:#ff0040;box-shadow:0 0 8px #ff0040"></div><span class="sb-row-name">⚡ Strike Correlations</span><span class="sb-row-count" id="cnt-correlations">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('satellites')"><div class="sb-dot" style="background:#00ff88"></div><span class="sb-row-name">🛰️ Recon Satellites</span><span class="sb-row-count" id="cnt-satellites">0</span></div>
     <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
@@ -1115,7 +1117,7 @@ const activeState = {
   borders: true, military: true, fires: true, osint: true, sirens: true, strikes: true, seismic: true, correlations: true,
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
-  sam: false, waterways: false, patrol: false, labels: false,
+  sam: false, waterways: false, patrol: false, labels: true,
   aircraft: false, ships: false, gpsjam: false, satellites: false,
 };
 
@@ -1138,6 +1140,7 @@ function toggleLayer(name) {
   if (name === 'osint' && activeState.osint) loadOSINT();
   if (name === 'seismic' && activeState.seismic) loadSeismic();
   if (name === 'gpsjam' && activeState.gpsjam) loadGPSJam();
+  if (name === 'satellites' && activeState.satellites) loadSatellites();
 }
 
 function isolateIranLayer(name) {
@@ -1163,7 +1166,7 @@ let aircraftMode = 0;
 const AIRCRAFT_MODES = ['OFF', 'ALL', 'MIL', 'CIV'];
 
 // Fire filter mode: 0=off, 1=<1h ACTIVE, 2=1-3h RECENT, 3=3-6h FADING, 4=ALL
-let fireMode = 4; // default: show all
+let fireMode = 2; // default: 1-3h RECENT
 const FIRE_MODES = ['OFF', '<1H', '1-3H', '3-6H', 'ALL'];
 const FIRE_COLORS = ['', '#ff2200', '#ff8800', '#cc8800', '#ff8800'];
 function cycleFires() {
@@ -2255,6 +2258,166 @@ function loadGPSJam() {
       label.addTo(layers.gpsjam);
     }
   });
+}
+
+// ═══════════════════════════════════════════════════════════
+// RECON SATELLITE TRACKING (CelesTrak TLE + satellite.js SGP4)
+// ═══════════════════════════════════════════════════════════
+const RECON_SATS = [
+  { id: 40115, name: 'WorldView-3', type: 'EO', op: '🇺🇸 Maxar', res: '0.31m', swath: 13.1 },
+  { id: 48268, name: 'Pléiades Neo 3', type: 'EO', op: '🇫🇷 Airbus', res: '0.30m', swath: 14 },
+  { id: 49070, name: 'Pléiades Neo 4', type: 'EO', op: '🇫🇷 Airbus', res: '0.30m', swath: 14 },
+  { id: 38012, name: 'Pléiades 1A', type: 'EO', op: '🇫🇷 Airbus', res: '0.50m', swath: 20 },
+  { id: 54880, name: 'EROS C3', type: 'EO', op: '🇮🇱 IAI', res: '0.30m', swath: 11.5 },
+  { id: 40536, name: 'KOMPSAT-3A', type: 'EO/IR', op: '🇰🇷 KARI', res: '0.55m', swath: 12 },
+  { id: 40697, name: 'Sentinel-2A', type: 'MSI', op: '🇪🇺 ESA', res: '10m', swath: 290 },
+  { id: 42063, name: 'Sentinel-2B', type: 'MSI', op: '🇪🇺 ESA', res: '10m', swath: 290 },
+  { id: 65565, name: 'PRAETORIAN SDA-602', type: 'Tracking', op: '🇺🇸 SDA', res: 'IR', swath: 0 },
+  { id: 39088, name: 'SAPPHIRE', type: 'SSA', op: '🇨🇦 DND', res: 'Tracking', swath: 0 },
+];
+let satTLEs = {};
+let satInterval = null;
+
+async function loadSatellites() {
+  layers.satellites.clearLayers();
+  if (!window.satellite) {
+    // Load satellite.js from CDN
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  // Fetch TLEs for all recon sats
+  const ids = RECON_SATS.map(s => s.id).join(',');
+  try {
+    const resp = await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${RECON_SATS[0].id}&FORMAT=tle`);
+    // CelesTrak doesn't support multi-ID in one call, fetch individually
+    const tlePromises = RECON_SATS.map(async s => {
+      try {
+        const r = await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${s.id}&FORMAT=tle`);
+        if (!r.ok) return null;
+        const text = await r.text();
+        const lines = text.trim().split('\n');
+        if (lines.length >= 3) {
+          satTLEs[s.id] = { name: lines[0].trim(), line1: lines[1].trim(), line2: lines[2].trim() };
+        }
+      } catch(e) {}
+    });
+    await Promise.all(tlePromises);
+  } catch(e) {}
+
+  updateSatPositions();
+  // Update positions every 5 seconds
+  if (satInterval) clearInterval(satInterval);
+  satInterval = setInterval(updateSatPositions, 5000);
+}
+
+function updateSatPositions() {
+  if (!window.satellite) return;
+  layers.satellites.clearLayers();
+  const now = new Date();
+  let count = 0;
+
+  RECON_SATS.forEach(sat => {
+    const tle = satTLEs[sat.id];
+    if (!tle) return;
+
+    try {
+      const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
+      const posVel = satellite.propagate(satrec, now);
+      if (!posVel.position) return;
+
+      const gmst = satellite.gstime(now);
+      const geo = satellite.eciToGeodetic(posVel.position, gmst);
+      const lat = satellite.degreesLat(geo.latitude);
+      const lon = satellite.degreesLong(geo.longitude);
+      const alt = geo.height; // km
+
+      // Check if over ME region (roughly)
+      const overME = lat >= 10 && lat <= 45 && lon >= 20 && lon <= 65;
+
+      count++;
+      const color = overME ? '#00ff88' : '#06b6d4';
+      const size = overME ? 14 : 10;
+      const icon = L.divIcon({
+        html: `<div style="
+          width:${size}px;height:${size}px;
+          background:${color};
+          border:1.5px solid ${overME ? '#00ff88' : '#0891b2'};
+          border-radius:50%;
+          box-shadow:0 0 ${overME ? 10 : 4}px ${color};
+          opacity:${overME ? 1 : 0.6};
+          ${overME ? 'animation:satPulse 2s ease-in-out infinite;' : ''}
+        "></div>`,
+        className: '', iconSize: [size, size], iconAnchor: [size/2, size/2]
+      });
+
+      const marker = L.marker([lat, lon], { icon }).addTo(layers.satellites);
+
+      // Imaging swath footprint (only for sats with swath > 0 and over ME)
+      if (overME && sat.swath > 0) {
+        const swathKm = sat.swath;
+        L.circle([lat, lon], {
+          radius: swathKm * 500, // half-swath in meters
+          color: '#00ff88', fillColor: '#00ff88',
+          fillOpacity: 0.08, weight: 1, opacity: 0.3,
+          dashArray: '4,4'
+        }).addTo(layers.satellites);
+      }
+
+      // Ground track: propagate ±15 min
+      const trackPts = [];
+      for (let m = -15; m <= 15; m += 0.5) {
+        const t = new Date(now.getTime() + m * 60000);
+        const pv = satellite.propagate(satrec, t);
+        if (!pv.position) continue;
+        const g = satellite.eciToGeodetic(pv.position, satellite.gstime(t));
+        trackPts.push([satellite.degreesLat(g.latitude), satellite.degreesLong(g.longitude)]);
+      }
+      if (trackPts.length > 2) {
+        // Split at antimeridian
+        const segments = [[]];
+        for (let i = 0; i < trackPts.length; i++) {
+          segments[segments.length-1].push(trackPts[i]);
+          if (i < trackPts.length-1 && Math.abs(trackPts[i][1] - trackPts[i+1][1]) > 180) {
+            segments.push([]);
+          }
+        }
+        segments.forEach(seg => {
+          if (seg.length > 1) {
+            L.polyline(seg, {
+              color: overME ? '#00ff88' : '#06b6d4',
+              weight: overME ? 1.5 : 0.8,
+              opacity: overME ? 0.5 : 0.2,
+              dashArray: '3,6'
+            }).addTo(layers.satellites);
+          }
+        });
+      }
+
+      // Direction arrow
+      if (trackPts.length > 2) {
+        const mid = Math.floor(trackPts.length / 2);
+        const heading = Math.atan2(
+          trackPts[mid+1][1] - trackPts[mid-1][1],
+          trackPts[mid+1][0] - trackPts[mid-1][0]
+        ) * 180 / Math.PI;
+      }
+
+      marker.bindPopup(mkPopup(
+        `🛰️ ${sat.name}`,
+        `${sat.op} · ${sat.type}`,
+        `📏 Alt: ${alt.toFixed(0)} km<br>📍 ${lat.toFixed(2)}°, ${lon.toFixed(2)}°<br>🔍 Resolution: ${sat.res}<br>${sat.swath ? '📐 Swath: '+sat.swath+'km' : ''}${overME ? '<br><span style="color:#00ff88;font-weight:700">✅ OVER MIDDLE EAST</span>' : '<br><span style="color:#888">Outside ME region</span>'}`,
+        color
+      ));
+    } catch(e) {}
+  });
+
+  const el = document.getElementById('cnt-satellites');
+  if (el) el.textContent = count;
 }
 
 function loadAircraft() {
