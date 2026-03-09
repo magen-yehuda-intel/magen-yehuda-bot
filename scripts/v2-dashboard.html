@@ -2462,25 +2462,23 @@ function updateSatPositions() {
 
 function loadAircraft() {
   if (!activeState.aircraft) return;
-  // OpenSky: bounding box [lat_min, lat_max, lon_min, lon_max] covering ME region
-  const url = 'https://opensky-network.org/api/states/all?lamin=12&lamax=42&lomin=24&lomax=63';
+  // Use our own API (has CORS, more data than OpenSky)
+  const url = `${API_URL}/api/aircraft`;
   fetch(url, {signal: AbortSignal.timeout(15000)}).then(r => r.ok ? r.json() : Promise.reject(r.status))
   .then(data => {
     layers.aircraft.clearLayers();
     if (_activeTrail) { map.removeLayer(_activeTrail); _activeTrail = null; }
-    const states = data.states || [];
+    const aircraft = data.aircraft || [];
     let count = 0;
-    const planePositions = {}; // store for trail queries
-    states.forEach(s => {
-      if (!s[6] || !s[5]) return; // lat, lon
-      const callsign = (s[1]||'').trim();
-      const lon = s[5], lat = s[6], alt = Math.round((s[7]||0) * 3.281); // m→ft
-      const speed = Math.round((s[9]||0) * 1.944); // m/s→kts
-      const heading = s[10] || 0;
-      const icao24 = s[0] || '';
-      const onGround = s[8];
-      if (onGround) return; // skip ground aircraft
-      const isMil = MIL_CALLSIGNS.test(callsign) || MIL_TYPES.test(callsign);
+    aircraft.forEach(a => {
+      if (!a.lat || !a.lon) return;
+      const callsign = (a.callsign||'').trim();
+      const lat = a.lat, lon = a.lon;
+      const alt = a.alt || 0;
+      const speed = a.speed || 0;
+      const heading = a.heading || 0;
+      const icao24 = a.icao24 || a.hex || '';
+      const isMil = a.mil || MIL_CALLSIGNS.test(callsign) || MIL_TYPES.test(a.type||'');
       // Filter by aircraft mode: 2=military only, 3=civilian only
       if (aircraftMode === 2 && !isMil) return;
       if (aircraftMode === 3 && isMil) return;
@@ -2488,29 +2486,34 @@ function loadAircraft() {
       const icon = L.divIcon({
         html: aircraftSvg(heading, isMil),
         className: isMil ? 'marker-aircraft-mil' : 'marker-aircraft',
-        iconSize: [24, 24], iconAnchor: [12, 12]
+        iconSize: [24,24], iconAnchor: [12,12]
       });
+      const fromTo = [a.from, a.to].filter(Boolean).join(' → ');
       const popup = mkPopup(
-        `${isMil?'🔴':'✈️'} ${callsign || 'Unknown'}`,
-        isMil ? 'MILITARY' : '',
-        `📍 ${lat.toFixed(2)}°, ${lon.toFixed(2)}°<br>🔼 ${alt.toLocaleString()} ft · ${speed} kts<br>🧭 ${Math.round(heading)}°<br><a href="#" onclick="loadTrail('${icao24}',${lat},${lon});return false" style="color:#00ffc8">📍 Show trail</a>`,
-        isMil ? '#ff4444' : '#00ffc8'
+        `${isMil ? '🔴' : '✈️'} ${callsign || 'Unknown'}`,
+        `${a.type || 'Unknown type'}${a.reg ? ' · ' + a.reg : ''}${a.airline ? ' · ' + a.airline : ''}`,
+        `📏 Alt: ${alt.toLocaleString()} ft · ${speed} kts<br>🧭 Heading: ${heading}°${fromTo ? '<br>🛫 ' + fromTo : ''}${isMil ? '<br><span style="color:#ff4444;font-weight:700">⚠️ MILITARY</span>' : ''}${icao24 ? '<br><a href="#" onclick="loadTrail(\''+icao24+'\','+lat+','+lon+');return false" style="color:#06b6d4">Show trail →</a>' : ''}`,
+        isMil ? '#ff4444' : '#06b6d4'
       );
-      L.marker([lat, lon], {icon}).bindPopup(popup).addTo(layers.aircraft);
+      L.marker([lat, lon], {icon}).bindPopup(popup, {maxWidth:280}).addTo(layers.aircraft);
     });
-    document.getElementById('chip-live').textContent = count;
-    document.getElementById('cnt-aircraft').textContent = count;
-  }).catch(e => {
-    console.log('OpenSky fetch failed:', e);
+    const el = document.getElementById('cnt-aircraft');
+    if (el) el.textContent = count;
+  }).catch(err => {
+    console.log('Aircraft fetch failed:', err);
   });
 }
+// Auto-refresh aircraft every 30s when active
+setInterval(() => { if (activeState.aircraft && aircraftMode > 0) loadAircraft(); }, 30000);
 
 function loadTrail(icao24, lat, lon) {
   if (_activeTrail) { map.removeLayer(_activeTrail); _activeTrail = null; }
   const now = Math.floor(Date.now()/1000);
   const begin = now - 7200; // last 2h
   const url = `https://opensky-network.org/api/tracks/all?icao24=${icao24}&time=0`;
-  fetch(url, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : Promise.reject(r.status))
+  const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+  fetch(proxyUrl, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : Promise.reject('proxy'))
+  .catch(() => fetch(url, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : Promise.reject('direct')))
   .then(data => {
     const path = data.path || [];
     if (path.length < 2) return;
