@@ -8,6 +8,9 @@ var V2_DATA = {
 // RECENT STRIKES & KEY EVENTS (Feb 28 – Mar 8, 2026)
 // ═══════════════════════════════════════════════════════════
 RECENT_EVENTS: [
+  // Mar 9 — Iran strikes Gulf States
+  { date: "2026-03-09", lat: 26.133, lon: 50.570, type: "strike", actor: "Iran", target: "BAPCO Sitra Refinery, Bahrain", desc: "Iranian strikes on Bahrain's only refinery — fire spreading, Patriot intercept failed", severity: "critical" },
+  { date: "2026-03-09", lat: 24.453, lon: 54.377, type: "strike", actor: "Iran", target: "UAE — widespread attacks reported", desc: "Iranian attacks on UAE territory — multiple thermal anomalies detected", severity: "critical" },
   // Feb 28 — Opening Salvo
   { date: "2026-02-28", lat: 35.690, lon: 51.390, type: "strike", actor: "US/Israel", target: "Tehran — Khamenei compound", desc: "Supreme Leader Khamenei killed in precision strike on leadership compound", severity: "critical" },
   { date: "2026-02-28", lat: 32.616, lon: 51.697, type: "strike", actor: "Israel", target: "Isfahan — Nuclear & air facilities", desc: "Strikes on Natanz approach + Isfahan air base infrastructure", severity: "critical" },
@@ -326,6 +329,9 @@ GULF_ENERGY: [
   { name: "Ras Laffan LNG Terminal", lat: 25.930, lon: 51.530, type: "lng_terminal", country: "Qatar", desc: "World's largest LNG export hub, 77M tons/year" },
   { name: "Mesaieed Industrial City", lat: 24.990, lon: 51.550, type: "lng_terminal", country: "Qatar", desc: "QatarEnergy LNG, petrochemicals" },
   { name: "North Field (Qatar)", lat: 26.000, lon: 52.000, type: "gasfield", country: "Qatar", desc: "World's largest gas field (shared w/ Iran South Pars)" },
+  // Bahrain
+  { name: "BAPCO Sitra Refinery", lat: 26.133, lon: 50.570, type: "refinery", country: "Bahrain", desc: "267k bpd, Bahrain's only refinery. Iranian strikes Mar 9, 2026 — fire spreading", struck: true },
+  { name: "Bahrain LNG Terminal", lat: 26.000, lon: 50.600, type: "lng_terminal", country: "Bahrain", desc: "LNG import terminal at Hidd" },
   // UAE
   { name: "Ruwais Refinery (ADNOC)", lat: 24.110, lon: 52.730, type: "refinery", country: "UAE", desc: "837k bpd, largest in UAE. Houthi-attacked 2022" },
   { name: "Jebel Dhanna Terminal", lat: 24.190, lon: 52.580, type: "oil_terminal", country: "UAE", desc: "ADNOC crude oil export" },

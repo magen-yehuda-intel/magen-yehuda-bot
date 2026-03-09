@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CENTCOM Dashboard — Wireframe & UX/UI Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a1a;
+  --card: #111128;
+  --card-border: rgba(255,255,255,0.06);
+  --blue: #3b82f6;
+  --cyan: #06b6d4;
+  --red: #ef4444;
+  --amber: #f59e0b;
+  --green: #22c55e;
+  --purple: #a855f7;
+  --text: #e2e8f0;
+  --dim: rgba(255,255,255,0.45);
+  --accent: #06b6d4;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; line-height: 1.6; }
+
+/* NAV */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(180deg, rgba(10,10,26,0.98), rgba(10,10,26,0.92));
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--card-border);
+  padding: 12px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-title { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 3px; }
+.nav-links { display: flex; gap: 24px; }
+.nav-links a { color: var(--dim); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
+.nav-links a:hover { color: var(--cyan); }
+
+/* HERO */
+.hero {
+  padding: 80px 32px 60px;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 0%, rgba(6,182,212,0.08) 0%, transparent 60%);
+}
+.hero h1 {
+  font-family: 'Orbitron', sans-serif; font-size: 42px; font-weight: 900;
+  letter-spacing: 4px; margin-bottom: 16px;
+  background: linear-gradient(135deg, #60a5fa, #06b6d4, #22d3ee);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero .subtitle { color: var(--dim); font-size: 16px; max-width: 600px; margin: 0 auto 32px; }
+.hero .version-badge {
+  display: inline-block; padding: 4px 16px; border-radius: 999px;
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.3);
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan);
+}
+
+/* SECTIONS */
+.section { padding: 60px 32px; max-width: 1200px; margin: 0 auto; }
+.section-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 32px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--card-border);
+}
+.section-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan);
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);
+  padding: 2px 10px; border-radius: 4px;
+}
+.section-title { font-family: 'Orbitron', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+
+/* WIREFRAME BOX */
+.wireframe {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+.wireframe-label {
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--card-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--dim); letter-spacing: 1px;
+}
+
+/* DESKTOP WIREFRAME */
+.desktop-frame {
+  height: 520px; position: relative; overflow: hidden;
+  background: #080818;
+}
+
+/* Title bar */
+.wf-titlebar {
+  position: absolute; top: 0; left: 0; right: 0; height: 40px;
+  background: rgba(10,15,30,0.95);
+  border-bottom: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 2px;
+}
+.wf-titlebar::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, rgba(59,130,246,0.5), rgba(6,182,212,0.4), rgba(255,255,255,0.1), rgba(239,68,68,0.4), rgba(239,68,68,0.5));
+}
+.wf-flag { font-size: 18px; }
+.wf-title-us { color: #60a5fa; }
+.wf-title-vs { color: rgba(255,255,255,0.3); margin: 0 6px; font-size: 9px; }
+.wf-title-iran { color: #f87171; }
+
+/* Toolbar */
+.wf-toolbar {
+  position: absolute; top: 40px; left: 0; bottom: 24px; width: 48px;
+  background: rgba(10,15,30,0.9);
+  border-right: 1px solid var(--card-border);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 0; gap: 4px;
+}
+.wf-tb-btn {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; cursor: default;
+}
+.wf-tb-btn.active { border-color: rgba(6,182,212,0.5); box-shadow: 0 0 8px rgba(6,182,212,0.3); }
+.wf-tb-divider { width: 24px; height: 1px; background: var(--card-border); margin: 4px 0; }
+
+/* Map area */
+.wf-map {
+  position: absolute; top: 40px; left: 48px; right: 0; bottom: 24px;
+  background: radial-gradient(ellipse at 45% 55%, #0c1628 0%, #080818 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.wf-map-label {
+  font-family: 'Orbitron', sans-serif; font-size: 14px; color: rgba(255,255,255,0.15);
+  letter-spacing: 6px;
+}
+
+/* Map overlays */
+.wf-region-outline {
+  position: absolute; border: 1px dashed rgba(239,68,68,0.3); border-radius: 40%;
+}
+.wf-region-label {
+  position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 8px;
+  color: rgba(255,255,255,0.2); letter-spacing: 1px;
+}
+.wf-base-dot {
+  position: absolute; width: 8px; height: 8px; border-radius: 50;
+}
+.wf-base-us { background: var(--blue); box-shadow: 0 0 6px rgba(59,130,246,0.6); }
+.wf-base-iran { background: var(--red); box-shadow: 0 0 6px rgba(239,68,68,0.6); }
+.wf-base-nuclear { background: var(--amber); box-shadow: 0 0 6px rgba(245,158,11,0.6); }
+
+/* Sidebar */
+.wf-sidebar {
+  position: absolute; top: 40px; right: 0; bottom: 24px; width: 280px;
+  background: rgba(10,15,30,0.92);
+  border-left: 1px solid var(--card-border);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow-y: auto;
+}
+.wf-sidebar-section {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.wf-sidebar-title {
+  font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+  letter-spacing: 1.5px; color: var(--cyan); margin-bottom: 8px;
+}
+.wf-sidebar-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 11px; padding: 3px 0;
+}
+.wf-sidebar-row .label { color: var(--dim); }
+.wf-sidebar-row .value { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.wf-sidebar-row .value.up { color: var(--green); }
+.wf-sidebar-row .value.down { color: var(--red); }
+.wf-sidebar-row .value.warn { color: var(--amber); }
+
+/* Oref banner */
+.wf-oref-banner {
+  position: absolute; top: 40px; left: 48px; right: 280px; height: 36px;
+  background: rgba(34,197,94,0.08);
+  border-bottom: 1px solid rgba(34,197,94,0.2);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-size: 11px; color: var(--green);
+}
+.wf-oref-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+/* Feed panel */
+.wf-feed {
+  position: absolute; top: 40px; right: 280px; bottom: 24px; width: 320px;
+  background: rgba(10,15,30,0.92);
+  border-left: 1px solid var(--card-border);
+  display: flex; flex-direction: column;
+}
+.wf-feed-header {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.wf-feed-title {
+  font-family: 'Orbitron', sans-serif; font-size: 10px; letter-spacing: 1.5px;
+  display: flex; align-items: center; gap: 6px;
+}
+.wf-live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+.wf-feed-filters {
+  padding: 8px 12px; display: flex; gap: 4px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--card-border);
+}
+.wf-feed-chip {
+  padding: 2px 8px; border-radius: 4px; font-size: 9px;
+  border: 1px solid rgba(255,255,255,0.08); color: var(--dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.wf-feed-chip.active { border-color: rgba(6,182,212,0.4); color: var(--cyan); }
+
+.wf-feed-list { flex: 1; padding: 8px 12px; overflow-y: auto; }
+.wf-feed-item {
+  padding: 8px 10px; margin-bottom: 6px;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  border-left: 2px solid;
+}
+.wf-feed-item.israel { border-left-color: var(--blue); }
+.wf-feed-item.iran { border-left-color: var(--red); }
+.wf-feed-item.us { border-left-color: var(--cyan); }
+.wf-feed-item.proxy { border-left-color: var(--amber); }
+.wf-feed-item-source { font-size: 8px; color: var(--dim); font-family: 'JetBrains Mono', monospace; }
+.wf-feed-item-text { font-size: 10px; margin-top: 2px; }
+.wf-feed-item-time { font-size: 8px; color: var(--dim); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+
+/* News ticker */
+.wf-ticker {
+  position: absolute; top: 76px; left: 48px; right: 600px; height: 28px;
+  background: rgba(239,68,68,0.06);
+  border-bottom: 1px solid rgba(239,68,68,0.15);
+  display: flex; align-items: center; overflow: hidden;
+  font-size: 10px;
+}
+.wf-ticker-label {
+  padding: 0 10px; background: rgba(239,68,68,0.15);
+  font-family: 'Orbitron', sans-serif; font-size: 8px; letter-spacing: 1px;
+  color: var(--red); font-weight: 700; height: 100%;
+  display: flex; align-items: center; flex-shrink: 0;
+}
+.wf-ticker-content { color: var(--dim); padding: 0 12px; white-space: nowrap; }
+
+/* Counter chips */
+.wf-chips {
+  position: absolute; bottom: 30px; left: 56px;
+  display: flex; gap: 6px;
+}
+.wf-chip {
+  padding: 4px 10px; border-radius: 6px;
+  background: rgba(10,15,30,0.85);
+  border: 1px solid var(--card-border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; display: flex; align-items: center; gap: 4px;
+}
+.wf-chip-dot { width: 5px; height: 5px; border-radius: 50%; }
+
+/* Status bar */
+.wf-statusbar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 24px;
+  background: rgba(10,15,30,0.95);
+  border-top: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 12px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--dim);
+}
+
+/* ═══ MOBILE WIREFRAME ═══ */
+.mobile-frame {
+  width: 360px; height: 640px; position: relative; overflow: hidden;
+  background: #080818; margin: 0 auto;
+  border-radius: 20px; border: 2px solid var(--card-border);
+}
+.wf-mob-map {
+  position: absolute; top: 40px; left: 0; right: 0; bottom: 52px;
+  background: radial-gradient(ellipse at 50% 50%, #0c1628, #080818);
+  display: flex; align-items: center; justify-content: center;
+}
+.wf-mob-titlebar {
+  position: absolute; top: 0; left: 0; right: 0; height: 40px;
+  background: rgba(10,15,30,0.95);
+  border-bottom: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Orbitron', sans-serif; font-size: 9px; letter-spacing: 2px;
+}
+.wf-mob-titlebar::after {
+  content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, rgba(59,130,246,0.5), rgba(6,182,212,0.4), transparent, rgba(239,68,68,0.4));
+}
+.wf-mob-bottombar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 52px;
+  background: rgba(10,15,30,0.95);
+  border-top: 1px solid var(--card-border);
+  display: flex; align-items: center; justify-content: space-around;
+}
+.wf-mob-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 8px; color: var(--dim);
+}
+.wf-mob-tab.active { color: var(--cyan); }
+.wf-mob-tab-icon { font-size: 18px; }
+
+/* Slide-up sheet */
+.wf-mob-sheet {
+  position: absolute; bottom: 52px; left: 0; right: 0; height: 280px;
+  background: rgba(10,15,30,0.95);
+  border-top: 1px solid var(--card-border);
+  border-radius: 16px 16px 0 0;
+  padding: 12px 16px;
+}
+.wf-mob-sheet-handle {
+  width: 32px; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  margin: 0 auto 12px;
+}
+
+/* ═══ CARDS & GRIDS ═══ */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.card-title {
+  font-family: 'Orbitron', sans-serif; font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px; color: var(--cyan); margin-bottom: 12px;
+}
+.card-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; }
+.card-item .emoji { font-size: 16px; }
+.card-item .detail { color: var(--dim); font-size: 11px; }
+
+/* Priority badges */
+.priority { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+.priority.critical { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.priority.high { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.priority.medium { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+.priority.low { background: rgba(255,255,255,0.05); color: var(--dim); border: 1px solid var(--card-border); }
+
+/* Color dots */
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-blue { background: var(--blue); }
+.dot-red { background: var(--red); }
+.dot-cyan { background: var(--cyan); }
+.dot-amber { background: var(--amber); }
+.dot-green { background: var(--green); }
+.dot-purple { background: var(--purple); }
+
+/* Tables */
+.spec-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+.spec-table th {
+  text-align: left; padding: 8px 12px;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--card-border);
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--cyan); letter-spacing: 1px;
+}
+.spec-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 13px;
+}
+.spec-table td.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* Annotation pointers */
+.annotation {
+  position: absolute; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  color: var(--cyan); padding: 3px 8px;
+  background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.2);
+  border-radius: 4px; white-space: nowrap; pointer-events: none;
+}
+.annotation::before {
+  content: '→'; margin-right: 4px; color: rgba(6,182,212,0.5);
+}
+
+/* Flow diagram */
+.flow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
+.flow-node {
+  padding: 10px 16px; border-radius: 8px;
+  background: var(--card); border: 1px solid var(--card-border);
+  font-size: 12px; text-align: center;
+}
+.flow-node.source { border-color: rgba(34,197,94,0.3); }
+.flow-node.process { border-color: rgba(6,182,212,0.3); }
+.flow-node.output { border-color: rgba(168,85,247,0.3); }
+.flow-arrow { color: var(--dim); font-size: 18px; }
+
+/* Change log */
+.change-item { padding: 12px 0; border-bottom: 1px solid var(--card-border); }
+.change-item:last-child { border: none; }
+.change-tag {
+  display: inline-block; padding: 1px 8px; border-radius: 3px;
+  font-size: 10px; font-weight: 600; margin-right: 8px;
+}
+.change-tag.new { background: rgba(34,197,94,0.15); color: var(--green); }
+.change-tag.redesign { background: rgba(168,85,247,0.15); color: var(--purple); }
+.change-tag.remove { background: rgba(239,68,68,0.15); color: var(--red); }
+.change-tag.move { background: rgba(6,182,212,0.15); color: var(--cyan); }
+
+.note {
+  padding: 12px 16px; border-radius: 8px;
+  background: rgba(6,182,212,0.05); border: 1px solid rgba(6,182,212,0.15);
+  font-size: 13px; margin: 16px 0;
+}
+.note.warn {
+  background: rgba(245,158,11,0.05); border-color: rgba(245,158,11,0.15);
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-title" style="color:var(--cyan)">CENTCOM DASHBOARD V3</div>
+  <div class="nav-links">
+    <a href="#wireframes">Wireframes</a>
+    <a href="#layout">Layout</a>
+    <a href="#sidebar">Sidebar</a>
+    <a href="#feed">Feed</a>
+    <a href="#layers">Layers</a>
+    <a href="#mobile">Mobile</a>
+    <a href="#data">Data</a>
+    <a href="#changes">Changes</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>CENTCOM V3</h1>
+  <p class="subtitle">Complete UX/UI redesign plan for the Magen Yehuda CENTCOM Theater Operations Dashboard. Wireframes, component specs, data flow, and implementation roadmap.</p>
+  <span class="version-badge">v3.0 WIREFRAME · MAR 2026</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 1: DESKTOP WIREFRAME -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="wireframes">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">DESKTOP WIREFRAME</span>
+  </div>
+
+  <div class="wireframe">
+    <div class="wireframe-label">DESKTOP · 1920×1080 · FULL LAYOUT</div>
+    <div class="desktop-frame">
+
+      <!-- Title Bar -->
+      <div class="wf-titlebar">
+        <span class="wf-flag">🇺🇸</span>
+        <span class="wf-title-us">CENTCOM</span>
+        <span class="wf-title-vs">vs</span>
+        <span class="wf-title-iran">IRAN</span>
+        <span class="wf-flag">🇮🇷</span>
+      </div>
+
+      <!-- Left Toolbar -->
+      <div class="wf-toolbar">
+        <div class="wf-tb-btn active" style="color:#60a5fa">🏛</div>
+        <div class="wf-tb-btn" style="color:#f87171">☢️</div>
+        <div class="wf-tb-btn" style="color:#fbbf24">🚀</div>
+        <div class="wf-tb-btn" style="color:#22d3ee">⚓</div>
+        <div class="wf-tb-btn" style="color:#a78bfa">✈️</div>
+        <div class="wf-tb-btn" style="color:#fb923c">🛡</div>
+        <div class="wf-tb-divider"></div>
+        <div class="wf-tb-btn active" style="color:#f87171">🔥</div>
+        <div class="wf-tb-btn" style="color:#fbbf24">🌍</div>
+        <div class="wf-tb-btn active" style="color:#22d3ee">✈️</div>
+        <div class="wf-tb-btn" style="color:#a78bfa">📡</div>
+        <div class="wf-tb-divider"></div>
+        <div class="wf-tb-btn" style="color:rgba(255,255,255,0.4)">🛢</div>
+        <div class="wf-tb-btn" style="color:rgba(255,255,255,0.4)">🌊</div>
+        <div class="wf-tb-btn" style="color:rgba(255,255,255,0.4)">🗺</div>
+      </div>
+
+      <!-- Map Area -->
+      <div class="wf-map" style="right:580px">
+        <span class="wf-map-label">LEAFLET MAP</span>
+
+        <!-- Iran region outline -->
+        <div class="wf-region-outline" style="top:30%;left:45%;width:30%;height:40%;border-color:rgba(239,68,68,0.2)"></div>
+        <div class="wf-region-label" style="top:28%;left:56%">IRAN</div>
+
+        <!-- Israel -->
+        <div class="wf-region-label" style="top:45%;left:30%">ISRAEL</div>
+
+        <!-- Gulf -->
+        <div class="wf-region-label" style="top:60%;left:50%">PERSIAN GULF</div>
+
+        <!-- Annotations -->
+        <div class="annotation" style="top:12%;left:5%">Oref banner (green/red)</div>
+        <div class="annotation" style="top:20%;left:5%">Breaking news ticker</div>
+        <div class="annotation" style="bottom:15%;left:5%">Counter chips (live stats)</div>
+      </div>
+
+      <!-- Oref Banner -->
+      <div class="wf-oref-banner" style="right:580px">
+        <div class="wf-oref-dot"></div>
+        <span style="font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:1px">PIKUD HAOREF</span>
+        <span>No active alerts</span>
+      </div>
+
+      <!-- News Ticker -->
+      <div class="wf-ticker" style="right:580px;top:76px">
+        <div class="wf-ticker-label">⚡ LIVE</div>
+        <div class="wf-ticker-content">UAE air defenses intercept Iranian missile barrage · Iraq oil production falls 60% · IDF strikes Saida, Lebanon · Explosions in Tehran ···</div>
+      </div>
+
+      <!-- Counter Chips -->
+      <div class="wf-chips" style="bottom:30px">
+        <div class="wf-chip"><div class="wf-chip-dot" style="background:var(--red)"></div> 🔥 142 fires</div>
+        <div class="wf-chip"><div class="wf-chip-dot" style="background:var(--amber)"></div> 🌍 8 quakes</div>
+        <div class="wf-chip"><div class="wf-chip-dot" style="background:var(--cyan)"></div> ✈️ 3 mil</div>
+        <div class="wf-chip"><div class="wf-chip-dot" style="background:var(--green)"></div> 🟢 LIVE</div>
+      </div>
+
+      <!-- Feed Panel (new) -->
+      <div class="wf-feed" style="right:280px;width:300px">
+        <div class="wf-feed-header">
+          <div class="wf-feed-title">
+            <div class="wf-live-dot"></div>
+            <span style="color:var(--cyan)">LIVE FEED</span>
+            <span style="color:var(--dim);font-size:9px;font-family:'JetBrains Mono',monospace">247</span>
+          </div>
+          <span style="font-size:9px;color:var(--dim)">✕</span>
+        </div>
+        <div class="wf-feed-filters">
+          <div class="wf-feed-chip active">ALL</div>
+          <div class="wf-feed-chip">1H</div>
+          <div class="wf-feed-chip">6H</div>
+          <div class="wf-feed-chip">24H</div>
+        </div>
+        <div class="wf-feed-filters">
+          <div class="wf-feed-chip" style="display:flex;gap:3px;align-items:center"><div class="dot dot-blue" style="width:5px;height:5px"></div>Israel</div>
+          <div class="wf-feed-chip" style="display:flex;gap:3px;align-items:center"><div class="dot dot-red" style="width:5px;height:5px"></div>Iran</div>
+          <div class="wf-feed-chip" style="display:flex;gap:3px;align-items:center"><div class="dot dot-cyan" style="width:5px;height:5px"></div>US</div>
+          <div class="wf-feed-chip" style="display:flex;gap:3px;align-items:center"><div class="dot dot-amber" style="width:5px;height:5px"></div>Proxy</div>
+        </div>
+        <div class="wf-feed-list">
+          <div class="wf-feed-item iran">
+            <div class="wf-feed-item-source">WAR MONITOR · Telegram</div>
+            <div class="wf-feed-item-text">Explosions heard in Tehran capital</div>
+            <div class="wf-feed-item-time">2 min ago</div>
+          </div>
+          <div class="wf-feed-item us">
+            <div class="wf-feed-item-source">REUTERS · RSS</div>
+            <div class="wf-feed-item-text">US spent $6B on Iran operation — NYT</div>
+            <div class="wf-feed-item-time">8 min ago</div>
+          </div>
+          <div class="wf-feed-item israel">
+            <div class="wf-feed-item-source">FLASH NEWS IL · Telegram</div>
+            <div class="wf-feed-item-text">5 injuries from rocket fragments in Tel Aviv</div>
+            <div class="wf-feed-item-time">14 min ago</div>
+          </div>
+          <div class="wf-feed-item proxy">
+            <div class="wf-feed-item-source">ABU ALI · Telegram</div>
+            <div class="wf-feed-item-text">Hezbollah expanding fire range — sirens in TA</div>
+            <div class="wf-feed-item-time">22 min ago</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar (redesigned) -->
+      <div class="wf-sidebar" style="width:280px">
+        <!-- Threat Level -->
+        <div class="wf-sidebar-section" style="border-left:2px solid var(--red)">
+          <div class="wf-sidebar-title">🔴 THREAT: HIGH</div>
+          <div style="display:flex;gap:2px;margin-bottom:6px">
+            <div style="width:14%;height:4px;background:var(--red);border-radius:2px"></div>
+            <div style="width:14%;height:4px;background:var(--red);border-radius:2px"></div>
+            <div style="width:14%;height:4px;background:var(--red);border-radius:2px"></div>
+            <div style="width:14%;height:4px;background:var(--red);border-radius:2px"></div>
+            <div style="width:14%;height:4px;background:var(--red);border-radius:2px"></div>
+            <div style="width:14%;height:4px;background:var(--red);border-radius:2px"></div>
+            <div style="width:14%;height:4px;background:rgba(255,255,255,0.06);border-radius:2px"></div>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">Score</span>
+            <span class="value warn">23</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">Events/hr</span>
+            <span class="value">47</span>
+          </div>
+        </div>
+
+        <!-- Iran Theater -->
+        <div class="wf-sidebar-section">
+          <div class="wf-sidebar-title">🇮🇷 IRAN THEATER</div>
+          <div class="wf-sidebar-row">
+            <span class="label">🔥 Fires tracked</span>
+            <span class="value warn">142</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">🌍 Seismic events</span>
+            <span class="value">8</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">✈️ Military flights</span>
+            <span class="value up">3</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">🌐 Internet</span>
+            <span class="value up">NORMAL</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">🎯 Strike correlations</span>
+            <span class="value down">2</span>
+          </div>
+        </div>
+
+        <!-- Energy -->
+        <div class="wf-sidebar-section">
+          <div class="wf-sidebar-title">⛽ ENERGY & SHIPPING</div>
+          <div class="wf-sidebar-row">
+            <span class="label">Brent Crude</span>
+            <span class="value down">$142.80 ▲35%</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">Hormuz Transit</span>
+            <span class="value down">−62%</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">Fujairah Congestion</span>
+            <span class="value down">6.8× baseline</span>
+          </div>
+          <div class="wf-sidebar-row">
+            <span class="label">Facilities struck</span>
+            <span class="value down">9 / 47</span>
+          </div>
+        </div>
+
+        <!-- Force Disposition (compact) -->
+        <div class="wf-sidebar-section">
+          <div class="wf-sidebar-title">⚔️ FORCE DISPOSITION</div>
+          <div style="display:flex;flex-direction:column;gap:4px;font-size:10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:40px;color:var(--dim)">IDF</span>
+              <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+                <div style="width:75%;height:100%;background:var(--blue);border-radius:2px"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:40px;color:var(--dim)">IRGC</span>
+              <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+                <div style="width:65%;height:100%;background:var(--red);border-radius:2px"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:40px;color:var(--dim)">CENTCOM</span>
+              <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+                <div style="width:85%;height:100%;background:var(--cyan);border-radius:2px"></div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="width:40px;color:var(--dim)">Proxy</span>
+              <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden">
+                <div style="width:45%;height:100%;background:var(--amber);border-radius:2px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="wf-sidebar-section">
+          <div class="wf-sidebar-title">🔗 LINKS</div>
+          <div style="font-size:10px;color:var(--dim);display:flex;flex-direction:column;gap:4px">
+            <span>📊 Strikes Dashboard</span>
+            <span>🚢 Hormuz Tracker</span>
+            <span>📢 @magenyehudaupdates</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="wf-statusbar">
+        <span>🟢 ENGINE ONLINE · 85+ sources · 4 satellites</span>
+        <span>2026-03-08 16:30:00 UTC</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Key changes from V2:</strong> Sidebar redesigned with semantic sections instead of flat toggle list. Feed panel pulled out as its own panel. Energy/shipping data promoted to sidebar. Force disposition bars are compact inline. Ticker moved below Oref banner.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 2: LAYOUT ARCHITECTURE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="layout">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">LAYOUT ARCHITECTURE</span>
+  </div>
+
+  <table class="spec-table">
+    <tr><th>ZONE</th><th>POSITION</th><th>SIZE</th><th>PURPOSE</th></tr>
+    <tr><td>Title Bar</td><td class="mono">top: 0</td><td class="mono">h: 44px</td><td>Brand, US vs IRAN, threat indicator, clock</td></tr>
+    <tr><td>Left Toolbar</td><td class="mono">left: 0</td><td class="mono">w: 54px</td><td>Layer toggles (icon buttons with tooltips)</td></tr>
+    <tr><td>Oref Banner</td><td class="mono">below title</td><td class="mono">h: 36px</td><td>Pikud HaOref status (green/red/pulsing)</td></tr>
+    <tr><td>News Ticker</td><td class="mono">below oref</td><td class="mono">h: 28px</td><td>Scrolling breaking news headlines</td></tr>
+    <tr><td>Map Canvas</td><td class="mono">center</td><td class="mono">fill</td><td>Leaflet map with all layers</td></tr>
+    <tr><td>Feed Panel</td><td class="mono">right (inner)</td><td class="mono">w: 300px</td><td>Live OSINT feed, filterable, click-to-fly</td></tr>
+    <tr><td>Sidebar</td><td class="mono">right (outer)</td><td class="mono">w: 280px</td><td>Status cards: threat, theater, energy, forces</td></tr>
+    <tr><td>Counter Chips</td><td class="mono">bottom-left</td><td class="mono">auto</td><td>Quick stat pills (fires, quakes, mil, live)</td></tr>
+    <tr><td>Status Bar</td><td class="mono">bottom: 0</td><td class="mono">h: 28px</td><td>Engine status, source count, timestamp</td></tr>
+  </table>
+
+  <div class="note warn">
+    <strong>Design rule:</strong> Feed + Sidebar are both toggleable. When feed is closed, map expands. When sidebar is closed, feed slides right. Double-click map to close all panels (immersive mode).
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 3: SIDEBAR REDESIGN -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="sidebar">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">SIDEBAR REDESIGN</span>
+  </div>
+
+  <p style="color:var(--dim);margin-bottom:24px">Current V2 sidebar is a flat list of toggleable layers mixed with status info. V3 splits into <strong>semantic sections</strong> with collapsible cards.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-title">🔴 THREAT STATUS</div>
+      <div class="card-item"><span class="emoji">📊</span> Threat level bar (GREEN→CRITICAL)</div>
+      <div class="card-item"><span class="emoji">📈</span> Threat score (numeric)</div>
+      <div class="card-item"><span class="emoji">⏱</span> Events per hour</div>
+      <div class="card-item"><span class="emoji">🚨</span> Last siren timestamp</div>
+      <div class="card-item detail">Taps through to threat history graph</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🇮🇷 IRAN THEATER</div>
+      <div class="card-item"><span class="emoji">🔥</span> Fire detections (with trend arrow)</div>
+      <div class="card-item"><span class="emoji">🌍</span> Seismic events</div>
+      <div class="card-item"><span class="emoji">✈️</span> Military flights over ME</div>
+      <div class="card-item"><span class="emoji">🌐</span> Internet status (NORMAL→BLACKOUT)</div>
+      <div class="card-item"><span class="emoji">🎯</span> Strike correlations</div>
+      <div class="card-item detail">Each row clickable → flies to latest event on map</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⛽ ENERGY & SHIPPING</div>
+      <div class="card-item"><span class="emoji">🛢</span> Brent crude price + % change</div>
+      <div class="card-item"><span class="emoji">🚢</span> Hormuz transit rate vs baseline</div>
+      <div class="card-item"><span class="emoji">⚓</span> Fujairah congestion ratio</div>
+      <div class="card-item"><span class="emoji">💥</span> Facilities struck/shutdown count</div>
+      <div class="card-item detail">Data from energy-tracker.py + hormuz-tracker.py</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚔️ FORCE DISPOSITION</div>
+      <div class="card-item"><span class="emoji">🇮🇱</span> IDF — compact horizontal bar</div>
+      <div class="card-item"><span class="emoji">🇮🇷</span> IRGC — compact horizontal bar</div>
+      <div class="card-item"><span class="emoji">🇺🇸</span> CENTCOM — compact horizontal bar</div>
+      <div class="card-item"><span class="emoji">🏴</span> Proxies — compact horizontal bar</div>
+      <div class="card-item detail">Relative strength indicator, not exact numbers</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔗 QUICK LINKS</div>
+      <div class="card-item"><span class="emoji">📊</span> Strikes Dashboard (V1)</div>
+      <div class="card-item"><span class="emoji">🚢</span> Hormuz Tracker</div>
+      <div class="card-item"><span class="emoji">📢</span> @magenyehudaupdates</div>
+      <div class="card-item"><span class="emoji">📢</span> @opssheagathaariupdates</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 4: FEED PANEL -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="feed">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">LIVE FEED PANEL</span>
+  </div>
+
+  <p style="color:var(--dim);margin-bottom:24px">The feed panel is the core value prop — real-time OSINT intel with click-to-fly map integration. Separated from sidebar for independent toggling.</p>
+
+  <table class="spec-table">
+    <tr><th>COMPONENT</th><th>BEHAVIOR</th><th>PRIORITY</th></tr>
+    <tr><td>Header</td><td>LIVE dot (pulsing green) + event count + refresh spinner + close button</td><td class="priority critical">CRITICAL</td></tr>
+    <tr><td>Time Filters</td><td>Chips: 15M · 1H · 6H · 24H · 48H · ALL — filters feed items by recency</td><td class="priority high">HIGH</td></tr>
+    <tr><td>Side Filters</td><td>Color-coded chips: 🔵Israel · 🔴Iran · 🔵US · 🟠Proxy — toggle by conflict side</td><td class="priority high">HIGH</td></tr>
+    <tr><td>Feed Items</td><td>Source tag + text + relative time. Left border = side color. Click → fly to coords on map + highlight pulse</td><td class="priority critical">CRITICAL</td></tr>
+    <tr><td>Auto-scroll</td><td>New items slide in from top with flash animation. Auto-scroll paused when user scrolls up.</td><td class="priority medium">MEDIUM</td></tr>
+    <tr><td>Tooltip</td><td>Hover for 2s shows full text + source URL + coordinates</td><td class="priority low">LOW</td></tr>
+    <tr><td>Audio ping</td><td>Optional subtle ping on CRITICAL events (siren, breaking). Toggleable via 🔔 icon in header.</td><td class="priority low">LOW</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Feed item anatomy:</strong><br>
+    <code style="color:var(--cyan);font-size:12px">[SIDE_COLOR_BAR] [SOURCE · PLATFORM] [AGE]</code><br>
+    <code style="color:var(--text);font-size:12px">[HEADLINE TEXT — max 2 lines, truncated]</code><br>
+    <code style="color:var(--dim);font-size:11px">[RELATIVE TIME] · [LOCATION if available]</code>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 5: MAP LAYERS -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="layers">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <span class="section-title">MAP LAYERS</span>
+  </div>
+
+  <p style="color:var(--dim);margin-bottom:24px">All layers toggled from the left toolbar. Grouped by category with dividers. Active layers glow with their category color.</p>
+
+  <table class="spec-table">
+    <tr><th>GROUP</th><th>LAYER</th><th>ICON</th><th>COLOR</th><th>DEFAULT</th><th>SOURCE</th></tr>
+    <tr><td rowspan="6" style="color:var(--cyan)">STATIC ASSETS</td><td>US/Coalition Bases (25)</td><td>🏛</td><td class="mono" style="color:var(--blue)">blue</td><td>ON</td><td>v2-data.js</td></tr>
+    <tr><td>Iran Nuclear Sites (18)</td><td>☢️</td><td class="mono" style="color:var(--red)">red</td><td>ON</td><td>v2-data.js</td></tr>
+    <tr><td>Iran Missile Sites (52)</td><td>🚀</td><td class="mono" style="color:var(--amber)">amber</td><td>OFF</td><td>v2-data.js</td></tr>
+    <tr><td>Naval Bases (9)</td><td>⚓</td><td class="mono" style="color:var(--cyan)">cyan</td><td>OFF</td><td>v2-data.js</td></tr>
+    <tr><td>Air Bases (29)</td><td>✈️</td><td class="mono" style="color:var(--purple)">purple</td><td>OFF</td><td>v2-data.js</td></tr>
+    <tr><td>Air Defense + SAM rings (26)</td><td>🛡</td><td class="mono" style="color:var(--amber)">orange</td><td>OFF</td><td>v2-data.js</td></tr>
+    <tr style="border-top:2px solid var(--card-border)"><td rowspan="4" style="color:var(--green)">LIVE DATA</td><td>NASA FIRMS Fires</td><td>🔥</td><td class="mono" style="color:var(--red)">red</td><td>ON</td><td>API /fires</td></tr>
+    <tr><td>USGS Seismic</td><td>🌍</td><td class="mono" style="color:var(--amber)">amber</td><td>ON</td><td>API /seismic</td></tr>
+    <tr><td>Live Aircraft</td><td>✈️</td><td class="mono" style="color:var(--cyan)">cyan</td><td>ON</td><td>API /aircraft</td></tr>
+    <tr><td>OSINT Events</td><td>📡</td><td class="mono" style="color:var(--purple)">purple</td><td>ON</td><td>API /intel-feed</td></tr>
+    <tr style="border-top:2px solid var(--card-border)"><td rowspan="3" style="color:var(--dim)">OVERLAYS</td><td>Energy Infrastructure (47)</td><td>🛢</td><td class="mono" style="color:var(--amber)">orange</td><td>OFF</td><td>v2-data.js</td></tr>
+    <tr><td>Strategic Waterways (4)</td><td>🌊</td><td class="mono" style="color:var(--cyan)">cyan</td><td>OFF</td><td>v2-data.js</td></tr>
+    <tr><td>Country Borders</td><td>🗺</td><td class="mono" style="color:var(--dim)">white</td><td>ON</td><td>GeoJSON</td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Toolbar UX:</strong> Buttons grouped with visual dividers (Static Assets | Live Data | Overlays). Active button gets colored glow ring matching its category. Hover shows tooltip with layer name + item count. Keyboard shortcuts 1-9 for quick toggle.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 6: MOBILE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="mobile">
+  <div class="section-header">
+    <span class="section-num">06</span>
+    <span class="section-title">MOBILE UX</span>
+  </div>
+
+  <div style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center">
+    <!-- Mobile: Map view -->
+    <div class="wireframe" style="width:360px">
+      <div class="wireframe-label">MOBILE · MAP TAB</div>
+      <div class="mobile-frame">
+        <div class="wf-mob-titlebar">
+          <span class="wf-flag" style="font-size:14px">🇺🇸</span>
+          <span style="color:#60a5fa;margin:0 4px">CENTCOM</span>
+          <span style="color:rgba(255,255,255,0.3);font-size:8px">vs</span>
+          <span style="color:#f87171;margin:0 4px">IRAN</span>
+          <span class="wf-flag" style="font-size:14px">🇮🇷</span>
+        </div>
+        <div class="wf-mob-map">
+          <span style="font-family:'Orbitron',sans-serif;font-size:12px;color:rgba(255,255,255,0.12);letter-spacing:4px">MAP</span>
+        </div>
+        <div class="wf-mob-bottombar">
+          <div class="wf-mob-tab active"><span class="wf-mob-tab-icon">🗺</span> Map</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">📡</span> Feed</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">📊</span> Status</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">⚙️</span> Layers</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">🚨</span> Alert</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile: Feed view -->
+    <div class="wireframe" style="width:360px">
+      <div class="wireframe-label">MOBILE · FEED TAB (slide-up sheet)</div>
+      <div class="mobile-frame">
+        <div class="wf-mob-titlebar">
+          <span class="wf-flag" style="font-size:14px">🇺🇸</span>
+          <span style="color:#60a5fa;margin:0 4px">CENTCOM</span>
+          <span style="color:rgba(255,255,255,0.3);font-size:8px">vs</span>
+          <span style="color:#f87171;margin:0 4px">IRAN</span>
+          <span class="wf-flag" style="font-size:14px">🇮🇷</span>
+        </div>
+        <div class="wf-mob-map" style="bottom:330px">
+          <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:rgba(255,255,255,0.1);letter-spacing:3px">MAP (dimmed)</span>
+        </div>
+        <div class="wf-mob-sheet">
+          <div class="wf-mob-sheet-handle"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-family:'Orbitron',sans-serif;font-size:10px;color:var(--cyan);letter-spacing:1px;display:flex;align-items:center;gap:6px">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--green)"></span>
+              LIVE FEED
+            </span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--dim)">247 events</span>
+          </div>
+          <div style="display:flex;gap:4px;margin-bottom:10px">
+            <div class="wf-feed-chip active">ALL</div>
+            <div class="wf-feed-chip">1H</div>
+            <div class="wf-feed-chip">6H</div>
+            <div class="wf-feed-chip">24H</div>
+          </div>
+          <!-- Feed items -->
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;border-left:2px solid var(--red)">
+              <div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace">WAR MONITOR · 2m ago</div>
+              <div style="font-size:11px;margin-top:2px">Explosions heard in Tehran</div>
+            </div>
+            <div style="padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;border-left:2px solid var(--cyan)">
+              <div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace">REUTERS · 8m ago</div>
+              <div style="font-size:11px;margin-top:2px">US spent $6B on Iran operation</div>
+            </div>
+            <div style="padding:8px 10px;background:rgba(255,255,255,0.02);border-radius:6px;border-left:2px solid var(--blue)">
+              <div style="font-size:9px;color:var(--dim);font-family:'JetBrains Mono',monospace">FLASH NEWS IL · 14m ago</div>
+              <div style="font-size:11px;margin-top:2px">5 injuries from rockets in Tel Aviv</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-mob-bottombar">
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">🗺</span> Map</div>
+          <div class="wf-mob-tab active"><span class="wf-mob-tab-icon">📡</span> Feed</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">📊</span> Status</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">⚙️</span> Layers</div>
+          <div class="wf-mob-tab"><span class="wf-mob-tab-icon">🚨</span> Alert</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:24px">
+    <strong>Mobile interaction model:</strong> 5-tab bottom bar (Map / Feed / Status / Layers / Alert). Feed and Status use slide-up sheets (draggable handle, half/full height). Layers tab shows grid of toggle buttons. Alert tab shows Oref status + last siren + safety info. Swipe between tabs. Map always visible behind sheets.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 7: DATA PIPELINE -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="data">
+  <div class="section-header">
+    <span class="section-num">07</span>
+    <span class="section-title">DATA PIPELINE</span>
+  </div>
+
+  <div class="flow">
+    <div class="flow-node source">🖥 Watcher<br><span style="font-size:10px;color:var(--dim)">Mac daemon</span></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node process">📝 JSONL + DB<br><span style="font-size:10px;color:var(--dim)">log-intel.py</span></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node process">☁️ Azure API<br><span style="font-size:10px;color:var(--dim)">push/oref, push/intel</span></div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-node output">🗺 Dashboard<br><span style="font-size:10px;color:var(--dim)">fetch + merge</span></div>
+  </div>
+
+  <table class="spec-table">
+    <tr><th>ENDPOINT</th><th>REFRESH</th><th>DATA</th></tr>
+    <tr><td class="mono">/api/intel-feed</td><td>30s poll</td><td>OSINT events (side, source, text, coords, time)</td></tr>
+    <tr><td class="mono">/api/oref</td><td>Push (instant)</td><td>Siren alerts from Pikud HaOref</td></tr>
+    <tr><td class="mono">/api/fires</td><td>5min self-poll</td><td>NASA FIRMS hotspots (lat, lon, FRP, confidence)</td></tr>
+    <tr><td class="mono">/api/seismic</td><td>2min self-poll</td><td>USGS earthquakes (lat, lon, mag, depth)</td></tr>
+    <tr><td class="mono">/api/aircraft</td><td>60s self-poll</td><td>FR24 live aircraft (callsign, type, lat, lon, alt)</td></tr>
+    <tr><td class="mono">/api/threat</td><td>Push (instant)</td><td>Current threat level + score</td></tr>
+    <tr><td class="mono">intel-feed.json</td><td>5min cron → git push</td><td>Static backup (merged with DB on load)</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SECTION 8: CHANGE LOG -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="section" id="changes">
+  <div class="section-header">
+    <span class="section-num">08</span>
+    <span class="section-title">V2 → V3 CHANGES</span>
+  </div>
+
+  <div class="change-item">
+    <span class="change-tag redesign">REDESIGN</span>
+    <strong>Sidebar</strong> — Flat toggle list → semantic cards (Threat, Theater, Energy, Forces, Links). Each section collapsible. Data-rich instead of just layer toggles.
+  </div>
+  <div class="change-item">
+    <span class="change-tag new">NEW</span>
+    <strong>Feed panel</strong> — Separated from sidebar into its own 300px panel. Always-visible live dot, time + side filters, click-to-fly items.
+  </div>
+  <div class="change-item">
+    <span class="change-tag new">NEW</span>
+    <strong>Energy & Shipping section</strong> — Brent crude, Hormuz transit, Fujairah congestion, facilities struck/shutdown. Pulled from energy-tracker.py + hormuz-tracker.py data.
+  </div>
+  <div class="change-item">
+    <span class="change-tag redesign">REDESIGN</span>
+    <strong>Toolbar</strong> — Grouped with visual dividers (Static | Live | Overlays). Active buttons glow with category color. Cleaner visual hierarchy.
+  </div>
+  <div class="change-item">
+    <span class="change-tag move">MOVE</span>
+    <strong>Layer toggles</strong> — Moved from sidebar to left toolbar exclusively. Sidebar no longer has layer checkboxes.
+  </div>
+  <div class="change-item">
+    <span class="change-tag redesign">REDESIGN</span>
+    <strong>Force disposition</strong> — Changed from tall stacked bars to compact inline bars in sidebar. Same data, 75% less space.
+  </div>
+  <div class="change-item">
+    <span class="change-tag new">NEW</span>
+    <strong>Counter chips</strong> — Bottom-left quick-stat pills (fires, quakes, mil flights, live status). Always visible regardless of panel state.
+  </div>
+  <div class="change-item">
+    <span class="change-tag redesign">REDESIGN</span>
+    <strong>Mobile</strong> — 5-tab bottom bar with slide-up sheets instead of full-screen panel takeover. Map always visible.
+  </div>
+  <div class="change-item">
+    <span class="change-tag remove">REMOVE</span>
+    <strong>Sidebar asset list</strong> — Long scrollable list of 200+ assets replaced by layer toggles on toolbar + click-on-map interaction.
+  </div>
+  <div class="change-item">
+    <span class="change-tag new">NEW</span>
+    <strong>Immersive mode</strong> — Double-click map to hide all panels. Single click to restore. Keyboard: Escape.
+  </div>
+
+  <div style="margin-top:40px;padding:24px;background:rgba(6,182,212,0.05);border:1px solid rgba(6,182,212,0.15);border-radius:10px">
+    <div style="font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:2px;color:var(--cyan);margin-bottom:12px">IMPLEMENTATION PRIORITY</div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+      <div><span class="priority critical">P0</span> Sidebar semantic redesign + feed panel separation</div>
+      <div><span class="priority critical">P0</span> Feed click-to-fly + side color borders</div>
+      <div><span class="priority high">P1</span> Energy/shipping sidebar section</div>
+      <div><span class="priority high">P1</span> Toolbar grouping + glow states</div>
+      <div><span class="priority medium">P2</span> Mobile slide-up sheets</div>
+      <div><span class="priority medium">P2</span> Counter chips</div>
+      <div><span class="priority low">P3</span> Immersive mode + audio pings</div>
+    </div>
+  </div>
+</div>
+
+<div style="padding:60px 32px;text-align:center;color:var(--dim);font-size:12px">
+  MAGEN YEHUDA INTEL · CENTCOM V3 WIREFRAME · MAR 2026<br>
+  🇮🇱 Am Yisrael Chai 🇮🇱
+</div>
+
+</body>
+</html>
