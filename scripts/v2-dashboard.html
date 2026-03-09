@@ -1122,7 +1122,7 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: true, osint: false, sirens: true, strikes: true, seismic: true, correlations: true,
+  borders: true, military: true, fires: false, osint: false, sirens: true, strikes: true, seismic: true, correlations: true,
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: true,
@@ -1945,6 +1945,12 @@ function loadFIRMS() {
       const t = (e.sub_event_type || e.type || '').toLowerCase();
       return t.includes('fire') || t.includes('firms');
     });
+    // Always cache fire data for correlation (even if fire layer is off)
+    _fireCache = fires.filter(f => f.lat && f.lon).map(f => ({lat:f.lat, lon:f.lon, ts:f.timestamp||f.ts||0}));
+    correlateStrikesOnMap();
+
+    layers.fires.clearLayers();
+    if (!activeState.fires) { document.getElementById('cnt-fires').textContent = fires.length; return; }
     let count = 0;
     const bounds = getBufferedBounds(2.0);
     fires.forEach(f => {
@@ -1981,9 +1987,7 @@ function loadFIRMS() {
         mkPopup(`🔥 ${label}`, '', `🕐 ${timeStr}<br>📊 Confidence: ${confLabel}${frpStr}<br>📍 ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°`, color)
       ).addTo(layers.fires);
     });
-    _fireCache = fires.filter(f => f.lat && f.lon).map(f => ({lat:f.lat, lon:f.lon, ts:f.timestamp||f.ts||0}));
     document.getElementById('cnt-fires').textContent = count;
-    correlateStrikesOnMap();
   }).catch(() => {});
 }
 
