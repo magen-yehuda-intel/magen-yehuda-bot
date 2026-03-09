@@ -120,6 +120,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
 .marker-osint-strike { filter:drop-shadow(0 0 14px rgba(255,0,0,0.9)); border-color:#ff0000; animation:strike-blink 1s ease-in-out infinite; z-index:9000!important; }
 @keyframes strike-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.3)} }
+.marker-aircraft { background:transparent; border:none; filter:drop-shadow(0 0 6px rgba(0,255,200,0.7)); }
+.marker-aircraft-mil { background:transparent; border:none; filter:drop-shadow(0 0 10px rgba(255,100,100,0.9)); }
+.aircraft-trail { stroke:#00ffc8; stroke-width:2; stroke-dasharray:6,4; fill:none; opacity:0.6; }
+.aircraft-trail-mil { stroke:#ff4444; stroke-width:2.5; stroke-dasharray:6,4; fill:none; opacity:0.7; }
 
 /* ═══ SAM RANGE RINGS ═══ */
 .sam-ring { fill:none; stroke-dasharray:8,6; }
@@ -858,6 +862,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-section-title us">US FORCES</div>
     <div class="sb-row" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
     <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
+    <div class="sb-row" onclick="toggleLayer('aircraft')"><div class="sb-dot" style="background:#00ffc8"></div><span class="sb-row-name">Live Aircraft</span><span class="sb-row-count" id="cnt-aircraft">0</span></div>
     <div class="sb-section-title iran">IRAN / ADVERSARY</div>
     <div class="sb-row" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
     <div class="sb-row" onclick="isolateIranLayer('missiles')"><div class="sb-dot" style="background:#f97316"></div><span class="sb-row-name">Iran Missile Sites</span><span class="sb-row-count">52</span></div>
@@ -1950,6 +1955,93 @@ setInterval(loadTicker, 30000); // refresh ticker every 30s
 // Show data mode
 document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
 document.getElementById('oref-interval').textContent = API_URL ? '~10s' : '~2min';
+
+// ── Live Aircraft (OpenSky) ──
+const MIL_CALLSIGNS = /^(RCH|FORTE|HOMER|JAKE|DOOM|SAM|AF[12]|NAVY|TOPCAT|IAF|BOLT|VIPER|TREND|NCHO|EVAC|IRON|REAP|HAWK|DUKE|TITAN|COBRA|GHOST|RAZOR|BLADE|SNTRY|AWACS|MAGIC|HAVOC|DECOY)/i;
+const MIL_TYPES = /^(C-17|C-5|C-130|KC-135|KC-46|KC-10|E-3|E-8|RC-135|RQ-4|MQ-9|P-8|F-15|F-16|F-35|F-22|B-52|B-1|B-2|A-10|V-22|C-40|C-32|C-37|KC-767|G550|E-2|E-6|EP-3|MC-130)/i;
+let _activeTrail = null;
+
+function aircraftSvg(heading, isMil) {
+  const color = isMil ? '#ff4444' : '#00ffc8';
+  const r = heading || 0;
+  return `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(${r}deg)">
+    <path d="M12 2L8 10H3L2 12L8 14V20L6 22H8L12 20L16 22H18L16 20V14L22 12L21 10H16Z" fill="${color}" stroke="${isMil?'#ff0000':'#008866'}" stroke-width="0.5" opacity="0.9"/>
+  </svg>`;
+}
+
+function loadAircraft() {
+  if (!activeState.aircraft) return;
+  // OpenSky: bounding box [lat_min, lat_max, lon_min, lon_max] covering ME region
+  const url = 'https://opensky-network.org/api/states/all?lamin=12&lamax=42&lomin=24&lomax=63';
+  fetch(url, {signal: AbortSignal.timeout(15000)}).then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(data => {
+    layers.aircraft.clearLayers();
+    if (_activeTrail) { map.removeLayer(_activeTrail); _activeTrail = null; }
+    const states = data.states || [];
+    let count = 0;
+    const planePositions = {}; // store for trail queries
+    states.forEach(s => {
+      if (!s[6] || !s[5]) return; // lat, lon
+      const callsign = (s[1]||'').trim();
+      const lon = s[5], lat = s[6], alt = Math.round((s[7]||0) * 3.281); // m→ft
+      const speed = Math.round((s[9]||0) * 1.944); // m/s→kts
+      const heading = s[10] || 0;
+      const icao24 = s[0] || '';
+      const onGround = s[8];
+      if (onGround) return; // skip ground aircraft
+      const isMil = MIL_CALLSIGNS.test(callsign) || MIL_TYPES.test(callsign);
+      count++;
+      const icon = L.divIcon({
+        html: aircraftSvg(heading, isMil),
+        className: isMil ? 'marker-aircraft-mil' : 'marker-aircraft',
+        iconSize: [24, 24], iconAnchor: [12, 12]
+      });
+      const popup = mkPopup(
+        `${isMil?'🔴':'✈️'} ${callsign || 'Unknown'}`,
+        isMil ? 'MILITARY' : '',
+        `📍 ${lat.toFixed(2)}°, ${lon.toFixed(2)}°<br>🔼 ${alt.toLocaleString()} ft · ${speed} kts<br>🧭 ${Math.round(heading)}°<br><a href="#" onclick="loadTrail('${icao24}',${lat},${lon});return false" style="color:#00ffc8">📍 Show trail</a>`,
+        isMil ? '#ff4444' : '#00ffc8'
+      );
+      L.marker([lat, lon], {icon}).bindPopup(popup).addTo(layers.aircraft);
+    });
+    document.getElementById('chip-live').textContent = count;
+    document.getElementById('cnt-aircraft').textContent = count;
+  }).catch(e => {
+    console.log('OpenSky fetch failed:', e);
+  });
+}
+
+function loadTrail(icao24, lat, lon) {
+  if (_activeTrail) { map.removeLayer(_activeTrail); _activeTrail = null; }
+  const now = Math.floor(Date.now()/1000);
+  const begin = now - 7200; // last 2h
+  const url = `https://opensky-network.org/api/tracks/all?icao24=${icao24}&time=0`;
+  fetch(url, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : Promise.reject(r.status))
+  .then(data => {
+    const path = data.path || [];
+    if (path.length < 2) return;
+    const isMil = MIL_CALLSIGNS.test(data.callsign||'');
+    const latlngs = path.map(p => [p[1], p[2]]);
+    _activeTrail = L.polyline(latlngs, {
+      className: isMil ? 'aircraft-trail-mil' : 'aircraft-trail',
+      weight: isMil ? 3 : 2,
+      opacity: 0.7,
+      dashArray: '8,5'
+    }).addTo(map);
+    map.fitBounds(_activeTrail.getBounds(), {padding: [50,50]});
+  }).catch(() => {
+    console.log('Trail fetch failed for', icao24);
+  });
+}
+
+// Load aircraft on layer toggle and every 30s
+const _origToggle = window.toggleLayer;
+const _wrappedToggle = function(name) {
+  _origToggle(name);
+  if (name === 'aircraft' && activeState.aircraft) loadAircraft();
+};
+window.toggleLayer = _wrappedToggle;
+setInterval(() => { if (activeState.aircraft) loadAircraft(); }, 30000);
 
 // Auto-refresh live data every 60s
 setInterval(() => {
