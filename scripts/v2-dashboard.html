@@ -117,6 +117,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
 .marker-fire { filter:drop-shadow(0 0 10px rgba(255,136,0,0.8)); border-color:#ff8800; animation:missile-impact-anim 1s ease-in-out infinite; }
+.correlation-pulse { animation: correlationPulse 1.5s ease-in-out infinite; }
+@keyframes correlationPulse { 0%,100% { opacity:0.9; } 50% { opacity:0.4; } }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
 .marker-osint-strike { filter:drop-shadow(0 0 14px rgba(255,0,0,0.9)); border-color:#ff0000; animation:strike-blink 1s ease-in-out infinite; z-index:9000!important; }
 @keyframes strike-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.3)} }
@@ -878,7 +880,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="toggleLayer('strikes')"><div class="sb-dot" style="background:#ff2222"></div><span class="sb-row-name">💥 Recent Strikes</span><span class="sb-row-count" id="cnt-strikes">0</span></div>
     <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
-    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (2h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (6h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('seismic')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Earthquakes</span><span class="sb-row-count" id="cnt-seismic">0</span></div>
+    <div class="sb-row" onclick="toggleLayer('correlations')"><div class="sb-dot" style="background:#ff0040;box-shadow:0 0 8px #ff0040"></div><span class="sb-row-name">⚡ Strike Correlations</span><span class="sb-row-count" id="cnt-correlations">0</span></div>
     <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
@@ -1092,11 +1096,13 @@ const layers = {
   gpsjam: L.layerGroup(),
   satellites: L.layerGroup(),
   strikes: L.layerGroup(),
+  seismic: L.layerGroup(),
+  correlations: L.layerGroup(),
 };
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: true, osint: true, sirens: true, strikes: true,
+  borders: true, military: true, fires: true, osint: true, sirens: true, strikes: true, seismic: true, correlations: true,
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: false,
@@ -1842,8 +1848,100 @@ function loadFIRMS() {
         mkPopup(`🔥 ${label}`, '', `🕐 ${timeStr}<br>📊 Confidence: ${confLabel}${frpStr}<br>📍 ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°`, color)
       ).addTo(layers.fires);
     });
+    _fireCache = fires.filter(f => f.lat && f.lon).map(f => ({lat:f.lat, lon:f.lon, ts:f.timestamp||f.ts||0}));
     document.getElementById('cnt-fires').textContent = count;
+    correlateStrikesOnMap();
   }).catch(() => {});
+}
+
+// Seismic data cache for correlation
+let _seismicCache = [];
+let _fireCache = [];
+
+function loadSeismic() {
+  fetch(`${API_URL}/api/seismic`).then(r => r.ok ? r.json() : Promise.reject('no'))
+  .then(data => {
+    layers.seismic.clearLayers();
+    const quakes = data.quakes || [];
+    _seismicCache = quakes;
+    let count = 0;
+    const now = Date.now()/1000;
+    quakes.forEach(q => {
+      if (!q.lat || !q.lon) return;
+      count++;
+      const mag = q.mag || 0;
+      const depth = q.depth || 0;
+      const age = q.time ? Math.round((now - q.time) / 3600) : '?';
+      const shallow = depth <= 5;
+      const suspicious = shallow && mag >= 3.5;
+      // Size by magnitude
+      const radius = Math.max(6, mag * 4);
+      const color = suspicious ? '#ff0040' : depth <= 10 ? '#a855f7' : '#7c3aed';
+      const fillOpacity = suspicious ? 0.5 : 0.25;
+      const marker = L.circleMarker([q.lat, q.lon], {
+        radius, color, fillColor: color, fillOpacity, weight: suspicious ? 2 : 1.5, opacity: 0.8
+      });
+      const suspTag = suspicious ? '<br><span style="color:#ff0040;font-weight:700">⚠️ SHALLOW — POSSIBLE EXPLOSION</span>' : '';
+      const usgsLink = q.url ? `<br><a href="${q.url}" target="_blank" rel="noopener" style="color:#a855f7">🔗 USGS Details</a>` : '';
+      marker.bindPopup(mkPopup(
+        `${suspicious ? '⚠️' : '🔴'} M${mag.toFixed(1)} Earthquake`,
+        q.place || '',
+        `📏 Depth: ${depth} km${shallow ? ' (SHALLOW)' : ''}<br>⏱ ${age}h ago${suspTag}${usgsLink}`,
+        color
+      ));
+      marker.addTo(layers.seismic);
+    });
+    document.getElementById('cnt-seismic').textContent = count;
+    // Run correlation after both datasets loaded
+    correlateStrikesOnMap();
+  }).catch(() => {});
+}
+
+function correlateStrikesOnMap() {
+  layers.correlations.clearLayers();
+  if (!_seismicCache.length || !_fireCache.length) return;
+  const DIST_KM = 50;
+  const TIME_SEC = 1800; // 30 min
+  let count = 0;
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+
+  _seismicCache.forEach(q => {
+    if (!q.lat || !q.lon || !q.time) return;
+    _fireCache.forEach(f => {
+      if (!f.lat || !f.lon || !f.ts) return;
+      const timeDiff = Math.abs(q.time - f.ts);
+      if (timeDiff > TIME_SEC) return;
+      const dist = haversine(q.lat, q.lon, f.lat, f.lon);
+      if (dist > DIST_KM) return;
+      // CORRELATION FOUND
+      count++;
+      const midLat = (q.lat + f.lat) / 2;
+      const midLon = (q.lon + f.lon) / 2;
+      // Pulsing red ring
+      const ring = L.circleMarker([midLat, midLon], {
+        radius: 25, color: '#ff0040', fillColor: '#ff0040', fillOpacity: 0.15,
+        weight: 3, opacity: 0.9, className: 'correlation-pulse'
+      });
+      // Line connecting quake to fire
+      const line = L.polyline([[q.lat, q.lon], [f.lat, f.lon]], {
+        color: '#ff0040', weight: 1.5, dashArray: '4,4', opacity: 0.6
+      });
+      ring.bindPopup(mkPopup(
+        '⚡ STRIKE CORRELATION',
+        `M${(q.mag||0).toFixed(1)} quake + 🔥 fire`,
+        `📏 Distance: ${dist.toFixed(1)} km<br>⏱ Time gap: ${Math.round(timeDiff/60)} min<br>🔴 Quake: ${q.place||''} (depth ${q.depth||'?'}km)<br>🔥 Fire: ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°<br><span style="color:#ff0040;font-weight:700">⚠️ Possible airstrike / explosion</span>`,
+        '#ff0040'
+      ));
+      ring.addTo(layers.correlations);
+      line.addTo(layers.correlations);
+    });
+  });
+  document.getElementById('cnt-correlations').textContent = count;
 }
 
 function loadSirens() {
@@ -1923,6 +2021,7 @@ updateClock();
 // ═══════════════════════════════════════════════════════════
 renderAllLayers();
 loadFIRMS();
+loadSeismic();
 loadSirens();
 pollOref();
 updateLayerCount();
@@ -2096,8 +2195,11 @@ setInterval(() => {
   layers.osint.clearLayers();
   layers.fires.clearLayers();
   layers.sirens.clearLayers();
+  layers.seismic.clearLayers();
+  layers.correlations.clearLayers();
   loadOSINT();
   loadFIRMS();
+  loadSeismic();
   loadSirens();
 }, 60000);
 
