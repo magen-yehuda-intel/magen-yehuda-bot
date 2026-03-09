@@ -961,8 +961,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <span>MAGEN YEHUDA INTEL v2.0</span>
 </div>
 
-<!-- LIVE NEWS TICKER -->
-<div id="news-ticker">
+<!-- LIVE NEWS TICKER (hidden on desktop, available on mobile) -->
+<div id="news-ticker" style="display:none">
   <div class="ticker-label" id="ticker-label" onclick="toggleTickerPause()" style="cursor:pointer">LIVE</div>
   <div class="ticker-track">
     <div class="ticker-content" id="ticker-content" onclick="toggleTickerPause()"></div>
