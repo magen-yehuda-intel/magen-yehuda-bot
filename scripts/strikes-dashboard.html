@@ -545,6 +545,15 @@ const IRAN_SITES = [
   { name:'S-300 Tehran', lat:35.75, lon:51.42, type:'S-300PMU2 / Bavar-373 battery', cat:'airdefense' },
   { name:'S-300 Isfahan', lat:32.68, lon:51.70, type:'S-300 protecting nuclear site', cat:'airdefense' },
   { name:'S-300 Bushehr', lat:29.05, lon:50.78, type:'S-300 protecting reactor', cat:'airdefense' },
+  // Refineries / Infrastructure
+  { name:'Abadan Refinery', lat:30.339, lon:48.283, type:'Oldest refinery, 400k bpd', cat:'refinery' },
+  { name:'Isfahan Refinery', lat:32.590, lon:51.630, type:'375k bpd, struck Feb 28', cat:'refinery' },
+  { name:'Bandar Abbas Refinery', lat:27.149, lon:56.267, type:'320k bpd', cat:'refinery' },
+  { name:'Tehran Refinery', lat:35.590, lon:51.410, type:'250k bpd, Rey', cat:'refinery' },
+  { name:'Arak Refinery', lat:33.980, lon:49.440, type:'250k bpd (Shazand)', cat:'refinery' },
+  { name:'Tabriz Refinery', lat:37.800, lon:46.310, type:'110k bpd', cat:'refinery' },
+  { name:'Persian Star (Siraf)', lat:27.620, lon:52.340, type:'480k bpd mega-project', cat:'refinery' },
+  { name:'South Pars', lat:26.960, lon:52.510, type:'World largest gas field, struck Jun 2025', cat:'refinery' },
 ];
 
 const US_BASES = [
@@ -578,6 +587,7 @@ const US_BASES = [
 
 // Layer visibility toggles
 let showUSBases = true, showIranBases = true;
+let hiddenIranCats = new Set(); // categories hidden by user (e.g. 'refinery')
 let usBaseLayer, iranBaseLayer;
 
 let map, markerLayer, siteLayer, heatLayer;
@@ -759,7 +769,7 @@ function renderMarkers() {
   const heatPoints = [];
   const zoom = map.getZoom();
   // At low zoom, use lightweight circles for performance; at zoom 7+ use SVG icons
-  const useSvgIcons = zoom >= 7;
+  const useSvgIcons = zoom >= 5;
 
   for (const ev of filteredEvents) {
     if (!activeSides.has(ev.side)) continue;
@@ -839,9 +849,10 @@ function renderMarkers() {
   // Iran sites at zoom 5+
   siteLayer.clearLayers();
   if (showIranBases && map.getZoom() >= 5) {
-    const catIcons = { nuclear:'☢️', military:'🏛️', command:'⭐', strategic:'⛽', missile:'🚀', naval:'⚓', airbase:'✈️', airdefense:'🛡️' };
-    const catColors = { nuclear:'#ff4444', military:'#ff8800', command:'#ffdd00', strategic:'#ff6600', missile:'#ff2222', naval:'#4488ff', airbase:'#00ccff', airdefense:'#cc44ff' };
+    const catIcons = { nuclear:'☢️', military:'🏛️', command:'⭐', strategic:'⛽', missile:'🚀', naval:'⚓', airbase:'✈️', airdefense:'🛡️', refinery:'🛢️' };
+    const catColors = { nuclear:'#ff4444', military:'#ff8800', command:'#ffdd00', strategic:'#ff6600', missile:'#ff2222', naval:'#4488ff', airbase:'#00ccff', airdefense:'#cc44ff', refinery:'#ff9900' };
     for (const site of IRAN_SITES) {
+      if (hiddenIranCats.has(site.cat)) continue;
       const nearby = filteredEvents.filter(e => Math.abs(e.lat-site.lat)<0.5 && Math.abs(e.lon-site.lon)<0.5).length;
       const sz = isMobile() ? 13 : 11;
       const clr = catColors[site.cat] || '#ff4444';
@@ -1135,8 +1146,19 @@ function renderCountries(container) {
 function renderIranSites(container) {
   const el = container || document.getElementById('iran-sites');
   if (!el) return;
-  const catIcons = { nuclear:'☢️', military:'🏛️', command:'⭐', strategic:'⛽', missile:'🚀', naval:'⚓', airbase:'✈️', airdefense:'🛡️' };
-  el.innerHTML = IRAN_SITES.map(s => {
+  const catIcons = { nuclear:'☢️', military:'🏛️', command:'⭐', strategic:'⛽', missile:'🚀', naval:'⚓', airbase:'✈️', airdefense:'🛡️', refinery:'🛢️' };
+  const catLabels = { nuclear:'Nuclear', military:'Military', command:'Command', strategic:'Strategic', missile:'Missile', naval:'Naval', airbase:'Air Base', airdefense:'Air Defense', refinery:'Refineries' };
+
+  // Category toggle buttons
+  const cats = [...new Set(IRAN_SITES.map(s => s.cat))];
+  const togglesHtml = '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">' +
+    cats.map(c => {
+      const hidden = hiddenIranCats.has(c);
+      return `<button class="iran-cat-toggle" data-cat="${c}" style="font-size:11px;padding:3px 8px;border-radius:8px;border:1px solid ${hidden?'#555':'var(--accent)'};background:${hidden?'transparent':'rgba(0,200,255,0.1)'};color:${hidden?'#666':'var(--accent)'};cursor:pointer">${catIcons[c]||'◆'} ${catLabels[c]||c}</button>`;
+    }).join('') + '</div>';
+
+  const visibleSites = IRAN_SITES.filter(s => !hiddenIranCats.has(s.cat));
+  const sitesHtml = visibleSites.map(s => {
     const nearby = filteredEvents.filter(e => Math.abs(e.lat-s.lat)<0.5 && Math.abs(e.lon-s.lon)<0.5).length;
     const hot = nearby > 0;
     const ico = catIcons[s.cat] || '◆';
@@ -1144,6 +1166,18 @@ function renderIranSites(container) {
       style="${hot?'background:rgba(255,0,64,0.2);color:#ff4444;border-color:rgba(255,0,64,0.4)':''}"
       title="${s.type}">${hot?'🔥':ico} ${s.name} ${hot?`(${nearby})`:''}</span>`;
   }).join('');
+
+  el.innerHTML = togglesHtml + sitesHtml;
+
+  el.querySelectorAll('.iran-cat-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.cat;
+      if (hiddenIranCats.has(cat)) hiddenIranCats.delete(cat);
+      else hiddenIranCats.add(cat);
+      renderMarkers();
+      renderIranSites(el);
+    });
+  });
 
   el.querySelectorAll('.site-tag').forEach(tag => {
     tag.addEventListener('click', () => {
@@ -1204,7 +1238,7 @@ function renderLayerToggles(container) {
     </div>
     <div class="force-row" id="toggle-iran" style="cursor:pointer">
       <div class="force-dot" style="background:#ff4444"></div>
-      <span class="force-name">🇮🇷 Iran Military Sites (${IRAN_SITES.length})</span>
+      <span class="force-name">🇮🇷 Iran Sites (${IRAN_SITES.filter(s=>!hiddenIranCats.has(s.cat)).length}/${IRAN_SITES.length})</span>
       <span class="force-count" style="color:#ff4444;font-size:10px">${showIranBases?'ON':'OFF'}</span>
     </div>
     <div class="force-row" id="toggle-heat" style="cursor:pointer">

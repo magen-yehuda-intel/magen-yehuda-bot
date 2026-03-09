@@ -168,8 +168,12 @@ def main():
     size_kb = len(feed_json) / 1024
     print(f"Exported {len(events)} events ({size_kb:.0f}KB) → {FEED_FILE}")
 
-    # Sync recent events to Azure Table Storage (best-effort)
+    # Sync recent events to Azure Table Storage (best-effort, 30s timeout)
     try:
+        import signal
+        def _db_timeout(signum, frame): raise TimeoutError("DB sync timed out")
+        signal.signal(signal.SIGALRM, _db_timeout)
+        signal.alarm(30)
         from db import insert_events, query_events
         # Get what's already in DB for last 48h
         db_events = query_events(hours=48, limit=10000)
@@ -183,6 +187,8 @@ def main():
             print(f"DB sync: up to date ({len(db_events)} in DB)")
     except Exception as ex:
         print(f"DB sync error: {ex}")
+    finally:
+        signal.alarm(0)  # cancel alarm
 
     # Git commit + push
     try:
