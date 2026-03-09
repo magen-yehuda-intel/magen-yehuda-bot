@@ -1178,9 +1178,6 @@ const DEFAULT_STATE = { borders: true, military: true, fires: false, osint: fals
 function saveConfig() {
   const cfg = { activeState: {...activeState}, aircraftMode, fireMode, feedTimeHours };
   localStorage.setItem('centcom-config', JSON.stringify(cfg));
-  // Flash button green briefly
-  const el = event.target; el.style.background = 'rgba(34,197,94,0.2)';
-  setTimeout(() => el.style.background = '', 600);
 }
 function clearAllLayers() {
   Object.keys(layers).forEach(k => {
@@ -2794,14 +2791,6 @@ function loadTrail(icao24, lat, lon) {
 }
 
 // Load aircraft on layer toggle and every 30s
-const _origToggle = window.toggleLayer;
-const _wrappedToggle = function(name) {
-  _origToggle(name);
-  if (name === 'aircraft' && activeState.aircraft) loadAircraft();
-};
-window.toggleLayer = _wrappedToggle;
-setInterval(() => { if (activeState.aircraft) loadAircraft(); }, 30000);
-
 // Auto-refresh live data every 60s
 setInterval(() => {
   layers.osint.clearLayers();
