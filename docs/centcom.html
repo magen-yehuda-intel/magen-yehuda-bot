@@ -1397,7 +1397,9 @@ function localDate(ts) {
 const TG_CHANNELS = ['warmonitors','intelslava','idfofficial','iranintl_en','military_fr',
   'AbuAliEnglishChannel','RWApodcast','SputnikInt','TassAgency_en','IsraelRadar_en',
   'CIG_telegram','sentdefender','endgameww3','beholdisraelchannel','beholdisrael',
-  'idfonline','IDFarabic','danielamramnoarmy','haaborim','channel8200','zaborona'];
+  'idfonline','IDFarabic','danielamramnoarmy','haaborim','channel8200','zaborona',
+  'NotWoofers','middle_east_spectator','IranNukes','TheIntelHub','zaborona_ua',
+  'AbuAliExpress','flash_news_il','kann_news','aharonyediot','liveuamap','BBCPersian'];
 const TWITTER_ACCTS = ['IntelDoge','sentdefender','alaborjiss','MiddleEastOSINT',
   'IranIntl_En','IsraelRadar_en','ELINTNews','Faytuks','aurora_intel','manikiansen',
   'claborjiss','Maborjiss','Conflicts'];
@@ -1843,16 +1845,13 @@ function renderOSINTMarkers(events) {
       const ageMin = ts ? (now - ts) / 60 : 0;
       const opacity = Math.max(0.4, 1 - (ageMin / 120)); // fade over 2h
       const strikePopup = mkPopup(
-        `✈️ AIRSTRIKE REPORTED`,
+        `💥 AIRSTRIKE REPORTED`,
         srcHtml,
         `📍 ${loc}<br>🕐 ${timeDisplay}<br>${ev.notes || ev.text || ''}`,
         '#ff0000'
       );
-      const jetIcon = L.divIcon({
-        html: `<div class="strike-jet" style="opacity:${opacity}">${strikeJetSvg()}</div>`,
-        className: '', iconSize: [40,40], iconAnchor: [20,20]
-      });
-      const sm = L.marker([ev.lat, ev.lon], {icon: jetIcon}).bindPopup(strikePopup, {maxWidth:320});
+      const sm = mkMarker(ev.lat, ev.lon, '💥', 'marker-osint-strike', 28, strikePopup);
+      sm.setOpacity(opacity);
       sm.addTo(layers.strikes);
       window._osintStrikeMarkers.push(sm);
     }
