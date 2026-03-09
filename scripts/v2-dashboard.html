@@ -1741,6 +1741,9 @@ function renderOSINTMarkers(events) {
   const strikeKeywords = ['strike','struck','attack','hit','bomb','missile','rocket','explosion','shelling','airstrike','barrage','intercept'];
   events.forEach(ev => {
     if (!ev.lat || !ev.lon) return;
+    // Skip fire events — handled by loadFIRMS() with gradient icons
+    const evType = (ev.sub_event_type || ev.type || '').toLowerCase();
+    if (evType.includes('fire') || evType.includes('firms')) return;
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
