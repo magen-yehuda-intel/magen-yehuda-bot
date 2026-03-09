@@ -520,7 +520,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   white-space:nowrap;
   animation: tickerFlow var(--ticker-duration, 900s) linear infinite;
 }
-.ticker-content:hover, .ticker-content.paused { animation-play-state:paused; }
+.ticker-content:hover { cursor:pointer; }
 @keyframes tickerFlow {
   0% { transform:translateX(0); }
   100% { transform:translateX(-50%); }
@@ -963,9 +963,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- LIVE NEWS TICKER -->
 <div id="news-ticker">
-  <div class="ticker-label" id="ticker-label" onclick="dismissBreaking()">LIVE</div>
+  <div class="ticker-label" id="ticker-label" onclick="toggleTickerPause()" style="cursor:pointer">LIVE</div>
   <div class="ticker-track">
-    <div class="ticker-content" id="ticker-content" onclick="this.classList.toggle('paused')"></div>
+    <div class="ticker-content" id="ticker-content" onclick="toggleTickerPause()"></div>
   </div>
 </div>
 
@@ -2166,11 +2166,39 @@ setTimeout(() => toggleFeed(), 500);
 // ═══════════════════════════════════════════════════════════
 // NEWS TICKER
 // ═══════════════════════════════════════════════════════════
-function dismissBreaking() {
+let tickerPaused = false;
+let tickerPendingItems = [];
+
+function toggleTickerPause() {
+  const content = document.getElementById('ticker-content');
   const label = document.getElementById('ticker-label');
-  if (label && label.classList.contains('alert')) {
+  if (!content || !label) return;
+  
+  tickerPaused = !tickerPaused;
+  
+  if (tickerPaused) {
+    // Pause: freeze animation
+    content.style.animationPlayState = 'paused';
     label.classList.remove('alert');
-    label.textContent = 'LIVE';
+    label.innerHTML = '<span style="opacity:0.7">⏸</span> PAUSED';
+    label.style.color = '#f59e0b';
+  } else {
+    // Resume: append any pending items, restart smoothly
+    if (tickerPendingItems.length > 0) {
+      const existing = content.innerHTML;
+      // Append new items to end
+      const newHtml = tickerPendingItems.join('');
+      content.innerHTML = existing + newHtml;
+      tickerPendingItems = [];
+      // Recalc duration
+      const items = content.querySelectorAll('.ticker-item').length / 2; // doubled for seamless
+      const duration = Math.max(600, items * 90);
+      content.style.setProperty('--ticker-duration', duration + 's');
+    }
+    content.style.animationPlayState = 'running';
+    label.classList.remove('alert');
+    label.innerHTML = '● LIVE';
+    label.style.color = '';
   }
 }
 
