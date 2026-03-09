@@ -490,15 +490,17 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 .ticker-label {
   flex-shrink:0; padding:0 10px; font-family:var(--font-title); font-size:9px;
-  font-weight:700; letter-spacing:1.5px; color:#050510;
-  background:var(--cyan); height:100%; display:flex; align-items:center; gap:5px;
+  font-weight:700; letter-spacing:1.5px; color:var(--green);
+  background:rgba(34,197,94,0.1); border-right:1px solid rgba(34,197,94,0.3);
+  height:100%; display:flex; align-items:center; gap:5px;
 }
 .ticker-label::before {
   content:''; width:6px; height:6px; border-radius:50%;
-  background:#050510; animation:tickerDotBlink 1.5s ease-in-out infinite;
+  background:var(--green); box-shadow:0 0 6px var(--green); animation:tickerDotBlink 1.5s ease-in-out infinite;
 }
 @keyframes tickerDotBlink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-.ticker-label.alert { background:var(--red); animation: tickerLabelPulse 1s ease-in-out infinite alternate; }
+.ticker-label.alert { color:var(--red); background:rgba(239,68,68,0.15); border-right-color:rgba(239,68,68,0.4); animation: tickerLabelPulse 1s ease-in-out infinite alternate; }
+.ticker-label.alert::before { background:var(--red); box-shadow:0 0 6px var(--red); }
 @keyframes tickerLabelPulse { 0% { opacity:1; } 100% { opacity:0.7; } }
 .ticker-track {
   flex:1; overflow:hidden; position:relative; height:100%;
