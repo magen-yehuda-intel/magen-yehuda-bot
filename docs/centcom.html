@@ -1056,6 +1056,11 @@ function sirenClusterIcon(cluster) {
   return L.divIcon({ html: '<div>' + count + '</div>', className: 'marker-cluster marker-cluster-' + size + ' cluster-siren', iconSize: L.point(40,40) });
 }
 
+function fireClusterIcon(cluster) {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 32 : count < 50 ? 40 : 48;
+  return L.divIcon({ html: `<div style="display:flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;background:rgba(255,136,0,0.25);border:2px solid #ff8800;border-radius:50%;color:#ff8800;font-weight:bold;font-size:13px;text-shadow:0 0 4px #000">🔥${count}</div>`, className: '', iconSize: L.point(size,size) });
+}
 const layers = {
   borders: L.layerGroup(),
   military: L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 9 }),
@@ -1070,7 +1075,7 @@ const layers = {
   sam: L.layerGroup(),
   waterways: L.layerGroup(),
   patrol: L.layerGroup(),
-  fires: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7, iconCreateFunction: iranClusterIcon }),
+  fires: L.markerClusterGroup({ maxClusterRadius: 40, disableClusteringAtZoom: 7, iconCreateFunction: fireClusterIcon }),
   osint: L.markerClusterGroup({ maxClusterRadius: 30, disableClusteringAtZoom: 7 }),
   sirens: L.markerClusterGroup({ maxClusterRadius: 25, disableClusteringAtZoom: 7, iconCreateFunction: sirenClusterIcon }),
   labels: L.layerGroup(),
@@ -1771,27 +1776,28 @@ function renderOSINTMarkers(events) {
 }
 
 function loadFIRMS() {
-  const feedUrl = dataUrl('intel-feed');
+  const feedUrl = dataUrl('fires');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
     const all = data.events || data || [];
     const now = Date.now()/1000;
-    const twoHoursAgo = now - 7200;
     const fires = all.filter(e => {
       const t = (e.sub_event_type || e.type || '').toLowerCase();
-      if (!t.includes('fire') && !t.includes('firms')) return false;
-      const ts = e.timestamp || e.ts || 0;
-      return ts > twoHoursAgo;
+      return t.includes('fire') || t.includes('firms');
     });
     let count = 0;
     fires.forEach(f => {
       if (!f.lat || !f.lon) return;
       count++;
       const ts = f.timestamp || f.ts || 0;
-      const age = Math.round((now - ts) / 60);
-      const timeStr = ts ? `${age}m ago · ${localTime(ts)}` : '';
+      const age = ts ? Math.round((now - ts) / 60) : 0;
+      const timeStr = ts ? `${age < 60 ? age + 'm' : Math.round(age/60) + 'h'} ago · ${localTime(ts)}` : 'Unknown';
+      const conf = f.confidence || '?';
+      const confLabel = conf === 'h' ? 'HIGH' : conf === 'n' ? 'NOMINAL' : conf === 'l' ? 'LOW' : conf;
+      const frp = f.frp || f.bright_ti4 || '';
+      const frpStr = frp ? `<br>🔥 Power: ${frp} MW` : '';
       mkMarker(f.lat, f.lon, '🔥', 'marker-fire', 20,
-        mkPopup('🔥 Fire Hotspot', `Confidence: ${f.confidence || '?'}`, `📍 ${f.location || f.loc || ''}<br>🕐 ${timeStr}`, '#ff8800')
+        mkPopup('🔥 NASA FIRMS Detection', '', `🕐 ${timeStr}<br>📊 Confidence: ${confLabel}${frpStr}<br>📍 ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°`, '#ff8800')
       ).addTo(layers.fires);
     });
     document.getElementById('cnt-fires').textContent = count;
