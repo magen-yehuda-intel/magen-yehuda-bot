@@ -1122,7 +1122,7 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: false, osint: false, sirens: true, strikes: true, seismic: true, correlations: true,
+  borders: true, military: true, fires: false, osint: false, sirens: true, strikes: true, seismic: false, correlations: true,
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: true,
@@ -1998,9 +1998,12 @@ let _fireCache = [];
 function loadSeismic() {
   fetch(`${API_URL}/api/seismic`).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
-    layers.seismic.clearLayers();
     const quakes = data.quakes || [];
     _seismicCache = quakes;
+    correlateStrikesOnMap();
+
+    layers.seismic.clearLayers();
+    if (!activeState.seismic) { document.getElementById('cnt-seismic').textContent = quakes.length; return; }
     let count = 0;
     const now = Date.now()/1000;
     quakes.forEach(q => {
@@ -2029,8 +2032,6 @@ function loadSeismic() {
       marker.addTo(layers.seismic);
     });
     document.getElementById('cnt-seismic').textContent = count;
-    // Run correlation after both datasets loaded
-    correlateStrikesOnMap();
   }).catch(() => {});
 }
 
