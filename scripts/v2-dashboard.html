@@ -2558,7 +2558,8 @@ function toggleOrefHistory() {
   
   if (orefAlerts.length > 0) {
     html += orefAlerts.slice(0,5).map((a,i) => {
-      const cities = (a.cities || a.data || 'Unknown').substring(0,120);
+      const rawCities = a.cities || a.data || 'Unknown';
+      const cities = (Array.isArray(rawCities) ? rawCities.join(', ') : String(rawCities)).substring(0,120);
       const threat = SIREN_TITLES[a.cat] || a.cat || 'Alert';
       return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;color:${i===0?'#ff4444':'#ccc'}"><div style="font-weight:700">🔴 ${threat}</div><div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div></div>`;
     }).join('');
@@ -2575,7 +2576,8 @@ function toggleOrefHistory() {
       let hHtml = '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:8px;color:#888;font-size:10px;font-weight:600">Recent Siren History</div>';
       d.alerts.forEach(a => {
         const title = SIREN_TITLE_HE[a.title] || SIREN_TITLES[a.cat] || a.title || 'Alert';
-        const cities = (a.data || a.cities || '').substring(0,100);
+        const areas = Array.isArray(a.areas) ? a.areas.join(', ') : (a.areas || a.data || a.cities || '');
+        const cities = areas.substring(0,100);
         const ts = a.ts ? new Date(a.ts*1000).toLocaleString() : '';
         hHtml += `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="color:#aaa">${title}</div><div style="font-size:9px;color:#666">${cities} · ${ts}</div></div>`;
       });
