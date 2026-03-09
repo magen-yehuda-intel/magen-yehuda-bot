@@ -518,9 +518,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .ticker-content {
   display:flex; align-items:center; gap:0;
   white-space:nowrap;
-  animation: tickerFlow var(--ticker-duration, 240s) linear infinite;
+  animation: tickerFlow var(--ticker-duration, 480s) linear infinite;
 }
-.ticker-content:hover { animation-play-state:paused; }
+.ticker-content:hover, .ticker-content.paused { animation-play-state:paused; }
 @keyframes tickerFlow {
   0% { transform:translateX(0); }
   100% { transform:translateX(-50%); }
@@ -747,9 +747,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="titlebar">
   <span class="title-flag">🇺🇸</span>
   <span class="title-text">
-    <span class="title-us">U.S. & ALLIES</span>
+    <span class="title-us">U.S. &amp; ISRAEL</span>
     <span class="title-vs">vs.</span>
-    <span class="title-iran">ISLAMIC REPUBLIC OF IRAN</span>
+    <span class="title-iran">IRAN</span>
   </span>
   <span class="title-flag">🇮🇷</span>
 </div>
@@ -777,15 +777,21 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 </div>
 
 <!-- PIKUD HAOREF BANNER -->
-<div id="oref-banner">
+<div id="oref-banner" onclick="toggleOrefHistory()">
   <div class="oref-title">
     <span class="oref-shield">🛡</span>
     PIKUD HAOREF
-    <span style="margin-left:auto;font-size:9px;color:var(--text-dim)" id="oref-updated"></span>
+    <span style="margin-left:auto;font-size:9px;color:var(--text-dim);cursor:pointer" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">No active alerts in Israel.</div>
   <div class="oref-last-siren" id="oref-last-siren"></div>
-
+</div>
+<div id="oref-history" style="display:none;position:fixed;left:10px;top:150px;width:320px;max-height:280px;overflow-y:auto;background:rgba(10,15,25,0.92);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:12px;z-index:2000;backdrop-filter:blur(10px);font-family:var(--font-data);font-size:11px;color:#ccc;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <span style="color:#06b6d4;font-weight:700;font-size:12px">🚨 Recent Sirens</span>
+    <span onclick="document.getElementById('oref-history').style.display='none';event.stopPropagation()" style="cursor:pointer;color:#888;font-size:14px">✕</span>
+  </div>
+  <div id="oref-history-content" style="color:#aaa">Loading...</div>
 </div>
 
 <!-- TOOLBAR -->
@@ -876,7 +882,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-search"><input type="text" placeholder="Search layers..." oninput="filterSidebarLayers(this.value)"></div>
     <div class="sb-section-title us">US FORCES</div>
     <div class="sb-row" onclick="toggleLayer('military')"><div class="sb-dot" style="background:#3b82f6"></div><span class="sb-row-name">US Bases</span><span class="sb-row-count" id="cnt-usbases">25</span></div>
-    <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">US Navy Ships</span><span class="sb-row-count">—</span></div>
+    <div class="sb-row" onclick="toggleLayer('ships')"><div class="sb-dot" style="background:#06b6d4"></div><span class="sb-row-name">🚢 US Navy / Fleet</span><span class="sb-row-count" id="cnt-ships">0</span></div>
     <div class="sb-row" onclick="toggleLayer('aircraft')"><div class="sb-dot" style="background:#00ffc8"></div><span class="sb-row-name">Live Aircraft</span><span class="sb-row-count" id="cnt-aircraft">0</span></div>
     <div class="sb-section-title iran">IRAN / ADVERSARY</div>
     <div class="sb-row" onclick="isolateIranLayer('nuclear')"><div class="sb-dot" style="background:#f59e0b"></div><span class="sb-row-name">Iran Nuclear Sites</span><span class="sb-row-count">18</span></div>
@@ -958,7 +964,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="news-ticker">
   <div class="ticker-label" id="ticker-label">LIVE</div>
   <div class="ticker-track">
-    <div class="ticker-content" id="ticker-content"></div>
+    <div class="ticker-content" id="ticker-content" onclick="this.classList.toggle('paused')"></div>
   </div>
 </div>
 
@@ -1114,7 +1120,7 @@ const layers = {
 
 // Track which layers are active
 const activeState = {
-  borders: true, military: true, fires: true, osint: true, sirens: true, strikes: true, seismic: true, correlations: true,
+  borders: true, military: true, fires: true, osint: false, sirens: true, strikes: true, seismic: true, correlations: true,
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: true,
@@ -1141,6 +1147,7 @@ function toggleLayer(name) {
   if (name === 'seismic' && activeState.seismic) loadSeismic();
   if (name === 'gpsjam' && activeState.gpsjam) loadGPSJam();
   if (name === 'satellites' && activeState.satellites) loadSatellites();
+  if (name === 'ships' && activeState.ships) loadShips();
 }
 
 function isolateIranLayer(name) {
@@ -1175,20 +1182,19 @@ function cycleFires() {
   const tooltip = btn ? btn.querySelector('.tb-tooltip') : null;
   const dot = btn ? btn.querySelector('span') : null;
   // Color feedback: <1H=red, 1-3H=orange, 3-6H=grey, ALL=orange, OFF=dim
-  const modeColors = ['', '#ff2200', '#ff8800', '#888888', '#ff8800'];
-  const modeDots = ['⬤', '🔴', '🟠', '⚫', '🔥'];
+  const modeColors = ['', '#ff2200', '#ff8800', '#aaa', '#ff8800'];
   if (fireMode === 0) {
     activeState.fires = false;
     map.removeLayer(layers.fires);
     if (btn) { btn.classList.remove('active'); btn.style.opacity = '0.4'; }
     if (tooltip) tooltip.textContent = 'Fires: OFF';
-    if (dot) dot.textContent = '🔥';
+    if (dot) dot.innerHTML = '🔥';
   } else {
     activeState.fires = true;
     layers.fires.addTo(map);
     if (btn) { btn.classList.add('active'); btn.style.opacity = '1'; }
     if (tooltip) tooltip.textContent = `Fires: ${FIRE_MODES[fireMode]}`;
-    if (dot) dot.innerHTML = `<span style="color:${modeColors[fireMode]};font-size:16px">⬤</span>`;
+    if (dot) dot.innerHTML = `<span style="filter:drop-shadow(0 0 4px ${modeColors[fireMode]});${fireMode===3?'opacity:0.5;':''}">🔥</span>`;
     loadFIRMS();
   }
   updateMobileButtons();
@@ -2188,7 +2194,7 @@ function loadTickerFallback() {
 
   const content = document.getElementById('ticker-content');
   content.innerHTML = items + items;
-  const duration = Math.max(180, V2_DATA.RECENT_EVENTS.length * 12);
+  const duration = Math.max(360, V2_DATA.RECENT_EVENTS.length * 24);
   content.style.setProperty('--ticker-duration', duration + 's');
 }
 
@@ -2217,7 +2223,7 @@ function renderTickerItems(recent, isStatic) {
     content.innerHTML = items + items; // duplicate for seamless loop
 
     // Adjust speed based on content width
-    const duration = Math.max(180, recent.length * 24);
+    const duration = Math.max(360, recent.length * 48);
     content.style.setProperty('--ticker-duration', duration + 's');
 }
 
@@ -2252,7 +2258,82 @@ function aircraftSvg(heading, isMil) {
   </svg>`;
 }
 
+// ═══════════════════════════════════════════════════════════
+// US NAVY FLEET (OSINT-based last known positions)
+// ═══════════════════════════════════════════════════════════
+function loadShips() {
+  layers.ships.clearLayers();
+  const FLEET = [
+    // Carrier Strike Groups
+    { name: 'USS Harry S. Truman (CVN-75)', type: 'CSG', lat: 25.8, lon: 56.2, note: 'CSG-8, Arabian Sea/Gulf of Oman. F/A-18E/F, E-2D, EA-18G', icon: '⚓' },
+    { name: 'USS Carl Vinson (CVN-70)', type: 'CSG', lat: 23.5, lon: 58.5, note: 'CSG-1, Gulf of Oman. Surge deployed to CENTCOM AOR', icon: '⚓' },
+    // Amphibious Ready Group
+    { name: 'USS Bataan (LHD-5)', type: 'ARG', lat: 26.2, lon: 50.6, note: 'Bataan ARG + 26th MEU, Persian Gulf', icon: '🚢' },
+    // Destroyers / Cruisers (Aegis BMD)
+    { name: 'USS Gettysburg (CG-64)', type: 'CG', lat: 25.5, lon: 55.8, note: 'Ticonderoga-class, Aegis BMD, escort for CVN-75', icon: '🛡' },
+    { name: 'USS Stout (DDG-55)', type: 'DDG', lat: 24.8, lon: 57.5, note: 'Arleigh Burke Flt I, Red Sea/Bab el-Mandeb anti-Houthi ops', icon: '🛡' },
+    { name: 'USS Gravely (DDG-107)', type: 'DDG', lat: 13.2, lon: 43.0, note: 'Arleigh Burke Flt IIA, Bab el-Mandeb strait patrol', icon: '🛡' },
+    { name: 'USS Jason Dunham (DDG-109)', type: 'DDG', lat: 26.0, lon: 56.8, note: 'Arleigh Burke Flt IIA, Strait of Hormuz', icon: '🛡' },
+    // Submarines (estimated based on deployment patterns)
+    { name: 'USS Florida (SSGN-728)', type: 'SSGN', lat: 25.0, lon: 54.0, note: 'Ohio-class SSGN, 154 Tomahawk cruise missiles, CENTCOM AOR', icon: '🔻' },
+    // Support / Logistics
+    { name: 'USNS Supply (T-AOE-6)', type: 'AOE', lat: 25.2, lon: 56.5, note: 'Fast combat support ship, fleet resupply ops', icon: '📦' },
+    // Israeli Navy
+    { name: 'INS Magen (Sa\'ar 6)', type: 'Corvette', lat: 33.8, lon: 34.2, note: '🇮🇱 Israeli Sa\'ar 6 corvette, Iron Dome Naval, eastern Med patrol', icon: '🇮🇱' },
+    { name: 'INS Dolphin (AIP Sub)', type: 'SSK', lat: 32.5, lon: 33.5, note: '🇮🇱 Dolphin-class AIP submarine, cruise missile capable', icon: '🇮🇱' },
+  ];
+  
+  FLEET.forEach(ship => {
+    const typeColors = { CSG: '#3b82f6', ARG: '#06b6d4', CG: '#60a5fa', DDG: '#60a5fa', SSGN: '#a855f7', AOE: '#888', Corvette: '#06b6d4', SSK: '#a855f7' };
+    const color = typeColors[ship.type] || '#06b6d4';
+    const size = ship.type === 'CSG' ? 20 : ship.type === 'SSGN' ? 16 : 14;
+    const icon = L.divIcon({
+      html: `<div style="font-size:${size}px;text-shadow:0 0 8px ${color};filter:drop-shadow(0 0 6px ${color})">${ship.icon}</div>`,
+      className: '', iconSize: [size+4, size+4], iconAnchor: [(size+4)/2, (size+4)/2]
+    });
+    const marker = L.marker([ship.lat, ship.lon], { icon });
+    marker.bindPopup(mkPopup(
+      `${ship.icon} ${ship.name}`,
+      ship.type,
+      `${ship.note}<br><span style="color:#666;font-size:9px">⚠️ Positions estimated from OSINT reports</span>`,
+      color
+    ));
+    marker.addTo(layers.ships);
+  });
+  const el = document.getElementById('cnt-ships');
+  if (el) el.textContent = FLEET.length;
+}
+
 // GPS Jamming: known active zones + live NIC degradation from OpenSky
+function toggleOrefHistory() {
+  const panel = document.getElementById('oref-history');
+  if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  const el = document.getElementById('oref-history-content');
+  el.innerHTML = '<span style="color:#888">Loading siren data...</span>';
+  // Fetch from oref-alerts table via intel-feed (siren type)
+  fetch(`${API_URL}/api/oref`).then(r => r.json()).then(data => {
+    const alerts = data.alerts || [];
+    if (!alerts.length) {
+      // Show last-known from the existing oref-last-siren text
+      const lastText = document.getElementById('oref-last-siren')?.textContent || '';
+      el.innerHTML = `<div style="color:#888;margin-bottom:6px">No active siren alerts.</div>${lastText ? '<div style="border-top:1px solid rgba(255,255,255,0.1);padding-top:6px;margin-top:6px;color:#aaa">'+lastText+'</div>' : '<div style="color:#666">Siren history will appear here during active alerts.</div>'}`;
+      return;
+    }
+    el.innerHTML = alerts.slice(0,3).map((a,i) => {
+      const cities = (a.cities || a.data || 'Unknown location').substring(0,120);
+      const time = a.time || a.timestamp || '';
+      const threat = a.cat || a.threat || 'Unknown';
+      return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;${i===0?'color:#ff4444;':''}">`+
+        `<div style="font-weight:700;font-size:11px">${i===0?'🔴':'⚪'} ${threat}</div>`+
+        `<div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div>`+
+        `<div style="font-size:9px;color:#666">${time}</div></div>`;
+    }).join('');
+  }).catch(() => {
+    el.innerHTML = '<span style="color:#ff4444">Failed to load siren data</span>';
+  });
+}
+
 function loadGPSJam() {
   layers.gpsjam.clearLayers();
   // Known active GPS jamming/spoofing zones (updated from EUROCONTROL/OPSGROUP reports)
@@ -2315,7 +2396,19 @@ const RECON_SATS = [
   { id: 65565, name: 'PRAETORIAN SDA-602', type: 'Tracking', op: '🇺🇸 SDA', res: 'IR', swath: 0 },
   { id: 39088, name: 'SAPPHIRE', type: 'SSA', op: '🇨🇦 DND', res: 'Tracking', swath: 0 },
 ];
-let satTLEs = {};
+// Pre-fetched TLE data (updated periodically, avoids CelesTrak CORS)
+let satTLEs = {
+  "40115":{"name":"WORLDVIEW-3 (WV-3)","line1":"1 40115U 14048A   26067.89947747  .00001318  00000+0  16146-3 0  9997","line2":"2 40115  97.8635 144.1029 0000181   8.1946 351.9272 14.84832971627023"},
+  "48268":{"name":"PLEIADES NEO 3","line1":"1 48268U 21034A   26067.76483736  .00000594  00000+0  82086-4 0  9998","line2":"2 48268  97.8930 143.9726 0001286  89.5997 270.5363 14.81674847262783"},
+  "49070":{"name":"PLEIADES NEO 4","line1":"1 49070U 21073E   26067.93365755 -.00000635  00000+0 -74051-4 0  9993","line2":"2 49070  97.8931 144.1351 0001325  91.3415 268.7949 14.81670942246528"},
+  "38012":{"name":"PLEIADES 1A","line1":"1 38012U 11076F   26067.97818378  .00000368  00000+0  89022-4 0  9992","line2":"2 38012  98.2042 144.4003 0001690  89.6947  30.5200 14.58538794757380"},
+  "54880":{"name":"EROS C3","line1":"1 54880U 22179A   26067.96449115  .00008366  00000+0  46503-3 0  9999","line2":"2 54880 139.3352 152.2676 0003324  24.1796 335.9168 15.11801642177169"},
+  "40536":{"name":"KOMPSAT-3A","line1":"1 40536U 15014A   26067.94818758  .00032800  00000+0  56554-3 0  9990","line2":"2 40536  97.6879  52.3988 0063309 180.1739 179.9500 15.48690134606274"},
+  "40697":{"name":"SENTINEL-2A","line1":"1 40697U 15028A   26056.18000490  .00000159  00000+0  76852-4 0  9999","line2":"2 40697  98.5024 132.8928 0054368 194.7437 165.2162 14.30192923557712"},
+  "42063":{"name":"SENTINEL-2B","line1":"1 42063U 17013A   26067.92776985 -.00000051  00000+0 -28971-5 0  9990","line2":"2 42063  98.5653 144.1326 0001121  94.8520 265.2791 14.30818936470306"},
+  "65565":{"name":"PRAETORIAN SDA_602","line1":"1 65565U 25203A   26067.63247980  .00000091  00000+0  71108-4 0  9999","line2":"2 65565  81.3000 103.9187 0007220 104.8575 255.3382 13.84332785 24784"},
+  "39088":{"name":"SAPPHIRE","line1":"1 39088U 13009C   26067.91083356  .00000239  00000+0  98487-4 0  9990","line2":"2 39088  98.4220 249.7562 0011166 181.8714 178.2432 14.35208750682193"}
+};
 let satInterval = null;
 
 async function loadSatellites() {
@@ -2329,25 +2422,7 @@ async function loadSatellites() {
       document.head.appendChild(s);
     });
   }
-
-  // Fetch TLEs for all recon sats
-  const ids = RECON_SATS.map(s => s.id).join(',');
-  try {
-    const resp = await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${RECON_SATS[0].id}&FORMAT=tle`);
-    // CelesTrak doesn't support multi-ID in one call, fetch individually
-    const tlePromises = RECON_SATS.map(async s => {
-      try {
-        const r = await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${s.id}&FORMAT=tle`);
-        if (!r.ok) return null;
-        const text = await r.text();
-        const lines = text.trim().split('\n');
-        if (lines.length >= 3) {
-          satTLEs[s.id] = { name: lines[0].trim(), line1: lines[1].trim(), line2: lines[2].trim() };
-        }
-      } catch(e) {}
-    });
-    await Promise.all(tlePromises);
-  } catch(e) {}
+  // TLEs are pre-embedded in satTLEs (CelesTrak has no CORS)
 
   updateSatPositions();
   // Update positions every 5 seconds
