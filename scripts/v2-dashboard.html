@@ -907,6 +907,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
       <div class="sb-action-btn" onclick="showUSOnly()" style="border-color:rgba(59,130,246,0.3);color:#60a5fa">US Forces Only</div>
       <div class="sb-action-btn" onclick="showIranOnly()" style="border-color:rgba(239,68,68,0.3);color:#f87171">Iran Targets Only</div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <div class="sb-action-btn" onclick="saveConfig()" style="flex:1;border-color:rgba(34,197,94,0.3);color:#22c55e;font-size:10px">💾 Save</div>
+        <div class="sb-action-btn" onclick="clearAllLayers()" style="flex:1;border-color:rgba(239,68,68,0.3);color:#f87171;font-size:10px">✕ Clear</div>
+        <div class="sb-action-btn" onclick="resetConfig()" style="flex:1;border-color:rgba(168,162,158,0.3);color:#a8a29e;font-size:10px">↺ Reset</div>
+      </div>
     </div>
   </div>
   <div id="tab-assets" style="display:none">
@@ -1144,7 +1149,8 @@ function toggleLayer(name) {
   if (btn) btn.classList.toggle('active', activeState[name]);
   updateMobileButtons();
   updateLayerCount();
-  if (name === 'aircraft' && activeState.aircraft) loadAircraft();
+  if (name === 'aircraft' && activeState.aircraft) { if (aircraftMode === 0) aircraftMode = 1; loadAircraft(); }
+  if (name === 'aircraft' && !activeState.aircraft) aircraftMode = 0;
   if (name === 'osint' && activeState.osint) loadOSINT();
   if (name === 'seismic' && activeState.seismic) loadSeismic();
   if (name === 'gpsjam' && activeState.gpsjam) loadGPSJam();
@@ -1161,6 +1167,66 @@ function isolateIranLayer(name) {
 
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ─── CONFIG PERSISTENCE (localStorage) ───
+const DEFAULT_STATE = { borders: true, military: true, fires: false, osint: false, sirens: true, strikes: true, seismic: false, correlations: true };
+function saveConfig() {
+  const cfg = { activeState: {...activeState}, aircraftMode, fireMode, feedTimeHours };
+  localStorage.setItem('centcom-config', JSON.stringify(cfg));
+  // Flash button green briefly
+  const el = event.target; el.style.background = 'rgba(34,197,94,0.2)';
+  setTimeout(() => el.style.background = '', 600);
+}
+function clearAllLayers() {
+  Object.keys(layers).forEach(k => {
+    if (activeState[k] !== undefined) {
+      activeState[k] = false;
+      if (map.hasLayer(layers[k])) map.removeLayer(layers[k]);
+    }
+  });
+  aircraftMode = 0; fireMode = 0;
+  updateAllButtons();
+}
+function resetConfig() {
+  localStorage.removeItem('centcom-config');
+  Object.assign(activeState, DEFAULT_STATE);
+  aircraftMode = 0; fireMode = 4;
+  Object.keys(layers).forEach(k => {
+    if (activeState[k]) { if (!map.hasLayer(layers[k])) layers[k].addTo(map); }
+    else { if (map.hasLayer(layers[k])) map.removeLayer(layers[k]); }
+  });
+  updateAllButtons();
+}
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem('centcom-config');
+    if (!raw) return;
+    const cfg = JSON.parse(raw);
+    if (cfg.activeState) Object.assign(activeState, cfg.activeState);
+    if (cfg.aircraftMode !== undefined) aircraftMode = cfg.aircraftMode;
+    if (cfg.fireMode !== undefined) fireMode = cfg.fireMode;
+    if (cfg.feedTimeHours !== undefined) feedTimeHours = cfg.feedTimeHours;
+    // Apply layer visibility
+    Object.keys(layers).forEach(k => {
+      if (activeState[k]) { if (!map.hasLayer(layers[k])) layers[k].addTo(map); }
+      else { if (map.hasLayer(layers[k])) map.removeLayer(layers[k]); }
+    });
+    updateAllButtons();
+  } catch(e) { console.warn('Config load failed:', e); }
+}
+function updateAllButtons() {
+  document.querySelectorAll('.tb-btn[data-layer]').forEach(btn => {
+    const name = btn.dataset.layer;
+    if (name && activeState[name] !== undefined) btn.classList.toggle('active', activeState[name]);
+  });
+  document.querySelectorAll('.sb-row').forEach(row => {
+    // Update sidebar dot active states
+    const dot = row.querySelector('.sb-dot');
+    if (dot) dot.style.opacity = '1';
+  });
+  updateLayerCount();
+  updateMobileButtons();
 }
 
 function toggleLegend() {
@@ -2188,6 +2254,7 @@ updateClock();
 // INIT
 // ═══════════════════════════════════════════════════════════
 renderAllLayers();
+loadConfig(); // Restore saved layer preferences from localStorage
 loadFIRMS();
 loadSeismic();
 loadSirens();
