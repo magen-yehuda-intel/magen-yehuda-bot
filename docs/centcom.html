@@ -1292,6 +1292,10 @@ function renderFeed() {
     const ts = e.ts || 0;
     if (cutoff > 0 && ts < cutoff) return false;
     if (feedActiveCats.size > 0 && !feedActiveCats.has(e.side || 'unknown')) return false;
+    // Exclude fire/FIRMS events from feed
+    const src = (e.source || e.src || '').toLowerCase();
+    const typ = (e.sub_event_type || e.type || '').toLowerCase();
+    if (src.includes('nasa') || src.includes('firms') || typ.includes('fire')) return false;
     return true;
   });
 
@@ -1743,7 +1747,8 @@ function renderOSINTMarkers(events) {
     if (!ev.lat || !ev.lon) return;
     // Skip fire events — handled by loadFIRMS() with gradient icons
     const evType = (ev.sub_event_type || ev.type || '').toLowerCase();
-    if (evType.includes('fire') || evType.includes('firms')) return;
+    const evSrc = (ev.source || ev.src || '').toLowerCase();
+    if (evType.includes('fire') || evType.includes('firms') || evSrc.includes('firms') || evSrc.includes('nasa')) return;
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
