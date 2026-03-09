@@ -1110,6 +1110,7 @@ function toggleLayer(name) {
   if (btn) btn.classList.toggle('active', activeState[name]);
   updateMobileButtons();
   updateLayerCount();
+  if (name === 'aircraft' && activeState.aircraft) loadAircraft();
 }
 
 function isolateIranLayer(name) {
