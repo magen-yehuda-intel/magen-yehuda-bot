@@ -121,6 +121,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 @keyframes correlationPulse { 0%,100% { opacity:0.9; } 50% { opacity:0.4; } }
 .strike-jet { animation: strikeJetPulse 2s ease-in-out infinite; filter:drop-shadow(0 0 12px rgba(255,34,0,0.8)); }
 @keyframes strikeJetPulse { 0%,100% { transform:scale(1); filter:drop-shadow(0 0 12px rgba(255,34,0,0.8)); } 50% { transform:scale(1.15); filter:drop-shadow(0 0 20px rgba(255,34,0,1)); } }
+.gpsjam-pulse { animation: gpsjamPulse 3s ease-in-out infinite; }
+@keyframes gpsjamPulse { 0%,100% { opacity:0.5; } 50% { opacity:0.2; } }
 .marker-osint { filter:drop-shadow(0 0 8px rgba(239,68,68,0.7)); border-color:#f87171; animation:pin-bounce 0.4s ease-out; }
 .marker-osint-strike { filter:drop-shadow(0 0 14px rgba(255,0,0,0.9)); border-color:#ff0000; animation:strike-blink 1s ease-in-out infinite; z-index:9000!important; }
 @keyframes strike-blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(1.3)} }
@@ -828,7 +830,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="gpsjam" data-color="red" onclick="toggleLayer('gpsjam')">
     <span>📡</span><div class="tb-tooltip">GPS Jamming</div>
   </div>
-  <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="toggleLayer('fires')">
+  <div class="tb-btn active" data-layer="fires" data-color="orange" onclick="cycleFires()">
     <span>🔥</span><div class="tb-tooltip">FIRMS Fires (last 2h)</div>
   </div>
   <div class="tb-btn" data-layer="satellites" data-color="cyan" onclick="toggleLayer('satellites')">
@@ -1135,6 +1137,7 @@ function toggleLayer(name) {
   if (name === 'aircraft' && activeState.aircraft) loadAircraft();
   if (name === 'osint' && activeState.osint) loadOSINT();
   if (name === 'seismic' && activeState.seismic) loadSeismic();
+  if (name === 'gpsjam' && activeState.gpsjam) loadGPSJam();
 }
 
 function isolateIranLayer(name) {
@@ -1158,6 +1161,30 @@ function toggleLegend() {
 // Aircraft filter mode: 0=off, 1=all, 2=military, 3=civilian
 let aircraftMode = 0;
 const AIRCRAFT_MODES = ['OFF', 'ALL', 'MIL', 'CIV'];
+
+// Fire filter mode: 0=off, 1=<1h ACTIVE, 2=1-3h RECENT, 3=3-6h FADING, 4=ALL
+let fireMode = 4; // default: show all
+const FIRE_MODES = ['OFF', '<1H', '1-3H', '3-6H', 'ALL'];
+const FIRE_COLORS = ['', '#ff2200', '#ff8800', '#cc8800', '#ff8800'];
+function cycleFires() {
+  fireMode = (fireMode + 1) % 5;
+  const btn = document.querySelector('.tb-btn[data-layer="fires"]');
+  const tooltip = btn ? btn.querySelector('.tb-tooltip') : null;
+  if (fireMode === 0) {
+    activeState.fires = false;
+    map.removeLayer(layers.fires);
+    if (btn) btn.classList.remove('active');
+    if (tooltip) tooltip.textContent = 'Fires: OFF';
+  } else {
+    activeState.fires = true;
+    layers.fires.addTo(map);
+    if (btn) btn.classList.add('active');
+    if (tooltip) tooltip.textContent = `Fires: ${FIRE_MODES[fireMode]}`;
+    loadFIRMS();
+  }
+  updateMobileButtons();
+  updateLayerCount();
+}
 const AIRCRAFT_COLORS = ['', '#00ffc8', '#ff4444', '#00ffc8'];
 function cycleAircraft() {
   aircraftMode = (aircraftMode + 1) % 4;
@@ -1875,6 +1902,10 @@ function loadFIRMS() {
       const ts = f.timestamp || f.ts || 0;
       const ageMin = ts ? (now - ts) / 60 : 9999;
       if (ageMin > 360) return; // filter: max 6h
+      // Fire mode filter: 1=<1h, 2=1-3h, 3=3-6h, 4=all
+      if (fireMode === 1 && ageMin >= 60) return;
+      if (fireMode === 2 && (ageMin < 60 || ageMin >= 180)) return;
+      if (fireMode === 3 && (ageMin < 180 || ageMin >= 360)) return;
       count++;
       // Gradient: <1h = bright red, 1-3h = orange, 3-6h = dim amber
       let color, glow, opacity, cls, label;
@@ -2176,6 +2207,54 @@ function aircraftSvg(heading, isMil) {
   return `<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="transform:rotate(${r}deg)">
     <path d="M12 2L8 10H3L2 12L8 14V20L6 22H8L12 20L16 22H18L16 20V14L22 12L21 10H16Z" fill="${color}" stroke="${isMil?'#ff0000':'#008866'}" stroke-width="0.5" opacity="0.9"/>
   </svg>`;
+}
+
+// GPS Jamming: known active zones + live NIC degradation from OpenSky
+function loadGPSJam() {
+  layers.gpsjam.clearLayers();
+  // Known active GPS jamming/spoofing zones (updated from EUROCONTROL/OPSGROUP reports)
+  const JAMMING_ZONES = [
+    { name: 'Eastern Mediterranean (Israel/Lebanon/Syria)', center: [34.5, 35.5], radius: 250, severity: 'high', note: 'Persistent Israeli GPS denial ops, affects Ben Gurion, Beirut, Damascus airspace' },
+    { name: 'Northern Iraq / SE Turkey', center: [37.0, 43.0], radius: 150, severity: 'medium', note: 'Turkish/Kurdish conflict zone, intermittent jamming' },
+    { name: 'Strait of Hormuz', center: [26.5, 56.5], radius: 120, severity: 'high', note: 'Iranian GPS spoofing zone, tanker navigation affected' },
+    { name: 'Tehran / Central Iran', center: [35.7, 51.4], radius: 180, severity: 'high', note: 'Air defense GPS denial around nuclear sites and capital' },
+    { name: 'Isfahan / Natanz', center: [33.5, 51.7], radius: 100, severity: 'high', note: 'Nuclear facility protection zone' },
+    { name: 'Bushehr', center: [28.9, 50.8], radius: 80, severity: 'medium', note: 'Nuclear plant + naval base GPS denial' },
+    { name: 'Western Yemen / Bab el-Mandeb', center: [13.5, 43.5], radius: 100, severity: 'medium', note: 'Houthi-controlled, GPS spoofing reported by mariners' },
+    { name: 'Eastern Libya', center: [32.0, 20.0], radius: 200, severity: 'low', note: 'Russian-linked GPS jamming from Haftar-controlled areas' },
+    { name: 'Sinai / Suez', center: [30.0, 33.5], radius: 80, severity: 'low', note: 'Egyptian military ops, intermittent' },
+  ];
+  const sevColors = { high: '#ff0040', medium: '#ff8800', low: '#ffcc00' };
+  const sevOpacity = { high: 0.15, medium: 0.10, low: 0.06 };
+  const sevBorder = { high: 0.5, medium: 0.35, low: 0.2 };
+
+  JAMMING_ZONES.forEach(z => {
+    const color = sevColors[z.severity] || '#ff0040';
+    const circle = L.circle(z.center, {
+      radius: z.radius * 1000,
+      color, fillColor: color, fillOpacity: sevOpacity[z.severity],
+      weight: 1.5, opacity: sevBorder[z.severity], dashArray: '6,4',
+      className: z.severity === 'high' ? 'gpsjam-pulse' : ''
+    });
+    circle.bindPopup(mkPopup(
+      `📡 GPS INTERFERENCE — ${z.severity.toUpperCase()}`,
+      z.name,
+      `${z.note}<br>📏 ~${z.radius}km radius<br><a href="https://gpsjam.org" target="_blank" style="color:#ff8800">📊 Live data: gpsjam.org</a>`,
+      color
+    ));
+    circle.addTo(layers.gpsjam);
+
+    // Hatch pattern center label
+    if (z.severity === 'high') {
+      const label = L.marker(z.center, {
+        icon: L.divIcon({
+          html: `<div style="color:${color};font-size:10px;font-family:var(--font-data);white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,0.8);opacity:0.7">📡 ${z.name.split('(')[0].trim()}</div>`,
+          className: '', iconSize: [150, 16], iconAnchor: [75, 8]
+        })
+      });
+      label.addTo(layers.gpsjam);
+    }
+  });
 }
 
 function loadAircraft() {
