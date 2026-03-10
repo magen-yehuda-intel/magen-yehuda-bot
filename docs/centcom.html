@@ -2483,6 +2483,9 @@ function toggleOrefHistory() {
   const updatedEl = document.getElementById('oref-updated');
   const updated = updatedEl ? updatedEl.textContent : '';
   
+  // Show loading state immediately
+  el.innerHTML = '<div style="color:#888">Loading siren data...</div>';
+  
   let html = '';
   html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">`;
   html += `<span style="color:${isLive ? 'var(--green)' : '#f59e0b'}">●</span>`;
@@ -2501,23 +2504,40 @@ function toggleOrefHistory() {
     html += `<div style="color:var(--green);font-weight:600;margin-bottom:6px">✅ All Clear — No active alerts</div>`;
     if (lastSiren) html += `<div style="color:#aaa;font-size:10px;margin-top:4px">Last known: ${lastSiren}</div>`;
   }
-  el.innerHTML = html;
   
-  // Also try to fetch siren history from API
-  if (API_URL) {
-    fetch(`${API_URL}/api/oref/history?limit=3`, {cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{
-      if (!d || !d.alerts || !d.alerts.length) return;
-      let hHtml = '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:8px;color:#888;font-size:10px;font-weight:600">Recent Siren History</div>';
+  // Fetch siren history from API — this is the main content
+  const histUrl = API_URL ? `${API_URL}/api/oref/history?limit=5` : null;
+  if (histUrl) {
+    fetch(histUrl, {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject('HTTP ' + r.status)).then(d=>{
+      if (!d || !d.alerts || !d.alerts.length) {
+        el.innerHTML = html + '<div style="color:#888;font-size:10px;margin-top:8px">No siren history available</div>';
+        return;
+      }
+      let hHtml = '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:8px;color:#06b6d4;font-size:11px;font-weight:700;margin-bottom:6px">📋 Siren History</div>';
       d.alerts.forEach(a => {
         const title = SIREN_TITLE_HE[a.title] || SIREN_TITLES[a.cat] || a.title || 'Alert';
         const rawCities = a.data || a.cities || a.areas || '';
-        const cities = (Array.isArray(rawCities) ? rawCities.slice(0,5).join(', ') + (rawCities.length > 5 ? ` +${rawCities.length-5} more` : '') : String(rawCities).substring(0,100));
-        const ts = a.ts ? new Date(a.ts*1000).toLocaleString() : '';
-        const areaCount = a.area_count || (Array.isArray(rawCities) ? rawCities.length : '') ;
-        hHtml += `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="color:#aaa">${title}${areaCount ? ' (' + areaCount + ' areas)' : ''}</div><div style="font-size:9px;color:#666">${cities} · ${ts}</div></div>`;
+        const cities = Array.isArray(rawCities) ? rawCities.slice(0,5).join(', ') + (rawCities.length > 5 ? ` +${rawCities.length-5} more` : '') : String(rawCities).substring(0,100);
+        const areaCount = a.area_count || (Array.isArray(rawCities) ? rawCities.length : 0);
+        let timeStr = '';
+        if (a.ts) {
+          const d = new Date(a.ts * 1000);
+          const ago = Math.round((Date.now() - d.getTime()) / 60000);
+          timeStr = ago < 60 ? `${ago}m ago` : ago < 1440 ? `${Math.round(ago/60)}h ago` : d.toLocaleDateString();
+        }
+        hHtml += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">`;
+        hHtml += `<div style="color:#ccc;font-weight:600">${title}${areaCount ? ' <span style="color:#888;font-weight:400">(' + areaCount + ' areas)</span>' : ''}</div>`;
+        hHtml += `<div style="font-size:9px;color:#888;margin-top:2px">${cities}</div>`;
+        if (timeStr) hHtml += `<div style="font-size:9px;color:#06b6d4;margin-top:2px">⏱ ${timeStr}</div>`;
+        hHtml += `</div>`;
       });
-      el.innerHTML += hHtml;
-    }).catch(()=>{});
+      el.innerHTML = html + hHtml;
+    }).catch(err => {
+      console.error('Oref history fetch error:', err);
+      el.innerHTML = html + `<div style="color:#f59e0b;font-size:10px;margin-top:8px">⚠ Could not load siren history</div>`;
+    });
+  } else {
+    el.innerHTML = html;
   }
 }
 
