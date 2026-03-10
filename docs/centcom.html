@@ -2858,7 +2858,10 @@ function updateOrefBanner(alerts, serverTs, note) {
     updated.textContent = '';
   }
 
-  if (alerts.length === 0) {
+  // Filter out cat 10 ("event ended") — these are stand-down notices, not active threats
+  const activeAlerts = alerts.filter(a => a.cat !== '10' && a.cat !== 10);
+
+  if (activeAlerts.length === 0) {
     banner.classList.remove('alert-active');
     status.className = 'oref-status safe';
     status.textContent = '✅ All Clear';
@@ -2867,11 +2870,11 @@ function updateOrefBanner(alerts, serverTs, note) {
   } else {
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
-    const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
-    status.textContent = `🚨 ACTIVE: ${alerts.length} alert${alerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
-    document.getElementById('chip-alert').textContent = alerts.length;
-    document.getElementById('oref-last-siren').textContent = '';
-    lastSirenCache = null;
+    const areas = activeAlerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
+    status.textContent = `🚨 ACTIVE: ${activeAlerts.length} alert${activeAlerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
+    document.getElementById('chip-alert').textContent = activeAlerts.length;
+    // Still show last siren info even during active alerts
+    fetchLastSiren();
   }
 }
 
