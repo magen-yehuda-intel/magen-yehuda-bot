@@ -37,7 +37,7 @@ MAP_EAST = 64.0
 MAP_SOUTH = 12.0
 MAP_NORTH = 42.0
 
-ESRI_SAT_URL = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+ESRI_SAT_URL = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png"
 TILE_SIZE = 256
 ZOOM = 5
 IMG_WIDTH = 1200
@@ -257,7 +257,7 @@ def compute_correlations(fires, quakes):
 # RENDER
 # ═══════════════════════════════════════════════════════════
 
-def render(fires, quakes, correlations, sirens, output_path, caption_path=None):
+def render(fires, quakes, correlations, output_path, caption_path=None):
     print(f"  🗺️ Building base map ({IMG_WIDTH}x{IMG_HEIGHT})...")
     
     # Calculate tile range
@@ -275,9 +275,7 @@ def render(fires, quakes, correlations, sirens, output_path, caption_path=None):
             tile = download_tile(ZOOM, tx, ty)
             base.paste(tile, ((tx - tx1) * TILE_SIZE, (ty - ty1) * TILE_SIZE))
     
-    # Darken base for contrast
-    dark = Image.new("RGBA", base.size, (0, 0, 10, 100))
-    base = Image.alpha_composite(base, dark)
+    # VIIRS Black Marble is already dark — no overlay needed
     
     # Scale to output size
     scale_x = IMG_WIDTH / raw_w
@@ -379,8 +377,6 @@ def render(fires, quakes, correlations, sirens, output_path, caption_path=None):
         (f"🔴 Seismic: {quake_count}", COLOR_QUAKE),
         (f"🎯 Probable: {probable}  ⚠️ Possible: {possible}  🔍 Suspicious: {suspicious}", COLOR_HUD_TEXT),
     ]
-    if sirens:
-        stats.insert(0, (f"🚨 Active Sirens: {len(sirens)}", COLOR_SIREN))
     for text, color in stats:
         draw.text((14, y), text, fill=color, font=font)
         y += 22
@@ -412,8 +408,6 @@ def render(fires, quakes, correlations, sirens, output_path, caption_path=None):
         f"📅 {ts_str}",
         "",
     ]
-    if sirens:
-        lines.append(f"🚨 {len(sirens)} active siren alert(s)")
     if probable > 0:
         lines.append(f"🎯 {probable} PROBABLE strike correlation(s)")
     if possible > 0:
@@ -457,8 +451,7 @@ def main():
     quakes = fetch_seismic()
     print(f"  🔴 Seismic: {len(quakes)}")
     
-    sirens = fetch_sirens()
-    print(f"  🚨 Sirens: {len(sirens)}")
+    sirens = []  # Siren history is not "active" — skip from snapshot
     
     print("\n🧮 Computing strike correlations...")
     correlations = compute_correlations(fires, quakes)
@@ -468,7 +461,7 @@ def main():
     print(f"  🎯 Probable: {prob}, ⚠️ Possible: {poss}, 🔍 Suspicious: {susp}")
     
     print(f"\n🗺️ Rendering map...")
-    caption = render(fires, quakes, correlations, sirens, output_path, caption_path)
+    caption = render(fires, quakes, correlations, output_path, caption_path)
     
     print("\n✅ Done!")
     return caption
