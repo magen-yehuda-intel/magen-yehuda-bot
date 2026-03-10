@@ -77,18 +77,21 @@ def image_rank(importance: str) -> int:
 
 # ─── Telegram delivery ───
 
-def send_telegram_text(bot_token: str, chat_id: str, text: str, retries: int = 1) -> bool:
+def send_telegram_text(bot_token: str, chat_id: str, text: str, retries: int = 1, reply_markup: str = "") -> bool:
     """Send an HTML text message to Telegram. Retries on failure."""
     if not text or not text.strip():
         return False
     for attempt in range(retries + 1):
         try:
-            data = urllib.parse.urlencode({
+            params = {
                 "chat_id": chat_id,
                 "text": text,
                 "parse_mode": "HTML",
                 "disable_web_page_preview": "true",
-            }).encode()
+            }
+            if reply_markup:
+                params["reply_markup"] = reply_markup
+            data = urllib.parse.urlencode(params).encode()
             req = urllib.request.Request(
                 f"https://api.telegram.org/bot{bot_token}/sendMessage",
                 data=data,
@@ -103,7 +106,7 @@ def send_telegram_text(bot_token: str, chat_id: str, text: str, retries: int = 1
     return False
 
 
-def send_telegram_photo(bot_token: str, chat_id: str, photo_path: str, caption: str = "") -> bool:
+def send_telegram_photo(bot_token: str, chat_id: str, photo_path: str, caption: str = "", reply_markup: str = "") -> bool:
     """Send a photo to Telegram via multipart upload."""
     if not os.path.isfile(photo_path):
         return False
@@ -118,6 +121,9 @@ def send_telegram_photo(bot_token: str, chat_id: str, photo_path: str, caption: 
         if caption:
             body.write(f"--{boundary}\r\n".encode())
             body.write(f'Content-Disposition: form-data; name="caption"\r\n\r\n{caption}\r\n'.encode())
+        if reply_markup:
+            body.write(f"--{boundary}\r\n".encode())
+            body.write(f'Content-Disposition: form-data; name="reply_markup"\r\n\r\n{reply_markup}\r\n'.encode())
         body.write(f"--{boundary}\r\n".encode())
         body.write(b'Content-Disposition: form-data; name="photo"; filename="image.png"\r\n')
         body.write(b"Content-Type: image/png\r\n\r\n")
@@ -344,7 +350,13 @@ class Dispatcher:
                 cap = image_caption
                 if lang == "he" and image_caption_he:
                     cap = image_caption_he
-                ok = send_telegram_photo(self.bot_token, chat_id, image_path, cap)
+                # Add inline "Open Dashboard" button for dashboard snapshots and maps
+                markup = ""
+                if event_type in ("dashboard_snapshot", "map", "strike_correlation"):
+                    markup = json.dumps({"inline_keyboard": [[
+                        {"text": "📡 Open Live Dashboard", "url": "https://magen-yehuda-intel.github.io/magen-yehuda-bot/centcom.html"}
+                    ]]})
+                ok = send_telegram_photo(self.bot_token, chat_id, image_path, cap, reply_markup=markup)
                 if ok:
                     sent = True
 
