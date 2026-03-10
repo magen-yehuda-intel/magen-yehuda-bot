@@ -2266,6 +2266,10 @@ function correlateStrikesOnMap() {
       `<span style="color:${color};font-weight:700">Score: ${c.score}/100</span>`;
     const factorsHtml = c.factors.map(f => `<br>  ${f}`).join('');
     const typeLabel = c.type === 'paired' ? 'Seismic + Thermal' : c.type === 'fire-only' ? 'Thermal Anomaly' : 'Seismic Anomaly';
+    // Timestamps for seismic and fire events
+    let timeInfo = '';
+    if (c.q && c.q.time) timeInfo += `<br>🔴 Seismic: ${localTime(c.q.time)}`;
+    if (c.f && c.f.ts) timeInfo += `<br>🔥 Fire: ${localTime(c.f.ts)}`;
 
     const ring = L.circleMarker([c.lat, c.lon], {
       radius: ringSize, color, fillColor: color, fillOpacity: c.score >= 70 ? 0.2 : 0.1,
@@ -2281,7 +2285,7 @@ function correlateStrikesOnMap() {
     ring.bindPopup(mkPopup(
       label,
       typeLabel,
-      `${scoreBar}${factorsHtml}<br><br>📍 ${c.lat.toFixed(3)}°, ${c.lon.toFixed(3)}°`,
+      `${scoreBar}${factorsHtml}${timeInfo}<br><br>📍 ${c.lat.toFixed(3)}°, ${c.lon.toFixed(3)}°`,
       color
     ));
     ring.addTo(layers.correlations);
