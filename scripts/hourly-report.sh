@@ -26,6 +26,15 @@ if [ -f "$MAP_FILE" ]; then
   echo "{\"type\":\"map\",\"severity\":\"LOW\",\"image\":\"$MAP_FILE\",\"image_importance\":\"medium\",\"image_caption\":\"🛰️ Iran Intel Map — $NOW_UTC\",\"image_caption_he\":\"\u200F🛰️ מפת מודיעין איראן — $NOW_UTC\"}" | $DISPATCH 2>/dev/null && echo "  📸 Map sent" || echo "  ⚠️ Map send failed"
 fi
 
+# ── Generate CENTCOM theater dashboard snapshot ──
+DASH_FILE="$STATE_DIR/report-dashboard.png"
+DASH_CAPTION="$STATE_DIR/report-dashboard-caption.txt"
+python3 "$SKILL_DIR/scripts/generate-dashboard-snapshot.py" "$DASH_FILE" --caption-file "$DASH_CAPTION" 2>/dev/null
+if [ -f "$DASH_FILE" ]; then
+  CAPTION=$(cat "$DASH_CAPTION" 2>/dev/null || echo "🎯 CENTCOM Theater Snapshot — $NOW_UTC")
+  echo "{\"type\":\"dashboard_snapshot\",\"severity\":\"LOW\",\"image\":\"$DASH_FILE\",\"image_importance\":\"high\",\"image_caption\":\"$CAPTION\"}" | $DISPATCH 2>/dev/null && echo "  📸 Dashboard snapshot sent" || echo "  ⚠️ Dashboard snapshot send failed"
+fi
+
 # ── Generate summaries ──
 SUMMARY_JSON=$(python3 "$SKILL_DIR/scripts/generate-summary.py" 2>/dev/null)
 
