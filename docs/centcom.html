@@ -2048,6 +2048,8 @@ function loadFIRMS() {
       if (!f.lat || !f.lon) return;
       if (!inViewport(f.lat, f.lon, bounds)) return; // viewport culling
       const ts = f.timestamp || f.ts || 0;
+      const frpVal = parseFloat(f.frp) || 0;
+      if (frpVal < 10) return; // filter: minimum 10 MW (skip small agricultural burns)
       const ageMin = ts ? Math.max(0, (now - ts) / 60) : 9999;
       if (ageMin > 360) return; // filter: max 6h
       // Fire mode filter: 1=<1h, 2=1-3h, 3=3-6h, 4=all
