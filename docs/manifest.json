@@ -1,0 +1,29 @@
+{
+  "name": "Magen Yehuda Intel",
+  "short_name": "MYI",
+  "description": "Real-time CENTCOM theater operations dashboard — strikes, fires, seismic, military flights, sirens",
+  "start_url": "/magen-yehuda-bot/centcom.html",
+  "scope": "/magen-yehuda-bot/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a0a1a",
+  "theme_color": "#ff0040",
+  "categories": ["news", "security"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "CENTCOM Dashboard",
+      "url": "/magen-yehuda-bot/centcom.html",
+      "description": "Live theater operations map"
+    },
+    {
+      "name": "Strikes History",
+      "url": "/magen-yehuda-bot/strikes.html",
+      "description": "Historical strikes timeline"
+    }
+  ]
+}
