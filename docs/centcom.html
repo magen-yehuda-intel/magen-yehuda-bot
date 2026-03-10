@@ -1041,7 +1041,7 @@ function dataUrl(endpoint) {
   if (API_URL) {
     if (endpoint === 'oref') return `${API_URL}/api/oref`;
     if (endpoint === 'intel-feed') return `${API_URL}/api/intel-feed?hours=48&limit=2000`;
-    if (endpoint === 'fires') return `${API_URL}/api/intel-feed?hours=24&limit=500`;
+    if (endpoint === 'fires') return `${API_URL}/api/fires`;
   }
   // Fallback to static files
   const staticMap = { 'oref': 'oref-alerts.json', 'fires': 'intel-feed.json', 'intel-feed': 'intel-feed.json' };
@@ -2017,11 +2017,24 @@ function loadFIRMS() {
   const feedUrl = dataUrl('fires');
   fetch(feedUrl).then(r => r.ok ? r.json() : Promise.reject('no'))
   .then(data => {
-    const all = data.events || data || [];
+    const raw = Array.isArray(data) ? data : (data.events || data.fires || []);
     const now = Date.now()/1000;
-    const fires = all.filter(e => {
+    // FIRMS data from /api/fires has lat/lon/frp/confidence/acq/sat — all entries are fires
+    // Intel-feed data has sub_event_type/type — filter for fire/firms
+    const fires = raw.filter(e => {
+      if (e.frp !== undefined || e.sat) return true; // FIRMS format
       const t = (e.sub_event_type || e.type || '').toLowerCase();
       return t.includes('fire') || t.includes('firms');
+    });
+    // Parse FIRMS acq timestamp: "2026-03-09 2305" → unix seconds
+    fires.forEach(f => {
+      if (!f.timestamp && !f.ts && f.acq) {
+        const m = f.acq.match(/(\d{4})-(\d{2})-(\d{2})\s*(\d{1,2})(\d{2})?/);
+        if (m) {
+          const h = parseInt(m[4]), min = m[5] ? parseInt(m[5]) : 0;
+          f.timestamp = new Date(`${m[1]}-${m[2]}-${m[3]}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00Z`).getTime()/1000;
+        }
+      }
     });
     // Always cache fire data for correlation (even if fire layer is off)
     _fireCache = fires.filter(f => f.lat && f.lon).map(f => ({lat:f.lat, lon:f.lon, ts:f.timestamp||f.ts||0}));
