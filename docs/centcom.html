@@ -2471,6 +2471,8 @@ function loadShips() {
 }
 
 // GPS Jamming: known active zones + live NIC degradation from OpenSky
+const SIREN_TITLES = {'1':'Rockets & Missiles','2':'Hostile Aircraft Intrusion','3':'Tsunami','4':'Earthquake','5':'Radiological','6':'Hazardous Materials','10':'Missiles (event ended)','101':'Drill'};
+const SIREN_TITLE_HE = {'ירי רקטות וטילים':'Rockets & Missiles','חדירת כלי טיס עוין':'Hostile Aircraft Intrusion','צונמי':'Tsunami','רעידת אדמה':'Earthquake'};
 function toggleOrefHistory() {
   const panel = document.getElementById('oref-history');
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
@@ -2885,8 +2887,7 @@ function updateOrefBanner(alerts, serverTs, note) {
   }
 }
 
-const SIREN_TITLES = {'1':'Rockets & Missiles','2':'Hostile Aircraft Intrusion','3':'Tsunami','4':'Earthquake','5':'Radiological','6':'Hazardous Materials','10':'Missiles (event ended)','101':'Drill'};
-const SIREN_TITLE_HE = {'\u05d9\u05e8\u05d9 \u05e8\u05e7\u05d8\u05d5\u05ea \u05d5\u05d8\u05d9\u05dc\u05d9\u05dd':'Rockets & Missiles','\u05d7\u05d3\u05d9\u05e8\u05ea \u05db\u05dc\u05d9 \u05d8\u05d9\u05e1 \u05e2\u05d5\u05d9\u05df':'Hostile Aircraft Intrusion','\u05e6\u05d5\u05e0\u05de\u05d9':'Tsunami','\u05e8\u05e2\u05d9\u05d3\u05ea \u05d0\u05d3\u05de\u05d4':'Earthquake'};
+// SIREN_TITLES/SIREN_TITLE_HE moved above toggleOrefHistory
 let lastSirenCache = null;
 function fetchLastSiren() {
   const el = document.getElementById('oref-last-siren');
