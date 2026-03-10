@@ -2048,7 +2048,7 @@ function loadFIRMS() {
       if (!f.lat || !f.lon) return;
       if (!inViewport(f.lat, f.lon, bounds)) return; // viewport culling
       const ts = f.timestamp || f.ts || 0;
-      const ageMin = ts ? (now - ts) / 60 : 9999;
+      const ageMin = ts ? Math.max(0, (now - ts) / 60) : 9999;
       if (ageMin > 360) return; // filter: max 6h
       // Fire mode filter: 1=<1h, 2=1-3h, 3=3-6h, 4=all
       if (fireMode === 1 && ageMin >= 60) return;
