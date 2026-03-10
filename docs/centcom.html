@@ -2258,7 +2258,7 @@ function correlateStrikesOnMap() {
     } else if (c.score >= 45) {
       label = '⚠️ POSSIBLE STRIKE'; color = '#ff6600'; ringSize = 25;
     } else {
-      label = '🔍 SUSPICIOUS'; color = '#ffaa00'; ringSize = 20;
+      label = '🔍 SUSPICIOUS'; color = '#8a7a40'; ringSize = 16;
     }
 
     const scoreBar = `<div style="margin:6px 0;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden;height:8px">` +
@@ -2272,8 +2272,11 @@ function correlateStrikesOnMap() {
     if (c.f && c.f.ts) timeInfo += `<br>🔥 Fire: ${localTime(c.f.ts)}`;
 
     const ring = L.circleMarker([c.lat, c.lon], {
-      radius: ringSize, color, fillColor: color, fillOpacity: c.score >= 70 ? 0.2 : 0.1,
-      weight: c.score >= 70 ? 4 : 3, opacity: 0.9, className: c.score >= 70 ? 'correlation-pulse' : ''
+      radius: ringSize, color, fillColor: color,
+      fillOpacity: c.score >= 70 ? 0.2 : c.score >= 45 ? 0.1 : 0.04,
+      weight: c.score >= 70 ? 4 : c.score >= 45 ? 3 : 1.5,
+      opacity: c.score >= 70 ? 0.9 : c.score >= 45 ? 0.7 : 0.3,
+      className: c.score >= 70 ? 'correlation-pulse' : ''
     });
 
     if (c.type === 'paired') {
