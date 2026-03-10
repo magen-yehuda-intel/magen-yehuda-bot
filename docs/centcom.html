@@ -2037,7 +2037,7 @@ function loadFIRMS() {
       }
     });
     // Always cache fire data for correlation (even if fire layer is off)
-    _fireCache = fires.filter(f => f.lat && f.lon).map(f => ({lat:f.lat, lon:f.lon, ts:f.timestamp||f.ts||0}));
+    _fireCache = fires.filter(f => f.lat && f.lon).map(f => ({lat:f.lat, lon:f.lon, ts:f.timestamp||f.ts||0, frp:parseFloat(f.frp)||0, confidence:f.confidence||'?'}));
     correlateStrikesOnMap();
 
     layers.fires.clearLayers();
@@ -2129,10 +2129,33 @@ function loadSeismic() {
 
 function correlateStrikesOnMap() {
   layers.correlations.clearLayers();
-  if (!_seismicCache.length || !_fireCache.length) return;
-  const DIST_KM = 50;
-  const TIME_SEC = 1800; // 30 min
-  let count = 0;
+  if (!_seismicCache.length && !_fireCache.length) return;
+
+  // ═══════════════════════════════════════════════════════════
+  // STRIKE SIGNATURE MODEL — 1-ton (2,000 lb) class munitions
+  // ═══════════════════════════════════════════════════════════
+  // Reference: GBU-31 JDAM (Mk-84, 945kg warhead)
+  //   Seismic: M2.0–M4.0, depth <5km (surface/near-surface)
+  //   Thermal: 15–200+ MW FRP within minutes of detonation
+  //   Blast radius: ~400m lethal, debris to ~1km
+  //   Correlation window: fire appears 0–15 min after seismic
+  //
+  // Scoring (0-100):
+  //   Spatial proximity:    0–5km = +30, 5–15km = +20, 15–30km = +10
+  //   Temporal proximity:   0–5min = +25, 5–15min = +20, 15–30min = +10
+  //   Seismic signature:    depth <5km = +15, M2.0–M4.0 = +10
+  //   Thermal signature:    FRP ≥50MW = +15, ≥25MW = +10, ≥15MW = +5
+  //   High confidence fire: +5
+  //
+  // Classification:
+  //   ≥70 = PROBABLE STRIKE (red)
+  //   ≥45 = POSSIBLE STRIKE (orange)
+  //   ≥25 = SUSPICIOUS (yellow) — fire-only or quake-only anomalies
+  // ═══════════════════════════════════════════════════════════
+
+  const SPATIAL_MAX_KM = 30;
+  const TEMPORAL_MAX_SEC = 1800; // 30 min
+  const MIN_FRP = 15; // MW — minimum for strike consideration
 
   function haversine(lat1, lon1, lat2, lon2) {
     const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
@@ -2140,37 +2163,131 @@ function correlateStrikesOnMap() {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   }
 
+  function scoreCorrelation(q, f, dist, timeDiff) {
+    let score = 0, factors = [];
+    // Spatial
+    if (dist <= 5) { score += 30; factors.push(`📏 ${dist.toFixed(1)}km — direct hit zone`); }
+    else if (dist <= 15) { score += 20; factors.push(`📏 ${dist.toFixed(1)}km — blast/debris zone`); }
+    else { score += 10; factors.push(`📏 ${dist.toFixed(1)}km — peripheral`); }
+    // Temporal
+    const tMin = timeDiff / 60;
+    if (tMin <= 5) { score += 25; factors.push(`⏱ ${tMin.toFixed(0)}min — immediate`); }
+    else if (tMin <= 15) { score += 20; factors.push(`⏱ ${tMin.toFixed(0)}min — rapid`); }
+    else { score += 10; factors.push(`⏱ ${tMin.toFixed(0)}min — delayed`); }
+    // Seismic depth (shallow = surface explosion)
+    if (q.depth !== undefined && q.depth < 5) { score += 15; factors.push(`📐 Depth ${q.depth}km — surface/near-surface`); }
+    else if (q.depth !== undefined && q.depth < 10) { score += 8; factors.push(`📐 Depth ${q.depth}km`); }
+    // Seismic magnitude (1-ton = M2.0–M4.0 typical)
+    if (q.mag >= 2.0 && q.mag <= 4.5) { score += 10; factors.push(`💥 M${q.mag.toFixed(1)} — munition-range`); }
+    else if (q.mag > 4.5) { score += 5; factors.push(`💥 M${q.mag.toFixed(1)} — large`); }
+    // Thermal
+    if (f.frp >= 50) { score += 15; factors.push(`🔥 ${f.frp.toFixed(0)}MW — intense`); }
+    else if (f.frp >= 25) { score += 10; factors.push(`🔥 ${f.frp.toFixed(0)}MW — significant`); }
+    else if (f.frp >= 15) { score += 5; factors.push(`🔥 ${f.frp.toFixed(0)}MW — moderate`); }
+    // High confidence fire
+    if (f.confidence === 'h' || (typeof f.confidence === 'number' && f.confidence >= 80)) {
+      score += 5; factors.push('✅ High-confidence detection');
+    }
+    return { score, factors };
+  }
+
+  let count = 0;
+  const correlations = [];
+
+  // Phase 1: Seismic + Fire correlations
   _seismicCache.forEach(q => {
     if (!q.lat || !q.lon || !q.time) return;
     _fireCache.forEach(f => {
       if (!f.lat || !f.lon || !f.ts) return;
+      if (f.frp < MIN_FRP) return;
       const timeDiff = Math.abs(q.time - f.ts);
-      if (timeDiff > TIME_SEC) return;
+      if (timeDiff > TEMPORAL_MAX_SEC) return;
       const dist = haversine(q.lat, q.lon, f.lat, f.lon);
-      if (dist > DIST_KM) return;
-      // CORRELATION FOUND
-      count++;
-      const midLat = (q.lat + f.lat) / 2;
-      const midLon = (q.lon + f.lon) / 2;
-      // Pulsing red ring
-      const ring = L.circleMarker([midLat, midLon], {
-        radius: 25, color: '#ff0040', fillColor: '#ff0040', fillOpacity: 0.15,
-        weight: 3, opacity: 0.9, className: 'correlation-pulse'
-      });
-      // Line connecting quake to fire
-      const line = L.polyline([[q.lat, q.lon], [f.lat, f.lon]], {
-        color: '#ff0040', weight: 1.5, dashArray: '4,4', opacity: 0.6
-      });
-      ring.bindPopup(mkPopup(
-        '⚡ STRIKE CORRELATION',
-        `M${(q.mag||0).toFixed(1)} quake + 🔥 fire`,
-        `📏 Distance: ${dist.toFixed(1)} km<br>⏱ Time gap: ${Math.round(timeDiff/60)} min<br>🔴 Quake: ${q.place||''} (depth ${q.depth||'?'}km)<br>🔥 Fire: ${f.lat.toFixed(3)}°, ${f.lon.toFixed(3)}°<br><span style="color:#ff0040;font-weight:700">⚠️ Possible airstrike / explosion</span>`,
-        '#ff0040'
-      ));
-      ring.addTo(layers.correlations);
-      line.addTo(layers.correlations);
+      if (dist > SPATIAL_MAX_KM) return;
+      const { score, factors } = scoreCorrelation(q, f, dist, timeDiff);
+      correlations.push({ type: 'paired', q, f, dist, timeDiff, score, factors,
+        lat: (q.lat+f.lat)/2, lon: (q.lon+f.lon)/2 });
     });
   });
+
+  // Phase 2: Fire-only anomalies (very high FRP, no seismic match)
+  const matchedFires = new Set(correlations.map(c => `${c.f.lat},${c.f.lon}`));
+  _fireCache.forEach(f => {
+    if (!f.lat || !f.lon || f.frp < 50) return; // Only flag ≥50MW fire-only
+    if (matchedFires.has(`${f.lat},${f.lon}`)) return;
+    let score = 0, factors = [];
+    if (f.frp >= 100) { score += 35; factors.push(`🔥 ${f.frp.toFixed(0)}MW — extreme thermal`); }
+    else if (f.frp >= 75) { score += 30; factors.push(`🔥 ${f.frp.toFixed(0)}MW — very high thermal`); }
+    else { score += 25; factors.push(`🔥 ${f.frp.toFixed(0)}MW — high thermal`); }
+    if (f.confidence === 'h' || (typeof f.confidence === 'number' && f.confidence >= 80)) {
+      score += 5; factors.push('✅ High-confidence detection');
+    }
+    factors.push('⚠️ No seismic correlation — fire-only anomaly');
+    correlations.push({ type: 'fire-only', f, score, factors, lat: f.lat, lon: f.lon });
+  });
+
+  // Phase 3: Seismic-only anomalies (shallow, munition-range, no fire match)
+  const matchedQuakes = new Set(correlations.filter(c=>c.q).map(c => `${c.q.lat},${c.q.lon}`));
+  _seismicCache.forEach(q => {
+    if (!q.lat || !q.lon) return;
+    if (matchedQuakes.has(`${q.lat},${q.lon}`)) return;
+    if (q.depth === undefined || q.depth >= 5) return; // must be shallow
+    if (!q.mag || q.mag < 2.0 || q.mag > 5.0) return; // munition range
+    let score = 20, factors = [];
+    factors.push(`💥 M${q.mag.toFixed(1)} — shallow ${q.depth}km`);
+    if (q.depth < 2) { score += 10; factors.push('📐 Very shallow — surface blast signature'); }
+    factors.push('⚠️ No thermal correlation — seismic-only anomaly');
+    correlations.push({ type: 'seismic-only', q, score, factors, lat: q.lat, lon: q.lon });
+  });
+
+  // Dedupe by proximity (keep highest score within 5km)
+  correlations.sort((a,b) => b.score - a.score);
+  const used = [];
+  const deduped = correlations.filter(c => {
+    if (used.some(u => haversine(u.lat, u.lon, c.lat, c.lon) < 5)) return false;
+    used.push(c);
+    return true;
+  });
+
+  // Render
+  deduped.forEach(c => {
+    if (c.score < 25) return; // below threshold
+    let label, color, ringSize;
+    if (c.score >= 70) {
+      label = '🎯 PROBABLE STRIKE'; color = '#ff0040'; ringSize = 30;
+    } else if (c.score >= 45) {
+      label = '⚠️ POSSIBLE STRIKE'; color = '#ff6600'; ringSize = 25;
+    } else {
+      label = '🔍 SUSPICIOUS'; color = '#ffaa00'; ringSize = 20;
+    }
+
+    const scoreBar = `<div style="margin:6px 0;background:rgba(0,0,0,0.3);border-radius:4px;overflow:hidden;height:8px">` +
+      `<div style="width:${Math.min(100,c.score)}%;height:100%;background:${color};border-radius:4px"></div></div>` +
+      `<span style="color:${color};font-weight:700">Score: ${c.score}/100</span>`;
+    const factorsHtml = c.factors.map(f => `<br>  ${f}`).join('');
+    const typeLabel = c.type === 'paired' ? 'Seismic + Thermal' : c.type === 'fire-only' ? 'Thermal Anomaly' : 'Seismic Anomaly';
+
+    const ring = L.circleMarker([c.lat, c.lon], {
+      radius: ringSize, color, fillColor: color, fillOpacity: c.score >= 70 ? 0.2 : 0.1,
+      weight: c.score >= 70 ? 4 : 3, opacity: 0.9, className: c.score >= 70 ? 'correlation-pulse' : ''
+    });
+
+    if (c.type === 'paired') {
+      L.polyline([[c.q.lat, c.q.lon], [c.f.lat, c.f.lon]], {
+        color, weight: 1.5, dashArray: '4,4', opacity: 0.6
+      }).addTo(layers.correlations);
+    }
+
+    ring.bindPopup(mkPopup(
+      label,
+      typeLabel,
+      `${scoreBar}${factorsHtml}<br><br>📍 ${c.lat.toFixed(3)}°, ${c.lon.toFixed(3)}°`,
+      color
+    ));
+    ring.addTo(layers.correlations);
+    count++;
+  });
+
   document.getElementById('cnt-correlations').textContent = count;
 }
 
