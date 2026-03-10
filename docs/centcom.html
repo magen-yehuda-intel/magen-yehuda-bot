@@ -789,10 +789,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="oref-status safe" id="oref-status">✅ All Clear</div>
   <div class="oref-last-siren" id="oref-last-siren"></div>
 </div>
-<div id="oref-history" style="display:none;position:fixed;left:10px;top:110px;width:320px;max-height:280px;overflow-y:auto;background:rgba(10,15,25,0.92);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:12px;z-index:2000;backdrop-filter:blur(10px);font-family:var(--font-data);font-size:11px;color:#ccc;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <span style="color:#06b6d4;font-weight:700;font-size:12px">🚨 Recent Sirens</span>
-    <span onclick="document.getElementById('oref-history').style.display='none';event.stopPropagation()" style="cursor:pointer;color:#888;font-size:14px">✕</span>
+<div id="oref-history" style="display:none;position:fixed;left:10px;top:110px;width:340px;max-height:360px;overflow-y:auto;background:rgba(10,15,25,0.95);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:14px;z-index:2000;backdrop-filter:blur(12px);font-family:var(--font-data);font-size:11px;color:#ccc;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(6,182,212,0.2)">
+    <span style="color:#06b6d4;font-weight:700;font-size:13px">🚨 Siren History</span>
+    <span onclick="document.getElementById('oref-history').style.display='none';event.stopPropagation()" style="cursor:pointer;color:#888;font-size:16px;line-height:1">✕</span>
   </div>
   <div id="oref-history-content" style="color:#aaa"></div>
 </div>
@@ -2476,69 +2476,52 @@ function toggleOrefHistory() {
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
   panel.style.display = 'block';
   const el = document.getElementById('oref-history-content');
-  
-  const connEl = document.getElementById('oref-conn');
-  const isLive = connEl && connEl.textContent.includes('Live');
-  const lastSiren = lastSirenCache || document.getElementById('oref-last-siren')?.textContent || '';
-  const updatedEl = document.getElementById('oref-updated');
-  const updated = updatedEl ? updatedEl.textContent : '';
-  
-  // Show loading state immediately
-  el.innerHTML = '<div style="color:#888">Loading siren data...</div>';
-  
-  let html = '';
-  html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.08)">`;
-  html += `<span style="color:${isLive ? 'var(--green)' : '#f59e0b'}">●</span>`;
-  html += `<span style="color:${isLive ? 'var(--green)' : '#f59e0b'};font-weight:600">${isLive ? 'Connected to Pikud HaOref' : 'Connecting...'}</span>`;
-  html += `</div>`;
-  if (updated) html += `<div style="color:#888;font-size:9px;margin-bottom:8px">${updated}</div>`;
-  
-  if (orefAlerts.length > 0) {
-    html += orefAlerts.slice(0,5).map((a,i) => {
-      const rawCities = a.cities || a.data || 'Unknown';
-      const cities = (Array.isArray(rawCities) ? rawCities.slice(0,6).join(', ') + (rawCities.length > 6 ? ` +${rawCities.length-6}` : '') : String(rawCities)).substring(0,120);
-      const threat = SIREN_TITLES[a.cat] || a.cat || 'Alert';
-      return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;color:${i===0?'#ff4444':'#ccc'}"><div style="font-weight:700">🔴 ${threat}</div><div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div></div>`;
-    }).join('');
-  } else {
-    html += `<div style="color:var(--green);font-weight:600;margin-bottom:6px">✅ All Clear — No active alerts</div>`;
-    if (lastSiren) html += `<div style="color:#aaa;font-size:10px;margin-top:4px">Last known: ${lastSiren}</div>`;
-  }
-  
-  // Fetch siren history from API — this is the main content
-  const histUrl = API_URL ? `${API_URL}/api/oref/history?limit=5` : null;
-  if (histUrl) {
-    fetch(histUrl, {cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject('HTTP ' + r.status)).then(d=>{
-      if (!d || !d.alerts || !d.alerts.length) {
-        el.innerHTML = html + '<div style="color:#888;font-size:10px;margin-top:8px">No siren history available</div>';
+  el.innerHTML = '<div style="color:#888;padding:8px 0">Loading...</div>';
+
+  if (!API_URL) { el.innerHTML = '<div style="color:#888">No API connected</div>'; return; }
+
+  fetch(`${API_URL}/api/oref/history?limit=3`, {cache:'no-store'})
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(d => {
+      if (!d.alerts || !d.alerts.length) {
+        el.innerHTML = '<div style="color:#888;padding:8px 0">No recent sirens recorded</div>';
         return;
       }
-      let hHtml = '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:8px;color:#06b6d4;font-size:11px;font-weight:700;margin-bottom:6px">📋 Siren History</div>';
-      d.alerts.forEach(a => {
-        const title = SIREN_TITLE_HE[a.title] || SIREN_TITLES[a.cat] || a.title || 'Alert';
-        const rawCities = a.data || a.cities || a.areas || '';
-        const cities = Array.isArray(rawCities) ? rawCities.slice(0,5).join(', ') + (rawCities.length > 5 ? ` +${rawCities.length-5} more` : '') : String(rawCities).substring(0,100);
-        const areaCount = a.area_count || (Array.isArray(rawCities) ? rawCities.length : 0);
+      let html = '';
+      d.alerts.forEach((a, i) => {
+        const catTitle = SIREN_TITLES[a.cat] || 'Alert';
+        const heTitle = a.title ? (SIREN_TITLE_HE[a.title] || null) : null;
+        const displayTitle = heTitle || catTitle;
+        const rawAreas = a.areas || a.data || [];
+        const areaCount = a.area_count || (Array.isArray(rawAreas) ? rawAreas.length : 0);
+        const areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 4).join(', ') + (rawAreas.length > 4 ? ` +${rawAreas.length - 4} more` : '') : String(rawAreas);
         let timeStr = '';
         if (a.ts) {
-          const d = new Date(a.ts * 1000);
-          const ago = Math.round((Date.now() - d.getTime()) / 60000);
-          timeStr = ago < 60 ? `${ago}m ago` : ago < 1440 ? `${Math.round(ago/60)}h ago` : d.toLocaleDateString();
+          const ms = a.ts * 1000;
+          const ago = Math.round((Date.now() - ms) / 60000);
+          if (ago < 1) timeStr = 'Just now';
+          else if (ago < 60) timeStr = `${ago}m ago`;
+          else if (ago < 1440) timeStr = `${Math.floor(ago / 60)}h ${ago % 60}m ago`;
+          else timeStr = new Date(ms).toLocaleString();
         }
-        hHtml += `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)">`;
-        hHtml += `<div style="color:#ccc;font-weight:600">${title}${areaCount ? ' <span style="color:#888;font-weight:400">(' + areaCount + ' areas)</span>' : ''}</div>`;
-        hHtml += `<div style="font-size:9px;color:#888;margin-top:2px">${cities}</div>`;
-        if (timeStr) hHtml += `<div style="font-size:9px;color:#06b6d4;margin-top:2px">⏱ ${timeStr}</div>`;
-        hHtml += `</div>`;
+        const isFirst = i === 0;
+        const borderColor = isFirst ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.06)';
+        const catColor = a.cat === '10' || a.cat === 10 ? '#f59e0b' : '#ef4444';
+        html += `<div style="padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${borderColor}">`;
+        html += `<div style="display:flex;justify-content:space-between;align-items:center">`;
+        html += `<span style="color:${catColor};font-weight:700;font-size:12px">${displayTitle}</span>`;
+        html += `<span style="color:#06b6d4;font-size:9px">${timeStr}</span>`;
+        html += `</div>`;
+        if (areaCount) html += `<div style="color:#aaa;font-size:10px;margin-top:4px">${areaCount} areas</div>`;
+        if (areaList) html += `<div style="color:#666;font-size:9px;margin-top:3px">${areaList}</div>`;
+        html += `</div>`;
       });
-      el.innerHTML = html + hHtml;
-    }).catch(err => {
-      console.error('Oref history fetch error:', err);
-      el.innerHTML = html + `<div style="color:#f59e0b;font-size:10px;margin-top:8px">⚠ Could not load siren history</div>`;
+      el.innerHTML = html;
+    })
+    .catch(err => {
+      console.error('Siren history error:', err);
+      el.innerHTML = `<div style="color:#f59e0b;padding:8px 0">⚠ Failed to load: ${err.message || err}</div>`;
     });
-  } else {
-    el.innerHTML = html;
-  }
 }
 
 function loadGPSJam() {
