@@ -2492,7 +2492,8 @@ function toggleOrefHistory() {
   
   if (orefAlerts.length > 0) {
     html += orefAlerts.slice(0,5).map((a,i) => {
-      const cities = (a.cities || a.data || 'Unknown').substring(0,120);
+      const rawCities = a.cities || a.data || 'Unknown';
+      const cities = (Array.isArray(rawCities) ? rawCities.slice(0,6).join(', ') + (rawCities.length > 6 ? ` +${rawCities.length-6}` : '') : String(rawCities)).substring(0,120);
       const threat = SIREN_TITLES[a.cat] || a.cat || 'Alert';
       return `<div style="border-bottom:1px solid rgba(255,255,255,0.08);padding:6px 0;color:${i===0?'#ff4444':'#ccc'}"><div style="font-weight:700">🔴 ${threat}</div><div style="font-size:10px;color:#aaa;margin:2px 0">${cities}</div></div>`;
     }).join('');
@@ -2509,9 +2510,11 @@ function toggleOrefHistory() {
       let hHtml = '<div style="border-top:1px solid rgba(255,255,255,0.08);margin-top:8px;padding-top:8px;color:#888;font-size:10px;font-weight:600">Recent Siren History</div>';
       d.alerts.forEach(a => {
         const title = SIREN_TITLE_HE[a.title] || SIREN_TITLES[a.cat] || a.title || 'Alert';
-        const cities = (a.data || a.cities || '').substring(0,100);
+        const rawCities = a.data || a.cities || a.areas || '';
+        const cities = (Array.isArray(rawCities) ? rawCities.slice(0,5).join(', ') + (rawCities.length > 5 ? ` +${rawCities.length-5} more` : '') : String(rawCities).substring(0,100));
         const ts = a.ts ? new Date(a.ts*1000).toLocaleString() : '';
-        hHtml += `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="color:#aaa">${title}</div><div style="font-size:9px;color:#666">${cities} · ${ts}</div></div>`;
+        const areaCount = a.area_count || (Array.isArray(rawCities) ? rawCities.length : '') ;
+        hHtml += `<div style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05)"><div style="color:#aaa">${title}${areaCount ? ' (' + areaCount + ' areas)' : ''}</div><div style="font-size:9px;color:#666">${cities} · ${ts}</div></div>`;
       });
       el.innerHTML += hHtml;
     }).catch(()=>{});
@@ -2829,7 +2832,8 @@ function pollOref() {
     if (connEl) { connEl.textContent = '● Live'; connEl.style.color = '#22c55e'; }
     try {
       const alerts = data.alerts || [];
-      orefAlerts = alerts;
+      // Filter cat 10 (event ended / stand-down) from stored alerts too
+      orefAlerts = alerts.filter(a => a.cat !== '10' && a.cat !== 10);
       updateOrefBanner(alerts, data.timestamp, data.note);
     } catch(e) { console.error('Oref banner update error:', e); }
   }).catch(err => {
