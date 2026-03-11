@@ -1,5 +1,5 @@
 // Magen Yehuda Intel — Service Worker (cache-first for shell, network-first for data)
-const CACHE_NAME = 'myi-v3';
+const CACHE_NAME = 'myi-v4';
 const SHELL_URLS = [
   '/magen-yehuda-bot/centcom.html',
   '/magen-yehuda-bot/manifest.json',
@@ -23,7 +23,7 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: network-first for API, cache-first for shell
+// Fetch: network-first for HTML + API, cache-fallback for assets
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
   // API calls — always network
@@ -33,7 +33,20 @@ self.addEventListener('fetch', e => {
     })));
     return;
   }
-  // Shell — cache first, fallback to network
+  // HTML pages — network first (so updates land immediately), cache fallback for offline
+  if (e.request.mode === 'navigate' || url.pathname.endsWith('.html')) {
+    e.respondWith(
+      fetch(e.request).then(resp => {
+        if (resp.ok) {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => caches.match(e.request).then(r => r || new Response('Offline', { status: 503 })))
+    );
+    return;
+  }
+  // Other assets (icons, manifest) — cache first, network fallback
   e.respondWith(
     caches.match(e.request).then(r => r || fetch(e.request).then(resp => {
       if (resp.ok) {

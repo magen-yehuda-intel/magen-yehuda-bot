@@ -3168,7 +3168,21 @@ function updateMobileButtons() {
 // PWA — Service Worker + Install Prompt
 // ═══════════════════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(r => console.log('SW registered:', r.scope)).catch(e => console.warn('SW failed:', e));
+  navigator.serviceWorker.register('sw.js').then(r => {
+    console.log('SW registered:', r.scope);
+    // Force update check — if new SW found, reload to get latest HTML
+    r.addEventListener('updatefound', () => {
+      const newWorker = r.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+          console.log('New SW activated — reloading for latest version');
+          window.location.reload();
+        }
+      });
+    });
+    // Also check for updates every 5 minutes
+    setInterval(() => r.update(), 300000);
+  }).catch(e => console.warn('SW failed:', e));
 }
 
 let _deferredInstall = null;
