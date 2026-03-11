@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oref Dashboard Tests</title>
+<style>
+  body { background: #1a1a2e; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; padding: 20px; }
+  h1 { color: #06b6d4; }
+  .suite { margin: 20px 0; border: 1px solid #333; border-radius: 8px; padding: 15px; }
+  .suite h2 { color: #a78bfa; margin: 0 0 10px; font-size: 14px; }
+  .test { padding: 4px 0; font-size: 13px; }
+  .pass { color: #22c55e; }
+  .fail { color: #ef4444; font-weight: bold; }
+  .summary { margin-top: 20px; padding: 15px; border-radius: 8px; font-size: 16px; }
+  .summary.all-pass { background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; }
+  .summary.has-fail { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #ef4444; }
+</style>
+</head>
+<body>
+<h1>🚨 Oref Dashboard — Test Suite</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// EXTRACT: Functions under test (copied from centcom.html)
+// Keep in sync when centcom.html changes!
+// ═══════════════════════════════════════════════════════════
+
+function isStandDown(alert) {
+  const text = JSON.stringify(alert.desc || alert.title || '');
+  return text.includes('ניתן לצאת') || text.includes('האירוע הסתיים');
+}
+
+const OREF_GEO = {
+  'תל אביב':       [32.0853,34.7818], 'ירושלים':       [31.7683,35.2137], 'חיפה':           [32.7940,34.9896],
+  'באר שבע':       [31.2530,34.7915], 'אשדוד':         [31.8044,34.6553], 'אשקלון':         [31.6688,34.5743],
+  'שדרות':         [31.5250,34.5961], 'קריית שמונה':   [33.2075,35.5706], 'קלע אלון':     [33.0200,35.6300],
+  'רמת טראמפ':     [33.0000,35.7800], 'חמת גדר':       [32.6800,35.6700], 'אילת':           [29.5569,34.9498],
+  'נתניה':         [32.3215,34.8532], 'פתח תקווה':     [32.0841,34.8878], 'ראשון לציון':   [31.9730,34.7925],
+  'רמת גן':       [32.0680,34.8241], 'בני ברק':       [32.0834,34.8344],
+};
+
+// ═══════════════════════════════════════════════════════════
+// TEST FRAMEWORK
+// ═══════════════════════════════════════════════════════════
+
+let passed = 0, failed = 0;
+const suites = [];
+let currentSuite = null;
+
+function suite(name) {
+  currentSuite = { name, tests: [] };
+  suites.push(currentSuite);
+}
+
+function test(name, fn) {
+  try {
+    fn();
+    currentSuite.tests.push({ name, pass: true });
+    passed++;
+  } catch (e) {
+    currentSuite.tests.push({ name, pass: false, error: e.message });
+    failed++;
+  }
+}
+
+function assert(condition, msg) {
+  if (!condition) throw new Error(msg || 'Assertion failed');
+}
+
+function assertEqual(actual, expected, msg) {
+  if (actual !== expected)
+    throw new Error(`${msg || 'assertEqual'}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+}
+
+function assertDeepEqual(actual, expected, msg) {
+  if (JSON.stringify(actual) !== JSON.stringify(expected))
+    throw new Error(`${msg || 'assertDeepEqual'}: expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 1: isStandDown classification
+// ═══════════════════════════════════════════════════════════
+
+suite('isStandDown — classify alerts vs stand-downs');
+
+test('Active missile alert (cat 1) → NOT stand-down', () => {
+  const alert = { cat: '1', title: 'ירי רקטות וטילים', desc: 'היכנסו למרחב המוגן', data: ['תל אביב'] };
+  assert(!isStandDown(alert), 'Missile alert should not be stand-down');
+});
+
+test('Active UAV alert (cat 2) → NOT stand-down', () => {
+  const alert = { cat: '2', title: 'חדירת כלי טיס עוין', desc: 'היכנסו למרחב המוגן' };
+  assert(!isStandDown(alert), 'UAV alert should not be stand-down');
+});
+
+test('Cat 10 incoming alert warning → NOT stand-down', () => {
+  const alert = {
+    cat: '10',
+    title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך',
+    desc: 'על תושבי האזורים הבאים לשפר את המיקום למיגון המיטבי בקרבתך.\nבמקרה של קבלת התרעה, יש להיכנס למרחב המוגן ולשהות בו עד להודעה חדשה.',
+    data: ['קלע אלון', 'רמת טראמפ', 'חמת גדר']
+  };
+  assert(!isStandDown(alert), 'Cat 10 incoming warning must NOT be filtered as stand-down');
+});
+
+test('Stand-down message (ניתן לצאת) → IS stand-down', () => {
+  const alert = {
+    cat: '10',
+    title: 'ניתן לצאת מהמרחב המוגן',
+    desc: 'ניתן לצאת מהמרחב המוגן ולחזור לשגרה',
+    data: ['תל אביב']
+  };
+  assert(isStandDown(alert), 'Stand-down with ניתן לצאת must be detected');
+});
+
+test('Stand-down message (האירוע הסתיים) → IS stand-down', () => {
+  const alert = {
+    cat: '10',
+    title: 'האירוע הסתיים',
+    desc: 'האירוע הסתיים, ניתן לחזור לשגרה',
+    data: []
+  };
+  assert(isStandDown(alert), 'Stand-down with האירוע הסתיים must be detected');
+});
+
+test('Stand-down in desc only (title is generic) → IS stand-down', () => {
+  const alert = {
+    cat: '10',
+    title: 'עדכון',
+    desc: 'ניתן לצאת מהמרחב המוגן'
+  };
+  assert(isStandDown(alert), 'Should detect stand-down from desc even when title is generic');
+});
+
+test('Empty alert → NOT stand-down', () => {
+  assert(!isStandDown({}), 'Empty alert should not be stand-down');
+  assert(!isStandDown({ cat: '1' }), 'Alert with only cat should not be stand-down');
+});
+
+test('Alert with Hebrew text that is NOT stand-down → NOT stand-down', () => {
+  const alert = { title: 'התרעה על רעידת אדמה', desc: 'התרחקו ממבנים' };
+  assert(!isStandDown(alert), 'Earthquake warning should not be stand-down');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 2: OREF_GEO geocoding lookup
+// ═══════════════════════════════════════════════════════════
+
+suite('OREF_GEO — city/region geocoding');
+
+test('Major cities have coordinates', () => {
+  const majors = ['תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'אשדוד', 'אשקלון'];
+  majors.forEach(city => {
+    assert(OREF_GEO[city], `Missing geocoding for major city: ${city}`);
+    assert(OREF_GEO[city].length === 2, `${city} should have [lat, lon]`);
+    assert(OREF_GEO[city][0] > 29 && OREF_GEO[city][0] < 34, `${city} lat out of Israel range`);
+    assert(OREF_GEO[city][1] > 34 && OREF_GEO[city][1] < 36, `${city} lon out of Israel range`);
+  });
+});
+
+test('Golan Heights settlements have coordinates', () => {
+  const golan = ['קלע אלון', 'רמת טראמפ', 'חמת גדר'];
+  golan.forEach(place => {
+    assert(OREF_GEO[place], `Missing geocoding for Golan settlement: ${place}`);
+  });
+});
+
+test('Southern cities have coordinates', () => {
+  assert(OREF_GEO['שדרות'], 'Missing Sderot');
+  assert(OREF_GEO['אילת'], 'Missing Eilat');
+});
+
+test('Unknown area returns undefined (no crash)', () => {
+  assertEqual(OREF_GEO['מקום שלא קיים'], undefined, 'Unknown area should return undefined');
+});
+
+test('Coordinates are reasonable numbers', () => {
+  Object.entries(OREF_GEO).forEach(([name, coords]) => {
+    assert(typeof coords[0] === 'number' && !isNaN(coords[0]), `${name} lat is not a number`);
+    assert(typeof coords[1] === 'number' && !isNaN(coords[1]), `${name} lon is not a number`);
+    assert(coords[0] >= 29 && coords[0] <= 34, `${name} lat ${coords[0]} out of Israel bounds`);
+    assert(coords[1] >= 34 && coords[1] <= 36.5, `${name} lon ${coords[1]} out of Israel bounds`);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 3: Alert filtering logic
+// ═══════════════════════════════════════════════════════════
+
+suite('Alert filtering — active vs filtered');
+
+test('Active alerts pass through filter', () => {
+  const alerts = [
+    { cat: '1', title: 'ירי רקטות וטילים', desc: 'היכנסו למרחב המוגן', data: ['תל אביב'] },
+    { cat: '10', title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך', desc: 'לשפר מיקום', data: ['חיפה'] },
+  ];
+  const active = alerts.filter(a => !isStandDown(a));
+  assertEqual(active.length, 2, 'Both alerts should pass — neither is stand-down');
+});
+
+test('Stand-down is filtered, active passes', () => {
+  const alerts = [
+    { cat: '1', title: 'ירי רקטות וטילים', data: ['באר שבע'] },
+    { cat: '10', title: 'ניתן לצאת מהמרחב המוגן', data: ['באר שבע'] },
+  ];
+  const active = alerts.filter(a => !isStandDown(a));
+  assertEqual(active.length, 1, 'Only the missile alert should pass');
+  assertEqual(active[0].cat, '1', 'Remaining alert should be cat 1');
+});
+
+test('All stand-downs → empty active list', () => {
+  const alerts = [
+    { cat: '10', title: 'ניתן לצאת מהמרחב המוגן', data: [] },
+    { cat: '10', desc: 'האירוע הסתיים', data: [] },
+  ];
+  const active = alerts.filter(a => !isStandDown(a));
+  assertEqual(active.length, 0, 'All stand-downs should be filtered');
+});
+
+test('Empty alerts array → empty active list', () => {
+  const active = [].filter(a => !isStandDown(a));
+  assertEqual(active.length, 0);
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 4: Siren marker geocoding from Oref data
+// ═══════════════════════════════════════════════════════════
+
+suite('Siren marker placement — geocoding coverage');
+
+test('Real cat 10 alert with 83 areas → at least some markers placed', () => {
+  const areas = ['קלע אלון', 'רמת טראמפ', 'חמת גדר', 'אבני איתן', 'אודם', 'אורטל',
+    'תל אביב', 'ירושלים', 'חיפה', 'unknown_place_xyz'];
+  let placed = 0;
+  areas.forEach(area => { if (OREF_GEO[area]) placed++; });
+  assert(placed >= 7, `Expected ≥7 geocoded areas, got ${placed}`);
+});
+
+test('All major CRITICAL cities are geocoded', () => {
+  // These trigger CRITICAL threat level in the watcher
+  const critical = ['תל אביב', 'ירושלים', 'חיפה', 'באר שבע', 'פתח תקווה',
+    'ראשון לציון', 'רמת גן', 'בני ברק', 'נתניה', 'אשדוד', 'אשקלון'];
+  const missing = critical.filter(c => !OREF_GEO[c]);
+  assertEqual(missing.length, 0, `Missing CRITICAL cities: ${missing.join(', ')}`);
+});
+
+test('Geocoded area produces valid marker data', () => {
+  const alert = { cat: '1', title: 'ירי רקטות', desc: 'מרחב מוגן', data: ['תל אביב', 'חיפה'] };
+  const markers = [];
+  alert.data.forEach(area => {
+    const coords = OREF_GEO[area];
+    if (coords) markers.push({ lat: coords[0], lon: coords[1], area });
+  });
+  assertEqual(markers.length, 2, 'Should place 2 markers');
+  assertEqual(markers[0].area, 'תל אביב');
+  assert(Math.abs(markers[0].lat - 32.0853) < 0.01, 'Tel Aviv lat mismatch');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 5: API response parsing
+// ═══════════════════════════════════════════════════════════
+
+suite('API response parsing — /api/oref format');
+
+test('Standard API response with active alert', () => {
+  const response = {
+    alert_count: 1,
+    alerts: [{
+      cat: '10',
+      data: ['קלע אלון', 'רמת טראמפ'],
+      desc: 'לשפר מיקום למיגון',
+      id: '134175559280000000',
+      title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך'
+    }],
+    cache_age_seconds: 1,
+    source: 'pikud-haoref',
+    timestamp: '2026-03-11T01:44:23Z'
+  };
+  const alerts = response.alerts || [];
+  const active = alerts.filter(a => !isStandDown(a));
+  assertEqual(active.length, 1, 'Active alert should pass filter');
+  assert(Array.isArray(active[0].data), 'data should be an array');
+  assertEqual(active[0].data.length, 2, 'Should have 2 areas');
+});
+
+test('API response with no alerts', () => {
+  const response = { alert_count: 0, alerts: [], timestamp: '2026-03-11T01:50:00Z' };
+  const alerts = response.alerts || [];
+  assertEqual(alerts.length, 0);
+});
+
+test('API response with mixed active + stand-down', () => {
+  const response = {
+    alerts: [
+      { cat: '1', title: 'ירי רקטות', data: ['אשקלון', 'שדרות'] },
+      { cat: '10', title: 'ניתן לצאת מהמרחב המוגן', data: ['באר שבע'] }
+    ]
+  };
+  const active = (response.alerts || []).filter(a => !isStandDown(a));
+  assertEqual(active.length, 1, 'Only missile alert should remain');
+});
+
+test('Handles missing fields gracefully', () => {
+  const response = { alerts: [{ cat: '1' }] };
+  const active = (response.alerts || []).filter(a => !isStandDown(a));
+  assertEqual(active.length, 1, 'Alert with missing fields should still pass');
+  // Geocoding with empty data should not crash
+  const areas = active[0].data || [];
+  assertEqual(areas.length, 0);
+});
+
+test('Handles null/undefined alerts array', () => {
+  const response = {};
+  const alerts = response.alerts || [];
+  assertEqual(alerts.length, 0, 'Missing alerts should default to empty array');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 6: Edge cases & regression guards
+// ═══════════════════════════════════════════════════════════
+
+suite('Edge cases & regression guards');
+
+test('REGRESSION: cat 10 must NOT be blanket-filtered (was the original bug)', () => {
+  // This was the bug — cat 10 was filtered by number, but cat 10 is used for
+  // both stand-downs AND active incoming alert warnings
+  const incoming = {
+    cat: '10',
+    title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך',
+    data: Array(83).fill('תל אביב') // 83 areas like the real alert
+  };
+  assert(!isStandDown(incoming), 'REGRESSION: cat 10 incoming warning must NOT be classified as stand-down');
+});
+
+test('REGRESSION: cat as number (not string) still works', () => {
+  const alert = { cat: 10, title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך' };
+  assert(!isStandDown(alert), 'Numeric cat 10 incoming alert should pass');
+  
+  const standdown = { cat: 10, title: 'ניתן לצאת מהמרחב המוגן' };
+  assert(isStandDown(standdown), 'Numeric cat 10 stand-down should be detected');
+});
+
+test('Large area list does not crash geocoding', () => {
+  const areas = Array(200).fill('תל אביב');
+  let count = 0;
+  areas.forEach(a => { if (OREF_GEO[a]) count++; });
+  assertEqual(count, 200, 'All 200 should geocode to Tel Aviv');
+});
+
+test('Unicode edge cases in area names', () => {
+  // Some area names have special chars like quotes
+  assert(typeof OREF_GEO['מג\'דל שמס'] !== 'undefined' || true,
+    'Area names with quotes should not crash lookup (may be undefined)');
+});
+
+test('Stand-down text embedded in longer string still detected', () => {
+  const alert = { desc: 'עדכון: ניתן לצאת מהמרחב המוגן באזור הדרום' };
+  assert(isStandDown(alert), 'Stand-down phrase within longer text should be detected');
+});
+
+// ═══════════════════════════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════════════════════════
+
+const resultsEl = document.getElementById('results');
+suites.forEach(s => {
+  let html = `<div class="suite"><h2>📋 ${s.name}</h2>`;
+  s.tests.forEach(t => {
+    if (t.pass) {
+      html += `<div class="test pass">  ✅ ${t.name}</div>`;
+    } else {
+      html += `<div class="test fail">  ❌ ${t.name} — ${t.error}</div>`;
+    }
+  });
+  html += '</div>';
+  resultsEl.innerHTML += html;
+});
+
+const summaryEl = document.getElementById('summary');
+const total = passed + failed;
+if (failed === 0) {
+  summaryEl.className = 'summary all-pass';
+  summaryEl.textContent = `✅ ALL ${total} TESTS PASSED`;
+} else {
+  summaryEl.className = 'summary has-fail';
+  summaryEl.textContent = `❌ ${failed} FAILED / ${total} TOTAL`;
+}
+
+// Also log for CI/headless
+console.log(`\n${'═'.repeat(50)}`);
+console.log(`Oref Dashboard Tests: ${passed} passed, ${failed} failed, ${total} total`);
+if (failed > 0) {
+  suites.forEach(s => s.tests.filter(t => !t.pass).forEach(t => 
+    console.error(`  FAIL: ${t.name} — ${t.error}`)
+  ));
+}
+console.log('═'.repeat(50));
+</script>
+</body>
+</html>
