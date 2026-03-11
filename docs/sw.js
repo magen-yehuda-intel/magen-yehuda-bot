@@ -1,5 +1,5 @@
 // Magen Yehuda Intel — Service Worker (cache-first for shell, network-first for data)
-const CACHE_NAME = 'myi-v1';
+const CACHE_NAME = 'myi-v2';
 const SHELL_URLS = [
   '/magen-yehuda-bot/centcom.html',
   '/magen-yehuda-bot/manifest.json',
