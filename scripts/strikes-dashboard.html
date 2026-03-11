@@ -362,47 +362,44 @@
     .leaflet-popup-content { font-size: 12px !important; }
     .popup-title { font-size: 13px; }
   }
-  /* ══ LIVE SIREN BANNER ══ */
-  #siren-banner {
-    display: none;
-    position: fixed; top: 48px; left: 0; right: 0;
-    z-index: 999;
-    background: linear-gradient(90deg, #ff0040, #cc0030, #ff0040);
-    background-size: 200% 100%;
-    animation: siren-pulse 1.5s ease-in-out infinite;
-    border-bottom: 2px solid #ff4060;
-    padding: 8px 16px;
-    font-family: 'Orbitron', sans-serif;
-    text-align: center;
-    box-shadow: 0 4px 24px rgba(255,0,64,0.5);
+  /* ══ LIVE SIREN HUD INDICATOR ══ */
+  #siren-hud {
+    display: flex; align-items: center; gap: 6px;
+    padding: 2px 10px; border-radius: 3px;
+    font-size: 10px; white-space: nowrap;
+    transition: all 0.3s ease;
   }
-  #siren-banner.active { display: block; }
-  #siren-banner .siren-title {
-    font-size: 14px; font-weight: 900; color: #fff;
-    letter-spacing: 2px; text-transform: uppercase;
-    text-shadow: 0 0 10px rgba(255,255,255,0.6);
+  #siren-hud.clear {
+    border: 1px solid rgba(0,255,136,0.25);
+    color: var(--safe);
   }
-  #siren-banner .siren-detail {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; color: rgba(255,255,255,0.9);
-    margin-top: 2px;
+  #siren-hud.active {
+    border: 1px solid var(--critical);
+    background: rgba(255,0,64,0.15);
+    color: #fff;
+    animation: siren-hud-pulse 1s ease-in-out infinite;
   }
-  #siren-banner .siren-emoji { font-size: 16px; }
-  @keyframes siren-pulse {
-    0%, 100% { background-position: 0% 50%; opacity: 1; }
-    50% { background-position: 100% 50%; opacity: 0.85; }
+  #siren-hud .siren-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    flex-shrink: 0;
+  }
+  #siren-hud.clear .siren-dot { background: var(--safe); }
+  #siren-hud.active .siren-dot { background: var(--critical); box-shadow: 0 0 8px var(--critical); }
+  #siren-hud .siren-label { font-family: 'Orbitron', sans-serif; font-weight: 700; letter-spacing: 1px; font-size: 9px; }
+  #siren-hud .siren-info { color: var(--text); font-size: 10px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+  @keyframes siren-hud-pulse {
+    0%, 100% { background: rgba(255,0,64,0.15); }
+    50% { background: rgba(255,0,64,0.35); }
   }
   @media (max-width: 768px) {
-    #siren-banner { top: 36px; padding: 6px 10px; }
-    #siren-banner .siren-title { font-size: 11px; letter-spacing: 1px; }
-    #siren-banner .siren-detail { font-size: 10px; }
+    #siren-hud .siren-info { max-width: 140px; font-size: 9px; }
+    #siren-hud .siren-label { font-size: 8px; }
   }
 </style>
 </head>
 <body>
 
 <!-- HUD -->
-<div id="siren-banner"><span class="siren-emoji">🚨</span> <span class="siren-title">ACTIVE SIRENS — PIKUD HAOREF</span> <span class="siren-emoji">🚨</span><div class="siren-detail" id="siren-detail"></div></div>
 <div id="hud">
   <div class="logo">⚔️ MAGEN YEHUDA</div>
   <div class="hud-stats">
@@ -410,6 +407,7 @@
     <div class="stat">KIA <b class="red" id="s-kia">—</b></div>
     <div class="stat">THR <b class="cyan" id="s-countries">—</b></div>
     <div class="threat-badge">● ACTIVE</div>
+    <div id="siren-hud" class="clear"><span class="siren-dot"></span><span class="siren-label">ALL CLEAR</span><span class="siren-info"></span></div>
     <button id="fullscreen-btn" title="Fullscreen [F]" style="background:none;border:1px solid var(--border);color:var(--text-dim);font-size:10px;padding:2px 6px;cursor:pointer;border-radius:3px;font-family:inherit" onclick="toggleFullscreen()">⛶</button>
     <div class="clock" id="clock">—</div>
   </div>
@@ -2309,25 +2307,41 @@ async function fetchLiveFeed() {
 }
 
 // ══ LIVE OREF SIREN POLLING ══
+const OREF_CAT_NAMES = {
+  '1': 'Rockets & Missiles', '2': 'Earthquake', '3': 'Tsunami',
+  '4': 'Hostile Aircraft', '5': 'Hazmat', '6': 'Unconventional', '7': 'Infiltration',
+  '13': 'Drill'
+};
+let _lastOrefClear = null; // track when sirens last cleared
+
 function pollOrefSirens() {
   const API = 'https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/oref';
-  const banner = document.getElementById('siren-banner');
-  const detail = document.getElementById('siren-detail');
-  if (!banner || !detail) return;
+  const hud = document.getElementById('siren-hud');
+  const label = hud?.querySelector('.siren-label');
+  const info = hud?.querySelector('.siren-info');
+  if (!hud || !label || !info) return;
   fetch(API, { cache: 'no-store' })
     .then(r => r.json())
     .then(data => {
       if (data.alert_count > 0 && data.alerts && data.alerts.length > 0) {
-        const areas = data.alerts.flatMap(a => a.data || []);
-        const titles = [...new Set(data.alerts.map(a => a.title))];
-        const ts = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '';
-        detail.innerHTML = `<b>${titles.join(', ')}</b> — ${areas.join(', ')}${ts ? ' · ' + ts : ''}`;
-        banner.classList.add('active');
-        // Push map content down so banner doesn't overlap
-        document.getElementById('map').style.top = banner.offsetHeight + 48 + 'px';
+        _lastOrefClear = null;
+        hud.className = 'active';
+        const a = data.alerts[0];
+        const cat = OREF_CAT_NAMES[a.cat] || 'Alert';
+        const areas = (a.data || []).slice(0, 3).join(', ');
+        const more = (a.data || []).length > 3 ? ` +${(a.data || []).length - 3}` : '';
+        label.textContent = '🚨 SIREN';
+        info.textContent = `${cat} — ${areas}${more}`;
       } else {
-        banner.classList.remove('active');
-        document.getElementById('map').style.top = '';
+        if (!_lastOrefClear) _lastOrefClear = new Date();
+        hud.className = 'clear';
+        label.textContent = 'ALL CLEAR';
+        if (_lastOrefClear) {
+          const ago = Math.floor((Date.now() - _lastOrefClear.getTime()) / 60000);
+          info.textContent = ago < 1 ? '' : `last siren ${ago}m ago`;
+        } else {
+          info.textContent = '';
+        }
       }
     })
     .catch(() => { /* silent */ });
