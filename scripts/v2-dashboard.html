@@ -2935,8 +2935,11 @@ function updateOrefBanner(alerts, serverTs, note) {
   } else {
     banner.classList.add('alert-active');
     status.className = 'oref-status danger';
-    const areas = alerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
-    status.textContent = `🚨 ACTIVE: ${alerts.length} alert${alerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
+    const a0 = alerts[0];
+    const catTitle = SIREN_TITLE_HE[a0.title] || a0.title || SIREN_TITLES[a0.cat] || `Category ${a0.cat}`;
+    const cities = alerts.flatMap(a => Array.isArray(a.data) ? a.data : (a.data ? [a.data] : []));
+    const cityStr = cities.slice(0,3).join(', ') + (cities.length > 3 ? ` +${cities.length-3}` : '');
+    status.textContent = `🚨 ${catTitle} — ${cityStr}`;
     document.getElementById('chip-alert').textContent = alerts.length;
     document.getElementById('oref-last-siren').textContent = '';
     lastSirenCache = null;
