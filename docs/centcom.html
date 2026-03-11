@@ -1662,6 +1662,8 @@ function mkMarker(lat, lon, emoji, cssClass, size, popup) {
   });
   const m = L.marker([lat, lon], { icon });
   if (popup) m.bindPopup(popup, { maxWidth: 320 });
+  return m;
+}
 
 const SIREN_SVG = `<svg viewBox="0 0 100 100" width="36" height="36" class="marker-siren-svg">
   <circle cx="50" cy="50" r="46" fill="#f59e0b" stroke="#4a90d9" stroke-width="4">
