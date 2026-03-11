@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oref Dashboard UI Tests</title>
+<style>
+  body { background: #1a1a2e; color: #e0e0e0; font-family: 'JetBrains Mono', monospace; padding: 20px; }
+  h1 { color: #06b6d4; }
+  .suite { margin: 20px 0; border: 1px solid #333; border-radius: 8px; padding: 15px; }
+  .suite h2 { color: #a78bfa; margin: 0 0 10px; font-size: 14px; }
+  .test { padding: 4px 0; font-size: 13px; }
+  .pass { color: #22c55e; }
+  .fail { color: #ef4444; font-weight: bold; }
+  .summary { margin-top: 20px; padding: 15px; border-radius: 8px; font-size: 16px; }
+  .summary.all-pass { background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; }
+  .summary.has-fail { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #ef4444; }
+  /* Hidden DOM sandbox */
+  #sandbox { position: absolute; left: -9999px; top: -9999px; }
+</style>
+</head>
+<body>
+<h1>🖥️ Oref Dashboard — UI Tests</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<!-- Simulated DOM from centcom.html (minimal structure for Oref components) -->
+<div id="sandbox">
+  <div id="oref-banner" onclick="">
+    <div class="oref-title">
+      <span class="oref-shield">🛡</span> PIKUD HAOREF
+      <span id="oref-conn" style="margin-left:6px;font-size:9px;color:#22c55e">● Live</span>
+      <span id="oref-updated"></span>
+    </div>
+    <div class="oref-status safe" id="oref-status">✅ All Clear</div>
+    <div class="oref-last-siren" id="oref-last-siren"></div>
+  </div>
+  <div class="chip-value" id="chip-alert">0</div>
+  <span class="sb-row-count" id="cnt-sirens">0</span>
+  <!-- Simulated map layer for siren markers -->
+  <div id="siren-layer"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// MOCK: Leaflet layer for siren markers
+// ═══════════════════════════════════════════════════════════
+
+class MockLayer {
+  constructor() { this.markers = []; }
+  clearLayers() { this.markers = []; }
+  addLayer(m) { this.markers.push(m); }
+}
+
+class MockMarker {
+  constructor(lat, lon, popup) { this.lat = lat; this.lon = lon; this.popup = popup; }
+  addTo(layer) { layer.addLayer(this); return this; }
+}
+
+const layers = { sirens: new MockLayer() };
+
+function mkPopup(title, subtitle, body, color) {
+  return `<div style="border-color:${color}"><b>${title}</b><br>${subtitle}<br>${body}</div>`;
+}
+
+function mkSirenMarker(lat, lon, popup) {
+  return new MockMarker(lat, lon, popup);
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXTRACT: Functions under test (from centcom.html)
+// ═══════════════════════════════════════════════════════════
+
+function isStandDown(alert) {
+  const text = JSON.stringify(alert.desc || alert.title || '');
+  return text.includes('ניתן לצאת') || text.includes('האירוע הסתיים');
+}
+
+const OREF_GEO = {
+  'תל אביב':       [32.0853,34.7818], 'ירושלים':       [31.7683,35.2137], 'חיפה':           [32.7940,34.9896],
+  'באר שבע':       [31.2530,34.7915], 'אשדוד':         [31.8044,34.6553], 'אשקלון':         [31.6688,34.5743],
+  'שדרות':         [31.5250,34.5961], 'קריית שמונה':   [33.2075,35.5706], 'קלע אלון':     [33.0200,35.6300],
+  'רמת טראמפ':     [33.0000,35.7800], 'חמת גדר':       [32.6800,35.6700], 'אילת':           [29.5569,34.9498],
+  'נתניה':         [32.3215,34.8532], 'פתח תקווה':     [32.0841,34.8878], 'ראשון לציון':   [31.9730,34.7925],
+  'רמת גן':       [32.0680,34.8241], 'בני ברק':       [32.0834,34.8344],
+};
+
+function updateOrefBanner(alerts, serverTs, note) {
+  const banner = document.getElementById('oref-banner');
+  const status = document.getElementById('oref-status');
+  const updated = document.getElementById('oref-updated');
+
+  if (serverTs) {
+    const age = Math.round((Date.now() - new Date(serverTs).getTime()) / 60000);
+    updated.textContent = age <= 1 ? 'Updated just now' : `Updated ${age}m ago`;
+    if (age > 10) updated.style.color = '#f59e0b'; else updated.style.color = '';
+  } else {
+    updated.textContent = '';
+  }
+
+  const activeAlerts = alerts.filter(a => !isStandDown(a));
+
+  if (activeAlerts.length === 0) {
+    banner.classList.remove('alert-active');
+    status.className = 'oref-status safe';
+    status.textContent = '✅ All Clear';
+    document.getElementById('chip-alert').textContent = '0';
+  } else {
+    banner.classList.add('alert-active');
+    status.className = 'oref-status danger';
+    const areas = activeAlerts.map(a => a.data || a.title || a.area || '').filter(Boolean);
+    status.textContent = `🚨 ACTIVE: ${activeAlerts.length} alert${activeAlerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areas.length > 3 ? ' +' + (areas.length-3) + ' more' : ''}`;
+    document.getElementById('chip-alert').textContent = activeAlerts.length;
+  }
+}
+
+function updateSirensFromOref(alerts) {
+  layers.sirens.clearLayers();
+  let count = 0;
+  const active = alerts.filter(a => !isStandDown(a));
+  active.forEach(a => {
+    const areas = a.data || [];
+    const title = a.title || 'Alert';
+    areas.forEach(area => {
+      const coords = OREF_GEO[area];
+      if (!coords) return;
+      count++;
+      const popup = mkPopup(`🚨 ${title}`, area, `📍 ${area}<br>🔴 ACTIVE NOW`, '#ef4444');
+      mkSirenMarker(coords[0], coords[1], popup).addTo(layers.sirens);
+    });
+  });
+  document.getElementById('chip-alert').textContent = count || '0';
+  const sirenCount = document.getElementById('cnt-sirens');
+  if (sirenCount) sirenCount.textContent = count;
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+
+function resetDOM() {
+  const banner = document.getElementById('oref-banner');
+  banner.classList.remove('alert-active');
+  document.getElementById('oref-status').className = 'oref-status safe';
+  document.getElementById('oref-status').textContent = '✅ All Clear';
+  document.getElementById('oref-updated').textContent = '';
+  document.getElementById('oref-updated').style.color = '';
+  document.getElementById('oref-conn').textContent = '● Live';
+  document.getElementById('oref-conn').style.color = '#22c55e';
+  document.getElementById('oref-last-siren').textContent = '';
+  document.getElementById('chip-alert').textContent = '0';
+  document.getElementById('cnt-sirens').textContent = '0';
+  layers.sirens.clearLayers();
+}
+
+// ═══════════════════════════════════════════════════════════
+// TEST FRAMEWORK
+// ═══════════════════════════════════════════════════════════
+
+let passed = 0, failed = 0;
+const suites = [];
+let currentSuite = null;
+
+function suite(name) { currentSuite = { name, tests: [] }; suites.push(currentSuite); }
+function test(name, fn) {
+  resetDOM();
+  try { fn(); currentSuite.tests.push({ name, pass: true }); passed++; }
+  catch (e) { currentSuite.tests.push({ name, pass: false, error: e.message }); failed++; }
+}
+function assert(c, m) { if (!c) throw new Error(m || 'Assertion failed'); }
+function assertEqual(a, b, m) { if (a !== b) throw new Error(`${m || ''}: expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); }
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 1: Banner state transitions
+// ═══════════════════════════════════════════════════════════
+
+suite('Banner — state transitions');
+
+test('No alerts → banner shows All Clear, no alert-active class', () => {
+  updateOrefBanner([], '2026-03-11T01:50:00Z');
+  const banner = document.getElementById('oref-banner');
+  const status = document.getElementById('oref-status');
+  assert(!banner.classList.contains('alert-active'), 'Should NOT have alert-active class');
+  assert(status.classList.contains('safe'), 'Should have safe class');
+  assert(status.textContent.includes('All Clear'), 'Should show All Clear');
+  assertEqual(document.getElementById('chip-alert').textContent, '0', 'Chip should be 0');
+});
+
+test('Active alert → banner shows ACTIVE with alert-active class', () => {
+  const alerts = [{ cat: '1', title: 'ירי רקטות וטילים', data: ['תל אביב', 'חיפה'] }];
+  updateOrefBanner(alerts, '2026-03-11T01:50:00Z');
+  const banner = document.getElementById('oref-banner');
+  const status = document.getElementById('oref-status');
+  assert(banner.classList.contains('alert-active'), 'Should have alert-active class');
+  assert(status.classList.contains('danger'), 'Should have danger class');
+  assert(status.textContent.includes('ACTIVE'), 'Should show ACTIVE');
+  assert(status.textContent.includes('1 alert'), 'Should show alert count');
+});
+
+test('Multiple active alerts → shows count', () => {
+  const alerts = [
+    { cat: '1', title: 'ירי רקטות', data: ['תל אביב'] },
+    { cat: '2', title: 'כלי טיס עוין', data: ['חיפה'] },
+  ];
+  updateOrefBanner(alerts, '2026-03-11T01:50:00Z');
+  const status = document.getElementById('oref-status');
+  assert(status.textContent.includes('2 alerts'), 'Should show 2 alerts');
+  assertEqual(document.getElementById('chip-alert').textContent, '2', 'Chip should be 2');
+});
+
+test('Cat 10 incoming warning → banner shows ACTIVE (regression)', () => {
+  const alerts = [{
+    cat: '10',
+    title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך',
+    desc: 'לשפר מיקום למיגון',
+    data: ['קלע אלון', 'רמת טראמפ']
+  }];
+  updateOrefBanner(alerts, '2026-03-11T01:50:00Z');
+  const banner = document.getElementById('oref-banner');
+  assert(banner.classList.contains('alert-active'), 'REGRESSION: cat 10 incoming MUST show as active');
+});
+
+test('Stand-down only → banner shows All Clear', () => {
+  const alerts = [{ cat: '10', title: 'ניתן לצאת מהמרחב המוגן', data: [] }];
+  updateOrefBanner(alerts, '2026-03-11T01:50:00Z');
+  assert(!document.getElementById('oref-banner').classList.contains('alert-active'));
+  assert(document.getElementById('oref-status').textContent.includes('All Clear'));
+});
+
+test('Active → clear transition removes alert-active class', () => {
+  // First: active
+  updateOrefBanner([{ cat: '1', title: 'ירי רקטות', data: ['אשדוד'] }], '2026-03-11T01:50:00Z');
+  assert(document.getElementById('oref-banner').classList.contains('alert-active'));
+  // Then: clear
+  updateOrefBanner([], '2026-03-11T01:51:00Z');
+  assert(!document.getElementById('oref-banner').classList.contains('alert-active'), 'alert-active should be removed on clear');
+  assert(document.getElementById('oref-status').classList.contains('safe'));
+});
+
+test('Mixed active + stand-down → banner shows only active', () => {
+  const alerts = [
+    { cat: '1', title: 'ירי רקטות', data: ['באר שבע'] },
+    { cat: '10', title: 'ניתן לצאת מהמרחב המוגן', data: ['אשקלון'] },
+  ];
+  updateOrefBanner(alerts, '2026-03-11T01:50:00Z');
+  assert(document.getElementById('oref-banner').classList.contains('alert-active'));
+  assert(document.getElementById('oref-status').textContent.includes('1 alert'), 'Should count only active');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 2: Timestamp freshness display
+// ═══════════════════════════════════════════════════════════
+
+suite('Banner — timestamp freshness');
+
+test('Recent timestamp → "Updated just now"', () => {
+  const now = new Date().toISOString();
+  updateOrefBanner([], now);
+  const text = document.getElementById('oref-updated').textContent;
+  assert(text.includes('just now') || text.includes('1m ago'), `Expected fresh timestamp, got: ${text}`);
+});
+
+test('Old timestamp (>10min) → amber color warning', () => {
+  const old = new Date(Date.now() - 15 * 60000).toISOString();
+  updateOrefBanner([], old);
+  assertEqual(document.getElementById('oref-updated').style.color, 'rgb(245, 158, 11)', 'Should be amber for stale data');
+});
+
+test('No timestamp → empty updated text', () => {
+  updateOrefBanner([], null);
+  assertEqual(document.getElementById('oref-updated').textContent, '');
+});
+
+test('Fresh timestamp → no amber color', () => {
+  const now = new Date().toISOString();
+  updateOrefBanner([], now);
+  const color = document.getElementById('oref-updated').style.color;
+  assert(color === '' || color === 'rgb(0, 0, 0)' || !color, `Should not be amber, got: ${color}`);
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 3: Siren marker placement on map
+// ═══════════════════════════════════════════════════════════
+
+suite('Siren markers — map placement');
+
+test('Active alert with known areas → markers placed', () => {
+  const alerts = [{ cat: '1', title: 'ירי רקטות', data: ['תל אביב', 'חיפה', 'באר שבע'] }];
+  updateSirensFromOref(alerts);
+  assertEqual(layers.sirens.markers.length, 3, 'Should place 3 markers');
+});
+
+test('Alert with unknown areas → no markers, no crash', () => {
+  const alerts = [{ cat: '1', title: 'ירי רקטות', data: ['כפר_לא_קיים', 'מקום_מומצא'] }];
+  updateSirensFromOref(alerts);
+  assertEqual(layers.sirens.markers.length, 0, 'Should place 0 markers for unknown areas');
+});
+
+test('Mixed known/unknown areas → only known get markers', () => {
+  const alerts = [{ cat: '1', title: 'ירי רקטות', data: ['תל אביב', 'unknown_place', 'חיפה'] }];
+  updateSirensFromOref(alerts);
+  assertEqual(layers.sirens.markers.length, 2, 'Should place 2 of 3');
+});
+
+test('Stand-down alerts → no markers placed', () => {
+  const alerts = [{ cat: '10', title: 'ניתן לצאת מהמרחב המוגן', data: ['תל אביב', 'חיפה'] }];
+  updateSirensFromOref(alerts);
+  assertEqual(layers.sirens.markers.length, 0, 'Stand-down should not place markers');
+});
+
+test('Empty alerts → clears existing markers', () => {
+  // First place some
+  updateSirensFromOref([{ cat: '1', title: 'ירי רקטות', data: ['תל אביב'] }]);
+  assertEqual(layers.sirens.markers.length, 1);
+  // Then clear
+  updateSirensFromOref([]);
+  assertEqual(layers.sirens.markers.length, 0, 'Should clear markers on empty alerts');
+});
+
+test('Markers have correct coordinates', () => {
+  updateSirensFromOref([{ cat: '1', title: 'ירי רקטות', data: ['אילת'] }]);
+  assertEqual(layers.sirens.markers.length, 1);
+  const m = layers.sirens.markers[0];
+  assert(Math.abs(m.lat - 29.5569) < 0.01, `Eilat lat wrong: ${m.lat}`);
+  assert(Math.abs(m.lon - 34.9498) < 0.01, `Eilat lon wrong: ${m.lon}`);
+});
+
+test('Markers have popup with area name and ACTIVE indicator', () => {
+  updateSirensFromOref([{ cat: '1', title: 'ירי רקטות', data: ['שדרות'] }]);
+  const popup = layers.sirens.markers[0].popup;
+  assert(popup.includes('שדרות'), 'Popup should contain area name');
+  assert(popup.includes('ACTIVE NOW'), 'Popup should say ACTIVE NOW');
+  assert(popup.includes('#ef4444'), 'Popup should use red color');
+});
+
+test('Multiple alerts → markers from all alerts combined', () => {
+  const alerts = [
+    { cat: '1', title: 'ירי רקטות', data: ['תל אביב', 'חיפה'] },
+    { cat: '2', title: 'כלי טיס', data: ['באר שבע'] },
+  ];
+  updateSirensFromOref(alerts);
+  assertEqual(layers.sirens.markers.length, 3, 'Should combine markers from both alerts');
+});
+
+test('Large area list (83 areas like real alert) → handles without error', () => {
+  const areas = Object.keys(OREF_GEO); // all known areas
+  const alerts = [{ cat: '10', title: 'בדקות הקרובות צפויות', data: areas }];
+  updateSirensFromOref(alerts);
+  assertEqual(layers.sirens.markers.length, areas.length, `Should place ${areas.length} markers`);
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 4: Counter elements (chip-alert, cnt-sirens)
+// ═══════════════════════════════════════════════════════════
+
+suite('Counter elements — chip & sidebar');
+
+test('Siren markers update chip-alert count', () => {
+  updateSirensFromOref([{ cat: '1', title: 'ירי רקטות', data: ['תל אביב', 'חיפה'] }]);
+  assertEqual(document.getElementById('chip-alert').textContent, '2');
+});
+
+test('Siren markers update cnt-sirens sidebar count', () => {
+  updateSirensFromOref([{ cat: '1', title: 'ירי רקטות', data: ['תל אביב', 'באר שבע', 'אשדוד'] }]);
+  assertEqual(document.getElementById('cnt-sirens').textContent, '3');
+});
+
+test('Clear → counters reset to 0', () => {
+  updateSirensFromOref([{ cat: '1', data: ['תל אביב'] }]);
+  assertEqual(document.getElementById('chip-alert').textContent, '1');
+  updateSirensFromOref([]);
+  assertEqual(document.getElementById('chip-alert').textContent, '0');
+  assertEqual(document.getElementById('cnt-sirens').textContent, '0');
+});
+
+test('Banner chip shows alert count from updateOrefBanner', () => {
+  updateOrefBanner([{ cat: '1', title: 'ירי רקטות', data: ['תל אביב'] }], new Date().toISOString());
+  assertEqual(document.getElementById('chip-alert').textContent, '1');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 5: CSS class assertions
+// ═══════════════════════════════════════════════════════════
+
+suite('CSS classes — visual state');
+
+test('Safe state → oref-status has "safe" class, no "danger"', () => {
+  updateOrefBanner([], new Date().toISOString());
+  const cl = document.getElementById('oref-status').classList;
+  assert(cl.contains('safe'), 'Should have safe');
+  assert(!cl.contains('danger'), 'Should NOT have danger');
+});
+
+test('Active state → oref-status has "danger" class, no "safe"', () => {
+  updateOrefBanner([{ cat: '1', title: 'ירי רקטות', data: ['תל אביב'] }], new Date().toISOString());
+  const cl = document.getElementById('oref-status').classList;
+  assert(cl.contains('danger'), 'Should have danger');
+  assert(!cl.contains('safe'), 'Should NOT have safe');
+});
+
+test('Banner alert-active class toggles correctly through cycle', () => {
+  const banner = document.getElementById('oref-banner');
+  // Start clear
+  assert(!banner.classList.contains('alert-active'), 'Initial: no alert-active');
+  // Alert
+  updateOrefBanner([{ cat: '1', data: ['חיפה'] }], new Date().toISOString());
+  assert(banner.classList.contains('alert-active'), 'After alert: has alert-active');
+  // Clear
+  updateOrefBanner([], new Date().toISOString());
+  assert(!banner.classList.contains('alert-active'), 'After clear: no alert-active');
+  // Alert again
+  updateOrefBanner([{ cat: '2', data: ['באר שבע'] }], new Date().toISOString());
+  assert(banner.classList.contains('alert-active'), 'After second alert: has alert-active');
+});
+
+// ═══════════════════════════════════════════════════════════
+// SUITE 6: Full integration — pollOref simulation
+// ═══════════════════════════════════════════════════════════
+
+suite('Integration — simulated pollOref cycle');
+
+test('Simulated API response → banner + markers + counters all update', () => {
+  const response = {
+    alerts: [{
+      cat: '10',
+      title: 'בדקות הקרובות צפויות להתקבל התרעות באזורך',
+      desc: 'לשפר מיקום',
+      data: ['קלע אלון', 'רמת טראמפ', 'חמת גדר'],
+      id: '134175559280000000'
+    }],
+    timestamp: new Date().toISOString()
+  };
+  const alerts = response.alerts || [];
+  updateOrefBanner(alerts, response.timestamp);
+  updateSirensFromOref(alerts);
+
+  // Banner
+  assert(document.getElementById('oref-banner').classList.contains('alert-active'), 'Banner should be active');
+  assert(document.getElementById('oref-status').textContent.includes('ACTIVE'), 'Status should say ACTIVE');
+
+  // Markers (all 3 are in OREF_GEO)
+  assertEqual(layers.sirens.markers.length, 3, 'Should have 3 siren markers');
+
+  // Counters
+  assertEqual(document.getElementById('cnt-sirens').textContent, '3');
+});
+
+test('Simulated clear cycle → everything resets', () => {
+  // First activate
+  updateOrefBanner([{ cat: '1', data: ['תל אביב'] }], new Date().toISOString());
+  updateSirensFromOref([{ cat: '1', data: ['תל אביב'] }]);
+  assert(document.getElementById('oref-banner').classList.contains('alert-active'));
+  assertEqual(layers.sirens.markers.length, 1);
+
+  // Then clear
+  updateOrefBanner([], new Date().toISOString());
+  updateSirensFromOref([]);
+  assert(!document.getElementById('oref-banner').classList.contains('alert-active'), 'Banner should clear');
+  assertEqual(layers.sirens.markers.length, 0, 'Markers should clear');
+  assertEqual(document.getElementById('chip-alert').textContent, '0');
+  assertEqual(document.getElementById('cnt-sirens').textContent, '0');
+});
+
+test('Rapid poll simulation (10 cycles) → no DOM leaks', () => {
+  for (let i = 0; i < 10; i++) {
+    const alerts = i % 2 === 0
+      ? [{ cat: '1', data: ['תל אביב', 'חיפה'] }]
+      : [];
+    updateOrefBanner(alerts, new Date().toISOString());
+    updateSirensFromOref(alerts);
+  }
+  // After 10 cycles (last was clear since 9 is odd → alerts=[])
+  assertEqual(layers.sirens.markers.length, 0, 'Should be clear after odd cycle');
+  assertEqual(document.getElementById('chip-alert').textContent, '0');
+});
+
+// ═══════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════
+
+const resultsEl = document.getElementById('results');
+suites.forEach(s => {
+  let html = `<div class="suite"><h2>📋 ${s.name}</h2>`;
+  s.tests.forEach(t => {
+    html += t.pass
+      ? `<div class="test pass">  ✅ ${t.name}</div>`
+      : `<div class="test fail">  ❌ ${t.name} — ${t.error}</div>`;
+  });
+  html += '</div>';
+  resultsEl.innerHTML += html;
+});
+
+const summaryEl = document.getElementById('summary');
+const total = passed + failed;
+summaryEl.className = failed ? 'summary has-fail' : 'summary all-pass';
+summaryEl.textContent = failed ? `❌ ${failed} FAILED / ${total} TOTAL` : `✅ ALL ${total} TESTS PASSED`;
+
+console.log(`\n${'═'.repeat(50)}`);
+console.log(`Oref UI Tests: ${passed} passed, ${failed} failed, ${total} total`);
+if (failed) suites.forEach(s => s.tests.filter(t => !t.pass).forEach(t => console.error(`  FAIL: ${t.name} — ${t.error}`)));
+console.log('═'.repeat(50));
+</script>
+</body>
+</html>
