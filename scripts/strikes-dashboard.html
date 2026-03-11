@@ -362,11 +362,47 @@
     .leaflet-popup-content { font-size: 12px !important; }
     .popup-title { font-size: 13px; }
   }
+  /* ══ LIVE SIREN BANNER ══ */
+  #siren-banner {
+    display: none;
+    position: fixed; top: 48px; left: 0; right: 0;
+    z-index: 999;
+    background: linear-gradient(90deg, #ff0040, #cc0030, #ff0040);
+    background-size: 200% 100%;
+    animation: siren-pulse 1.5s ease-in-out infinite;
+    border-bottom: 2px solid #ff4060;
+    padding: 8px 16px;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(255,0,64,0.5);
+  }
+  #siren-banner.active { display: block; }
+  #siren-banner .siren-title {
+    font-size: 14px; font-weight: 900; color: #fff;
+    letter-spacing: 2px; text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255,255,255,0.6);
+  }
+  #siren-banner .siren-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: rgba(255,255,255,0.9);
+    margin-top: 2px;
+  }
+  #siren-banner .siren-emoji { font-size: 16px; }
+  @keyframes siren-pulse {
+    0%, 100% { background-position: 0% 50%; opacity: 1; }
+    50% { background-position: 100% 50%; opacity: 0.85; }
+  }
+  @media (max-width: 768px) {
+    #siren-banner { top: 36px; padding: 6px 10px; }
+    #siren-banner .siren-title { font-size: 11px; letter-spacing: 1px; }
+    #siren-banner .siren-detail { font-size: 10px; }
+  }
 </style>
 </head>
 <body>
 
 <!-- HUD -->
+<div id="siren-banner"><span class="siren-emoji">🚨</span> <span class="siren-title">ACTIVE SIRENS — PIKUD HAOREF</span> <span class="siren-emoji">🚨</span><div class="siren-detail" id="siren-detail"></div></div>
 <div id="hud">
   <div class="logo">⚔️ MAGEN YEHUDA</div>
   <div class="hud-stats">
@@ -2272,6 +2308,31 @@ async function fetchLiveFeed() {
   }
 }
 
+// ══ LIVE OREF SIREN POLLING ══
+function pollOrefSirens() {
+  const API = 'https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/oref';
+  const banner = document.getElementById('siren-banner');
+  const detail = document.getElementById('siren-detail');
+  if (!banner || !detail) return;
+  fetch(API, { cache: 'no-store' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.alert_count > 0 && data.alerts && data.alerts.length > 0) {
+        const areas = data.alerts.flatMap(a => a.data || []);
+        const titles = [...new Set(data.alerts.map(a => a.title))];
+        const ts = data.timestamp ? new Date(data.timestamp).toLocaleTimeString() : '';
+        detail.innerHTML = `<b>${titles.join(', ')}</b> — ${areas.join(', ')}${ts ? ' · ' + ts : ''}`;
+        banner.classList.add('active');
+        // Push map content down so banner doesn't overlap
+        document.getElementById('map').style.top = banner.offsetHeight + 48 + 'px';
+      } else {
+        banner.classList.remove('active');
+        document.getElementById('map').style.top = '';
+      }
+    })
+    .catch(() => { /* silent */ });
+}
+
 window.addEventListener('load', () => {
   loadData();
   initMap();
@@ -2317,6 +2378,10 @@ window.addEventListener('load', () => {
   initFeedKeys();
   fetchLiveFeed();
   setInterval(fetchLiveFeed, 60000);
+
+  // Live Oref siren polling (every 15s)
+  pollOrefSirens();
+  setInterval(pollOrefSirens, 15000);
 
   // Auto-fly to ALL theater (zoom 5, centered on Middle East)
   if (!hasHash) setTimeout(() => map.flyTo([30, 46], 5, { duration: 1.5 }), 1500);

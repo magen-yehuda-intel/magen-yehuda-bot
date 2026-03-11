@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CENTCOM — Middle East Operations Tracker</title>
+
+<!-- ═══ OUTSETA ═══ -->
+<script>
+  var o_options = {
+    domain: 'avio-software.outseta.com',
+    monitorDom: true,
+    load: 'auth,profile',
+    auth: { tokenStorage: 'local' }
+  };
+</script>
+<script src="https://cdn.outseta.com/outseta.min.js" data-options="o_options"></script>
+
+<script>
+// ═══ AUTH GATE — verify Outseta token ═══
+(function(){
+  if(new URLSearchParams(window.location.search).get('preview')==='1')return;
+
+  document.documentElement.style.visibility='hidden';
+  document.documentElement.style.background='#060500';
+
+  // Check for token from URL (Outseta redirect) or our storage
+  var urlToken=new URLSearchParams(window.location.search).get('access_token');
+  var storedToken=localStorage.getItem('ct_outseta_token');
+  var token=urlToken||storedToken;
+
+  if(!token){
+    window.location.replace('/landing.html');
+    return;
+  }
+
+  // Save if from URL
+  if(urlToken){
+    localStorage.setItem('ct_outseta_token',urlToken);
+    history.replaceState(null,'','/index.html');
+  }
+
+  // Verify token with Outseta API
+  fetch('https://avio-software.outseta.com/api/v1/profile',{
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}
+  })
+  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})
+  .then(function(user){
+    if(!user||!user.Email){throw new Error('no user')}
+    // ✓ Valid token + user exists → show page
+    document.documentElement.style.visibility='';
+    window._ctUser={email:user.Email,name:user.FullName||''};
+  })
+  .catch(function(){
+    localStorage.removeItem('ct_outseta_token');
+    window.location.replace('/landing.html');
+  });
+})();
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.124/Build/Cesium/Cesium.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/5.0.0/satellite.min.js"></script>
+<style>
+:root {
+  --amber:#ffb600; --amber-dim:#cc8800; --amber-glow:rgba(255,182,0,.15);
+  --bg:#0a0800; --panel:#0e0c00; --panel2:#131000;
+  --border:#2a2200; --border-lit:#3a2f00;
+  --text:#e8c87a; --text-dim:#7a6230; --text-muted:#4a3d20;
+  --green:#39ff7a; --red:#ff3b3b; --blue:#4ab8ff; --purple:#cc88ff; --sand:#c4a35a;
+  --cyan:#00eeff; --mil:#aaff00; --strike:#ff2222;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Share Tech Mono',monospace}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,182,0,.01) 3px,rgba(255,182,0,.01) 4px)}
+
+/* HEADER */
+header{height:46px;background:var(--panel);border-bottom:1px solid var(--border-lit);display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0;z-index:300}
+.h-left{display:flex;align-items:center;gap:10px}
+.logo{font-family:'Orbitron',monospace;font-weight:900;font-size:.82rem;letter-spacing:5px;color:var(--amber);text-shadow:0 0 20px var(--amber)}
+.logo-sub{font-size:.46rem;letter-spacing:3px;color:var(--text-dim);margin-top:1px}
+.divv{width:1px;height:22px;background:var(--border-lit);flex-shrink:0}
+.pill{display:flex;align-items:center;gap:5px;font-size:.52rem;letter-spacing:2px;color:var(--green);border:1px solid rgba(57,255,122,.3);padding:2px 8px}
+.pdot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.track-toggles{display:flex;gap:4px}
+.track-btn{display:flex;align-items:center;gap:4px;border:1px solid var(--border-lit);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:1.5px;padding:3px 8px;cursor:pointer;transition:all .15s;background:transparent}
+.track-btn.on{background:rgba(0,0,0,.3)}
+.track-btn[data-t="planes"].on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,238,255,.07)}
+.track-btn[data-t="bases"].on{border-color:var(--amber);color:var(--amber);background:var(--amber-glow)}
+.track-btn[data-t="strikes"].on{border-color:var(--strike);color:var(--strike);background:rgba(255,34,34,.07)}
+.track-btn[data-t="resources"].on{border-color:var(--sand);color:var(--sand);background:rgba(196,163,90,.07)}
+.tb-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.h-right{display:flex;align-items:center;gap:14px}
+.stat{text-align:right}
+.stat-num{font-family:'Orbitron',monospace;font-size:.82rem;font-weight:700;color:var(--amber);line-height:1}
+.stat-lbl{font-size:.46rem;color:var(--text-dim);letter-spacing:2px}
+.clock{font-family:'Orbitron',monospace;font-size:.68rem;color:var(--amber);letter-spacing:3px;text-shadow:0 0 10px var(--amber)}
+
+/* LAYOUT */
+.main{display:flex;height:calc(100vh - 46px - 22px)}
+
+/* LEFT SIDEBAR */
+.sidebar{width:255px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--border-lit);display:flex;flex-direction:column;overflow:hidden}
+.sb-tabs{display:flex;border-bottom:1px solid var(--border)}
+.sb-tab{flex:1;padding:6px;text-align:center;font-family:'Orbitron',monospace;font-size:.48rem;letter-spacing:2px;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.sb-tab:hover{color:var(--text-dim)}
+.sb-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.sb-tab[data-tab="planes"].active{color:var(--cyan);border-bottom-color:var(--cyan)}
+.sb-tab[data-tab="strikes"].active{color:var(--strike);border-bottom-color:var(--strike)}
+.tab-panel{display:none;flex:1;overflow-y:auto;padding:4px}
+.tab-panel.active{display:block}
+.tab-panel::-webkit-scrollbar{width:3px}
+.tab-panel::-webkit-scrollbar-thumb{background:var(--border-lit)}
+.bcard{border:1px solid transparent;padding:7px 9px;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.bcard:hover{border-color:var(--border-lit);background:rgba(255,182,0,.03)}
+.bcard.sel{border-color:var(--amber);background:rgba(255,182,0,.07)}
+.bcard-name{font-family:'Orbitron',monospace;font-size:.56rem;font-weight:600;color:var(--amber);margin-bottom:2px;line-height:1.3}
+.bcard-meta{display:flex;align-items:center;gap:5px;font-size:.5rem;color:var(--text-dim)}
+.badge{font-size:.46rem;padding:1px 4px;border:1px solid;letter-spacing:1px}
+.flight-item{border:1px solid transparent;padding:6px 9px;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.flight-item:hover{border-color:rgba(0,238,255,.3);background:rgba(0,238,255,.04)}
+.fi-r1{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px}
+.fi-cs{font-family:'Orbitron',monospace;font-size:.58rem;font-weight:600;color:var(--cyan)}
+.fi-r2{display:flex;gap:8px;font-size:.5rem;color:var(--text-muted)}
+.strike-item{padding:7px 9px;cursor:pointer;border-left:2px solid transparent;transition:all .15s;margin-bottom:1px}
+.strike-item:hover{background:rgba(255,60,60,.06);border-left-color:rgba(255,60,60,.4)}
+.strike-item.active{background:rgba(255,60,60,.1);border-left-color:#ff3b3b}
+.strike-item.recent{border-left-color:rgba(255,180,0,.3)}
+.strike-item.recent.active{border-left-color:#ffb600}
+.si-top{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.si-icon{font-size:.7rem}
+.si-loc{flex:1;font-size:.55rem;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-time{font-size:.44rem;color:var(--text-muted);font-family:'Share Tech Mono',monospace;white-space:nowrap}
+.si-type{font-size:.44rem;letter-spacing:1px;font-family:'Orbitron',monospace;margin-bottom:2px}
+.si-meta{display:flex;justify-content:space-between;font-size:.44rem;color:var(--text-muted)}
+.si-notes{font-size:.42rem;color:var(--text-dim);line-height:1.35;margin-top:3px;overflow:hidden;max-height:0;transition:max-height .3s}
+.strike-item.active .si-notes,.strike-item:hover .si-notes{max-height:60px}
+.strike-name{font-family:'Orbitron',monospace;font-size:.53rem;font-weight:600;color:var(--strike);margin-bottom:2px}
+.strike-meta{font-size:.48rem;color:var(--text-dim);line-height:1.5}
+.fbtn{background:transparent;border:1px solid var(--border-lit);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:.5rem;letter-spacing:1.5px;padding:2px 6px;cursor:pointer;transition:all .15s}
+.fbtn.active,.fbtn:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-glow)}
+.refresh-bar{padding:5px 8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:.48rem;color:var(--text-muted)}
+.refresh-btn{background:transparent;border:1px solid var(--border-lit);color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:.48rem;padding:2px 6px;cursor:pointer}
+.refresh-btn:hover{border-color:var(--amber);color:var(--amber)}
+.empty-msg{padding:15px;text-align:center;color:var(--text-muted);font-size:.56rem;line-height:1.8}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* MAP */
+.map-wrap{flex:1;position:relative;overflow:hidden}
+#map,#cesiumContainer{width:100%;height:100%}
+.cesium-viewer-bottom,.cesium-viewer .cesium-widget-credits,.cesium-viewer-toolbar,.cesium-viewer-animationContainer,.cesium-viewer-timelineContainer,.cesium-viewer-fullscreenContainer{display:none!important}
+.corner{position:absolute;width:14px;height:14px;border-color:var(--amber-dim);border-style:solid;opacity:.4;z-index:10;pointer-events:none}
+.ctl{top:8px;left:8px;border-width:1px 0 0 1px}
+.ctr{top:8px;right:8px;border-width:1px 1px 0 0}
+.cbl{bottom:8px;left:8px;border-width:0 0 1px 1px}
+.cbr{bottom:8px;right:8px;border-width:0 1px 1px 0}
+.hud{position:absolute;top:10px;left:10px;z-index:50;display:flex;flex-direction:column;gap:4px}
+.hud-item{background:rgba(10,8,0,.88);border:1px solid var(--border-lit);padding:5px 10px;display:flex;align-items:center;gap:7px;font-size:.53rem}
+.hud-num{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;line-height:1}
+.hud-lbl{color:var(--text-dim);font-size:.46rem;letter-spacing:1px}
+.legend{position:absolute;top:10px;right:10px;background:rgba(10,8,0,.93);border:1px solid var(--border-lit);padding:8px 11px;z-index:50;font-size:.5rem}
+.leg-title{font-family:'Orbitron',monospace;font-size:.46rem;letter-spacing:3px;color:var(--text-dim);margin-bottom:5px}
+.leg-item{display:flex;align-items:center;gap:5px;color:var(--text-dim);margin-bottom:3px}
+.leg-dot{width:7px;height:7px;border-radius:50%;border:2px solid;flex-shrink:0}
+.leg-div{height:1px;background:var(--border);margin:4px 0}
+
+/* INFO PANEL */
+/* Event cards */
+.evt-card{padding:6px 8px;border-bottom:1px solid var(--border);border-left:3px solid var(--muted);cursor:pointer;transition:all .15s}
+.evt-card:hover{background:rgba(255,182,0,.03)}
+.evt-card.sev-Critical{border-left-color:var(--purple);animation:critPulse 2s infinite}
+.evt-card.sev-High{border-left-color:var(--red)}
+.evt-card.sev-Medium{border-left-color:var(--amber)}
+.evt-card.sev-Low{border-left-color:var(--border-lit)}
+@keyframes critPulse{0%,100%{border-left-color:var(--purple)}50%{border-left-color:var(--red)}}
+.evt-type{font-size:.38rem;letter-spacing:1px;margin-bottom:2px;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.evt-text{font-size:.44rem;color:var(--text);line-height:1.3;margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.evt-meta{font-size:.32rem;color:var(--text-muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.evt-badge{font-size:.28rem;padding:0px 4px;border:1px solid;display:inline-block;line-height:1.4}
+.evt-actor{font-size:.28rem;padding:0px 4px;background:rgba(255,182,0,.05);border:1px solid var(--border);color:var(--dim)}
+.evt-breaking{font-family:'Orbitron';font-size:.32rem;color:var(--red);letter-spacing:2px;font-weight:700;animation:blink 1s infinite}
+.zoom-btns{position:absolute;top:12px;right:14px;display:flex;flex-direction:column;gap:4px;z-index:10}
+.zoom-btn{width:32px;height:32px;background:rgba(10,8,0,.85);border:1px solid var(--border-lit);color:var(--amber);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Orbitron';backdrop-filter:blur(4px);transition:all .15s}
+.zoom-btn:hover{background:rgba(255,182,0,.1);border-color:var(--amber)}
+.info-panel{position:absolute;bottom:14px;right:14px;width:255px;background:rgba(10,8,0,.97);border:1px solid var(--amber);box-shadow:0 0 25px rgba(255,182,0,.12);opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;z-index:50}
+.info-panel.show{opacity:1;transform:translateY(0);pointer-events:all}
+.info-panel.ptype{border-color:var(--cyan);box-shadow:0 0 25px rgba(0,238,255,.1)}
+.info-panel.stype{border-color:var(--strike);box-shadow:0 0 25px rgba(255,34,34,.1)}
+.ip-hdr{background:rgba(255,182,0,.07);border-bottom:1px solid var(--border-lit);padding:6px 11px;font-family:'Orbitron',monospace;font-size:.48rem;letter-spacing:3px;color:var(--text-dim);display:flex;justify-content:space-between;align-items:center}
+.ptype .ip-hdr{background:rgba(0,238,255,.06)}
+.stype .ip-hdr{background:rgba(255,34,34,.06)}
+.ip-close{cursor:pointer;font-size:.75rem}.ip-close:hover{color:var(--amber)}
+.ip-body{padding:11px}
+.ip-name{font-family:'Orbitron',monospace;font-size:.78rem;font-weight:700;color:var(--amber);text-shadow:0 0 12px rgba(255,182,0,.4);margin-bottom:9px;line-height:1.3}
+.ip-row{display:flex;justify-content:space-between;font-size:.53rem;margin-bottom:4px;gap:6px}
+.ip-row .lbl{color:var(--text-muted);letter-spacing:1px;flex-shrink:0}
+.ip-row .val{color:var(--text);text-align:right}
+.ip-div{height:1px;background:var(--border);margin:6px 0}
+.ip-notes{font-size:.53rem;color:var(--text-dim);line-height:1.5}
+
+/* RIGHT PANEL */
+.right-panel{width:315px;flex-shrink:0;background:var(--panel);border-left:1px solid var(--border-lit);display:flex;flex-direction:column;overflow:hidden}
+.rp-title{padding:6px 11px;font-family:'Orbitron',monospace;font-size:.48rem;letter-spacing:3px;color:var(--text-dim);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.rp-title .pdot{width:4px;height:4px}
+.video-wrap{border-bottom:1px solid var(--border);background:#000;flex-shrink:0;position:relative}
+.video-wrap iframe{width:100%;height:178px;border:none;display:block}
+.cam-bar{display:flex;gap:0;background:rgba(0,0,0,.95);border-bottom:1px solid var(--border);overflow-x:auto;flex-shrink:0}
+.cam-btn{flex:1;padding:6px 4px;font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--text-dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap;min-width:0;text-align:center;transition:all .2s;letter-spacing:.3px}
+.cam-btn:hover{color:var(--text);background:rgba(255,255,255,.06)}
+.cam-btn.active{color:var(--red);border-bottom-color:var(--red);background:rgba(255,0,0,.08)}
+.rp-section{display:flex;flex-direction:column;min-height:60px;overflow:hidden}
+.rp-section.odds-section{flex:0 0 auto;max-height:35vh}
+.rp-section.news-section{flex:1 1 auto;min-height:120px}
+.rp-resize{height:6px;cursor:ns-resize;background:transparent;flex-shrink:0;position:relative;z-index:10}
+.rp-resize:hover,.rp-resize:active{background:rgba(255,182,0,.15)}
+.rp-resize::after{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:2px;background:var(--border-lit);border-radius:1px}
+.news-feed{flex:1;overflow-y:auto;padding:4px}
+.news-feed::-webkit-scrollbar{width:3px}
+.news-feed::-webkit-scrollbar-thumb{background:var(--border-lit)}
+.news-item{padding:7px 9px;border:1px solid transparent;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.news-item:hover{border-color:var(--border-lit);background:rgba(255,182,0,.03)}
+.news-title{font-size:.56rem;color:var(--text);line-height:1.4;margin-bottom:2px}
+.news-src{font-size:.46rem;color:var(--text-muted);letter-spacing:1px}
+.news-time{color:var(--amber-dim)}
+/* InfoWindow dark theme */
+.gm-style .gm-style-iw-c{background:#1a1a2e!important;border:1px solid rgba(255,180,0,.15)!important;border-radius:0!important;padding:0!important;box-shadow:0 4px 20px rgba(0,0,0,.6)!important}
+.gm-style .gm-style-iw-d{overflow:auto!important}
+.gm-style .gm-style-iw-tc::after{background:#1a1a2e!important;border:1px solid rgba(255,180,0,.15)!important}
+.gm-style .gm-ui-hover-effect{top:2px!important;right:2px!important}
+.gm-style .gm-ui-hover-effect>span{background:#999!important}
+/* Connection log */
+/* Odds feed */
+.odds-feed{flex:1;overflow-y:auto;padding:4px}
+.odds-feed::-webkit-scrollbar{width:3px}
+.odds-feed::-webkit-scrollbar-thumb{background:var(--border-lit)}
+.odds-item{padding:7px 9px;border:1px solid transparent;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.odds-item:hover{border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.03)}
+.odds-q{font-size:.56rem;color:var(--text);line-height:1.35;margin-bottom:4px}
+.odds-bar-wrap{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.odds-bar{flex:1;height:14px;background:rgba(255,255,255,.05);border:1px solid var(--border);position:relative;overflow:hidden}
+.odds-fill{height:100%;transition:width .3s}
+.odds-pct{font-family:'Orbitron',monospace;font-size:.65rem;font-weight:700;min-width:38px;text-align:right}
+.odds-yes{color:#00ff88}
+.odds-no{color:#ff4466}
+.odds-meta{display:flex;justify-content:space-between;font-size:.44rem;color:var(--text-muted);letter-spacing:1px}
+.odds-vol{color:var(--amber-dim)}
+#connLog{max-height:100px;overflow-y:auto;padding:4px 8px;border-top:1px solid var(--border);font-size:.46rem;color:var(--text-muted)}
+#connLog div{margin-bottom:1px}
+
+/* FOOTER */
+footer{height:22px;background:var(--panel);border-top:1px solid var(--border-lit);display:flex;align-items:center;padding:0 14px;gap:16px;flex-shrink:0;font-size:.46rem;color:var(--text-muted);letter-spacing:1.5px}
+footer span{color:var(--text-dim)}
+/* ═══ MOBILE NAV ═══ */
+.mob-nav{display:none;background:var(--panel);border-bottom:1px solid var(--border-lit);overflow:hidden}
+.mob-btn{flex:1;padding:7px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:var(--text-dim);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;text-align:center;transition:all .15s}
+.mob-btn:hover{color:var(--text)}
+.mob-btn.active{color:var(--amber);border-bottom-color:var(--amber)}
+/* ═══ MOBILE RESPONSIVE ═══ */
+@media(max-width:900px){
+  .acct-btn{font-size:.35rem!important;padding:2px 6px!important;letter-spacing:1px!important}
+  .logout-btn{font-size:.35rem!important;padding:2px 6px!important}
+  .mob-nav{display:flex}
+  .main{flex-direction:column;height:calc(100vh - 46px - 22px - 36px);overflow:hidden}
+  .sidebar{width:100%;flex-shrink:0;height:100%;max-height:none;border-right:none;border-bottom:1px solid var(--border-lit);display:none;overflow-y:auto}
+  .sidebar.mob-show{display:flex}
+  .map-wrap{width:100%;flex:1;min-height:0;display:block}
+  .map-wrap.mob-hide{display:none}
+  .right-panel{width:100%;flex-shrink:0;height:100%;max-height:none;border-left:none;border-top:1px solid var(--border-lit);display:none;overflow-y:auto}
+  .right-panel.mob-show{display:flex}
+  .info-panel{width:calc(100% - 20px);right:10px;bottom:10px;max-height:200px;overflow-y:auto}
+  header{padding:0 8px;height:40px}
+  .h-left{gap:6px}
+  .h-right{gap:8px}
+  .track-toggles{display:none}
+  .divv{display:none}
+  .stat-num{font-size:.7rem}
+  .stat-lbl{font-size:.36rem}
+  .clock{font-size:.6rem}
+  footer{padding:3px 8px;gap:8px;flex-wrap:wrap;height:auto;min-height:22px}
+  footer>div{font-size:.4rem}
+  .video-wrap iframe{height:160px}
+  .cam-bar{flex-wrap:nowrap}
+  .cam-btn{font-size:9px;padding:5px 3px}
+}
+@media(max-width:600px){
+  .acct-btn{display:none!important}
+  header{height:36px;padding:0 6px}
+  .pill{font-size:.42rem;padding:1px 5px;letter-spacing:1px}
+  .pill span:last-child{display:none}
+  .h-right{gap:5px}
+  .stat{display:none}
+  .clock{font-size:.55rem}
+  footer{gap:4px}
+  footer>div:nth-child(3),footer>div:nth-child(4){display:none}
+  .sb-tab{font-size:.4rem;padding:5px}
+  .video-wrap iframe{height:130px}
+  .cam-btn{font-size:8px;padding:4px 2px}
+  .info-panel{width:calc(100% - 16px);right:8px;bottom:8px}
+  .news-item{padding:5px 6px}
+  .odds-item{padding:4px 6px}
+  .mob-btn{font-size:9px;padding:6px}
+}
+@media(max-width:400px){
+  .pill{display:none}
+  header{height:32px}
+  .h-left .logo{font-size:.65rem}
+  .video-wrap iframe{height:110px}
+  .mob-btn{font-size:8px;letter-spacing:1px}
+}
+</style>
+<script>
+!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageviewId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+posthog.init('phc_uUr4VQ6eMgQfRYSMBHjo2difQ8FpbNbAwL6IWOxhG5B',{api_host:'https://eu.i.posthog.com',person_profiles:'always',autocapture:true,capture_pageview:true,capture_pageleave:true,defaults:'2026-01-30'})
+</script>
+</head>
+<body>
+
+<header>
+  <div class="h-left">
+    <div><div class="logo">CENTCOM</div><div class="logo-sub">// MIDDLE EAST OPS TRACKER</div></div>
+    <div class="divv"></div>
+    <div class="pill"><div class="pdot"></div>LIVE</div>
+    <div class="divv"></div>
+    <div class="track-toggles">
+      <button class="track-btn on" data-t="bases"><div class="tb-dot" style="background:var(--amber)"></div>BASES</button>
+      <button class="track-btn on" data-t="planes"><div class="tb-dot" style="background:var(--cyan)"></div>AIR</button>
+      <button class="track-btn on" data-t="strikes"><div class="tb-dot" style="background:var(--strike)"></div>STRIKES</button>
+      <button class="track-btn on" data-t="resources"><div class="tb-dot" style="background:var(--sand)"></div>RESOURCES</button>
+      <button class="track-btn on" data-t="sats"><div class="tb-dot" style="background:var(--purple)"></div>SATS</button>
+      <button class="track-btn on" data-t="gpsjam"><div class="tb-dot" style="background:#ff0066"></div>GPS JAM</button>
+      <button class="track-btn on" data-t="events"><div class="tb-dot" style="background:var(--cyan)"></div>EVENTS</button>
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="stat"><div class="stat-num" id="planeCount">--</div><div class="stat-lbl">AIRCRAFT</div></div>
+    <div class="stat"><div class="stat-num" id="strikeCount">--</div><div class="stat-lbl">EVENTS</div></div>
+    <div class="divv"></div>
+    <div><div class="clock" id="utcClock">--:--:-- UTC</div><div class="stat-lbl" style="text-align:right">ZULU</div></div>
+  </div>
+</header>
+
+<div class="mob-nav" id="mobNav">
+  <button class="mob-btn active" data-panel="map">MAP</button>
+  <button class="mob-btn" data-panel="sidebar">DATA</button>
+  <button class="mob-btn" data-panel="feed">FEED</button>
+</div>
+<div class="main">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-tabs">
+      <div class="sb-tab active" data-tab="events" style="color:var(--cyan)">EVENTS</div>
+      <div class="sb-tab" data-tab="bases">BASES</div>
+      <div class="sb-tab" data-tab="planes">AIRCRAFT</div>
+      <div class="sb-tab" data-tab="strikes">STRIKES</div>
+    </div>
+    <div class="tab-panel active" id="tab-events">
+      <div style="padding:4px 6px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:3px">
+        <button class="fbtn active" data-ef="all">ALL</button>
+        <button class="fbtn" data-ef="Kinetic Strike" style="color:var(--red)">🔴 STRIKE</button>
+        <button class="fbtn" data-ef="Air Defense" style="color:var(--cyan)">🛡 AD</button>
+        <button class="fbtn" data-ef="Air Activity" style="color:var(--mil)">🚁 AIR</button>
+        <button class="fbtn" data-ef="Naval Activity" style="color:var(--purple)">🚢 NAVAL</button>
+        <button class="fbtn" data-ef="Ground Movement" style="color:#ff6600">🪖 GND</button>
+        <button class="fbtn" data-ef="Explosion" style="color:var(--amber)">💥 EXPL</button>
+        <button class="fbtn" data-ef="Diplomatic" style="color:var(--green)">🤝 DIPLO</button>
+      </div>
+      <div id="eventsList" style="overflow-y:auto;flex:1"><div class="empty-msg"><span class="spin">◌</span> Loading OSINT events...</div></div>
+      <div style="padding:3px 6px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.38rem;color:var(--text-muted)">OSINT · <span id="eventsCount">0</span> events</span>
+        <button class="refresh-btn" id="refreshEvents" style="font-size:.4rem">↻ REFRESH</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-bases">
+      <div style="padding:4px 6px 3px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:3px;margin-bottom:2px">
+        <button class="fbtn active" data-bf="all">ALL</button>
+        <button class="fbtn" data-bf="Air Base">AIR</button>
+        <button class="fbtn" data-bf="Naval">NAVAL</button>
+        <button class="fbtn" data-bf="Army">ARMY</button>
+        <button class="fbtn" data-bf="Joint">JOINT</button>
+        <button class="fbtn" data-bf="Forward">FWD</button>
+      </div>
+      <div id="baseList"></div>
+    </div>
+    <div class="tab-panel" id="tab-planes">
+      <div style="padding:4px 6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.46rem;color:var(--text-dim);letter-spacing:2px">LIVE AIRCRAFT</span>
+        <span id="planeSourceBadge" style="display:inline-flex;align-items:center;gap:3px;font-size:.46rem;color:var(--green);border:1px solid rgba(57,255,122,.25);padding:1px 5px"><span class="pdot" style="width:3px;height:3px"></span>OPENSKY</span>
+      </div>
+      <div id="planeFilters" style="padding:4px 6px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;gap:3px">
+        <button class="fbtn active" data-pf="all">ALL</button>
+        <button class="fbtn" data-pf="mil" style="color:var(--mil);border-color:#2a4400">MIL</button>
+        <button class="fbtn" data-pf="civ">CIV</button>
+      </div>
+      <div id="planeList"><div class="empty-msg"><span class="spin">◌</span> Loading aircraft...</div></div>
+      <div class="refresh-bar">
+        <span>Next: <span id="planeCd">90</span>s</span>
+        <button class="refresh-btn" id="refreshPlanes">↻ REFRESH</button>
+      </div>
+    </div>
+    <div class="tab-panel" id="tab-strikes">
+      <div style="padding:4px 6px;border-bottom:1px solid var(--border);font-size:.46rem;color:var(--text-dim);letter-spacing:2px;display:flex;justify-content:space-between">
+        <span>GDELT CONFLICT DATA</span><span style="color:var(--strike)">LAST 7D</span>
+      </div>
+      <div id="strikeList"><div class="empty-msg"><span class="spin">◌</span> Loading strike data...</div></div>
+    </div>
+  </div>
+
+  <!-- MAP -->
+  <div class="map-wrap">
+    <div class="corner ctl"></div><div class="corner ctr"></div>
+    <div class="corner cbl"></div><div class="corner cbr"></div>
+    <div id="cesiumContainer"></div>
+    <div class="zoom-btns">
+      <button class="zoom-btn" id="zoomIn">+</button>
+      <button class="zoom-btn" id="zoomOut">−</button>
+      <button class="zoom-btn" id="zoomReset" style="font-size:.6rem">⌂</button>
+    </div>
+    <div class="hud">
+      <div class="hud-item" style="border-color:rgba(0,238,255,.3)">
+        <div><div class="hud-num" style="color:var(--cyan)" id="hudAir">--</div><div class="hud-lbl" id="hudAirLbl">AIRCRAFT IN AOR</div></div>
+        <div style="font-size:1rem;opacity:.4">✈</div>
+      </div>
+      <div class="hud-item" style="border-color:rgba(255,34,34,.3)">
+        <div><div class="hud-num" style="color:var(--strike)" id="hudStr">--</div><div class="hud-lbl">EVENTS (7D)</div></div>
+        <div style="font-size:1rem;opacity:.4">💥</div>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="leg-title">// LEGEND</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#ffb600;background:rgba(255,182,0,.3)"></div>Air Base</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#4ab8ff;background:rgba(74,184,255,.3)"></div>Naval</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#39ff7a;background:rgba(57,255,122,.3)"></div>Army</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#ff3b3b;background:rgba(255,59,59,.3)"></div>Joint / Forward</div>
+      <div class="leg-div"></div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:var(--mil);background:rgba(170,255,0,.25)"></div>Military AC</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:var(--cyan);background:rgba(0,238,255,.25)"></div>Civilian AC</div>
+      <div class="leg-div"></div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#ff2222;background:rgba(255,34,34,.35)"></div>Strike / Remote</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#ff8800;background:rgba(255,136,0,.3)"></div>Battle / Clash</div>
+      <div class="leg-div"></div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:var(--sand);background:rgba(196,163,90,.2)"></div>Resource Zone</div>
+      <div class="leg-item"><div class="leg-dot" style="border-color:#ff4444;background:none;border-style:dashed"></div>Chokepoint</div>
+    </div>
+    <div class="info-panel" id="infoPanel">
+      <div class="ip-hdr"><span id="ipHdr">// INTEL</span><span class="ip-close" id="closePanel">✕</span></div>
+      <div class="ip-body"><div class="ip-name" id="ipName"></div><div id="ipRows"></div><div class="ip-div"></div><div class="ip-notes" id="ipNotes"></div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="rp-title"><div class="pdot" style="background:var(--red)"></div>LIVE FEED</div>
+    <div class="cam-bar" id="camBar">
+      <button class="cam-btn active" data-cam="0">● OSINT</button>
+      <button class="cam-btn" data-cam="1">● IRAN</button>
+      <button class="cam-btn" data-cam="2">● TEL AVIV</button>
+      <button class="cam-btn" data-cam="3">● JERUSALEM</button>
+    </div>
+    <div class="video-wrap">
+      <iframe id="ytEmbed" src="https://www.youtube.com/embed/7dE4IjDQJmE?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0" allow="autoplay;encrypted-media" allowfullscreen></iframe>
+    </div>
+    <div class="rp-section odds-section" id="oddsSection">
+      <div class="rp-title"><div class="pdot" style="background:#00ff88"></div>POLYMARKET ODDS · <span style="color:var(--text-muted);font-family:'Share Tech Mono'">LIVE</span></div>
+      <div class="odds-feed" id="oddsFeed"><div class="empty-msg"><span class="spin">◌</span> Loading Polymarket...</div></div>
+    </div>
+    <div class="rp-resize" id="rpResize" title="Drag to resize"></div>
+    <div class="rp-section news-section" id="newsSection">
+      <div class="rp-title" style="padding:0;border-bottom:none">
+        <div class="news-tabs" id="newsTabs" style="display:flex;flex:1">
+          <div class="news-tab active" data-feed="osint" style="flex:1;padding:6px 10px;text-align:center;cursor:pointer;font-family:'Orbitron',monospace;font-size:.46rem;letter-spacing:2px;color:var(--cyan);border-bottom:2px solid var(--cyan);transition:all .15s">📱 OSINT</div>
+          <div class="news-tab" data-feed="news" style="flex:1;padding:6px 10px;text-align:center;cursor:pointer;font-family:'Orbitron',monospace;font-size:.46rem;letter-spacing:2px;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s">📰 NEWS</div>
+          <div class="news-tab" data-feed="all" style="flex:1;padding:6px 10px;text-align:center;cursor:pointer;font-family:'Orbitron',monospace;font-size:.46rem;letter-spacing:2px;color:var(--text-muted);border-bottom:2px solid transparent;transition:all .15s">ALL</div>
+          <div id="newsRefresh" style="padding:6px 10px;cursor:pointer;color:var(--text-muted);font-size:.55rem;transition:all .15s" title="Refresh feeds">⟳</div>
+        </div>
+      </div>
+      <div class="news-feed" id="newsFeed"><div class="empty-msg"><span class="spin">◌</span> Loading feeds...</div></div>
+    </div>
+    <div class="rp-title" style="cursor:pointer;flex-shrink:0" onclick="document.getElementById('connLog').style.display=document.getElementById('connLog').style.display==='none'?'block':'none'">
+      <div class="pdot" style="background:var(--text-dim)"></div>LOG ▼
+    </div>
+    <div id="connLog" style="display:none"></div>
+  </div>
+
+</div>
+
+<footer>
+  <div>AOR: <span>USCENTCOM</span></div>
+  <div>AC: <span>ADSBX/OPENSKY</span></div>
+  <div>ODDS: <span>POLYMARKET</span></div>
+  <div>EVENTS: <span>OSINT/GDELT</span></div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+    <a href="https://avio-software.outseta.com/profile#o-authenticated" class="acct-btn" style="background:none;border:1px solid var(--border-lit);color:var(--text-dim);font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:2px;padding:3px 10px;cursor:pointer;transition:all .15s;text-decoration:none" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border-lit)';this.style.color='var(--text-dim)'">⚙ ACCOUNT</a>
+    <a href="#" onclick="localStorage.removeItem('ct_outseta_token');window.location.href='/landing.html'" class="logout-btn" style="background:none;border:1px solid rgba(255,60,60,.3);color:var(--red);font-family:'Orbitron',monospace;font-size:.42rem;letter-spacing:2px;padding:3px 10px;cursor:pointer;transition:all .15s;text-decoration:none" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='rgba(255,60,60,.3)'">⏻</a>
+  </div>
+  <div id="lastUp">LAST UPDATE: --</div>
+</footer>
+
+<script>
+// ─── DATA ───────────────────────────────────────
+const BASES=[
+  {name:"Al Udeid Air Base",country:"Qatar",type:"Air Base",branch:"USAF / CENTCOM HQ",lat:25.1173,lng:51.3150,personnel:"~10,000+",notes:"Largest US base in ME. AFCENT & CENTCOM fwd HQ."},
+  {name:"Ali Al Salem Air Base",country:"Kuwait",type:"Air Base",branch:"USAF",lat:29.3467,lng:47.5200,personnel:"~1,500",notes:"Staging for airlift and fighters."},
+  {name:"Camp Arifjan",country:"Kuwait",type:"Army",branch:"US Army / ARCENT",lat:29.2000,lng:47.9500,personnel:"~15,000",notes:"Major logistics hub."},
+  {name:"NSA Bahrain",country:"Bahrain",type:"Naval",branch:"US Navy / 5th Fleet",lat:26.2285,lng:50.5955,personnel:"~7,000",notes:"5th Fleet HQ."},
+  {name:"Prince Sultan Air Base",country:"Saudi Arabia",type:"Air Base",branch:"USAF",lat:24.0624,lng:47.5793,personnel:"~2,500+",notes:"F-35s, Patriot, THAAD."},
+  {name:"Al Dhafra Air Base",country:"UAE",type:"Air Base",branch:"USAF",lat:24.2480,lng:54.5470,personnel:"~3,500",notes:"ISR, tanker, strike support."},
+  {name:"Camp Lemonnier",country:"Djibouti",type:"Joint",branch:"CJTF-HOA",lat:11.5469,lng:43.1590,personnel:"~4,000",notes:"Only permanent US base in Africa."},
+  {name:"Al Asad Air Base",country:"Iraq",type:"Joint",branch:"OIR Coalition",lat:33.7856,lng:42.4413,personnel:"~1,000",notes:"Major Iraq air base."},
+  {name:"Erbil Air Base",country:"Iraq",type:"Forward",branch:"USAF / OIR",lat:36.2375,lng:43.9631,personnel:"~2,000",notes:"Key northern Iraq base."},
+  {name:"Muwaffaq Salti AB",country:"Jordan",type:"Air Base",branch:"USAF",lat:31.8267,lng:36.7872,personnel:"~1,000",notes:"Rotational USAF units."},
+  {name:"Al-Tanf Garrison",country:"Syria",type:"Forward",branch:"US Army / SOF",lat:33.5053,lng:38.6450,personnel:"~200",notes:"Syria-Iraq-Jordan tri-border."},
+  {name:"Incirlik Air Base",country:"Turkey",type:"Air Base",branch:"USAF / NATO",lat:37.0021,lng:35.4257,personnel:"~1,500",notes:"Major NATO base."},
+  {name:"Thumrait Air Base",country:"Oman",type:"Air Base",branch:"USAF",lat:17.6660,lng:54.0240,personnel:"Access",notes:"Contingency access."},
+  {name:"Camp Simba",country:"Kenya",type:"Forward",branch:"US Army",lat:-2.2645,lng:40.8713,personnel:"~150",notes:"East Africa CT ops."},
+];
+const TCOLOR={'Air Base':'#ffb600',Naval:'#4ab8ff',Army:'#39ff7a',Joint:'#ff3b3b',Forward:'#cc88ff'};
+const AOR={lamin:-5,lomin:30,lamax:42,lomax:65};
+
+// ─── RESOURCE AREAS (oil fields, chokepoints, strategic) ──
+const RESOURCES=[
+  {name:"Strait of Hormuz",type:"chokepoint",color:"#ff4444",path:[{lat:26.0,lng:55.8},{lat:26.8,lng:56.5},{lat:26.9,lng:57.1},{lat:26.3,lng:57.3},{lat:25.8,lng:56.7},{lat:26.0,lng:55.8}]},
+  {name:"Bab el-Mandeb",type:"chokepoint",color:"#ff4444",path:[{lat:12.2,lng:43.0},{lat:12.9,lng:43.5},{lat:12.7,lng:43.9},{lat:12.0,lng:43.4},{lat:12.2,lng:43.0}]},
+  {name:"Suez Canal Zone",type:"chokepoint",color:"#ff8800",path:[{lat:29.9,lng:32.25},{lat:31.3,lng:32.45},{lat:31.3,lng:32.6},{lat:29.9,lng:32.45},{lat:29.9,lng:32.25}]},
+  {name:"Persian Gulf Oil Fields",type:"oil",color:"#c4a35a",path:[{lat:24.5,lng:49.0},{lat:29.0,lng:49.0},{lat:29.0,lng:52.5},{lat:24.5,lng:52.5},{lat:24.5,lng:49.0}]},
+  {name:"Ghawar (Saudi)",type:"oil",color:"#cc8800",path:[{lat:24.3,lng:48.5},{lat:26.0,lng:48.5},{lat:26.0,lng:49.6},{lat:24.3,lng:49.6},{lat:24.3,lng:48.5}]},
+  {name:"Rumaila (Iraq)",type:"oil",color:"#cc8800",path:[{lat:30.2,lng:47.2},{lat:30.7,lng:47.2},{lat:30.7,lng:47.6},{lat:30.2,lng:47.6},{lat:30.2,lng:47.2}]},
+  {name:"Kirkuk Oil Field",type:"oil",color:"#cc8800",path:[{lat:35.3,lng:44.1},{lat:35.6,lng:44.1},{lat:35.6,lng:44.5},{lat:35.3,lng:44.5},{lat:35.3,lng:44.1}]},
+  {name:"South Pars / North Dome",type:"gas",color:"#4ab8ff",path:[{lat:25.5,lng:51.5},{lat:26.5,lng:51.5},{lat:26.5,lng:52.8},{lat:25.5,lng:52.8},{lat:25.5,lng:51.5}]},
+  {name:"Burgan (Kuwait)",type:"oil",color:"#cc8800",path:[{lat:28.8,lng:47.8},{lat:29.1,lng:47.8},{lat:29.1,lng:48.2},{lat:28.8,lng:48.2},{lat:28.8,lng:47.8}]},
+];
+
+// ─── CONFLICT EVENTS — Feb 28-Mar 1, 2026 (US-Israeli strikes on Iran + Iranian retaliation) ──
+const SAMPLE_STRIKES=[
+  // US-Israeli strikes on Iran (Operation Epic Fury / Roaring Lion)
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Tehran — Khamenei compound",country:"Iran",latitude:35.70,longitude:51.40,fatalities:0,notes:"Strike on Supreme Leader's compound. Trump announced Khamenei killed."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Tehran — Intelligence Ministry",country:"Iran",latitude:35.69,longitude:51.42,fatalities:0,notes:"Strike near Iran intelligence ministry complex."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Isfahan",country:"Iran",latitude:32.65,longitude:51.68,fatalities:0,notes:"Strikes on military and nuclear-linked facilities."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Shiraz",country:"Iran",latitude:29.59,longitude:52.58,fatalities:0,notes:"Military targets struck in southern Iran."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Kermanshah",country:"Iran",latitude:34.31,longitude:47.06,fatalities:0,notes:"IRGC missile facilities targeted."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Tabriz",country:"Iran",latitude:38.08,longitude:46.29,fatalities:0,notes:"Military targets in northwestern Iran."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Bushehr",country:"Iran",latitude:28.97,longitude:50.84,fatalities:0,notes:"Strikes near nuclear facility area."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Minab — School strike",country:"Iran",latitude:27.13,longitude:57.08,fatalities:108,notes:"Strike hit girls' school. 108+ students killed per Red Crescent."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"US / Israeli Forces",location:"Qom",country:"Iran",latitude:34.64,longitude:50.88,fatalities:0,notes:"Military targets struck."},
+  // Iranian retaliation (Operation True Promise 4)
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"NSA Bahrain — 5th Fleet HQ",country:"Bahrain",latitude:26.23,longitude:50.60,fatalities:0,notes:"Iranian missiles and drones struck 5th Fleet base. Radar dome hit by Shahed drone. 45 missiles intercepted by Bahrain."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Al Udeid Air Base",country:"Qatar",latitude:25.12,longitude:51.32,fatalities:0,notes:"Iranian missiles targeted largest US base in ME. Qatar says intercepted all missiles."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Al Dhafra Air Base",country:"UAE",latitude:24.25,longitude:54.55,fatalities:0,notes:"Missiles targeted US air base in UAE. UAE intercepted incoming projectiles."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Ali Al Salem Air Base",country:"Kuwait",latitude:29.35,longitude:47.52,fatalities:0,notes:"Iranian missiles struck near US base in Kuwait."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"IRGC",location:"Kuwait International Airport",country:"Kuwait",latitude:29.23,longitude:47.97,fatalities:0,notes:"Drone struck airport terminal. Several workers injured."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Muwaffaq Salti Air Base",country:"Jordan",latitude:31.83,longitude:36.79,fatalities:0,notes:"Iranian missiles targeted Jordanian base hosting US forces. Jordan intercepted 2 ballistic missiles."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"IRGC",location:"Dubai — Palm Jumeirah / Fairmont Hotel",country:"UAE",latitude:25.11,longitude:55.14,fatalities:0,notes:"Shahed drone struck near Fairmont Hotel. 4 injured. Burj Al Arab damaged by intercept debris."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"IRGC",location:"Manama — Residential towers",country:"Bahrain",latitude:26.22,longitude:50.58,fatalities:0,notes:"Drone struck Breaker residential tower and Crowne Plaza Hotel. Era View tower heavily damaged."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Tel Aviv area",country:"Israel",latitude:32.08,longitude:34.78,fatalities:0,notes:"Iranian missile pierced Israeli defense array. Large explosion reported."},
+  {event_date:"2026-02-28",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"Unidentified",location:"Jurf al-Nasr — Kataib Hezbollah HQ",country:"Iraq",latitude:32.82,longitude:44.11,fatalities:2,notes:"Two airstrikes hit militia base southwest of Baghdad. 2 killed."},
+  // Day 2 — March 1
+  {event_date:"2026-03-01",event_type:"Explosions/Remote violence",sub_event_type:"Air/drone strike",actor1:"Israeli Air Force",location:"Tehran — Military HQ",country:"Iran",latitude:35.71,longitude:51.38,fatalities:0,notes:"Second wave of Israeli strikes on Tehran. Military headquarters targeted."},
+  {event_date:"2026-03-01",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Abu Dhabi / Dubai",country:"UAE",latitude:25.20,longitude:55.27,fatalities:3,notes:"New wave of Iranian missiles and drones. UAE reports 3 killed, 58 injured total."},
+  {event_date:"2026-03-01",event_type:"Explosions/Remote violence",sub_event_type:"Shelling/artillery/missile attack",actor1:"IRGC",location:"Doha area",country:"Qatar",latitude:25.29,longitude:51.53,fatalities:0,notes:"Explosions heard over central Doha. Patriot intercepts confirmed."},
+];
+
+// ─── MILITARY DETECTION ──
+const MIL_RE=/^(RCH|REACH|EVAC|JAKE|GRIM|VIPER|TOPGUN|GHOST|KNIFE|COBRA|EAGLE|HAWK|FURY|RAGE|DOOM|COPE|USAF|USN|USMC|NATO|ARMY|SPAR|SAM\d|C\d{2}|B\d{1,2}|KC\d|E\d[ABC])/i;
+function isMil(icao,cs,state){
+  // ADSBX dbFlags bit 1 = military
+  if(state&&state[18]&&(state[18]&1))return true;
+  if(!icao)return false;const i=icao.toLowerCase();return i.startsWith('ae')||i.startsWith('af')||(cs&&MIL_RE.test((cs||'').trim()))
+}
+
+// ─── STATE ──
+let map=null; // kept for compat, now using viewer
+let planeData=[],strikeData=[];
+let lastPlaneData=null,lastPlaneFetch=0;
+let activeBF='all',activePF='all';
+let vis={bases:true,planes:true,strikes:true,resources:true,sats:true,gpsjam:true,events:true};
+let planeTimer,cdVal=30,cdTick;
+let viewer; // Cesium viewer
+let planeEntities=[],strikeEntities=[],baseEntities=[],resourceEntities=[],satEntities=[],jamEntities=[],eventEntities=[];
+let satData=[];
+
+// ─── UTILS ──
+function dbg(msg,color){const el=document.getElementById('connLog');if(!el)return;const d=document.createElement('div');d.style.color=color||'var(--text-muted)';d.textContent='['+new Date().toISOString().substr(11,8)+'] '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight}
+function updateTs(){const n=new Date(),z=v=>String(v).padStart(2,'0');document.getElementById('lastUp').textContent='LAST UPDATE: '+z(n.getUTCHours())+':'+z(n.getUTCMinutes())+':'+z(n.getUTCSeconds())+' UTC'}
+function tick(){const n=new Date(),z=v=>String(v).padStart(2,'0');document.getElementById('utcClock').textContent=z(n.getUTCHours())+':'+z(n.getUTCMinutes())+':'+z(n.getUTCSeconds())+' UTC'}
+setInterval(tick,1000);tick();
+
+// ─── COUNTDOWN ──
+function startCd(){cdVal=30;if(!cdTick)cdTick=setInterval(()=>{cdVal=Math.max(0,cdVal-1);const e=document.getElementById('planeCd');if(e)e.textContent=cdVal},1000)}
+function resetCd(){cdVal=30}
+
+// ─── TABS ──
+document.querySelectorAll('.sb-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.sb-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('tab-'+t.dataset.tab).classList.add('active')})});
+
+// ─── TOGGLES ──
+document.querySelectorAll('.track-btn').forEach(b=>{b.addEventListener('click',()=>{b.classList.toggle('on');const t=b.dataset.t;vis[t]=b.classList.contains('on');
+  if(t==='bases')baseEntities.forEach(e=>e.show=vis.bases);
+  if(t==='planes')planeEntities.forEach(e=>e.show=vis.planes);
+  if(t==='strikes')strikeEntities.forEach(e=>e.show=vis.strikes);
+  if(t==='resources')resourceEntities.forEach(e=>e.show=vis.resources);
+  if(t==='sats')satEntities.forEach(e=>e.show=vis.sats);
+  if(t==='gpsjam')jamEntities.forEach(e=>e.show=vis.gpsjam);
+  if(t==='events')eventEntities.forEach(e=>e.show=vis.events);
+})});
+function matchBF(b){return activeBF==='all'||b.type===activeBF}
+
+// ════════════════════════════════════════════════
+// CESIUM 3D GLOBE INIT
+// ════════════════════════════════════════════════
+Cesium.Ion.defaultAccessToken='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS1kMWFjYmFkNjc5YzciLCJpZCI6NTc3MzMsImlhdCI6MTYyNzg0NTE4Mn0.XcKpgANiY19MC4bdFUXMVEBToBmqS8kuYpUlxJHYZxk';
+viewer=new Cesium.Viewer('cesiumContainer',{
+  baseLayerPicker:false,geocoder:false,homeButton:false,sceneModePicker:false,
+  selectionIndicator:false,timeline:false,animation:false,navigationHelpButton:false,
+  fullscreenButton:false,infoBox:false,shadows:false,shouldAnimate:true,scene3DOnly:true,
+  imageryProvider:false,
+  msaaSamples:4,
+  requestRenderMode:false,
+  maximumRenderTimeChange:Infinity,
+});
+// High-res dark basemap — CartoDB dark_all @2x retina tiles
+try{
+  viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+    url:'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+    maximumLevel:18,
+    tileWidth:512,
+    tileHeight:512,
+    credit:'CartoDB',
+  }));
+}catch(e){
+  try{
+    viewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+      url:'https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+      subdomains:'abcd',credit:'CartoDB',
+    }));
+  }catch(e2){viewer.imageryLayers.addImageryProvider(new Cesium.IonImageryProvider({assetId:3845}))}
+}
+viewer.scene.globe.enableLighting=false;
+viewer.scene.globe.baseColor=Cesium.Color.fromCssColorString('#0a1a0d');
+viewer.scene.backgroundColor=Cesium.Color.fromCssColorString('#050805');
+viewer.scene.fog.enabled=true;viewer.scene.fog.density=0.0002;
+viewer.scene.globe.maximumScreenSpaceError=1.5; // sharper tiles (default 2)
+viewer.scene.fxaa=true; // anti-aliasing
+viewer.scene.globe.depthTestAgainstTerrain=false;
+viewer.scene.highDynamicRange=false;
+viewer.resolutionScale=window.devicePixelRatio||1; // retina support
+// Initial view
+viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(46,27,4000000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-60),roll:0},duration:0});
+
+// AOR boundary polyline
+viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArray([30,42,65,42,65,25,63,20,52,10,42,-5,30,-5,30,10,30,30,30,42]),material:Cesium.Color.fromCssColorString('#ffb600').withAlpha(0.2),width:2,clampToGround:true}});
+
+// Click handler
+const clickHandler=new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+clickHandler.setInputAction(function(click){
+  const picked=viewer.scene.pick(click.position);
+  if(Cesium.defined(picked)&&picked.id){
+    const ent=picked.id;
+    if(ent._baseIdx!==undefined){showBase(ent._baseIdx)}
+    else if(ent._planeData){showPlane(ent._planeData,ent._isMil)}
+    else if(ent._strikeIdx!==undefined){showStrike(strikeData[ent._strikeIdx]);document.querySelectorAll('.strike-item').forEach(x=>x.classList.remove('active'));document.querySelector('.strike-item[data-i="'+ent._strikeIdx+'"]')?.classList.add('active')}
+    else if(ent._jamData){
+      const j=ent._jamData;const pct=((j.bad/j.total)*100).toFixed(1);
+      document.getElementById('infoPanel').classList.add('show');
+      document.getElementById('ipHdr').textContent='// GPS INTERFERENCE';
+      document.getElementById('ipName').textContent=pct+'% BAD NIC';
+      document.getElementById('ipRows').innerHTML=row('TOTAL AIRCRAFT',j.total)+row('GOOD NIC (≥5)',j.good)+row('BAD NIC (<5)',j.bad)+row('BAD %',pct+'%')+row('STATUS',j.bad/j.total>0.1?'🔴 LIKELY JAMMING':j.bad/j.total>0.02?'🟡 DEGRADED':'🟢 NORMAL')+row('GRID',j.lat.toFixed(1)+'°N, '+j.lon.toFixed(1)+'°E');
+      document.getElementById('ipNotes').textContent='NIC (Navigation Integrity Category) from ADS-B. Values <5 indicate low GPS accuracy, often caused by jamming or spoofing.';
+    }
+    else if(ent._osintEvent){
+      const ev=ent._osintEvent;
+      document.getElementById('infoPanel').classList.add('show');
+      document.getElementById('ipHdr').textContent='// '+(ev.event_type||'EVENT').toUpperCase();
+      document.getElementById('ipName').textContent=(ev.event_emoji||'⚠️')+' '+(ev.location_mentions?.[0]||ev.theater?.[0]||'Event');
+      document.getElementById('ipRows').innerHTML=row('TYPE',(ev.event_emoji||'')+' '+(ev.event_type||'Unknown'))+row('SEVERITY',ev.severity||'Low')+row('CONFIDENCE',(ev.confidence_emoji||'❓')+' '+(ev.confidence||'Unverified'))+row('THEATER',(ev.theater||[]).join(', '))+row('ACTORS',(ev.actors||[]).join(', '))+row('SOURCE',ev.source||'')+row('TIME',ev.time||'');
+      document.getElementById('ipNotes').innerHTML=(ev.ai_summary||ev.title||'').substring(0,300)+(ev.url?'<br><a href="'+ev.url+'" target="_blank" style="color:var(--cyan);font-size:.42rem;text-decoration:none;margin-top:4px;display:inline-block">VIEW SOURCE →</a>':'');
+    }
+  } else {deselect()}
+},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+drawResources();
+buildBaseMarkers();
+buildBaseList();
+fetchPlanes();
+fetchStrikeData();
+fetchOdds();
+fetchNews();
+
+planeTimer=setInterval(()=>{fetchPlanes();resetCd()},30000);  // 30s refresh
+setInterval(()=>{fetchOdds();updateTs()},60000);
+setInterval(()=>{fetchStrikeData();updateTs()},300000);
+setInterval(()=>{fetchNews();updateTs()},20000);     // 20s OSINT refresh
+setInterval(()=>{runAutoDetect()},600000);
+setTimeout(()=>{runAutoDetect()},15000);
+startCd();
+dbg('CesiumJS 3D Globe initialized ✓','#39ff7a');
+
+// ─── WEBCAM SWITCHER ──
+const CAMS=[
+  {id:'7dE4IjDQJmE',label:'LIVE OSINT'},
+  {id:'4E-iFtUM2kk',label:'IRAN'},
+  {id:'dpx0xxbPLN8',label:'TEL AVIV'},
+  {id:'lBGjqY7IKKA',label:'JERUSALEM'},
+];
+let activeCam=0;
+document.getElementById('camBar').addEventListener('click',e=>{
+  const btn=e.target.closest('.cam-btn');if(!btn)return;
+  const idx=+btn.dataset.cam;if(idx===activeCam)return;
+  activeCam=idx;
+  document.querySelectorAll('.cam-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ytEmbed').src='https://www.youtube.com/embed/'+CAMS[idx].id+'?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0';
+  dbg('Webcam: switched to '+CAMS[idx].label,'#4fc3f7');
+});
+
+// ─── MOBILE PANEL SWITCHER ──
+document.getElementById('mobNav').addEventListener('click',e=>{
+  const btn=e.target.closest('.mob-btn');if(!btn)return;
+  const panel=btn.dataset.panel;
+  document.querySelectorAll('.mob-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const sidebar=document.querySelector('.sidebar');
+  const mapWrap=document.querySelector('.map-wrap');
+  const rightPanel=document.querySelector('.right-panel');
+  sidebar.classList.remove('mob-show');mapWrap.classList.remove('mob-hide');rightPanel.classList.remove('mob-show');
+  if(panel==='sidebar'){sidebar.classList.add('mob-show');mapWrap.classList.add('mob-hide')}
+  else if(panel==='feed'){rightPanel.classList.add('mob-show');mapWrap.classList.add('mob-hide')}
+});
+
+// ─── RESOURCES ──
+function drawResources(){
+  RESOURCES.forEach(r=>{
+    const isChoke=r.type==='chokepoint';
+    const c=Cesium.Color.fromCssColorString(r.color);
+    const positions=r.path.flatMap(p=>[p.lng,p.lat]);
+    const e=viewer.entities.add({
+      polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArray(positions),material:c.withAlpha(isChoke?0.08:0.05),outline:true,outlineColor:c.withAlpha(isChoke?0.5:0.3)},
+      show:vis.resources,
+    });
+    resourceEntities.push(e);
+    const center=r.path.reduce((a,p)=>({lat:a.lat+p.lat/r.path.length,lng:a.lng+p.lng/r.path.length}),{lat:0,lng:0});
+    const lbl=viewer.entities.add({
+      position:Cesium.Cartesian3.fromDegrees(center.lng,center.lat),
+      label:{text:r.name.toUpperCase(),font:'8px Orbitron',fillColor:c.withAlpha(0.6),style:Cesium.LabelStyle.FILL,scaleByDistance:new Cesium.NearFarScalar(5e4,1,5e6,0.3),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,4e6)},
+      show:vis.resources,
+    });
+    resourceEntities.push(lbl);
+  });
+}
+
+// ─── BASE MARKERS ──
+function buildBaseMarkers(){
+  BASES.forEach((b,i)=>{
+    const c=Cesium.Color.fromCssColorString(TCOLOR[b.type]||'#ff3b3b');
+    const e=viewer.entities.add({
+      position:Cesium.Cartesian3.fromDegrees(b.lng,b.lat),
+      point:{pixelSize:10,color:c.withAlpha(0.6),outlineColor:c,outlineWidth:2},
+      label:{text:b.name.toUpperCase(),font:'9px Orbitron',fillColor:c.withAlpha(0.7),style:Cesium.LabelStyle.FILL,pixelOffset:new Cesium.Cartesian2(0,-16),scaleByDistance:new Cesium.NearFarScalar(1e5,1,5e6,0.3),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,3e6)},
+      ellipse:{semiMajorAxis:45000,semiMinorAxis:45000,material:c.withAlpha(0.04),outline:true,outlineColor:c.withAlpha(0.1)},
+      show:vis.bases,
+    });
+    e._baseIdx=i;
+    baseEntities.push(e);
+  });
+}
+function buildBaseList(){
+  const el=document.getElementById('baseList');el.innerHTML='';
+  BASES.forEach((b,i)=>{
+    if(activeBF!=='all'&&b.type!==activeBF)return;
+    const c=TCOLOR[b.type]||'#ff3b3b';
+    const d=document.createElement('div');d.className='bcard';d.dataset.i=i;
+    d.innerHTML='<div class="bcard-name">'+b.name+'</div><div class="bcard-meta"><span style="color:var(--sand)">'+b.country+'</span><span class="badge" style="border-color:'+c+';color:'+c+'">'+b.type.toUpperCase()+'</span></div>';
+    d.addEventListener('click',()=>{showBase(i);viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(b.lng,b.lat,200000),duration:1.5})});
+    el.appendChild(d);
+  });
+  baseEntities.forEach((e,i)=>e.show=vis.bases&&(activeBF==='all'||BASES[i].type===activeBF));
+}
+document.getElementById('tab-bases').addEventListener('click',e=>{const b=e.target.closest('[data-bf]');if(!b)return;document.querySelectorAll('[data-bf]').forEach(x=>x.classList.remove('active'));b.classList.add('active');activeBF=b.dataset.bf;buildBaseList()});
+
+// ════════════════════════════════════════════════
+// PLANES
+// ════════════════════════════════════════════════
+async function fetchPlanes(){
+  const now=Date.now();
+  if(lastPlaneData&&(now-lastPlaneFetch)<25000){planeData=lastPlaneData;renderPlanes();return}
+  dbg('Fetching aircraft...','#ffff00');
+  try{
+    const r=await fetch('/.netlify/functions/opensky-proxy');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    if(d.error&&!d.states?.length){dbg('Aircraft: '+d.error,'#ff8c00');if(d.debug_errors)d.debug_errors.forEach(e=>dbg('  → '+e,'#ff6600'));lastPlaneFetch=now;planeData=lastPlaneData||genSimPlanes();setBadge(lastPlaneData?'CACHED':'SIM');renderPlanes();updateTs();return}
+    planeData=(d.states||[]).filter(s=>s[5]!=null&&s[6]!=null);
+    if(planeData.length>0){
+      lastPlaneData=planeData;lastPlaneFetch=now;
+      const src=d.source||'OPENSKY';
+      setBadge(d.cached?(src==='ADSBX'?'ADSBX·CACHE':'CACHED'):src);
+      dbg('Aircraft: '+planeData.length+' via '+src+(d.cached?' (cached)':'')+' ✓','#39ff7a');
+    }
+    else{planeData=lastPlaneData||genSimPlanes();setBadge(lastPlaneData?'CACHED':'SIM')}
+    renderPlanes();updateTs();
+  }catch(e){dbg('Aircraft error: '+e.message,'#ff4444');lastPlaneFetch=now;planeData=lastPlaneData||genSimPlanes();setBadge(lastPlaneData?'CACHED':'SIM');renderPlanes();updateTs()}
+}
+function setBadge(txt){const e=document.getElementById('planeSourceBadge');if(!e)return;const live=txt==='ADSBX'||txt==='OPENSKY';e.style.color=live?'var(--green)':'#ff8c00';e.style.borderColor=live?'rgba(57,255,122,.25)':'rgba(255,140,0,.25)';e.innerHTML=(live?'<span class="pdot" style="width:3px;height:3px"></span>':'')+txt}
+
+function genSimPlanes(){
+  const ac=[{cs:'REACH101',ic:'ae1234'},{cs:'RCH202',ic:'ae2345'},{cs:'JAKE11',ic:'ae3456'},{cs:'EVAC01',ic:'ae4567'},{cs:'VIPER21',ic:'ae5678'},{cs:'GHOST31',ic:'ae6789'},{cs:'SPAR19',ic:'ae7890'},{cs:'NATO01',ic:'43bf01'},{cs:'UAE123',ic:'896601'},{cs:'QTR456',ic:'06a024'},{cs:'THY789',ic:'4ba800'},{cs:'EK504',ic:'896604'},{cs:'SV800',ic:'710102'},{cs:'BAW902',ic:'400c60'},{cs:'DLH781',ic:'3c6523'},{cs:'MSR412',ic:'010103'}];
+  return ac.map(({cs,ic})=>{const la=AOR.lamin+Math.random()*(AOR.lamax-AOR.lamin),lo=AOR.lomin+Math.random()*(AOR.lomax-AOR.lomin);return[ic,cs+'  ','',null,null,lo,la,(8000+Math.random()*32000)*.3048,false,(220+Math.random()*380)*.514444,Math.random()*360,null,null,null,null,false,Math.floor(1000+Math.random()*6999)]})
+}
+
+function renderPlanes(){
+  planeEntities.forEach(e=>viewer.entities.remove(e));planeEntities=[];
+  let mc=0;
+  planeData.forEach((s,i)=>{
+    const[ic,cs,,,,lo,la,alt,gnd,vel,hdg]=s;
+    if(gnd||!la||!lo)return;
+    const mil=isMil(ic,cs,s);if(mil)mc++;
+    const col=mil?'#aaff00':'#00eeff';
+    const altM=alt||8000;
+    // Create rotated plane SVG as billboard
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><g transform="rotate(${hdg||0},16,16)"><path d="M16 2 L18 12 L28 18 L28 20 L18 16 L18 24 L22 27 L22 28 L16 26 L10 28 L10 27 L14 24 L14 16 L4 20 L4 18 L14 12 Z" fill="${col}" fill-opacity="${mil?1:0.85}" stroke="${mil?'#ffffff':'#003344'}" stroke-width="${mil?1:0.5}"/></g></svg>`;
+    const dataUri='data:image/svg+xml;base64,'+btoa(svg);
+    const e=viewer.entities.add({
+      position:Cesium.Cartesian3.fromDegrees(lo,la,altM),
+      billboard:{image:dataUri,width:mil?28:22,height:mil?28:22,verticalOrigin:Cesium.VerticalOrigin.CENTER,horizontalOrigin:Cesium.HorizontalOrigin.CENTER,scaleByDistance:new Cesium.NearFarScalar(1e4,1.2,5e6,0.3)},
+      label:{text:(cs||'').trim()||ic||'',font:mil?'bold 9px Share Tech Mono':'8px Share Tech Mono',fillColor:Cesium.Color.fromCssColorString(col).withAlpha(0.8),style:Cesium.LabelStyle.FILL,pixelOffset:new Cesium.Cartesian2(16,-2),scaleByDistance:new Cesium.NearFarScalar(5e4,1,1.5e6,0),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,8e5)},
+      show:vis.planes&&matchPF(s),
+    });
+    e._planeData=s;e._isMil=mil;
+    planeEntities.push(e);
+  });
+  const cnt=planeEntities.length;
+  document.getElementById('planeCount').textContent=cnt;
+  document.getElementById('hudAir').textContent=cnt;
+  document.getElementById('hudAirLbl').textContent=mc+' MIL · '+(cnt-mc)+' CIV';
+  buildPlaneList();
+  // Update GPS jamming heatmap from NIC values
+  computeGPSJamming();
+}
+
+// ════════════════════════════════════════════════
+// GPS JAMMING / SPOOFING DETECTION (from ADS-B NIC)
+// ════════════════════════════════════════════════
+function computeGPSJamming(){
+  jamEntities.forEach(e=>viewer.entities.remove(e));jamEntities=[];
+  if(!vis.gpsjam)return;
+  // Grid: 1° × 1° cells across AOR
+  const grid={};
+  const CELL_SIZE=1; // 1 degree ≈ 111km
+  planeData.forEach(s=>{
+    const[ic,cs,,,,lo,la,alt,gnd]=s;
+    if(gnd||!la||!lo)return;
+    const nic=s[19]!=null?s[19]:-1; // NIC from ADSBX (index 19)
+    if(nic<0)return; // no NIC data
+    const cellLat=Math.floor(la/CELL_SIZE)*CELL_SIZE;
+    const cellLon=Math.floor(lo/CELL_SIZE)*CELL_SIZE;
+    const key=cellLat+','+cellLon;
+    if(!grid[key])grid[key]={lat:cellLat,lon:cellLon,good:0,bad:0,total:0};
+    grid[key].total++;
+    if(nic<5)grid[key].bad++;
+    else grid[key].good++;
+  });
+  // Render cells with any data
+  Object.values(grid).forEach(cell=>{
+    if(cell.total<1)return;
+    const badPct=cell.bad/cell.total;
+    let color,alpha;
+    if(badPct>0.10){color='#ff0033';alpha=0.25} // RED: >10% bad NIC = likely jamming
+    else if(badPct>0.02){color='#ffaa00';alpha=0.15} // YELLOW: 2-10% = possible interference
+    else{color='#00ff44';alpha=0.04} // GREEN: <2% = normal
+    const c=Cesium.Color.fromCssColorString(color);
+    const halfCell=CELL_SIZE/2;
+    const cx=cell.lon+halfCell,cy=cell.lat+halfCell;
+    // Draw hexagon approximation (6-sided polygon)
+    const r=CELL_SIZE*0.55;
+    const hexPts=[];
+    for(let a=0;a<6;a++){
+      const angle=(60*a-30)*Math.PI/180;
+      hexPts.push(cx+r*Math.cos(angle),cy+r*Math.sin(angle));
+    }
+    const e=viewer.entities.add({
+      polygon:{
+        hierarchy:Cesium.Cartesian3.fromDegreesArray(hexPts),
+        material:c.withAlpha(alpha),
+        outline:true,
+        outlineColor:c.withAlpha(alpha*2),
+        outlineWidth:1,
+      },
+      label:{
+        text:cell.total+'✈ '+(badPct>0.1?'JAMMED':badPct>0.02?'DEGRADED':'OK'),
+        font:'bold 9px Orbitron',
+        fillColor:c.withAlpha(0.7),
+        style:Cesium.LabelStyle.FILL,
+        scaleByDistance:new Cesium.NearFarScalar(5e4,1,4e6,0.2),
+        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,2e6),
+      },
+      position:Cesium.Cartesian3.fromDegrees(cx,cy,100),
+      show:vis.gpsjam,
+    });
+    e._jamData=cell;
+    jamEntities.push(e);
+  });
+  // Update HUD
+  const totalBad=Object.values(grid).filter(c=>c.bad/c.total>0.1).length;
+  const totalDegraded=Object.values(grid).filter(c=>{const p=c.bad/c.total;return p>0.02&&p<=0.1}).length;
+  if(totalBad>0||totalDegraded>0){
+    dbg('GPS JAM: '+totalBad+' jammed zones, '+totalDegraded+' degraded','#ff0066');
+  }
+}
+
+function matchPF(s){const[ic,cs,,,,,,alt]=s;const mil=isMil(ic,cs,s);if(activePF==='all')return true;if(activePF==='mil')return mil;if(activePF==='civ')return!mil;return true}
+
+function buildPlaneList(){
+  const el=document.getElementById('planeList');el.innerHTML='';
+  if(!planeData.length){el.innerHTML='<div class="empty-msg">No aircraft data</div>';return}
+  const v=planeData.filter(s=>!s[8]&&s[5]&&s[6]&&matchPF(s));
+  v.sort((a,b)=>(isMil(a[0],a[1])?0:1)-(isMil(b[0],b[1])?0:1));
+  v.slice(0,50).forEach(s=>{
+    const[ic,cs,orig,,,lo,la,alt,,vel]=s;
+    const c=(cs||'').trim()||ic||'------';
+    const mil=isMil(ic,cs,s);const col=mil?'var(--mil)':'var(--cyan)';
+    const d=document.createElement('div');d.className='flight-item';
+    d.innerHTML='<div class="fi-r1"><span class="fi-cs" style="color:'+col+'">'+c+'</span><span style="font-size:.44rem;padding:1px 4px;border:1px solid '+col+';color:'+col+'">'+(mil?'MIL':'CIV')+'</span></div><div class="fi-r2"><span>'+(alt?Math.round(alt*3.28084/100)*100:'--')+' ft</span><span>'+(vel?Math.round(vel*1.94384):'--')+' kts</span><span>'+(orig||'??')+'</span></div>';
+    d.addEventListener('click',()=>{showPlane(s,mil);if(la&&lo)viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(lo,la,100000),duration:1})});
+    el.appendChild(d);
+  });
+}
+
+document.getElementById('planeFilters').addEventListener('click',e=>{const b=e.target.closest('[data-pf]');if(!b)return;document.querySelectorAll('[data-pf]').forEach(x=>x.classList.remove('active'));b.classList.add('active');activePF=b.dataset.pf;renderPlanes()});
+
+document.getElementById('refreshPlanes').addEventListener('click',()=>{clearInterval(planeTimer);lastPlaneFetch=0;fetchPlanes();resetCd();planeTimer=setInterval(()=>{fetchPlanes();resetCd()},30000)});
+
+// ════════════════════════════════════════════════
+// STRIKES — Supabase verified database, fallback to OSINT/GDELT
+// ════════════════════════════════════════════════
+async function fetchStrikeData(){
+  dbg('Fetching strike data...','#ffff00');
+  let loaded=false;
+  // Primary: Supabase verified strikes database
+  try{
+    const r=await fetch('/.netlify/functions/strikes-proxy');
+    const d=await r.json();
+    if(d.events&&d.events.length>0){
+      strikeData=d.events;
+      dbg('Strikes: '+d.count+' verified events via '+d.source+(d.cached?' (cached)':'')+' ✓','#39ff7a');
+      loaded=true;
+    } else if(d.error){
+      dbg('Strikes DB: '+d.error,'#ff8c00');
+    }
+  }catch(e){dbg('Strikes proxy error: '+e.message,'#ff8c00')}
+  // Secondary: OSINT classifier
+  if(!loaded){
+    try{
+      const r=await fetch('/.netlify/functions/twitter-osint');
+      const d=await r.json();
+      if(d.events&&d.events.length>0){
+        strikeData=d.events;
+        dbg('OSINT fallback: '+d.count+' events ✓','#39ff7a');
+        loaded=true;
+      }
+    }catch(e){dbg('OSINT fallback error: '+e.message,'#ff8c00')}
+  }
+  // Tertiary: GDELT
+  if(!loaded){
+    try{
+      const r=await fetch('/.netlify/functions/acled-proxy');
+      const d=await r.json();
+      if(d.events&&d.events.length>0){
+        strikeData=d.events;
+        dbg('GDELT fallback: '+d.count+' events ✓','#39ff7a');
+        loaded=true;
+      }
+    }catch(e){dbg('GDELT fallback error: '+e.message,'#ff8c00')}
+  }
+  if(!loaded){
+    strikeData=SAMPLE_STRIKES;
+    dbg('Using sample strike data','#ff8c00');
+  }
+  doRenderStrikes();
+  updateTs();
+}
+function doRenderStrikes(){
+  strikeEntities.forEach(e=>viewer.entities.remove(e));strikeEntities=[];
+  strikeData.sort((a,b)=>(b.date||b.event_date||'').localeCompare(a.date||a.event_date||''));
+  strikeData.forEach((ev,i)=>{
+    const la=+(ev.lat||ev.latitude),lo=+(ev.lng||ev.longitude);if(!la||!lo)return;
+    const t=(ev.event_type||ev.sub_event_type||'').toLowerCase();
+    const isAir=t.includes('air')||t.includes('nuclear')||t.includes('leadership')||t.includes('infrastructure');
+    const isMissile=t.includes('missile')||t.includes('retaliatory')||t.includes('shelling')||t.includes('rocket');
+    const isCivilian=t.includes('civilian');
+    const col=isCivilian?'#cc00ff':isAir?'#ff2222':isMissile?'#ff6600':'#ff4444';
+    const fat=parseInt(ev.fatalities)||0;
+    const sz=Math.min(8+fat*0.5,20);
+    const evDate=new Date(ev.date||ev.event_date);
+    const isRecent=(Date.now()-evDate.getTime())<172800000;
+    const c=Cesium.Color.fromCssColorString(col);
+
+    const e=viewer.entities.add({
+      position:Cesium.Cartesian3.fromDegrees(lo,la,100),
+      point:{pixelSize:sz,color:c.withAlpha(isRecent?.85:.5),outlineColor:Cesium.Color.WHITE.withAlpha(isRecent?.8:.3),outlineWidth:isRecent?2:1},
+      ellipse:{semiMajorAxis:isRecent?20000+fat*2000:10000,semiMinorAxis:isRecent?20000+fat*2000:10000,material:c.withAlpha(isRecent?0.08:0.03),outline:true,outlineColor:c.withAlpha(0.15)},
+      label:{text:(ev.location||'').toUpperCase(),font:'8px Orbitron',fillColor:c.withAlpha(0.6),style:Cesium.LabelStyle.FILL,pixelOffset:new Cesium.Cartesian2(0,-sz-6),scaleByDistance:new Cesium.NearFarScalar(5e4,1,3e6,0),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,1.5e6)},
+      show:vis.strikes,
+    });
+    e._strikeIdx=i;
+    strikeEntities.push(e);
+  });
+  document.getElementById('strikeCount').textContent=strikeData.length;
+  document.getElementById('hudStr').textContent=strikeData.length;
+  buildStrikeList();
+}
+function getTimeAgo(d){
+  if(!d)return'';
+  const diff=Date.now()-new Date(d).getTime();
+  const m=Math.floor(diff/60000);
+  if(m<0)return'just now';
+  if(m<60)return m+'m ago';
+  const h=Math.floor(m/60);
+  if(h<24)return h+'h ago';
+  const dy=Math.floor(h/24);
+  return dy+'d ago';
+}
+function buildStrikeList(){
+  const el=document.getElementById('strikeList');el.innerHTML='';
+  strikeData.forEach((ev,i)=>{
+    const t=(ev.event_type||'').toLowerCase();
+    const isAir=t.includes('air')||t.includes('nuclear')||t.includes('leadership')||t.includes('infrastructure');
+    const isMissile=t.includes('missile')||t.includes('retaliatory');
+    const isNaval=t.includes('naval');
+    const isCivilian=t.includes('civilian');
+    const flag=ev.flag||'';
+    const icon=flag||(isAir?'💥':isMissile?'🚀':isNaval?'⚓':isCivilian?'💣':'🔥');
+    const col=isCivilian?'#cc00ff':isAir?'#ff2222':isMissile?'#ff6600':isNaval?'#4fc3f7':'#ff4444';
+    const fat=parseInt(ev.fatalities)||0;
+    const dt=ev.date||ev.event_date;
+    const timeAgo=getTimeAgo(dt);
+    const evDate=new Date(dt);
+    const isRecent=(Date.now()-evDate.getTime())<172800000;
+    const conf=ev.confidence||'';
+    const confCol=conf==='HIGH'?'#39ff7a':conf==='MEDIUM'?'#ffb600':'#ff8c00';
+    const hasCoords=(ev.lat||ev.latitude)&&(ev.lng||ev.longitude);
+    
+    const d=document.createElement('div');d.className='strike-item'+(isRecent?' recent':'');d.dataset.i=i;
+    d.innerHTML=
+      '<div class="si-top">'+
+        '<span class="si-icon" style="color:'+col+'">'+icon+'</span>'+
+        '<span class="si-loc">'+(hasCoords?'':' 📡 ')+(ev.location||'Unknown')+'</span>'+
+        '<span class="si-time">'+timeAgo+'</span>'+
+      '</div>'+
+      '<div class="si-type" style="color:'+col+'">'+(ev.event_type||'Strike')+
+        (conf?'<span style="color:'+confCol+';margin-left:6px;font-size:.38rem">'+conf+'</span>':'')+
+      '</div>'+
+      '<div class="si-meta">'+
+        '<span>'+(ev.actor||'Unknown')+'</span>'+
+        (fat>0?'<span style="color:#ff4444">'+fat+' killed</span>':'')+
+        (ev.injured>0?'<span style="color:#ff8c00">'+ev.injured+' injured</span>':'')+
+      '</div>'+
+      (ev.description?'<div class="si-notes">'+ev.description.substring(0,140)+(ev.description.length>140?'…':'')+'</div>':'');
+    d.addEventListener('click',()=>{
+      if(hasCoords){
+        viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(+(ev.lng||ev.longitude),+(ev.lat||ev.latitude),200000),duration:1.5});
+      }
+      showStrike(ev);
+      document.querySelectorAll('.strike-item').forEach(x=>x.classList.remove('active'));
+      d.classList.add('active');
+    });
+    el.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════════════════
+// POLYMARKET ODDS
+// ════════════════════════════════════════════════
+async function fetchOdds(){
+  dbg('Fetching Polymarket odds...','#ffff00');
+  try{
+    const r=await fetch('/.netlify/functions/polymarket-proxy');
+    const d=await r.json();
+    if(d.error)dbg('Polymarket: '+d.error,'#ff8c00');
+    if(d.markets&&d.markets.length>0){
+      renderOdds(d.markets);
+      dbg('Polymarket: '+d.count+' conflict markets ✓','#00ff88');
+      updateTs();
+      return;
+    }
+  }catch(e){dbg('Polymarket error: '+e.message,'#ff4444')}
+  renderOdds(getSampleOdds());
+  dbg('Using sample Polymarket odds','#ff8c00');
+}
+function renderOdds(markets){
+  const el=document.getElementById('oddsFeed');el.innerHTML='';
+  if(!markets.length){el.innerHTML='<div class="empty-msg">No conflict markets found</div>';return}
+  markets.forEach(ev=>{
+    const mkts=ev.markets||[ev];
+    // Event header if multiple sub-markets
+    if(mkts.length>1||ev.title!==mkts[0].question){
+      const vol=ev.totalVolume||ev.volume24h||0;
+      const volStr=vol>=1e6?'$'+(vol/1e6).toFixed(1)+'M':vol>=1e3?'$'+(vol/1e3).toFixed(0)+'K':'';
+      const hdr=document.createElement('div');
+      hdr.style.cssText='padding:5px 9px 2px;font-size:.5rem;color:var(--amber);letter-spacing:1px;font-family:Orbitron,monospace;border-top:1px solid var(--border);margin-top:4px;display:flex;justify-content:space-between';
+      hdr.innerHTML='<span>'+ev.title+'</span>'+(volStr?'<span style="color:var(--text-muted)">'+volStr+' vol</span>':'');
+      hdr.style.cursor='pointer';
+      hdr.addEventListener('click',()=>window.open(ev.url||'https://polymarket.com/event/'+ev.slug,'_blank'));
+      el.appendChild(hdr);
+    }
+    mkts.forEach(m=>{
+      const prices=m.prices||[];
+      const outcomes=m.outcomes||['Yes','No'];
+      const yesP=prices[0]||0;const noP=prices[1]||(1-yesP);
+      const yesPct=Math.round(yesP*100);const noPct=Math.round(noP*100);
+      const vol=m.volume24h||0;
+      const volStr=vol>=1e6?'$'+(vol/1e6).toFixed(1)+'M':vol>=1e3?'$'+(vol/1e3).toFixed(0)+'K':vol>0?'$'+vol:'';
+      const d=document.createElement('div');d.className='odds-item';
+      // Color bar based on probability — green=likely, red=unlikely
+      const barCol=yesPct>=60?'rgba(0,255,136,.35)':yesPct>=40?'rgba(255,180,0,.35)':'rgba(255,68,102,.3)';
+      d.innerHTML=
+        '<div class="odds-q">'+(m.question||ev.title)+'</div>'+
+        '<div class="odds-bar-wrap">'+
+          '<span class="odds-pct odds-yes">'+yesPct+'%</span>'+
+          '<div class="odds-bar"><div class="odds-fill" style="width:'+yesPct+'%;background:linear-gradient(90deg,'+barCol+',transparent)"></div></div>'+
+          '<span class="odds-pct odds-no">'+noPct+'%</span>'+
+        '</div>'+
+        '<div class="odds-meta"><span>YES / NO</span>'+(volStr?'<span class="odds-vol">'+volStr+' 24h</span>':'')+'</div>';
+      d.addEventListener('click',()=>window.open(ev.url||'https://polymarket.com/event/'+ev.slug,'_blank'));
+      el.appendChild(d);
+    });
+  });
+}
+function getSampleOdds(){return[
+  {title:'Iran x Israel/US conflict ends by…',slug:'iran-x-israelus-conflict-ends-by',markets:[
+    {question:'Conflict ends by March 31?',prices:[0.03,0.97],outcomes:['Yes','No'],volume24h:2000000},
+    {question:'Conflict ends by April 30?',prices:[0.15,0.85],outcomes:['Yes','No'],volume24h:1500000},
+    {question:'Conflict ends by June 30?',prices:[0.61,0.39],outcomes:['Yes','No'],volume24h:900000},
+  ],volume24h:4400000,url:'https://polymarket.com/event/iran-x-israelus-conflict-ends-by'},
+  {title:'US next strikes Iran on…',slug:'us-next-strikes-iran-on-843',markets:[
+    {question:'US strikes Iran March 2?',prices:[0.35,0.65],outcomes:['Yes','No'],volume24h:8000000},
+    {question:'US strikes Iran March 3?',prices:[0.28,0.72],outcomes:['Yes','No'],volume24h:5000000},
+  ],volume24h:13000000,url:'https://polymarket.com/event/us-next-strikes-iran-on-843'},
+  {title:'Iran strike on Israel by…',slug:'iran-strike-on-israel-by',markets:[
+    {question:'Iran strikes Israel by March 7?',prices:[0.13,0.87],outcomes:['Yes','No'],volume24h:1000000},
+    {question:'Iran strikes Israel by March 15?',prices:[0.41,0.59],outcomes:['Yes','No'],volume24h:800000},
+  ],volume24h:1800000,url:'https://polymarket.com/event/iran-strike-on-israel-by'},
+  {title:'US ground troops enter Iran?',slug:'us-forces-enter-iran-by',markets:[
+    {question:'US ground forces in Iran by March 7?',prices:[0.28,0.72],outcomes:['Yes','No'],volume24h:2000000},
+  ],volume24h:2000000,url:'https://polymarket.com/event/us-forces-enter-iran-by'},
+  {title:'Next Supreme Leader of Iran',slug:'next-supreme-leader-of-iran',markets:[
+    {question:'Position abolished?',prices:[0.30,0.70],outcomes:['Yes','No'],volume24h:500000},
+    {question:'Alireza Arafi?',prices:[0.46,0.54],outcomes:['Yes','No'],volume24h:300000},
+    {question:'Mojtaba Khamenei?',prices:[0.22,0.78],outcomes:['Yes','No'],volume24h:400000},
+  ],volume24h:1200000,url:'https://polymarket.com/event/next-supreme-leader-of-iran'},
+  {title:'Iranian regime falls by June 30?',slug:'iranian-regime-fall-by',markets:[
+    {question:'Iranian regime falls by June 30?',prices:[0.54,0.46],outcomes:['Yes','No'],volume24h:700000},
+  ],volume24h:700000,url:'https://polymarket.com/event/iranian-regime-fall-by'},
+  {title:'Iran successor announced by…',slug:'iran-successor-announced-by',markets:[
+    {question:'New Supreme Leader by March 31?',prices:[0.75,0.25],outcomes:['Yes','No'],volume24h:600000},
+  ],volume24h:600000,url:'https://polymarket.com/event/iran-successor-announced-by'},
+  {title:'US-Iran ceasefire by…',slug:'us-iran-ceasefire-by',markets:[
+    {question:'Ceasefire by March 6?',prices:[0.15,0.85],outcomes:['Yes','No'],volume24h:400000},
+    {question:'Ceasefire by March 31?',prices:[0.61,0.39],outcomes:['Yes','No'],volume24h:350000},
+    {question:'Ceasefire by April 30?',prices:[0.78,0.22],outcomes:['Yes','No'],volume24h:300000},
+  ],volume24h:1050000,url:'https://polymarket.com/event/us-iran-ceasefire-by'},
+  {title:'Strait of Hormuz closed?',slug:'strait-of-hormuz-closed',markets:[
+    {question:'Hormuz closed 7+ days in March?',prices:[0.35,0.65],outcomes:['Yes','No'],volume24h:500000},
+  ],volume24h:500000,url:'https://polymarket.com/event/strait-of-hormuz-closed'},
+  {title:'Israel x Iran ceasefire broken by…',slug:'israel-x-iran-ceasefire-broken-by',markets:[
+    {question:'Ceasefire broken by March 31?',prices:[0.27,0.73],outcomes:['Yes','No'],volume24h:300000},
+  ],volume24h:300000,url:'https://polymarket.com/event/israel-x-iran-ceasefire-broken-by'},
+]}
+
+// ════════════════════════════════════════════════
+// NEWS FEED
+// ════════════════════════════════════════════════
+async function fetchNews(forceFresh){
+  dbg('Fetching live feeds'+(forceFresh?' (forced)':'')+'...','#ffff00');
+  try{
+    const url='/.netlify/functions/news-proxy'+(forceFresh?'?t='+Date.now():'');
+    const r=await fetch(url,forceFresh?{cache:'no-store'}:{});
+    const d=await r.json();
+    window._osintFeed=d.osint||[];
+    window._newsFeed=d.news||[];
+    window._allFeed=d.articles||[];
+    const activeTab=document.querySelector('.news-tab.active')?.dataset.feed||'osint';
+    renderNewsFeed(activeTab);
+    // Render classified events in sidebar + map
+    renderEventsList(d.osint||[]);
+    renderEventsOnMap(d.osint||[]);
+    dbg('Feeds: '+d.osint_count+' OSINT + '+d.news_count+' news'+(d.cached?' (cache)':' ✓'),d.cached?'#ff8c00':'#39ff7a');
+    if(!d.cached&&d.osint_count>0)setTimeout(()=>{fetchStrikeData();updateTs()},5000);
+    updateTs();
+    return;
+  }catch(e){dbg('News proxy error: '+e.message,'#ff4444')}
+  renderNewsFeed('all');
+}
+
+// ═══ EVENTS LIST (sidebar) — classified OSINT ═══
+let activeEventFilter='all';
+
+document.getElementById('tab-events')?.addEventListener('click',e=>{
+  const btn=e.target.closest('[data-ef]');if(!btn)return;
+  document.querySelectorAll('[data-ef]').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  activeEventFilter=btn.dataset.ef;
+  renderEventsList(window._osintFeed||[]);
+  renderEventsOnMap(window._osintFeed||[]);
+});
+
+document.getElementById('refreshEvents')?.addEventListener('click',()=>{
+  dbg('Manual OSINT refresh...','#4fc3f7');fetchNews(true);
+});
+
+function renderEventsList(events){
+  const el=document.getElementById('eventsList');if(!el)return;
+  el.innerHTML='';
+  const filtered=activeEventFilter==='all'?events:events.filter(e=>e.event_type===activeEventFilter);
+  document.getElementById('eventsCount').textContent=filtered.length;
+
+  if(!filtered.length){el.innerHTML='<div class="empty-msg">No events matching filter</div>';return}
+
+  filtered.slice(0,80).forEach((ev,i)=>{
+    const d=document.createElement('div');
+    d.className='evt-card sev-'+(ev.severity||'Low');
+
+    const isBreaking=ev.time&&(ev.time==='just now'||ev.time.match(/^[1-5]m/));
+    const sevColor={'Critical':'var(--purple)','High':'var(--red)','Medium':'var(--amber)','Low':'var(--text-muted)'}[ev.severity]||'var(--text-muted)';
+    const confEmoji=ev.confidence_emoji||'❓';
+
+    d.innerHTML=
+      (isBreaking?'<div class="evt-breaking">● BREAKING</div>':'')+
+      '<div class="evt-type">'+
+        '<span>'+(ev.event_emoji||'⚠️')+' '+(ev.event_type||'Unconfirmed')+'</span>'+
+        '<span class="evt-badge" style="border-color:'+sevColor+';color:'+sevColor+'">'+(ev.severity||'Low').toUpperCase()+'</span>'+
+        '<span>'+confEmoji+'</span>'+
+        (ev.mappable?'<span style="color:var(--green);font-size:.28rem">📍</span>':'<span style="color:var(--text-muted);font-size:.28rem">⊘</span>')+
+      '</div>'+
+      '<div class="evt-text">'+(ev.ai_summary||ev.title||'')+'</div>'+
+      '<div class="evt-meta">'+
+        '<span>'+(ev.source||'')+'</span>'+
+        '<span style="color:var(--text-dim)">'+(ev.time||'')+'</span>'+
+        (ev.actors&&ev.actors[0]!=='Unknown'?ev.actors.map(a=>'<span class="evt-actor">'+a+'</span>').join(''):'') +
+        (ev.theater&&ev.theater[0]!=='Unknown'?'<span style="color:var(--dim)">📍 '+ev.theater[0]+'</span>':'')+
+        (ev._views?'<span style="color:var(--text-muted)">'+ev._views+'👁</span>':'')+
+      '</div>';
+
+    // Click → fly to location on map if mappable
+    d.addEventListener('click',()=>{
+      if(ev.mappable&&ev.lat&&ev.lon){
+        viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(ev.lon,ev.lat,200000),duration:1.5});
+      }
+      if(ev.url)window.open(ev.url,'_blank');
+    });
+
+    el.appendChild(d);
+  });
+}
+
+// ═══ EVENTS ON MAP — plot classified OSINT as Cesium entities ═══
+const EVENT_ICON_MAP = {
+  'Kinetic Strike':   { color:'#ff2222', symbol:'💥', size:28 },
+  'Explosion':        { color:'#ff6600', symbol:'💥', size:24 },
+  'Air Activity':     { color:'#aaff00', symbol:'✈', size:22 },
+  'Naval Activity':   { color:'#cc88ff', symbol:'🚢', size:22 },
+  'Ground Movement':  { color:'#ff8800', symbol:'🪖', size:22 },
+  'WMD / CBRN':       { color:'#ff00ff', symbol:'☢', size:30 },
+  'Air Defense':      { color:'#00eeff', symbol:'🛡', size:24 },
+  'Infrastructure Hit':{ color:'#ff4400', symbol:'🔥', size:24 },
+  'Cyber / EW':       { color:'#00ffcc', symbol:'📡', size:20 },
+  'Diplomatic':       { color:'#39ff7a', symbol:'🤝', size:18 },
+  'Civilian Incident':{ color:'#ff3b3b', symbol:'🚨', size:22 },
+  'Intel / OSINT':    { color:'#4ab8ff', symbol:'🔍', size:18 },
+  'Unconfirmed':      { color:'#7a6230', symbol:'⚠', size:16 },
+};
+
+function renderEventsOnMap(events){
+  eventEntities.forEach(e=>viewer.entities.remove(e));eventEntities=[];
+  const filtered=activeEventFilter==='all'?events:events.filter(e=>e.event_type===activeEventFilter);
+  const mappable=filtered.filter(e=>e.mappable&&e.lat&&e.lon);
+  dbg('Map events: '+mappable.length+' mappable of '+filtered.length+' total','#00eeff');
+  mappable.forEach(ev=>{
+    const cfg=EVENT_ICON_MAP[ev.event_type]||EVENT_ICON_MAP['Unconfirmed'];
+    const c=Cesium.Color.fromCssColorString(cfg.color);
+    const sevScale={'Critical':1.6,'High':1.3,'Medium':1,'Low':0.7}[ev.severity]||1;
+    const sz=Math.round(10*sevScale);
+    const isCrit=ev.severity==='Critical';
+    const isHigh=ev.severity==='High';
+    const isRecent=ev.time&&(ev.time==='just now'||/^[1-9]m/.test(ev.time));
+    const locLabel=(ev.location_mentions?.[0]||'').toUpperCase();
+
+    // Main marker — point + emoji label
+    const ent=viewer.entities.add({
+      position:Cesium.Cartesian3.fromDegrees(ev.lon,ev.lat,200),
+      point:{
+        pixelSize:sz,
+        color:c.withAlpha(isCrit?0.95:isHigh?0.85:0.7),
+        outlineColor:Cesium.Color.WHITE.withAlpha(isCrit?0.9:0.5),
+        outlineWidth:isCrit?3:isHigh?2:1,
+        scaleByDistance:new Cesium.NearFarScalar(1e4,1.5,5e6,0.3),
+      },
+      label:{
+        text:(cfg.symbol||'⚠')+' '+(locLabel||ev.event_type||'EVENT'),
+        font:(isCrit?'bold ':'')+'9px Orbitron',
+        fillColor:c.withAlpha(isRecent?0.95:0.65),
+        style:Cesium.LabelStyle.FILL_AND_OUTLINE,
+        outlineColor:Cesium.Color.BLACK.withAlpha(0.7),
+        outlineWidth:2,
+        pixelOffset:new Cesium.Cartesian2(0,-sz-4),
+        scaleByDistance:new Cesium.NearFarScalar(5e4,1,3e6,0),
+        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,2e6),
+      },
+      show:vis.events,
+    });
+    ent._osintEvent=ev;
+    eventEntities.push(ent);
+
+    // Glow ring for Critical/High
+    if(isCrit||isHigh){
+      const ringSize=isCrit?35000:20000;
+      const ring=viewer.entities.add({
+        position:Cesium.Cartesian3.fromDegrees(ev.lon,ev.lat,100),
+        ellipse:{
+          semiMajorAxis:ringSize,semiMinorAxis:ringSize,
+          material:c.withAlpha(isCrit?0.1:0.05),
+          outline:true,outlineColor:c.withAlpha(isCrit?0.25:0.12),
+        },
+        show:vis.events,
+      });
+      eventEntities.push(ring);
+    }
+  });
+}
+
+// News tab switcher
+document.getElementById('newsTabs').addEventListener('click',e=>{
+  const tab=e.target.closest('.news-tab');if(!tab)return;
+  document.querySelectorAll('.news-tab').forEach(t=>{t.classList.remove('active');t.style.color='var(--text-muted)';t.style.borderBottomColor='transparent'});
+  tab.classList.add('active');
+  const feed=tab.dataset.feed;
+  if(feed==='osint'){tab.style.color='var(--cyan)';tab.style.borderBottomColor='var(--cyan)'}
+  else if(feed==='news'){tab.style.color='var(--amber)';tab.style.borderBottomColor='var(--amber)'}
+  else{tab.style.color='var(--green)';tab.style.borderBottomColor='var(--green)'}
+  renderNewsFeed(feed);
+});
+
+document.getElementById('newsRefresh').addEventListener('click',function(){
+  this.style.color='var(--green)';this.style.transform='rotate(360deg)';
+  setTimeout(()=>{this.style.color='var(--text-muted)';this.style.transform=''},600);
+  dbg('Manual feed refresh...','#4fc3f7');fetchNews(true);
+});
+
+function renderNewsFeed(feed){
+  let articles;
+  if(feed==='osint')articles=window._osintFeed||[];
+  else if(feed==='news')articles=window._newsFeed||[];
+  else articles=window._allFeed||[];
+  if(!articles.length)articles=getSampleNews();
+  renderNews(articles);
+}
+
+function renderNews(articles){
+  const el=document.getElementById('newsFeed');el.innerHTML='';
+  articles.forEach(a=>{
+    const d=document.createElement('div');d.className='news-item';
+    const isBreaking=a.time&&(a.time.includes('m ago')||a.time==='just now');
+    const isTG=(a._src||'').includes('Telegram')||(a.source||'').includes('📱')||(a._tg||'');
+    const isArabiya=(a.source||'').includes('Al Arabiya');
+    let badge='';
+    if(isTG)badge='<span style="color:#2AABEE;font-weight:bold;font-size:.38rem;margin-right:3px">TG</span>';
+    else if(isArabiya)badge='<span style="color:#e53935;font-size:.35rem;margin-right:3px">العربية</span>';
+    const viewsStr=a._views?'<span style="color:var(--text-muted);margin-left:4px">'+a._views+'👁</span>':'';
+    d.innerHTML=
+      (isBreaking?'<div style="color:#ff3b3b;font-size:.4rem;font-weight:bold;margin-bottom:2px;font-family:Orbitron;letter-spacing:1px">● BREAKING</div>':'')+
+      '<div style="font-size:.52rem;color:var(--text);line-height:1.35;margin-bottom:3px">'+a.title+'</div>'+
+      '<div style="font-size:.42rem;color:var(--text-dim);display:flex;align-items:center;gap:4px;flex-wrap:wrap">'+badge+'<span>'+(a.source||'')+'</span><span style="color:var(--text-muted)">· '+(a.time||'')+'</span>'+viewsStr+'</div>';
+    if(a.url)d.addEventListener('click',()=>window.open(a.url,'_blank'));
+    el.appendChild(d);
+  });
+  if(!articles.length)el.innerHTML='<div class="empty-msg">No items in this feed</div>';
+}
+function getSampleNews(){return[
+    {title:'US CENTCOM conducts airstrikes against ISIS targets in eastern Syria',source:'CENTCOM Press',time:'2h ago'},
+    {title:'Houthi rebels launch anti-ship missiles in southern Red Sea',source:'Reuters',time:'4h ago'},
+    {title:'Coalition forces complete joint exercise with Gulf partners',source:'DoD News',time:'6h ago'},
+    {title:'Pentagon confirms additional Patriot battery deployment to Gulf region',source:'AP',time:'8h ago'},
+    {title:'Naval task force intercepts weapons shipment in Arabian Sea',source:'5th Fleet PAO',time:'10h ago'},
+    {title:'ISIS cells active in Deir ez-Zor — SDF launches clearing operations',source:'CENTCOM',time:'12h ago'},
+    {title:'Iran-backed militias conduct drone attack on Al-Tanf garrison',source:'Reuters',time:'14h ago'},
+    {title:'USAF deploys additional ISR assets to Al Udeid Air Base',source:'Air Force Times',time:'16h ago'},
+    {title:'UK Royal Navy joins Red Sea maritime security patrol',source:'UK MOD',time:'18h ago'},
+    {title:'Tensions rise as Iranian naval forces exercise near Strait of Hormuz',source:'AP',time:'20h ago'},
+    {title:'CENTCOM commander testifies on regional threats before Senate Armed Services Committee',source:'DoD News',time:'1d ago'},
+    {title:'Coalition airstrike destroys ISIS weapons cache near Mosul',source:'OIR Spokesperson',time:'1d ago'},
+]}
+
+// ─── AUTO STRIKE DETECTION ──
+async function runAutoDetect(){
+  dbg('🔍 Auto-detect: scanning news for new strikes...','#4fc3f7');
+  try{
+    const r=await fetch('/.netlify/functions/auto-detect');
+    const d=await r.json();
+    if(d.error){dbg('Auto-detect error: '+d.error,'#ff8c00');return}
+    const msg='Auto-detect: scanned '+d.scanned+' headlines → '+d.candidates+' candidates → '+d.inserted+' new strikes inserted';
+    dbg(msg,d.inserted>0?'#39ff7a':'#4fc3f7');
+    if(d.inserted>0){
+      // Refresh strike data to show new strikes
+      dbg('🆕 '+d.inserted+' new strike(s) detected! Refreshing map...','#ff3b3b');
+      if(d.latest)d.latest.forEach(s=>dbg('  → '+s.title+' ('+s.confidence+')','#ff8c00'));
+      setTimeout(()=>fetchStrikeData(),2000);
+    }
+  }catch(e){dbg('Auto-detect failed: '+e.message,'#ff4444')}
+}
+
+// ════════════════════════════════════════════════
+// INFO PANELS
+// ════════════════════════════════════════════════
+function showBase(i){
+  const b=BASES[i],c=TCOLOR[b.type]||'#ff3b3b',p=document.getElementById('infoPanel');
+  p.className='info-panel show';
+  document.getElementById('ipHdr').textContent='// INSTALLATION';
+  document.getElementById('ipName').textContent=b.name;document.getElementById('ipName').style.color=c;
+  document.getElementById('ipRows').innerHTML=
+    row('COUNTRY',b.country)+row('TYPE',b.type)+row('BRANCH',b.branch)+row('PERSONNEL',b.personnel)+row('COORDS',b.lat.toFixed(4)+'°, '+b.lng.toFixed(4)+'°');
+  document.getElementById('ipNotes').textContent=b.notes;
+  document.querySelectorAll('.bcard').forEach(x=>x.classList.remove('sel'));
+  document.querySelector('.bcard[data-i="'+i+'"]')?.classList.add('sel');
+}
+function showPlane(s,mil){
+  const[ic,cs,orig,,,lo,la,alt,,vel,hdg,,,,,,sq,acType,dbFlags]=s;
+  const c=(cs||'').trim()||ic,col=mil?'var(--mil)':'var(--cyan)',p=document.getElementById('infoPanel');
+  p.className='info-panel ptype show';
+  document.getElementById('ipHdr').textContent=mil?'// MILITARY AC':'// CIVILIAN AC';
+  document.getElementById('ipName').textContent=c;document.getElementById('ipName').style.color=col;
+  document.getElementById('ipRows').innerHTML=
+    row('CLASS','<span style="color:'+col+'">'+(mil?'MILITARY':'CIVILIAN')+'</span>')+
+    (acType?row('TYPE',acType):'')+
+    row('REG/ORIGIN',orig||'UNKNOWN')+row('ALT',(alt?Math.round(alt*3.28084):'--')+' ft')+
+    row('SPEED',(vel?Math.round(vel*1.94384):'--')+' kts')+row('HDG',(hdg?Math.round(hdg)+'°':'--'))+
+    row('SQUAWK',sq||'--')+
+    row('ICAO HEX',ic||'--');
+  document.getElementById('ipNotes').textContent=mil?'Military aircraft'+(dbFlags&1?' — confirmed via ADSBX database':' — ICAO/callsign match'):'Civilian ADS-B transponder.';
+}
+function showStrike(ev){
+  const p=document.getElementById('infoPanel');
+  p.className='info-panel stype show';
+  document.getElementById('ipHdr').textContent='// STRIKE EVENT';
+  document.getElementById('ipName').textContent=ev.location||'Unknown';document.getElementById('ipName').style.color='var(--strike)';
+  const confCol=ev.confidence==='HIGH'?'#39ff7a':ev.confidence==='MEDIUM'?'#ffb600':'#ff8c00';
+  const conf=ev.confidence?'<span style="color:'+confCol+'">'+ev.confidence+'</span>':'--';
+  const lat=ev.lat||ev.latitude, lon=ev.lng||ev.longitude;
+  document.getElementById('ipRows').innerHTML=
+    row('DATE',(ev.date||ev.event_date||'--'))+
+    row('TYPE',ev.event_type||'Strike')+
+    row('ACTOR',ev.actor||'Unknown')+
+    row('TARGET',ev.target_type||'--')+
+    row('FATALITIES','<span style="color:var(--red)">'+(ev.fatalities||0)+'</span>'+(ev.injured?' / <span style="color:#ff8c00">'+ev.injured+' injured</span>':''))+
+    row('COORDS',(lat?(+lat).toFixed(4)+'°, '+(+lon).toFixed(4)+'°':'unlocated'))+
+    row('CONFIDENCE',conf)+
+    (ev.source?row('SOURCE',ev.source):'');
+  const notesEl=document.getElementById('ipNotes');
+  notesEl.textContent=ev.description||'No details.';
+  if(ev.source_url){
+    notesEl.innerHTML+=' <a href="'+ev.source_url+'" target="_blank" style="color:#4fc3f7;font-size:.5rem">VIEW SOURCE →</a>';
+  }
+}
+function row(l,v){return'<div class="ip-row"><span class="lbl">'+l+'</span><span class="val">'+v+'</span></div>'}
+function deselect(){document.getElementById('infoPanel').classList.remove('show');document.querySelectorAll('.bcard').forEach(x=>x.classList.remove('sel'))}
+document.getElementById('closePanel').addEventListener('click',deselect);
+
+// ═══ RESIZABLE PANEL SECTIONS ═══
+(function(){
+  const handle=document.getElementById('rpResize');
+  const oddsS=document.getElementById('oddsSection');
+  const newsS=document.getElementById('newsSection');
+  let dragging=false,startY=0,startH=0;
+  handle.addEventListener('mousedown',e=>{
+    dragging=true;startY=e.clientY;startH=oddsS.offsetHeight;
+    document.body.style.cursor='ns-resize';document.body.style.userSelect='none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const dy=e.clientY-startY;
+    const newH=Math.max(80,Math.min(startH+dy,window.innerHeight*0.6));
+    oddsS.style.maxHeight=newH+'px';
+    oddsS.style.flex='0 0 '+newH+'px';
+  });
+  document.addEventListener('mouseup',()=>{
+    if(dragging){dragging=false;document.body.style.cursor='';document.body.style.userSelect=''}
+  });
+  // Touch support
+  handle.addEventListener('touchstart',e=>{
+    dragging=true;startY=e.touches[0].clientY;startH=oddsS.offsetHeight;e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchmove',e=>{
+    if(!dragging)return;
+    const dy=e.touches[0].clientY-startY;
+    const newH=Math.max(80,Math.min(startH+dy,window.innerHeight*0.6));
+    oddsS.style.maxHeight=newH+'px';
+    oddsS.style.flex='0 0 '+newH+'px';
+  });
+  document.addEventListener('touchend',()=>{dragging=false});
+})();
+
+// ════════════════════════════════════════════════
+// ZOOM BUTTONS
+// ════════════════════════════════════════════════
+document.getElementById('zoomIn').addEventListener('click',()=>{
+  viewer.camera.zoomIn(viewer.camera.positionCartographic.height*0.4);
+});
+document.getElementById('zoomOut').addEventListener('click',()=>{
+  viewer.camera.zoomOut(viewer.camera.positionCartographic.height*0.6);
+});
+document.getElementById('zoomReset').addEventListener('click',()=>{
+  viewer.camera.flyTo({destination:Cesium.Cartesian3.fromDegrees(46,27,4000000),orientation:{heading:0,pitch:Cesium.Math.toRadians(-60),roll:0},duration:1.5});
+});
+
+// ════════════════════════════════════════════════
+// SATELLITES — CelesTrak TLE + satellite.js
+// ════════════════════════════════════════════════
+const SAT_URLS=[
+  {name:'GPS',url:'https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle',color:'#39ff7a',limit:40},
+  {name:'Military',url:'https://celestrak.org/NORAD/elements/gp.php?GROUP=military&FORMAT=tle',color:'#ff6600',limit:60},
+  {name:'ISS/Stations',url:'https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle',color:'#ffff00',limit:10},
+  {name:'Weather',url:'https://celestrak.org/NORAD/elements/gp.php?GROUP=weather&FORMAT=tle',color:'#00ffcc',limit:30},
+  {name:'Starlink',url:'https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle',color:'#4ab8ff',limit:40},
+];
+
+async function fetchSatellites(){
+  dbg('Fetching satellite TLE data...','#cc88ff');
+  satData=[];
+  for(const group of SAT_URLS){
+    try{
+      const r=await fetch(group.url,{signal:AbortSignal.timeout(10000)});
+      if(!r.ok){dbg('TLE '+group.name+': HTTP '+r.status,'#ff8c00');continue}
+      const txt=await r.text();
+      const lines=txt.trim().split('\n');
+      let count=0;
+      for(let i=0;i<lines.length-2;i+=3){
+        if(group.limit&&count>=group.limit)break;
+        const name=lines[i].trim();
+        const tle1=lines[i+1].trim();
+        const tle2=lines[i+2].trim();
+        if(!tle1.startsWith('1')||!tle2.startsWith('2'))continue;
+        try{
+          const satrec=satellite.twoline2satrec(tle1,tle2);
+          satData.push({name,satrec,group:group.name,color:group.color});
+          count++;
+        }catch(e){}
+      }
+      dbg('TLE '+group.name+': '+count+' sats ✓','#cc88ff');
+    }catch(e){dbg('TLE '+group.name+': '+e.message,'#ff8c00')}
+  }
+  dbg('Satellites: '+satData.length+' total ✓','#39ff7a');
+  renderSatellites();
+}
+
+function renderSatellites(){
+  satEntities.forEach(e=>viewer.entities.remove(e));satEntities=[];
+  const now=new Date();
+  const gmst=satellite.gstime(now);
+  satData.forEach((sat,i)=>{
+    try{
+      const pv=satellite.propagate(sat.satrec,now);
+      if(!pv.position)return;
+      const geo=satellite.eciToGeodetic(pv.position,gmst);
+      const lng=satellite.degreesLong(geo.longitude);
+      const lat=satellite.degreesLat(geo.latitude);
+      const alt=geo.height*1000;
+      const c=Cesium.Color.fromCssColorString(sat.color);
+      const satSvg=`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="${sat.color}" fill-opacity="0.9"><rect x="10" y="2" width="4" height="8" rx="1"/><rect x="6" y="10" width="12" height="6" rx="1"/><rect x="2" y="11" width="4" height="4" rx="0.5"/><rect x="18" y="11" width="4" height="4" rx="0.5"/><rect x="9" y="16" width="2" height="4"/><rect x="13" y="16" width="2" height="4"/></g></svg>`;
+      const satUri='data:image/svg+xml;base64,'+btoa(satSvg);
+      // Compute orbital path (90 min ahead, 60 points)
+      const orbitPositions=[];
+      const gmstNow=gmst;
+      for(let m=0;m<=90;m+=1.5){
+        try{
+          const futureTime=new Date(now.getTime()+m*60000);
+          const fpv=satellite.propagate(sat.satrec,futureTime);
+          if(!fpv.position)continue;
+          const fgmst=satellite.gstime(futureTime);
+          const fgeo=satellite.eciToGeodetic(fpv.position,fgmst);
+          orbitPositions.push(satellite.degreesLong(fgeo.longitude),satellite.degreesLat(fgeo.latitude),fgeo.height*1000);
+        }catch(e){}
+      }
+      // Orbit trail polyline
+      if(orbitPositions.length>6){
+        const trail=viewer.entities.add({
+          polyline:{positions:Cesium.Cartesian3.fromDegreesArrayHeights(orbitPositions),material:c.withAlpha(0.15),width:1},
+          show:vis.sats,
+        });
+        satEntities.push(trail);
+      }
+      const e=viewer.entities.add({
+        position:Cesium.Cartesian3.fromDegrees(lng,lat,alt),
+        billboard:{image:satUri,width:18,height:18,verticalOrigin:Cesium.VerticalOrigin.CENTER,horizontalOrigin:Cesium.HorizontalOrigin.CENTER,scaleByDistance:new Cesium.NearFarScalar(1e5,1,1e7,0.3)},
+        label:{text:sat.name,font:'7px Share Tech Mono',fillColor:c.withAlpha(0.5),style:Cesium.LabelStyle.FILL,pixelOffset:new Cesium.Cartesian2(8,-2),scaleByDistance:new Cesium.NearFarScalar(1e5,1,1e7,0),distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0,3e6)},
+        show:vis.sats,
+      });
+      e._satData=sat;e._satIdx=i;
+      satEntities.push(e);
+    }catch(e){}
+  });
+}
+
+// Update satellite positions every 5s
+setInterval(()=>{
+  if(!vis.sats||!satData.length)return;
+  const now=new Date();
+  const gmst=satellite.gstime(now);
+  satEntities.forEach((ent,idx)=>{
+    if(idx>=satData.length)return;
+    try{
+      const pv=satellite.propagate(satData[idx].satrec,now);
+      if(!pv.position)return;
+      const geo=satellite.eciToGeodetic(pv.position,gmst);
+      ent.position=Cesium.Cartesian3.fromDegrees(satellite.degreesLong(geo.longitude),satellite.degreesLat(geo.latitude),geo.height*1000);
+    }catch(e){}
+  });
+},5000);
+
+// Add sat click handling
+clickHandler.setInputAction(function(click){
+  const picked=viewer.scene.pick(click.position);
+  if(Cesium.defined(picked)&&picked.id&&picked.id._satData){
+    const sat=picked.id._satData;
+    const now=new Date();
+    let lat=0,lng=0,alt=0,vel=0;
+    try{
+      const pv=satellite.propagate(sat.satrec,now);
+      if(pv.position){
+        const gmst=satellite.gstime(now);
+        const geo=satellite.eciToGeodetic(pv.position,gmst);
+        lat=satellite.degreesLat(geo.latitude);lng=satellite.degreesLong(geo.longitude);alt=geo.height;
+        if(pv.velocity)vel=Math.sqrt(pv.velocity.x**2+pv.velocity.y**2+pv.velocity.z**2);
+      }
+    }catch(e){}
+    document.getElementById('infoPanel').classList.add('show');
+    document.getElementById('ipHdr').textContent='// SATELLITE';
+    document.getElementById('ipName').textContent=sat.name;
+    document.getElementById('ipRows').innerHTML=row('GROUP',sat.group)+row('LAT',lat.toFixed(2)+'°')+row('LNG',lng.toFixed(2)+'°')+row('ALT',alt.toFixed(0)+' km')+row('VELOCITY',vel.toFixed(1)+' km/s');
+    document.getElementById('ipNotes').textContent='Live position from CelesTrak TLE data via satellite.js';
+  }
+},Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+// Fetch satellites on load
+fetchSatellites();
+// Refresh TLE data every 30 min
+setInterval(fetchSatellites,1800000);
+
+</script>
+<script async src="https://scripts.simpleanalyticscdn.com/latest.js" ></script><script async src="https://scripts.simpleanalyticscdn.com/auto-events.js" data-extensions="pdf,csv,docx,xlsx,zip,doc,xls"></script></body>
+</html>
