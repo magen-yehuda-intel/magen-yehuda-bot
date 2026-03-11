@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-03-11T21:20:01Z",
+  "timestamp": "2026-03-11T21:25:01Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_ts": "2026-03-11 23:19:56 IST",
-  "last_siren_title": "חדירת כלי טיס עוין"
+  "last_siren_ts": "2026-03-11 23:22:51 IST",
+  "last_siren_title": "סיום שהייה בסמיכות למרחב המוגן"
 }
