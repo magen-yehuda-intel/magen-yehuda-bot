@@ -1,8 +1,8 @@
 {
-  "timestamp": "2026-03-18T19:25:00Z",
+  "timestamp": "2026-03-18T19:30:00Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_title": "ירי רקטות וטילים"
+  "last_siren_title": "חדירת כלי טיס עוין"
 }
