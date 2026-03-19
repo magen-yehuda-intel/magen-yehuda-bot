@@ -3311,6 +3311,18 @@ function updateSirensFromOref(alerts) {
 // Poll Oref — faster with API, slower with static
 setInterval(pollOref, API_URL ? 10000 : 30000);
 
+// Test siren mode: ?test-siren=1 injects fake alerts
+if (new URLSearchParams(location.search).get('test-siren')) {
+  const fakeAlerts = [
+    { title: 'ירי רקטות וטילים', cat: 1, data: ['תל אביב','רמת גן','גבעתיים','בני ברק','חולון'], desc: '⚠️ TEST MODE — not a real alert' },
+    { title: 'ירי רקטות וטילים', cat: 1, data: ['חיפה','קריות','עכו','נהריה'], desc: '⚠️ TEST MODE — not a real alert' },
+    { title: 'ירי רקטות וטילים', cat: 1, data: ['באר שבע','אשדוד','אשקלון','שדרות','נתיבות','אופקים'], desc: '⚠️ TEST MODE — not a real alert' },
+  ];
+  updateOrefBanner(fakeAlerts, new Date().toISOString(), '⚠️ TEST MODE');
+  updateSirensFromOref(fakeAlerts);
+  console.log('🧪 Test siren mode active — 3 fake alert groups injected');
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', e => {
   // Don't fire shortcuts when typing in inputs
