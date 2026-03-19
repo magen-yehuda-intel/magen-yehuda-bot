@@ -1967,6 +1967,10 @@ function renderAllLayers() {
   }).catch(e => console.warn('Borders load failed:', e));
 
   // ─── RECENT STRIKES from V2_DATA (with time window) ───
+  window._missileAnimActive = localStorage.getItem('missileAnim') !== 'off';
+  window._arcSvg = null;
+  window._arcPaths = [];
+  window._arcAnimId = null;
   window._strikeWindowHours = parseInt(localStorage.getItem('strikeWindow') || '24');
   const selEl = document.getElementById('strike-window');
   if (selEl) selEl.value = window._strikeWindowHours || 24;
