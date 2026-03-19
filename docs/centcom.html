@@ -2018,17 +2018,17 @@ function renderStrikeEvents() {
   renderMissileArcs();
 }
 
-  // ─── OSINT from intel-feed.json ───
+// ─── OSINT + Counts (init) ───
+(function() {
   loadOSINT();
 
-  // ─── Update counts ───
   const totalAssets = V2_DATA.US_BASES.length + V2_DATA.IRAN_NUCLEAR.length + V2_DATA.IRAN_MISSILES.length +
     V2_DATA.IRAN_NAVAL.length + V2_DATA.IRAN_AIRDEFENSE.length + V2_DATA.IRAN_AIRBASES.length +
     V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length +
     V2_DATA.GULF_ENERGY.length;
   document.getElementById('asset-count').textContent = totalAssets;
   document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
-}
+})();
 
 // ═══════════════════════════════════════════════════════════
 // LIVE DATA LOADERS
