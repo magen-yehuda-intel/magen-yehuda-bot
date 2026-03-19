@@ -19,16 +19,36 @@ ME_KEYWORDS = re.compile(
     r'roaring.lion|iron.dome|arrow|david.sling', re.I)
 
 LOC_MAP = {
+    # Specific cities/ports FIRST (before country-level fallbacks)
+    'bandar abbas': ('Bandar Abbas', 27.18, 56.27), 'bandar anzali': ('Bandar Anzali', 37.47, 49.46),
+    'chabahar': ('Chabahar', 25.29, 60.64), 'kharg island': ('Kharg Island', 29.24, 50.31),
+    'south pars': ('South Pars', 27.50, 52.20), 'assaluyeh': ('Assaluyeh', 27.47, 52.60),
+    'abadan': ('Abadan', 30.34, 48.30), 'bandar imam': ('Bandar Imam Khomeini', 30.43, 49.08),
+    'pardis': ('Pardis/South Pars', 27.52, 52.53), 'kangan': ('Kangan', 27.84, 52.06),
+    'lavan': ('Lavan Island', 26.80, 53.36), 'sirri': ('Sirri Island', 25.91, 54.54),
+    'qeshm': ('Qeshm Island', 26.95, 56.27), 'hormuz': ('Strait of Hormuz', 26.60, 56.30),
     'tehran': ('Tehran', 35.69, 51.39), 'isfahan': ('Isfahan', 32.65, 51.68),
     'bushehr': ('Bushehr', 28.97, 50.84), 'natanz': ('Natanz', 33.51, 51.92),
     'qom': ('Qom', 34.64, 50.88), 'shiraz': ('Shiraz', 29.59, 52.58),
     'tabriz': ('Tabriz', 38.08, 46.29), 'mashhad': ('Mashhad', 36.31, 59.60),
+    'ahvaz': ('Ahvaz', 31.32, 48.67), 'dezful': ('Dezful', 32.38, 48.40),
+    'kermanshah': ('Kermanshah', 34.31, 47.06), 'arak': ('Arak', 34.09, 49.69),
+    'parchin': ('Parchin', 35.52, 51.77), 'fordow': ('Fordow', 34.88, 51.58),
+    'kerman': ('Kerman', 30.28, 57.08), 'bandar lengeh': ('Bandar Lengeh', 26.56, 54.88),
+    'jask': ('Jask', 25.64, 57.77), 'konarak': ('Konarak', 25.35, 60.38),
     'haifa': ('Haifa', 32.79, 34.99), 'tel aviv': ('Tel Aviv', 32.07, 34.77),
     'gaza': ('Gaza', 31.50, 34.47), 'beirut': ('Beirut', 33.89, 35.50),
     'erbil': ('Erbil', 36.19, 44.01), 'damascus': ('Damascus', 33.51, 36.29),
     'sanaa': ("Sana'a", 15.37, 44.19), 'jerusalem': ('Jerusalem', 31.77, 35.23),
+    'ras tanura': ('Ras Tanura', 26.64, 50.05), 'dhahran': ('Dhahran', 26.27, 50.21),
+    'fujairah': ('Fujairah', 25.13, 56.33), 'jebel ali': ('Jebel Ali', 25.00, 55.03),
+    'ras laffan': ('Ras Laffan', 25.91, 51.53), 'doha': ('Doha', 25.29, 51.53),
+    'caspian': ('Caspian Sea/Iran', 37.50, 49.90), 'gilan': ('Gilan', 37.28, 49.60),
+    # Country-level fallbacks LAST
     'iran': ('Iran', 32.43, 53.69), 'israel': ('Israel', 31.77, 35.23),
     'lebanon': ('Lebanon', 33.85, 35.86), 'yemen': ('Yemen', 15.55, 48.52),
+    'iraq': ('Iraq', 33.22, 43.68), 'syria': ('Syria', 34.80, 38.99),
+    'saudi': ('Saudi Arabia', 24.71, 46.68),
 }
 
 def detect_side(text):
