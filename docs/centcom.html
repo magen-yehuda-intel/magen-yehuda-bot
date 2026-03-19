@@ -984,6 +984,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-section-title overlay">OVERLAYS</div>
     <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
     <div class="sb-row" onclick="toggleLayer('strikes')"><div class="sb-dot" style="background:#ff2222"></div><span class="sb-row-name">💥 Recent Strikes</span><span class="sb-row-count" id="cnt-strikes">0</span></div>
+    <div class="sb-row" style="padding-left:28px;gap:8px">
+      <span class="sb-row-name" style="font-size:10px;color:rgba(255,255,255,0.5)">Time Window</span>
+      <select id="strike-window-sidebar" onchange="window._strikeWindowHours=parseInt(this.value)||0;localStorage.setItem('strikeWindow',window._strikeWindowHours);var d=document.getElementById('strike-window');if(d)d.value=this.value;var m=document.getElementById('strike-window-mobile');if(m)m.value=this.value;renderStrikeEvents();renderMissileArcs()" style="height:22px;font-family:var(--font-data);font-size:10px;background:rgba(10,15,30,0.9);color:var(--text-dim);border:1px solid var(--panel-border);border-radius:3px;cursor:pointer;padding:0 4px;-webkit-appearance:none;appearance:none;">
+        <option value="24">24h</option><option value="48">48h</option><option value="168">7d</option><option value="0">All</option>
+      </select>
+    </div>
+    <div class="sb-row" onclick="toggleMissileAnims()"><div class="sb-dot" style="background:#ef4444" id="anim-dot-sidebar"></div><span class="sb-row-name">🚀 Missile Animations</span></div>
     <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (6h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
@@ -1976,6 +1983,8 @@ function renderAllLayers() {
   if (selEl) selEl.value = window._strikeWindowHours || 24;
   const selMob = document.getElementById('strike-window-mobile');
   if (selMob) selMob.value = window._strikeWindowHours || 24;
+  const selSb = document.getElementById('strike-window-sidebar');
+  if (selSb) selSb.value = window._strikeWindowHours || 24;
   renderStrikeEvents();
 }
 
@@ -3335,6 +3344,11 @@ function applyStrikeWindow() {
   const sel = document.getElementById('strike-window');
   window._strikeWindowHours = parseInt(sel.value) || 0;
   localStorage.setItem('strikeWindow', window._strikeWindowHours);
+  // Sync all dropdowns
+  ['strike-window-mobile','strike-window-sidebar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = window._strikeWindowHours || 24;
+  });
   renderStrikeEvents();
 }
 
@@ -3349,6 +3363,8 @@ function toggleMissileAnims() {
   localStorage.setItem('missileAnim', window._missileAnimActive ? 'on' : 'off');
   const btn = document.querySelector('.tb-btn[data-layer="animations"]');
   if (btn) btn.classList.toggle('active', window._missileAnimActive);
+  const sbDot = document.getElementById('anim-dot-sidebar');
+  if (sbDot) sbDot.style.opacity = window._missileAnimActive ? '1' : '0.3';
   renderMissileArcs();
 }
 
