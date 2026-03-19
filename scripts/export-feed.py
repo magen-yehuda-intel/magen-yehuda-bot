@@ -190,9 +190,66 @@ def main():
     finally:
         signal.alarm(0)  # cancel alarm
 
+    # Export siren history from dispatch-log.jsonl
+    try:
+        dispatch_log = os.path.join(STATE_DIR, 'dispatch-log.jsonl')
+        siren_history = []
+        if os.path.exists(dispatch_log):
+            with open(dispatch_log, 'rb') as f:
+                # Read last 64KB for recent events
+                f.seek(0, 2)
+                size = f.tell()
+                f.seek(max(0, size - 65536))
+                tail = f.read().decode('utf-8', errors='replace')
+            for line in tail.strip().split('\n'):
+                if not line.strip():
+                    continue
+                try:
+                    entry = json.loads(line)
+                    if entry.get('type') in ('siren', 'siren_clear', 'siren_standdown'):
+                        siren_history.append({
+                            'ts': entry.get('ts'),
+                            'utc': entry.get('utc'),
+                            'type': entry.get('type'),
+                            'severity': entry.get('severity', ''),
+                        })
+                except:
+                    pass
+        # Keep last 20 siren events, newest first
+        siren_history.sort(key=lambda x: x.get('ts', 0), reverse=True)
+        siren_history = siren_history[:20]
+        # Also pull area info from oref-alert-tmp.json if available
+        oref_tmp = os.path.join(STATE_DIR, 'oref-alert-tmp.json')
+        last_areas = []
+        last_title = ''
+        if os.path.exists(oref_tmp):
+            try:
+                with open(oref_tmp) as f:
+                    tmp = json.load(f)
+                if isinstance(tmp, list) and tmp:
+                    last_title = tmp[0].get('title', '')
+                    last_areas = [a.get('data', a.get('area', '')) for a in tmp if isinstance(a, dict)]
+                elif isinstance(tmp, dict):
+                    last_title = tmp.get('title', '')
+                    last_areas = tmp.get('data', tmp.get('areas', []))
+            except:
+                pass
+        history_out = os.path.join(DOCS_DIR, 'oref-history.json')
+        with open(history_out, 'w') as f:
+            json.dump({
+                'alerts': siren_history,
+                'last_title': last_title,
+                'last_areas': last_areas[:10] if isinstance(last_areas, list) else [],
+                'exported': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'count': len(siren_history)
+            }, f, ensure_ascii=False, indent=2)
+        print(f"Siren history: {len(siren_history)} events exported")
+    except Exception as ex:
+        print(f"Siren history export error: {ex}")
+
     # Git commit + push
     try:
-        subprocess.run(['git', 'add', 'docs/intel-feed.json', 'docs/oref-alerts.json'], cwd=SKILL_DIR, check=True,
+        subprocess.run(['git', 'add', 'docs/intel-feed.json', 'docs/oref-alerts.json', 'docs/oref-history.json'], cwd=SKILL_DIR, check=True,
                        capture_output=True, timeout=10)
         subprocess.run(['git', 'commit', '-m', f'feed: {len(events)} events ({datetime.now(timezone.utc).strftime("%H:%M UTC")})'],
                        cwd=SKILL_DIR, check=True, capture_output=True, timeout=10)
