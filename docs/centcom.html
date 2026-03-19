@@ -3312,7 +3312,8 @@ function updateSirensFromOref(alerts) {
 setInterval(pollOref, API_URL ? 10000 : 30000);
 
 // Test siren mode: ?test-siren=1 injects fake alerts
-if (new URLSearchParams(location.search).get('test-siren')) {
+const _testSirenMode = !!new URLSearchParams(location.search).get('test-siren');
+if (_testSirenMode) {
   const fakeAlerts = [
     { title: 'ירי רקטות וטילים', cat: 1, data: ['תל אביב','רמת גן','גבעתיים','בני ברק','חולון'], desc: '⚠️ TEST MODE — not a real alert' },
     { title: 'ירי רקטות וטילים', cat: 1, data: ['חיפה','קריות','עכו','נהריה'], desc: '⚠️ TEST MODE — not a real alert' },
@@ -3320,7 +3321,15 @@ if (new URLSearchParams(location.search).get('test-siren')) {
   ];
   updateOrefBanner(fakeAlerts, new Date().toISOString(), '⚠️ TEST MODE');
   updateSirensFromOref(fakeAlerts);
-  console.log('🧪 Test siren mode active — 3 fake alert groups injected');
+  // Override pollOref to keep injecting fake alerts
+  const _origPollOref = pollOref;
+  pollOref = function() {
+    _origPollOref();
+    setTimeout(() => { updateSirensFromOref(fakeAlerts); }, 500);
+  };
+  // Zoom to Israel
+  map.setView([31.5, 34.8], 8);
+  console.log('🧪 Test siren mode active — fake alerts persist across polls');
 }
 
 // Keyboard shortcuts
