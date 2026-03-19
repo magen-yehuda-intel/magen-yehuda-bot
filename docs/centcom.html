@@ -298,7 +298,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 .sb-title { font-family:var(--font-title); font-size:13px; font-weight:700; letter-spacing:1px; }
 .sb-subtitle { font-family:var(--font-data); font-size:9px; color:var(--text-dim); letter-spacing:1px; }
-.sb-close { position:absolute; top:12px; right:12px; background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:18px; }
+.sb-close { position:absolute; top:12px; right:12px; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; cursor:pointer; font-size:18px; width:32px; height:32px; border-radius:6px; display:flex; align-items:center; justify-content:center; }
+.sb-close:hover { background:rgba(239,68,68,0.3); }
 .sb-tabs {
   display:flex; border-bottom:1px solid rgba(255,255,255,0.04);
 }
@@ -330,7 +331,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   cursor:pointer; border-left:2px solid transparent; transition:all 0.15s;
 }
 .sb-row:hover { background:rgba(255,255,255,0.02); border-left-color:rgba(255,255,255,0.08); }
-.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; transition: opacity 0.2s; }
+.sb-row.layer-off .sb-dot { opacity:0.2; }
+.sb-row.layer-off .sb-row-name { opacity:0.4; text-decoration:line-through; }
+.sb-row.layer-off .sb-row-count { opacity:0.3; }
 .sb-row-name { flex:1; font-size:12px; }
 .sb-row-count { font-family:var(--font-data); font-size:11px; color:var(--text-dim); }
 .sb-actions {
@@ -1245,6 +1249,7 @@ function toggleLayer(name) {
   if (btn) btn.classList.toggle('active', activeState[name]);
   updateMobileButtons();
   updateLayerCount();
+  updateSidebarRows();
   if (name === 'aircraft' && activeState.aircraft) { if (aircraftMode === 0) aircraftMode = 1; loadAircraft(); }
   if (name === 'aircraft' && !activeState.aircraft) aircraftMode = 0;
   if (name === 'osint' && activeState.osint) loadOSINT();
@@ -1260,6 +1265,20 @@ function isolateIranLayer(name) {
   activeState[name] = !activeState[name];
   if (activeState[name]) layers[name].addTo(map); else map.removeLayer(layers[name]);
   updateLayerCount();
+  updateSidebarRows();
+}
+
+function updateSidebarRows() {
+  document.querySelectorAll('#tab-layers .sb-row[onclick]').forEach(row => {
+    const onclick = row.getAttribute('onclick') || '';
+    const m = onclick.match(/toggleLayer\('(\w+)'\)|isolateIranLayer\('(\w+)'\)|mobileQuickToggle\('(\w+)'\)/);
+    if (m) {
+      const layerName = m[1] || m[2] || m[3];
+      if (layerName in activeState) {
+        row.classList.toggle('layer-off', !activeState[layerName]);
+      }
+    }
+  });
 }
 
 function toggleSidebar() {
@@ -1314,13 +1333,9 @@ function updateAllButtons() {
     const name = btn.dataset.layer;
     if (name && activeState[name] !== undefined) btn.classList.toggle('active', activeState[name]);
   });
-  document.querySelectorAll('.sb-row').forEach(row => {
-    // Update sidebar dot active states
-    const dot = row.querySelector('.sb-dot');
-    if (dot) dot.style.opacity = '1';
-  });
   updateLayerCount();
   updateMobileButtons();
+  updateSidebarRows();
 }
 
 function toggleLegend() {
