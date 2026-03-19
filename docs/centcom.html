@@ -3491,8 +3491,12 @@ function startArcAnimation() {
 
       // Rocket position along path
       const pt = pathEl.getPointAtLength(len * t);
+      // Tangent angle: sample point slightly ahead for direction
+      const pt2 = pathEl.getPointAtLength(Math.min(len, len * t + 3));
+      const angle = Math.atan2(pt2.y - pt.y, pt2.x - pt.x) * (180 / Math.PI);
       ad.rocket.setAttribute('x', pt.x);
       ad.rocket.setAttribute('y', pt.y);
+      ad.rocket.setAttribute('transform', `rotate(${angle}, ${pt.x}, ${pt.y})`);
 
       // Show/hide ripples near end
       const showRipple = t > 0.92;
