@@ -147,6 +147,53 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .neon-glow { animation:neon-pulse 3s ease-in-out infinite; }
 .neon-line { stroke-linecap:round; stroke-linejoin:round; }
 
+.tb-btn[data-layer="animations"].active { box-shadow:0 0 12px rgba(239,68,68,0.5); border-color:rgba(239,68,68,0.5); }
+
+/* SVG Missile Arcs */
+.missile-arc-path {
+  stroke-width: 2px;
+  opacity: 0.7;
+  fill: none;
+}
+.missile-arc-path.static {
+  stroke-dasharray: 4, 6;
+}
+.missile-rocket {
+  font-size: 18px;
+  text-shadow: 0 0 5px rgba(255,200,200,0.7);
+  pointer-events: none;
+  position: absolute;
+  will-change: transform;
+}
+.origin-pulse {
+  stroke: none;
+  fill: rgba(239, 68, 68, 0.7);
+  animation: ping 1.5s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.impact-ripple {
+  fill: none;
+  stroke: rgba(239, 68, 68, 0.8);
+  stroke-width: 2px;
+  animation: ripple 1s ease-out forwards;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.impact-ripple:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+@keyframes ping {
+  0% { transform: scale(0.3); opacity: 0.8; }
+  80% { transform: scale(1.2); opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes ripple {
+  from { transform: scale(0.1); opacity: 1; }
+  to { transform: scale(1); opacity: 0; }
+}
+
 /* ═══ ANIMATIONS ═══ */
 @keyframes pulse-threat {
   0%, 100% { box-shadow: 0 0 8px rgba(245,158,11,0.4); }
@@ -781,6 +828,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="mt-btn active-red" data-mt="sirens" onclick="mtToggle('sirens',this)">🚨</div>
   <div class="mt-btn active-orange" data-mt="fires" onclick="mtToggle('fires',this)">🔥</div>
   <div class="mt-btn active-red" data-mt="osint" onclick="mtToggle('osint',this)">📌</div>
+  <div class="mt-btn active-red" data-mt="animations" onclick="toggleMissileAnims();this.classList.toggle('active-red')">🚀</div>
+  <select id="strike-window-mobile" onchange="window._strikeWindowHours=parseInt(this.value)||0;localStorage.setItem('strikeWindow',window._strikeWindowHours);document.getElementById('strike-window').value=this.value;renderStrikeEvents();renderMissileArcs()" style="
+    height:28px;font-family:var(--font-data);font-size:10px;
+    background:rgba(10,15,30,0.9);color:var(--text-dim);border:1px solid var(--panel-border);
+    border-radius:4px;cursor:pointer;padding:0 4px;margin:0 2px;
+    -webkit-appearance:none;appearance:none;
+  ">
+    <option value="24">24h</option>
+    <option value="48">48h</option>
+    <option value="168">7d</option>
+    <option value="0">All</option>
+  </select>
   <div class="mt-sep"></div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
   <div class="mt-btn" onclick="setBasemap(currentBasemap==='carto'?'viirs':'carto')">🌗</div>
@@ -869,6 +928,23 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   </div>
   <div class="tb-btn active" data-layer="correlations" data-color="red" onclick="toggleLayer('correlations')">
     <span>⚡</span><div class="tb-tooltip">Strike Correlations (Fire+Quake)</div>
+  </div>
+  <div class="tb-btn active" data-layer="animations" data-color="red" onclick="toggleMissileAnims()">
+    <span>🚀</span><div class="tb-tooltip">🚀 Missile Animations</div>
+  </div>
+  <!-- Time window dropdown -->
+  <div style="position:relative;width:38px;display:flex;justify-content:center;margin:2px 0">
+    <select id="strike-window" onchange="applyStrikeWindow()" style="
+      width:36px;height:22px;font-family:var(--font-data);font-size:9px;
+      background:var(--panel-bg);color:var(--text-dim);border:1px solid var(--panel-border);
+      border-radius:4px;text-align:center;cursor:pointer;padding:0 2px;
+      -webkit-appearance:none;appearance:none;
+    ">
+      <option value="24">24h</option>
+      <option value="48">48h</option>
+      <option value="168">7d</option>
+      <option value="0">All</option>
+    </select>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
   <div class="tb-btn" data-layer="legend" data-color="purple" onclick="toggleLegend()">
@@ -1890,39 +1966,57 @@ function renderAllLayers() {
     }).addTo(layers.borders);
   }).catch(e => console.warn('Borders load failed:', e));
 
-  // ─── RECENT STRIKES from V2_DATA ───
-  if (V2_DATA.RECENT_EVENTS) {
-    const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
-    const typeIcons = { strike: '💥', missile: '🚀', naval: '⚓', energy: '⚡', political: '📢' };
-    let strikeCount = 0;
-    V2_DATA.RECENT_EVENTS.forEach(ev => {
-      const color = severityColors[ev.severity] || '#ff4444';
-      const icon = typeIcons[ev.type] || '💥';
-      const pulseClass = ev.severity === 'critical' ? 'strike-pulse-critical' : 'strike-pulse';
-      const size = ev.severity === 'critical' ? 24 : 18;
-      const marker = L.marker([ev.lat, ev.lon], {
-        icon: L.divIcon({
-          className: '',
-          html: `<div class="${pulseClass}" style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${size-4}px;filter:drop-shadow(0 0 6px ${color})">${icon}</div>`,
-          iconSize: [size, size],
-          iconAnchor: [size/2, size/2],
-        }),
-        zIndexOffset: ev.severity === 'critical' ? 2000 : 1000,
-      });
-      const popupHtml = `
-        <div style="font-family:var(--font-body);min-width:220px;max-width:320px">
-          <div style="font-family:var(--font-title);font-size:11px;color:${color};letter-spacing:1px;margin-bottom:4px">${ev.date} · ${ev.actor}</div>
-          <div style="font-weight:700;font-size:14px;margin-bottom:4px">${ev.target}</div>
-          <div style="font-size:12px;opacity:0.8">${ev.desc}</div>
-          <div style="margin-top:6px;font-size:10px;text-transform:uppercase;color:${color};font-weight:700">${ev.severity} · ${ev.type}</div>
-        </div>`;
-      marker.bindPopup(popupHtml, { className: 'strike-popup' });
-      marker.addTo(layers.strikes);
-      strikeCount++;
+  // ─── RECENT STRIKES from V2_DATA (with time window) ───
+  window._strikeWindowHours = parseInt(localStorage.getItem('strikeWindow') || '24');
+  const selEl = document.getElementById('strike-window');
+  if (selEl) selEl.value = window._strikeWindowHours || 24;
+  const selMob = document.getElementById('strike-window-mobile');
+  if (selMob) selMob.value = window._strikeWindowHours || 24;
+  renderStrikeEvents();
+}
+
+function renderStrikeEvents() {
+  if (!V2_DATA.RECENT_EVENTS) return;
+  layers.strikes.clearLayers();
+  const hours = window._strikeWindowHours || 0;
+  const now = Date.now();
+  const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
+  const typeIcons = { strike: '💥', missile: '🚀', naval: '⚓', energy: '⚡', political: '📢' };
+  let strikeCount = 0;
+  V2_DATA.RECENT_EVENTS.forEach(ev => {
+    if (hours > 0) {
+      const evTime = new Date(ev.date).getTime();
+      if (now - evTime > hours * 60 * 60 * 1000) return;
+    }
+    const color = severityColors[ev.severity] || '#ff4444';
+    const icon = typeIcons[ev.type] || '💥';
+    const pulseClass = ev.severity === 'critical' ? 'strike-pulse-critical' : 'strike-pulse';
+    const size = ev.severity === 'critical' ? 24 : 18;
+    const marker = L.marker([ev.lat, ev.lon], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div class="${pulseClass}" style="position:relative;width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;font-size:${size-4}px;filter:drop-shadow(0 0 6px ${color})">${icon}</div>`,
+        iconSize: [size, size],
+        iconAnchor: [size/2, size/2],
+      }),
+      zIndexOffset: ev.severity === 'critical' ? 2000 : 1000,
     });
-    const cntEl = document.getElementById('cnt-strikes');
-    if (cntEl) cntEl.textContent = strikeCount;
-  }
+    const popupHtml = `
+      <div style="font-family:var(--font-body);min-width:220px;max-width:320px">
+        <div style="font-family:var(--font-title);font-size:11px;color:${color};letter-spacing:1px;margin-bottom:4px">${ev.date} · ${ev.actor}</div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:4px">${ev.target}</div>
+        <div style="font-size:12px;opacity:0.8">${ev.desc}</div>
+        <div style="margin-top:6px;font-size:10px;text-transform:uppercase;color:${color};font-weight:700">${ev.severity} · ${ev.type}</div>
+      </div>`;
+    marker.bindPopup(popupHtml, { className: 'strike-popup' });
+    marker.addTo(layers.strikes);
+    strikeCount++;
+  });
+  const cntEl = document.getElementById('cnt-strikes');
+  if (cntEl) cntEl.textContent = strikeCount;
+  // Re-render arcs
+  renderMissileArcs();
+}
 
   // ─── OSINT from intel-feed.json ───
   loadOSINT();
@@ -3229,6 +3323,188 @@ function showInstallBanner() {
     </div>`;
   document.body.appendChild(banner);
 }
+
+// ═══════════════════════════════════════════════════════════
+// STRIKE WINDOW & MISSILE ARC SYSTEM
+// ═══════════════════════════════════════════════════════════
+function applyStrikeWindow() {
+  const sel = document.getElementById('strike-window');
+  window._strikeWindowHours = parseInt(sel.value) || 0;
+  localStorage.setItem('strikeWindow', window._strikeWindowHours);
+  renderStrikeEvents();
+}
+
+// Missile animation state
+window._missileAnimActive = localStorage.getItem('missileAnim') !== 'off';
+window._arcSvg = null;
+window._arcPaths = [];
+window._arcAnimId = null;
+
+function toggleMissileAnims() {
+  window._missileAnimActive = !window._missileAnimActive;
+  localStorage.setItem('missileAnim', window._missileAnimActive ? 'on' : 'off');
+  const btn = document.querySelector('.tb-btn[data-layer="animations"]');
+  if (btn) btn.classList.toggle('active', window._missileAnimActive);
+  renderMissileArcs();
+}
+
+function getMissileEvents() {
+  if (!V2_DATA.RECENT_EVENTS) return [];
+  const hours = window._strikeWindowHours || 0;
+  const now = Date.now();
+  return V2_DATA.RECENT_EVENTS.filter(ev => {
+    if (!ev.origin_lat || !ev.origin_lon) return false;
+    if (ev.type !== 'missile') return false;
+    if (hours > 0 && now - new Date(ev.date).getTime() > hours * 3600000) return false;
+    return true;
+  });
+}
+
+function renderMissileArcs() {
+  // Clean up old
+  if (window._arcAnimId) { cancelAnimationFrame(window._arcAnimId); window._arcAnimId = null; }
+  if (window._arcSvg) { window._arcSvg.remove(); window._arcSvg = null; }
+  window._arcPaths = [];
+
+  const events = getMissileEvents();
+  if (events.length === 0) return;
+
+  // Create SVG overlay
+  const container = document.getElementById('map');
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:450;pointer-events:none;';
+  container.appendChild(svg);
+  window._arcSvg = svg;
+
+  // Build arc data
+  events.forEach((ev, i) => {
+    const arcData = { ev, index: i };
+    // Origin pulse
+    const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    pulse.setAttribute('r', '6');
+    pulse.setAttribute('class', 'origin-pulse');
+    svg.appendChild(pulse);
+    arcData.pulse = pulse;
+
+    // Path
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke', '#ef4444');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-width', '2');
+    svg.appendChild(path);
+    arcData.path = path;
+
+    // Impact ripples
+    const r1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    r1.setAttribute('r', '8'); r1.setAttribute('class', 'impact-ripple');
+    const r2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    r2.setAttribute('r', '8'); r2.setAttribute('class', 'impact-ripple'); r2.style.animationDelay = '0.2s';
+    svg.appendChild(r1); svg.appendChild(r2);
+    arcData.ripple1 = r1; arcData.ripple2 = r2;
+
+    // Rocket emoji
+    const rocket = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    rocket.textContent = '🚀';
+    rocket.setAttribute('font-size', '16');
+    rocket.setAttribute('text-anchor', 'middle');
+    rocket.setAttribute('dominant-baseline', 'central');
+    rocket.style.pointerEvents = 'none';
+    svg.appendChild(rocket);
+    arcData.rocket = rocket;
+
+    window._arcPaths.push(arcData);
+  });
+
+  updateArcPositions();
+  if (window._missileAnimActive) startArcAnimation();
+  else setStaticArcs();
+
+  // Rebind map events
+  map.off('move', updateArcPositions);
+  map.off('zoom', updateArcPositions);
+  map.off('resize', updateArcPositions);
+  map.on('move', updateArcPositions);
+  map.on('zoom', updateArcPositions);
+  map.on('resize', updateArcPositions);
+}
+
+function updateArcPositions() {
+  if (!window._arcSvg) return;
+  window._arcPaths.forEach(ad => {
+    const ev = ad.ev;
+    const orig = map.latLngToContainerPoint([ev.origin_lat, ev.origin_lon]);
+    const tgt = map.latLngToContainerPoint([ev.lat, ev.lon]);
+    // Bezier control point: midpoint raised
+    const mx = (orig.x + tgt.x) / 2;
+    const my = (orig.y + tgt.y) / 2 - Math.abs(tgt.x - orig.x) * 0.35;
+    const d = `M${orig.x},${orig.y} Q${mx},${my} ${tgt.x},${tgt.y}`;
+    ad.path.setAttribute('d', d);
+    ad.pulse.setAttribute('cx', orig.x);
+    ad.pulse.setAttribute('cy', orig.y);
+    ad.ripple1.setAttribute('cx', tgt.x);
+    ad.ripple1.setAttribute('cy', tgt.y);
+    ad.ripple2.setAttribute('cx', tgt.x);
+    ad.ripple2.setAttribute('cy', tgt.y);
+    // Cache for animation
+    ad._orig = orig; ad._tgt = tgt; ad._mx = mx; ad._my = my;
+  });
+}
+
+function setStaticArcs() {
+  window._arcPaths.forEach(ad => {
+    ad.path.setAttribute('stroke-dasharray', '4,6');
+    ad.path.setAttribute('opacity', '0.6');
+    ad.rocket.style.display = 'none';
+    ad.pulse.style.display = 'none';
+    ad.ripple1.style.display = 'none';
+    ad.ripple2.style.display = 'none';
+  });
+}
+
+function startArcAnimation() {
+  const CYCLE = 8000; // 8s per loop
+  window._arcPaths.forEach(ad => {
+    ad.path.removeAttribute('stroke-dasharray');
+    ad.path.setAttribute('opacity', '0.8');
+    ad.rocket.style.display = '';
+    ad.pulse.style.display = '';
+    ad.ripple1.style.display = '';
+    ad.ripple2.style.display = '';
+  });
+
+  const startTime = performance.now();
+  function tick(now) {
+    window._arcPaths.forEach((ad, i) => {
+      const pathEl = ad.path;
+      const len = pathEl.getTotalLength();
+      if (!len) return;
+      const elapsed = (now - startTime + i * 2000) % CYCLE;
+      const t = elapsed / CYCLE; // 0→1
+
+      // Progressive trail: dashoffset
+      pathEl.setAttribute('stroke-dasharray', `${len}`);
+      pathEl.setAttribute('stroke-dashoffset', `${len * (1 - t)}`);
+
+      // Rocket position along path
+      const pt = pathEl.getPointAtLength(len * t);
+      ad.rocket.setAttribute('x', pt.x);
+      ad.rocket.setAttribute('y', pt.y);
+
+      // Show/hide ripples near end
+      const showRipple = t > 0.92;
+      ad.ripple1.style.display = showRipple ? '' : 'none';
+      ad.ripple2.style.display = showRipple ? '' : 'none';
+    });
+    window._arcAnimId = requestAnimationFrame(tick);
+  }
+  window._arcAnimId = requestAnimationFrame(tick);
+}
+
+// Init animation toggle button state
+(function() {
+  const btn = document.querySelector('.tb-btn[data-layer="animations"]');
+  if (btn) btn.classList.toggle('active', window._missileAnimActive);
+})();
 
 function pwaInstall() {
   if (!_deferredInstall) return;

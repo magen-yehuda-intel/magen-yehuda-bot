@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CENTCOM Dashboard Feature Tests</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'JetBrains Mono', 'SF Mono', monospace; background:#0a0a14; color:#e2e8f0; padding:24px; }
+  h1 { font-size:18px; color:#3b82f6; margin-bottom:16px; letter-spacing:1px; }
+  h2 { font-size:14px; color:#06b6d4; margin:20px 0 8px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px; }
+  .test { padding:6px 12px; margin:4px 0; border-radius:4px; font-size:12px; display:flex; align-items:center; gap:8px; }
+  .pass { background:rgba(34,197,94,0.12); border-left:3px solid #22c55e; }
+  .fail { background:rgba(239,68,68,0.12); border-left:3px solid #ef4444; }
+  .skip { background:rgba(245,158,11,0.12); border-left:3px solid #f59e0b; }
+  .icon { font-size:14px; }
+  .summary { margin-top:24px; padding:12px; border:1px solid rgba(255,255,255,0.1); border-radius:6px; font-size:13px; }
+  .summary span { font-weight:700; }
+  .mobile-frame { width:375px; height:667px; border:2px solid rgba(255,255,255,0.15); border-radius:12px; margin:16px 0; overflow:hidden; position:relative; }
+  .mobile-frame iframe { width:100%; height:100%; border:none; }
+  .mobile-label { font-size:10px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+  #mobile-test-area { display:flex; gap:16px; flex-wrap:wrap; }
+  button { background:rgba(59,130,246,0.2); color:#60a5fa; border:1px solid rgba(59,130,246,0.4); padding:6px 14px; border-radius:4px; cursor:pointer; font-family:inherit; font-size:11px; }
+  button:hover { background:rgba(59,130,246,0.3); }
+</style>
+</head>
+<body>
+<h1>🧪 CENTCOM Dashboard — Feature Tests</h1>
+<p style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:16px">Tests for: 24h strike filter, missile arcs, rocket animations, mobile responsiveness</p>
+
+<button onclick="runTests()">▶ Run All Tests</button>
+<button onclick="openMobilePreview()">📱 Open Mobile Preview</button>
+
+<div id="results"></div>
+
+<h2>📱 Mobile Viewport Simulation</h2>
+<div id="mobile-test-area">
+  <div>
+    <div class="mobile-label">iPhone SE (375×667)</div>
+    <div class="mobile-frame" id="frame-se"></div>
+  </div>
+  <div>
+    <div class="mobile-label">iPhone 14 Pro (393×852)</div>
+    <div class="mobile-frame" id="frame-14" style="width:393px;height:852px"></div>
+  </div>
+</div>
+
+<script>
+const CENTCOM_PATH = '../docs/centcom.html';
+const V2DATA_PATH = '../docs/v2-data.js';
+
+let results = { pass:0, fail:0, skip:0, tests:[] };
+
+function log(name, status, detail='') {
+  results[status]++;
+  results.tests.push({ name, status, detail });
+}
+
+function assert(condition, name, detail='') {
+  if (condition) log(name, 'pass', detail);
+  else log(name, 'fail', detail);
+}
+
+async function runTests() {
+  results = { pass:0, fail:0, skip:0, tests:[] };
+
+  // ── Load source files ──
+  let centcomSrc = '', v2dataSrc = '';
+  try {
+    centcomSrc = await fetch(CENTCOM_PATH).then(r => r.text());
+    v2dataSrc = await fetch(V2DATA_PATH).then(r => r.text());
+  } catch(e) {
+    log('File loading', 'fail', 'Could not load centcom.html or v2-data.js: ' + e.message);
+    renderResults();
+    return;
+  }
+
+  // ═══ v2-data.js Tests ═══
+  testV2Data(v2dataSrc);
+
+  // ═══ centcom.html Tests ═══
+  testCentcomHTML(centcomSrc);
+
+  // ═══ Mobile Tests ═══
+  testMobileSupport(centcomSrc);
+
+  // ═══ Animation System Tests ═══
+  testAnimationSystem(centcomSrc);
+
+  // ═══ Zoom/Pan Stability Tests ═══
+  testZoomPanStability(centcomSrc);
+
+  // ═══ Functional Simulation ═══
+  await testFunctionalSimulation();
+
+  renderResults();
+}
+
+// ── v2-data.js ──
+function testV2Data(src) {
+  // Check missile events have origin coords
+  const missileLines = src.split('\n').filter(l => l.includes('type: "missile"'));
+  assert(missileLines.length >= 6, 'v2-data: Has 6+ missile events', `Found ${missileLines.length}`);
+
+  const withOrigin = missileLines.filter(l => l.includes('origin_lat') && l.includes('origin_lon'));
+  assert(withOrigin.length === missileLines.length, 'v2-data: ALL missile events have origin_lat/origin_lon', `${withOrigin.length}/${missileLines.length}`);
+
+  // Check Iran origins are ~33.5, 48.5
+  const iranLines = missileLines.filter(l => l.includes('Iran'));
+  const iranWithCorrectOrigin = iranLines.filter(l => l.includes('origin_lat: 33.5') && l.includes('origin_lon: 48.5'));
+  assert(iranWithCorrectOrigin.length === iranLines.length, 'v2-data: Iran launches use origin ~33.5, 48.5', `${iranWithCorrectOrigin.length}/${iranLines.length}`);
+
+  // Check Hezbollah origins
+  const hezLines = missileLines.filter(l => l.includes('Hezbollah'));
+  const hezCorrect = hezLines.filter(l => l.includes('origin_lat: 33.85') && l.includes('origin_lon: 35.86'));
+  assert(hezCorrect.length === hezLines.length, 'v2-data: Hezbollah launches use origin ~33.85, 35.86', `${hezCorrect.length}/${hezLines.length}`);
+}
+
+// ── HTML Structure ──
+function testCentcomHTML(src) {
+  // Time filter dropdown (desktop)
+  assert(src.includes('id="strike-window"'), 'HTML: Desktop time filter dropdown exists');
+  assert(src.includes('<option value="24">24h</option>'), 'HTML: 24h option present');
+  assert(src.includes('<option value="48">48h</option>'), 'HTML: 48h option present');
+  assert(src.includes('<option value="168">7d</option>'), 'HTML: 7d option present');
+  assert(src.includes('<option value="0">All</option>'), 'HTML: All option present');
+
+  // Rocket toggle button (desktop)
+  assert(src.includes('data-layer="animations"'), 'HTML: Desktop 🚀 toggle button exists');
+  assert(src.includes('toggleMissileAnims'), 'HTML: toggleMissileAnims function referenced');
+
+  // localStorage persistence
+  assert(src.includes("localStorage.getItem('strikeWindow')"), 'JS: Strike window reads from localStorage');
+  assert(src.includes("localStorage.setItem('strikeWindow'"), 'JS: Strike window saves to localStorage');
+  assert(src.includes("localStorage.getItem('missileAnim')"), 'JS: Animation toggle reads from localStorage');
+  assert(src.includes("localStorage.setItem('missileAnim'"), 'JS: Animation toggle saves to localStorage');
+
+  // renderStrikeEvents filters by time
+  assert(src.includes('_strikeWindowHours') && src.includes('now - evTime > hours'), 'JS: renderStrikeEvents filters by time window');
+
+  // renderMissileArcs function
+  assert(src.includes('function renderMissileArcs'), 'JS: renderMissileArcs function defined');
+  assert(src.includes('function getMissileEvents'), 'JS: getMissileEvents function defined');
+  assert(src.includes('function updateArcPositions'), 'JS: updateArcPositions function defined');
+  assert(src.includes('function startArcAnimation'), 'JS: startArcAnimation function defined');
+  assert(src.includes('function setStaticArcs'), 'JS: setStaticArcs function defined');
+}
+
+// ── Mobile ──
+function testMobileSupport(src) {
+  // Mobile toolbar has rocket button
+  assert(src.includes('id="strike-window-mobile"'), 'Mobile: Time filter dropdown exists in mobile toolbar');
+
+  // Mobile toolbar has 🚀 button
+  const mobileToolbarMatch = src.match(/<div id="mobile-toolbar">([\s\S]*?)<\/div>\s*\n\s*\n/);
+  const mobileSection = mobileToolbarMatch ? mobileToolbarMatch[1] : src;
+  assert(src.includes('data-mt="animations"'), 'Mobile: 🚀 rocket toggle button in mobile toolbar');
+
+  // Mobile dropdown syncs with desktop
+  assert(src.includes('strike-window-mobile'), 'Mobile: Mobile dropdown has unique ID');
+  assert(src.includes("document.getElementById('strike-window').value=this.value"), 'Mobile: Mobile dropdown syncs desktop dropdown value');
+
+  // Mobile init sync
+  assert(src.includes("getElementById('strike-window-mobile')"), 'Mobile: Mobile dropdown value set on init');
+
+  // Touch targets (minimum 28px for compact toolbar)
+  assert(src.includes('height:28px') || src.includes('height:22px'), 'Mobile: Time filter has adequate touch target height');
+
+  // Media query hides desktop toolbar on mobile
+  assert(src.includes('#toolbar { display:none'), 'Mobile: Desktop toolbar hidden on <768px');
+  assert(src.includes('#mobile-toolbar { display:flex'), 'Mobile: Mobile toolbar shown on <768px');
+}
+
+// ── Animation System ──
+function testAnimationSystem(src) {
+  // SVG creation
+  assert(src.includes("createElementNS('http://www.w3.org/2000/svg', 'svg')"), 'Animation: SVG element created via createElementNS');
+  assert(src.includes('pointer-events:none'), 'Animation: SVG overlay has pointer-events:none');
+  assert(src.includes('z-index:450'), 'Animation: SVG overlay z-index 450');
+
+  // Bezier arc calculation
+  assert(src.includes('Q${mx},${my}') || src.includes('Q${mx}'), 'Animation: Quadratic bezier used for arcs');
+
+  // requestAnimationFrame
+  assert(src.includes('requestAnimationFrame(tick)'), 'Animation: Uses requestAnimationFrame loop');
+  assert(src.includes('cancelAnimationFrame'), 'Animation: Cleans up with cancelAnimationFrame');
+
+  // getPointAtLength for rocket positioning
+  assert(src.includes('getPointAtLength'), 'Animation: Uses getPointAtLength for rocket position');
+
+  // Origin pulse
+  assert(src.includes('origin-pulse'), 'Animation: Origin pulse class exists');
+  assert(src.includes('@keyframes ping'), 'Animation: ping keyframe animation defined');
+
+  // Impact ripples
+  assert(src.includes('impact-ripple'), 'Animation: Impact ripple class exists');
+  assert(src.includes('@keyframes ripple'), 'Animation: ripple keyframe animation defined');
+  assert(src.includes("animationDelay = '0.2s'") || src.includes('animation-delay: 0.2s'), 'Animation: Staggered ripple delay');
+
+  // No forbidden CSS filters on SVG
+  const svgSection = src.substring(src.indexOf('/* SVG Missile Arcs */'), src.indexOf('/* ═══ ANIMATIONS'));
+  const hasFilterInSvg = svgSection && (svgSection.includes('filter:blur') || svgSection.includes('filter:drop-shadow'));
+  assert(!hasFilterInSvg, 'Animation: No filter:blur or filter:drop-shadow on SVG styles');
+
+  // transform-box fix
+  assert(src.includes('transform-box: fill-box'), 'Animation: transform-box: fill-box for cross-browser SVG transforms');
+
+  // No external libraries
+  assert(!src.includes('d3.js') && !src.includes('d3.min'), 'Animation: No d3.js dependency');
+  assert(!src.includes('leaflet-arc') && !src.includes('leaflet.motion'), 'Animation: No leaflet-arc or leaflet.motion');
+
+  // 8s cycle
+  assert(src.includes('8000') || src.includes('CYCLE'), 'Animation: ~8s animation cycle');
+
+  // Stagger
+  assert(src.includes('i * 2000') || src.includes('stagger'), 'Animation: Staggered arc start times');
+}
+
+// ── Zoom/Pan ──
+function testZoomPanStability(src) {
+  assert(src.includes("map.on('move', updateArcPositions)"), 'Zoom: Arcs update on map move (smooth pan)');
+  assert(src.includes("map.on('zoom', updateArcPositions)"), 'Zoom: Arcs update on map zoom');
+  assert(src.includes("map.on('resize', updateArcPositions)"), 'Zoom: Arcs update on window resize');
+  assert(src.includes('latLngToContainerPoint'), 'Zoom: Uses latLngToContainerPoint for geo→screen conversion');
+
+  // Cleanup on re-render
+  assert(src.includes("map.off('move', updateArcPositions)"), 'Zoom: Unbinds old listeners before rebinding');
+}
+
+// ── Functional Simulation (iframe) ──
+async function testFunctionalSimulation() {
+  return new Promise(resolve => {
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'width:1024px;height:768px;position:fixed;left:-9999px;top:0;';
+    iframe.src = CENTCOM_PATH;
+    document.body.appendChild(iframe);
+
+    iframe.onload = () => {
+      setTimeout(() => {
+        try {
+          const doc = iframe.contentDocument;
+          const win = iframe.contentWindow;
+
+          // Check desktop dropdown rendered
+          const sel = doc.getElementById('strike-window');
+          assert(!!sel, 'Functional: Desktop strike-window dropdown rendered');
+          assert(sel && sel.value === '24', 'Functional: Default value is 24h', sel ? `value=${sel.value}` : 'not found');
+
+          // Check 🚀 button rendered
+          const rocketBtn = doc.querySelector('.tb-btn[data-layer="animations"]');
+          assert(!!rocketBtn, 'Functional: 🚀 toolbar button rendered');
+          assert(rocketBtn && rocketBtn.classList.contains('active'), 'Functional: 🚀 button active by default');
+
+          // Check V2_DATA loaded
+          assert(!!win.V2_DATA, 'Functional: V2_DATA loaded');
+          assert(win.V2_DATA && win.V2_DATA.RECENT_EVENTS && win.V2_DATA.RECENT_EVENTS.length > 0, 'Functional: RECENT_EVENTS has data');
+
+          // Check missile events filtered
+          const missileEvts = win.getMissileEvents ? win.getMissileEvents() : [];
+          assert(typeof win.getMissileEvents === 'function', 'Functional: getMissileEvents is callable');
+
+          // Check arc SVG created (may be empty if no events in 24h window)
+          const arcSvg = win._arcSvg;
+          if (missileEvts.length > 0) {
+            assert(!!arcSvg, 'Functional: Arc SVG overlay created');
+            assert(win._arcPaths && win._arcPaths.length === missileEvts.length, 'Functional: Arc paths match missile event count', `${win._arcPaths?.length} paths for ${missileEvts.length} events`);
+          } else {
+            log('Functional: Arc SVG (no events in 24h window)', 'skip', 'All events older than 24h — switch to "All" to see arcs');
+          }
+
+          // Check animation state
+          assert(win._missileAnimActive === true || win._missileAnimActive === false, 'Functional: _missileAnimActive state exists');
+
+          // Simulate changing to "All" and verify arcs appear
+          if (sel) {
+            sel.value = '0';
+            sel.dispatchEvent(new Event('change'));
+            setTimeout(() => {
+              const allMissiles = win.getMissileEvents ? win.getMissileEvents() : [];
+              assert(allMissiles.length >= 6, 'Functional: "All" filter shows all 6+ missile events', `${allMissiles.length} events`);
+              assert(!!win._arcSvg, 'Functional: Arc SVG present after "All" filter');
+              assert(win._arcPaths && win._arcPaths.length >= 6, 'Functional: 6+ arc paths rendered', `${win._arcPaths?.length} paths`);
+
+              // Check paths have valid d attribute
+              if (win._arcPaths && win._arcPaths.length > 0) {
+                const d = win._arcPaths[0].path.getAttribute('d');
+                assert(d && d.startsWith('M') && d.includes('Q'), 'Functional: Arc path has valid bezier d attribute', d ? d.substring(0, 50) : 'empty');
+              }
+
+              document.body.removeChild(iframe);
+              resolve();
+              renderResults();
+            }, 500);
+            return;
+          }
+        } catch(e) {
+          log('Functional: iframe test', 'fail', e.message);
+        }
+        document.body.removeChild(iframe);
+        resolve();
+      }, 3000); // wait for map + data init
+    };
+
+    iframe.onerror = () => {
+      log('Functional: iframe load', 'fail', 'Could not load centcom.html in iframe');
+      document.body.removeChild(iframe);
+      resolve();
+    };
+  });
+}
+
+// ── Mobile Preview ──
+function openMobilePreview() {
+  // iPhone SE
+  const f1 = document.getElementById('frame-se');
+  if (f1 && !f1.querySelector('iframe')) {
+    const iframe1 = document.createElement('iframe');
+    iframe1.src = CENTCOM_PATH;
+    iframe1.style.cssText = 'width:375px;height:667px;border:none;transform-origin:0 0;';
+    f1.appendChild(iframe1);
+  }
+  // iPhone 14 Pro
+  const f2 = document.getElementById('frame-14');
+  if (f2 && !f2.querySelector('iframe')) {
+    const iframe2 = document.createElement('iframe');
+    iframe2.src = CENTCOM_PATH;
+    iframe2.style.cssText = 'width:393px;height:852px;border:none;transform-origin:0 0;';
+    f2.appendChild(iframe2);
+  }
+}
+
+function renderResults() {
+  const el = document.getElementById('results');
+  let html = '';
+
+  // Group by category
+  const categories = {};
+  results.tests.forEach(t => {
+    const cat = t.name.split(':')[0];
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(t);
+  });
+
+  for (const [cat, tests] of Object.entries(categories)) {
+    html += `<h2>${cat}</h2>`;
+    tests.forEach(t => {
+      const cls = t.status;
+      const icon = t.status === 'pass' ? '✅' : t.status === 'fail' ? '❌' : '⏭️';
+      html += `<div class="test ${cls}"><span class="icon">${icon}</span> ${t.name}${t.detail ? ` <span style="color:rgba(255,255,255,0.3);font-size:10px">— ${t.detail}</span>` : ''}</div>`;
+    });
+  }
+
+  html += `<div class="summary">
+    <span style="color:#22c55e">✅ ${results.pass} passed</span> &nbsp;
+    <span style="color:#ef4444">❌ ${results.fail} failed</span> &nbsp;
+    <span style="color:#f59e0b">⏭️ ${results.skip} skipped</span> &nbsp;
+    — Total: ${results.pass + results.fail + results.skip}
+  </div>`;
+  el.innerHTML = html;
+}
+
+// Auto-run on load
+window.addEventListener('load', () => setTimeout(runTests, 500));
+</script>
+</body>
+</html>
