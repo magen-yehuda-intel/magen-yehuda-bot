@@ -3520,8 +3520,15 @@ function renderMissileArcs() {
   });
 
   updateArcPositions();
-  if (window._missileAnimActive) startArcAnimation();
-  else setStaticArcs();
+  // Defer animation start — mobile browsers need a frame to lay out SVG paths
+  // (getTotalLength() returns 0 if called before first paint)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      updateArcPositions();
+      if (window._missileAnimActive) startArcAnimation();
+      else setStaticArcs();
+    });
+  });
 
   // Rebind map events
   map.off('move', updateArcPositions);
