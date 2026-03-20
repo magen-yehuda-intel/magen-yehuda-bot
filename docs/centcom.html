@@ -3483,28 +3483,20 @@ function toggleMissileAnims() {
 // Live events from watcher classification
 window._liveEvents = [];
 function fetchLiveEvents() {
-  // Try API first, then static file
-  const tryStatic = () => {
-    fetch('live-events.json?t=' + Date.now(), {cache:'no-store'})
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(d => {
-        window._liveEvents = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
-        if (window._liveEvents.length) renderMissileArcs();
-      }).catch(() => {});
-  };
-  if (API_URL) {
-    fetch(`${API_URL}/api/live-events`, {cache:'no-store'})
-      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-      .then(d => {
-        window._liveEvents = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
-        if (window._liveEvents.length) renderMissileArcs();
-        else tryStatic();
-      }).catch(tryStatic);
-  } else { tryStatic(); }
+  // Always try static file (most reliable for GitHub Pages)
+  // API live-events endpoint not currently implemented
+  fetch('live-events.json?t=' + Date.now(), {cache:'no-store'})
+    .then(r => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
+    .then(d => {
+      const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
+      window._liveEvents = events;
+      if (events.length) renderMissileArcs();
+    }).catch(e => { console.warn('fetchLiveEvents failed:', e.message); });
 }
 // Poll live events every 30s
 setInterval(fetchLiveEvents, 30000);
-setTimeout(fetchLiveEvents, 2000); // initial fetch after page load
+// Initial fetch — wait for map tiles to load
+setTimeout(fetchLiveEvents, 4000);
 
 function getMissileEvents() {
   const static_events = V2_DATA.RECENT_EVENTS || [];
