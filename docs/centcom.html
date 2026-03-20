@@ -3480,16 +3480,49 @@ function toggleMissileAnims() {
   renderMissileArcs();
 }
 
+// Live events from watcher classification
+window._liveEvents = [];
+function fetchLiveEvents() {
+  // Try API first, then static file
+  const tryStatic = () => {
+    fetch('live-events.json?t=' + Date.now(), {cache:'no-store'})
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => {
+        window._liveEvents = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
+        if (window._liveEvents.length) renderMissileArcs();
+      }).catch(() => {});
+  };
+  if (API_URL) {
+    fetch(`${API_URL}/api/live-events`, {cache:'no-store'})
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(d => {
+        window._liveEvents = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
+        if (window._liveEvents.length) renderMissileArcs();
+        else tryStatic();
+      }).catch(tryStatic);
+  } else { tryStatic(); }
+}
+// Poll live events every 30s
+setInterval(fetchLiveEvents, 30000);
+setTimeout(fetchLiveEvents, 2000); // initial fetch after page load
+
 function getMissileEvents() {
-  if (!V2_DATA.RECENT_EVENTS) return [];
+  const static_events = V2_DATA.RECENT_EVENTS || [];
   const hours = window._strikeWindowHours || 0;
   const now = Date.now();
-  return V2_DATA.RECENT_EVENTS.filter(ev => {
+  const filtered = static_events.filter(ev => {
     if (!ev.origin_lat || !ev.origin_lon) return false;
     if (ev.type !== 'missile') return false;
     if (hours > 0 && now - new Date(ev.date).getTime() > hours * 3600000) return false;
     return true;
   });
+  // Live events always included (they're current)
+  const live = (window._liveEvents || []).map(e => ({
+    ...e,
+    type: 'missile',
+    _live: true
+  }));
+  return [...live, ...filtered];
 }
 
 function renderMissileArcs() {
@@ -3518,11 +3551,13 @@ function renderMissileArcs() {
     svg.appendChild(pulse);
     arcData.pulse = pulse;
 
-    // Path
+    // Path — live events get brighter, thicker arc
+    const isLive = !!ev._live;
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('stroke', '#ef4444');
+    path.setAttribute('stroke', isLive ? '#ff2222' : '#ef4444');
     path.setAttribute('fill', 'none');
-    path.setAttribute('stroke-width', '2');
+    path.setAttribute('stroke-width', isLive ? '3' : '2');
+    if (isLive) path.setAttribute('filter', 'drop-shadow(0 0 6px rgba(255,34,34,0.8))');
     svg.appendChild(path);
     arcData.path = path;
 

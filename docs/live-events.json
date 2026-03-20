@@ -1,0 +1,23 @@
+{
+  "events": [
+    {
+      "date": "2026-03-20",
+      "time": "10:16:34",
+      "ts": 1773990994,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "Tel Aviv",
+      "desc": "Ballistic missile (Shahab-3) \u2014 Nationwide sirens with IRGC announcement",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.95,
+      "live": true
+    }
+  ],
+  "updated": 1773990994
+}

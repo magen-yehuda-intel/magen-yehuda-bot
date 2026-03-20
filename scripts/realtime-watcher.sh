@@ -206,7 +206,7 @@ $old_emoji $old_level → $new_emoji $new_level
     local threat_msg_he
     threat_msg_he="${RLM}${new_emoji} <b>רמת איום: ${new_he}</b>
 ${RLM}⏱️ $(TZ="$DISPLAY_TZ_HE" date '+%H:%M:%S %Z')
-${RLM}${old_emoji} ${old_he} → ${new_emoji} ${new_he}
+${RLM}${old_emoji} ${old_he} ← ${new_emoji} ${new_he}
 
 ${RLM}📋 <i>${reason_hebrew}</i>"
     emit_alert "threat_change" "HIGH" "$threat_msg_he" "$threat_msg_en"
@@ -678,8 +678,29 @@ print('1' if any(c in raw for c in critical) else '0')
   # Evaluate threat level NOW (before sending Telegram) so the message shows the correct level
   evaluate_threat_level
 
-  # Check if they're new (different from previous)
-  if [ "$alerts" != "$prev" ]; then
+  # Check if they're new — compare alert IDs, not raw JSON (Oref sends slightly
+  # different area lists each poll for the same wave, causing duplicate alerts)
+  local new_ids
+  new_ids=$(python3 -c "
+import json, sys
+try:
+    alerts = json.loads(sys.stdin.read().strip())
+    if not isinstance(alerts, list): alerts = [alerts]
+    ids = sorted(set(a.get('id','') for a in alerts if a.get('id')))
+    print(','.join(ids))
+except: print('')
+" <<< "$alerts" 2>/dev/null)
+  local prev_ids
+  prev_ids=$(python3 -c "
+import json, sys
+try:
+    alerts = json.loads(sys.stdin.read().strip())
+    if not isinstance(alerts, list): alerts = [alerts]
+    ids = sorted(set(a.get('id','') for a in alerts if a.get('id')))
+    print(','.join(ids))
+except: print('')
+" <<< "$prev" 2>/dev/null)
+  if [ "$new_ids" != "$prev_ids" ]; then
     log "🚨 NEW SIRENS detected"
     echo "$alerts" >> "$ALERT_LOG"
 
@@ -787,6 +808,8 @@ ${details}
     
     # Log intel
     log_intel "{\"type\":\"siren\",\"threat_level\":\"$THREAT_LEVEL\",\"details\":$(echo "$details" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),\"raw\":$(echo "$alerts" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')}"
+  else
+    log "  Siren dedup: same alert IDs — skipping Telegram"
   fi
 
   echo "$alerts" > "$OREF_LAST"
@@ -831,6 +854,10 @@ except:
       
       if [ -n "$classification" ] && echo "$classification" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); assert d.get('source','unknown') != 'unknown'" 2>/dev/null; then
         log "  Attack classification: $classification"
+        # Write live event for dashboard missile arcs
+        local live_result
+        live_result=$(echo "$classification" | python3 "$SCRIPT_DIR/write-live-event.py" --oref-areas "$oref_areas" 2>/dev/null)
+        log "  Live event: $live_result"
         # Push to API alongside threat level
         curl -sf --max-time 5 -X POST \
           "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
@@ -1317,6 +1344,13 @@ check_fires_seismic() {
 # ══════════════════════════════════════════════════════════════
 
 check_blackout() {
+  # Check if blackout scanning is disabled in config
+  local blackout_enabled
+  blackout_enabled=$(python3 -c "import json; print(json.load(open('$CONFIG_FILE')).get('blackout_enabled', True))" 2>/dev/null || echo "True")
+  if [ "$blackout_enabled" = "False" ]; then
+    log "🌐 Blackout check disabled in config — skipping"
+    return 0
+  fi
   log "🌐 Checking Iran internet status..."
   local result
   result=$(python3 "$SKILL_DIR/scripts/scan-blackout.py" "$CONFIG_FILE" "$STATE_DIR" 2>>"$SKILL_DIR/state/watcher.log")

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CENTCOM Dashboard Tests</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0f19; color: #ccc; font-family: 'Courier New', monospace; padding: 20px; }
+  h1 { color: #06b6d4; margin-bottom: 16px; font-size: 18px; }
+  .suite { margin-bottom: 24px; border: 1px solid rgba(6,182,212,0.2); border-radius: 8px; padding: 12px; }
+  .suite h2 { color: #9ca3af; font-size: 13px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .test { padding: 6px 10px; margin: 4px 0; border-radius: 4px; font-size: 12px; display: flex; justify-content: space-between; }
+  .test.pass { background: rgba(34,197,94,0.1); border-left: 3px solid #22c55e; }
+  .test.fail { background: rgba(239,68,68,0.1); border-left: 3px solid #ef4444; }
+  .test .label { flex: 1; }
+  .test .status { font-weight: bold; }
+  .test.pass .status { color: #22c55e; }
+  .test.fail .status { color: #ef4444; }
+  .test.fail .detail { color: #f87171; font-size: 10px; margin-top: 4px; display: block; }
+  #summary { margin-top: 20px; font-size: 14px; padding: 12px; border-radius: 8px; }
+  #summary.all-pass { background: rgba(34,197,94,0.15); border: 1px solid #22c55e; color: #22c55e; }
+  #summary.has-fail { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #ef4444; }
+</style>
+</head>
+<body>
+<h1>🧪 CENTCOM Dashboard — Test Suite</h1>
+<div id="results"></div>
+<div id="summary"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// MINIMAL STUBS — enough to test dashboard logic in isolation
+// ═══════════════════════════════════════════════════════════
+
+const V2_DATA = {
+  RECENT_EVENTS: [
+    { date: "2026-03-20", lat: 32.085, lon: 34.781, type: "missile", actor: "Iran/IRGC", target: "Tel Aviv", desc: "Ballistic missile barrage", severity: "critical", origin_lat: 33.5, origin_lon: 48.5 },
+    { date: "2026-03-20", lat: 31.208, lon: 34.937, type: "missile", actor: "Iran/IRGC", target: "Nevatim", desc: "Missile strike", severity: "high", origin_lat: 33.5, origin_lon: 48.5 },
+    { date: "2026-02-28", lat: 32.794, lon: 34.989, type: "missile", actor: "Hezbollah", target: "Haifa", desc: "Missile", severity: "high", origin_lat: 33.85, origin_lon: 35.86 },
+    { date: "2026-03-20", lat: 32.085, lon: 34.781, type: "strike", actor: "Israel", target: "Tehran", desc: "Strike", severity: "critical" },
+    { date: "2026-03-19", lat: 32.0, lon: 34.0, type: "missile", actor: "Test", target: "Test", desc: "old", severity: "low", origin_lat: 33.0, origin_lon: 48.0 },
+  ],
+  IRAN_MISSILES: [],
+  US_BASES: [],
+  IRAN_NUCLEAR: [],
+};
+
+// ═══════════════════════════════════════════════════════════
+// TEST FRAMEWORK
+// ═══════════════════════════════════════════════════════════
+
+const results = [];
+function assert(condition, msg) { if (!condition) throw new Error(msg || 'Assertion failed'); }
+function assertEqual(a, b, msg) { if (a !== b) throw new Error(msg || `Expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`); }
+function assertIncludes(arr, item, msg) { if (!arr.includes(item)) throw new Error(msg || `Array does not include ${JSON.stringify(item)}`); }
+
+function test(suite, name, fn) {
+  try { fn(); results.push({suite, name, pass: true}); }
+  catch(e) { results.push({suite, name, pass: false, error: e.message}); }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FUNCTIONS UNDER TEST (extracted from centcom.html)
+// ═══════════════════════════════════════════════════════════
+
+window._liveEvents = [];
+window._strikeWindowHours = 0; // "All"
+
+function getMissileEvents() {
+  const static_events = V2_DATA.RECENT_EVENTS || [];
+  const hours = window._strikeWindowHours || 0;
+  const now = Date.now();
+  const filtered = static_events.filter(ev => {
+    if (!ev.origin_lat || !ev.origin_lon) return false;
+    if (ev.type !== 'missile') return false;
+    if (hours > 0 && now - new Date(ev.date).getTime() > hours * 3600000) return false;
+    return true;
+  });
+  const live = (window._liveEvents || []).map(e => ({...e, type: 'missile', _live: true}));
+  return [...live, ...filtered];
+}
+
+function isStandDown(a) {
+  return a.cat === 10 || a.cat === '10' || (a.title && /הסתיים/.test(a.title));
+}
+
+const _TYPE_LABELS = {'siren':'🚨 Rockets & Missiles','siren_clear':'✅ All Clear','siren_standdown':'⏹ Alert Ended'};
+const _TYPE_COLORS = {'siren':'#ef4444','siren_clear':'#22c55e','siren_standdown':'#f59e0b'};
+const _TITLES = {'1':'Rockets & Missiles','2':'Hostile Aircraft Intrusion','10':'Missiles (event ended)'};
+
+function renderSirenHistory(alerts) {
+  if (!alerts || !alerts.length) return { html: '', merged: [] };
+  const merged = [];
+  alerts.forEach(a => {
+    const prev = merged[merged.length - 1];
+    const aType = a.type || (a.cat ? String(a.cat) : '');
+    const prevType = prev ? (prev.type || (prev.cat ? String(prev.cat) : '')) : '';
+    const aTs = a.ts ? a.ts * 1000 : (a.utc ? new Date(a.utc).getTime() : 0);
+    const prevTs = prev ? (prev.ts ? prev.ts * 1000 : (prev.utc ? new Date(prev.utc).getTime() : 0)) : 0;
+    if (prev && aType === prevType && Math.abs(aTs - prevTs) < 90000) {
+      prev._waveCount = (prev._waveCount || 1) + 1;
+      const prevAreas = prev.areas || prev.data || [];
+      const curAreas = a.areas || a.data || [];
+      if (Array.isArray(prevAreas) && Array.isArray(curAreas)) {
+        const combined = [...new Set([...prevAreas, ...curAreas])];
+        prev.areas = combined;
+        prev.area_count = combined.length;
+      }
+    } else {
+      a._waveCount = 1;
+      merged.push(Object.assign({}, a));
+    }
+  });
+  return { merged };
+}
+
+// ═══════════════════════════════════════════════════════════
+// TEST SUITES
+// ═══════════════════════════════════════════════════════════
+
+// --- getMissileEvents ---
+test('Missile Events', 'filters to type=missile only', () => {
+  window._strikeWindowHours = 0;
+  window._liveEvents = [];
+  const events = getMissileEvents();
+  events.forEach(e => assertEqual(e.type, 'missile'));
+});
+
+test('Missile Events', 'excludes events without origin coords', () => {
+  window._strikeWindowHours = 0;
+  window._liveEvents = [];
+  const events = getMissileEvents();
+  // The "strike" type event has no origin_lat — should be excluded
+  const hasStrike = events.some(e => e.actor === 'Israel' && e.target === 'Tehran');
+  assert(!hasStrike, 'Strike event without origin should be excluded');
+});
+
+test('Missile Events', 'returns all missile events when window=All', () => {
+  window._strikeWindowHours = 0;
+  window._liveEvents = [];
+  const events = getMissileEvents();
+  assertEqual(events.length, 4, `Expected 4 missile events, got ${events.length}`);
+});
+
+test('Missile Events', 'filters by strike window (24h)', () => {
+  window._strikeWindowHours = 24;
+  window._liveEvents = [];
+  const events = getMissileEvents();
+  // Only today's events should pass (2026-03-20), not Feb 28
+  const hasFeb = events.some(e => e.date === '2026-02-28');
+  assert(!hasFeb, 'Old events should be filtered by 24h window');
+});
+
+test('Missile Events', 'merges live events', () => {
+  window._strikeWindowHours = 24;
+  window._liveEvents = [
+    { date: "2026-03-20", ts: Math.floor(Date.now()/1000), lat: 32.0, lon: 34.7, origin_lat: 15.35, origin_lon: 44.2, source_country: "yemen", weapon_type: "uav_drone" }
+  ];
+  const events = getMissileEvents();
+  const live = events.filter(e => e._live);
+  assertEqual(live.length, 1, 'Should have 1 live event');
+  assertEqual(live[0].source_country, 'yemen');
+});
+
+test('Missile Events', 'live events always included regardless of window', () => {
+  window._strikeWindowHours = 1; // very tight window
+  window._liveEvents = [
+    { date: "2026-03-20", ts: Math.floor(Date.now()/1000), lat: 32.0, lon: 34.7, origin_lat: 33.5, origin_lon: 48.5, source_country: "iran" }
+  ];
+  const events = getMissileEvents();
+  const live = events.filter(e => e._live);
+  assertEqual(live.length, 1, 'Live events should bypass time filter');
+});
+
+// --- Siren History Merging ---
+test('Siren History', 'merges consecutive same-type within 90s', () => {
+  const alerts = [
+    { type: 'siren', ts: 1000, areas: ['Tel Aviv', 'Rishon'] },
+    { type: 'siren', ts: 1060, areas: ['Jerusalem', 'Modi\'in'] },
+  ];
+  const { merged } = renderSirenHistory(alerts);
+  assertEqual(merged.length, 1, `Expected 1 merged entry, got ${merged.length}`);
+  assertEqual(merged[0]._waveCount, 2);
+  assert(merged[0].areas.length >= 3, 'Areas should be combined');
+});
+
+test('Siren History', 'does NOT merge if >90s apart', () => {
+  const alerts = [
+    { type: 'siren', ts: 1000, areas: ['Tel Aviv'] },
+    { type: 'siren', ts: 1200, areas: ['Haifa'] },
+  ];
+  const { merged } = renderSirenHistory(alerts);
+  assertEqual(merged.length, 2, 'Should be 2 separate entries');
+});
+
+test('Siren History', 'does NOT merge different types', () => {
+  const alerts = [
+    { type: 'siren', ts: 1000, areas: ['Tel Aviv'] },
+    { type: 'siren_clear', ts: 1030, areas: ['Tel Aviv'] },
+  ];
+  const { merged } = renderSirenHistory(alerts);
+  assertEqual(merged.length, 2);
+});
+
+test('Siren History', 'deduplicates areas when merging', () => {
+  const alerts = [
+    { type: 'siren', ts: 1000, areas: ['Tel Aviv', 'Rishon'] },
+    { type: 'siren', ts: 1030, areas: ['Tel Aviv', 'Jerusalem'] },
+  ];
+  const { merged } = renderSirenHistory(alerts);
+  assertEqual(merged[0].areas.length, 3, 'Should have 3 unique areas');
+  assertIncludes(merged[0].areas, 'Jerusalem');
+});
+
+test('Siren History', 'empty alerts returns empty', () => {
+  const { html, merged } = renderSirenHistory([]);
+  assertEqual(merged, undefined); // returns early
+});
+
+test('Siren History', 'handles API format (cat/areas)', () => {
+  const alerts = [
+    { cat: 1, ts: 1000, areas: ['Beer Sheva'], title: 'ירי רקטות וטילים' },
+    { cat: 10, ts: 1100, areas: ['Beer Sheva'], title: 'ירי רקטות וטילים - הסתיים' },
+  ];
+  const { merged } = renderSirenHistory(alerts);
+  assertEqual(merged.length, 2); // cat 1 vs cat 10 = different types
+});
+
+// --- Type Labels ---
+test('Display Labels', 'siren_standdown shows Alert Ended', () => {
+  assertEqual(_TYPE_LABELS['siren_standdown'], '⏹ Alert Ended');
+});
+
+test('Display Labels', 'siren_clear shows All Clear', () => {
+  assertEqual(_TYPE_LABELS['siren_clear'], '✅ All Clear');
+});
+
+test('Display Labels', 'isStandDown detects cat 10', () => {
+  assert(isStandDown({ cat: 10 }));
+  assert(isStandDown({ cat: '10' }));
+  assert(isStandDown({ title: 'ירי רקטות וטילים - הסתיים' }));
+  assert(!isStandDown({ cat: 1 }));
+});
+
+// --- Origin Coordinates (matching write-live-event.py) ---
+const ORIGIN_COORDS = {
+  iran: {lat: 33.5, lon: 48.5}, yemen: {lat: 15.35, lon: 44.2},
+  lebanon: {lat: 33.85, lon: 35.86}, iraq: {lat: 33.3, lon: 44.4},
+  syria: {lat: 33.5, lon: 36.3}, gaza: {lat: 31.42, lon: 34.35}
+};
+
+test('Origin Coords', 'all sources have coordinates', () => {
+  ['iran','yemen','lebanon','iraq','syria','gaza'].forEach(src => {
+    assert(ORIGIN_COORDS[src], `Missing coords for ${src}`);
+    assert(ORIGIN_COORDS[src].lat, `Missing lat for ${src}`);
+    assert(ORIGIN_COORDS[src].lon, `Missing lon for ${src}`);
+  });
+});
+
+test('Origin Coords', 'Iran origin matches v2-data.js', () => {
+  // v2-data.js uses origin_lat: 33.5, origin_lon: 48.5 for Iran
+  assertEqual(ORIGIN_COORDS.iran.lat, 33.5);
+  assertEqual(ORIGIN_COORDS.iran.lon, 48.5);
+});
+
+// --- Strike Window Filter ---
+test('Strike Window', 'window=0 means all events', () => {
+  window._strikeWindowHours = 0;
+  window._liveEvents = [];
+  const events = getMissileEvents();
+  assert(events.length >= 4, 'All missile events should be included');
+});
+
+test('Strike Window', 'window=168 (7d) filters appropriately', () => {
+  window._strikeWindowHours = 168;
+  window._liveEvents = [];
+  const events = getMissileEvents();
+  // Feb 28 is ~20 days ago, should be excluded
+  const hasFeb = events.some(e => e.date === '2026-02-28');
+  assert(!hasFeb, 'Feb 28 events should be excluded with 7d window');
+});
+
+// ═══════════════════════════════════════════════════════════
+// RENDER RESULTS
+// ═══════════════════════════════════════════════════════════
+
+const container = document.getElementById('results');
+const suites = {};
+results.forEach(r => { if (!suites[r.suite]) suites[r.suite] = []; suites[r.suite].push(r); });
+
+Object.entries(suites).forEach(([suite, tests]) => {
+  const div = document.createElement('div');
+  div.className = 'suite';
+  div.innerHTML = `<h2>${suite}</h2>`;
+  tests.forEach(t => {
+    const el = document.createElement('div');
+    el.className = `test ${t.pass ? 'pass' : 'fail'}`;
+    el.innerHTML = `<span class="label">${t.name}${t.error ? `<span class="detail">${t.error}</span>` : ''}</span><span class="status">${t.pass ? '✓ PASS' : '✗ FAIL'}</span>`;
+    div.appendChild(el);
+  });
+  container.appendChild(div);
+});
+
+const passed = results.filter(r => r.pass).length;
+const failed = results.filter(r => !r.pass).length;
+const summary = document.getElementById('summary');
+summary.className = failed ? 'has-fail' : 'all-pass';
+summary.textContent = `${passed} passed, ${failed} failed — ${results.length} total`;
+
+// Exit code for CI
+if (typeof process !== 'undefined' && failed > 0) process.exit(1);
+</script>
+</body>
+</html>

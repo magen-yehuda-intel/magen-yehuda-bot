@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BreakingTrades — Geopolitical Overlay with Chart</title>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: 'SF Mono', 'Fira Code', monospace; }
+
+  .bt-header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 10px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #2a2a4a;
+  }
+  .bt-header h1 { font-size: 15px; color: #00d4ff; letter-spacing: 2px; }
+  .bt-header .live { color: #ff4444; font-size: 11px; animation: pulse 2s infinite; }
+  .bt-header .prices { display: flex; gap: 14px; font-size: 11px; color: #888; }
+  .bt-header .prices .up { color: #00e676; }
+  .bt-header .prices .down { color: #ff5252; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  .dashboard { display: flex; height: calc(100vh - 42px); }
+
+  /* Watchlist */
+  .watchlist { width: 280px; background: #0d0d1a; border-right: 1px solid #1a1a3a; overflow-y: auto; padding: 6px; }
+  .wl-title { font-size: 10px; color: #555; padding: 5px 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .wl-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 8px; border-radius: 3px; margin: 1px 0; font-size: 12px;
+  }
+  .wl-row:hover { background: #1a1a3a; }
+  .wl-row .ticker { font-weight: 600; }
+  .wl-row .change { font-weight: 600; }
+  .up { color: #00e676; } .down { color: #ff5252; }
+  .wl-row.geo-flash {
+    background: rgba(255, 68, 68, 0.06); border-left: 3px solid #ff4444;
+    animation: geoGlow 3s ease-in-out infinite;
+  }
+  .geo-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ff4444; margin-right: 5px; animation: pulse 1.5s infinite; }
+  @keyframes geoGlow { 0%,100% { background: rgba(255,68,68,0.04); } 50% { background: rgba(255,68,68,0.10); } }
+
+  /* Chart */
+  .chart-area { flex: 1; background: #0d0d16; display: flex; flex-direction: column; position: relative; }
+  .chart-header {
+    padding: 8px 16px; display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid #1a1a2a;
+  }
+  .chart-header .symbol { font-size: 14px; font-weight: 700; color: #00d4ff; }
+  .chart-header .tf { font-size: 11px; color: #666; background: #1a1a2a; padding: 2px 8px; border-radius: 3px; }
+  .chart-header .last-price { font-size: 14px; font-weight: 600; }
+  #chart-container { flex: 1; position: relative; }
+
+  /* Geo markers overlay */
+  .geo-marker {
+    position: absolute; z-index: 10; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .geo-marker .marker-line {
+    width: 2px; height: 100%; position: absolute; top: 0; opacity: 0.3;
+  }
+  .geo-marker .marker-dot {
+    width: 10px; height: 10px; border-radius: 50%; position: relative; z-index: 11;
+  }
+  .geo-marker .marker-label {
+    font-size: 8px; color: #ccc; white-space: nowrap;
+    position: absolute; top: -16px; transform: translateX(-50%); left: 50%;
+    background: rgba(10,10,15,0.9); padding: 1px 4px; border-radius: 2px;
+    display: none; max-width: 200px;
+  }
+  .geo-marker:hover .marker-label { display: block; }
+  .m10 { background: #ff0000; box-shadow: 0 0 8px #ff000088; }
+  .m9 { background: #ff3333; box-shadow: 0 0 6px #ff333366; }
+  .m8 { background: #ff6644; }
+  .m7 { background: #ff9944; }
+
+  /* Geo panel */
+  .geo-panel { width: 340px; background: #0a0a14; border-left: 1px solid #1a1a3a; overflow-y: auto; display: flex; flex-direction: column; }
+  .geo-panel-header {
+    padding: 10px 14px; background: linear-gradient(135deg, #1a0a0a, #2a1020);
+    border-bottom: 1px solid #3a1a2a; display: flex; align-items: center; gap: 6px;
+    position: sticky; top: 0; z-index: 5;
+  }
+  .geo-panel-header h2 { font-size: 12px; color: #ff6b6b; letter-spacing: 1px; text-transform: uppercase; }
+  .geo-panel-header .count { background: #ff4444; color: white; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 10px; }
+
+  .impact-bar { display: flex; padding: 6px 14px; gap: 3px; border-bottom: 1px solid #1a1a2a; }
+  .impact-bar .seg { flex: 1; height: 3px; border-radius: 2px; background: #1a1a2a; }
+  .seg.a10 { background: #ff0000; box-shadow: 0 0 8px #ff000088; }
+  .seg.a9 { background: #ff3333; box-shadow: 0 0 6px #ff333366; }
+  .seg.a8 { background: #ff6644; }
+  .seg.a7 { background: #ff9944; }
+  .seg.a6 { background: #ffbb44; }
+  .impact-label { padding: 1px 14px 6px; font-size: 9px; color: #ff6b6b; display: flex; justify-content: space-between; border-bottom: 1px solid #1a1a2a; }
+
+  .geo-event { padding: 10px 14px; border-bottom: 1px solid #141420; cursor: pointer; transition: background 0.15s; }
+  .geo-event:hover { background: #151520; }
+  .geo-event.critical { border-left: 3px solid #ff0000; }
+  .geo-event.high { border-left: 3px solid #ff6644; }
+  .ev-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .ev-time { font-size: 9px; color: #555; }
+  .ev-impact { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+  .ev-impact.i10 { background: #ff0000; color: white; }
+  .ev-impact.i9 { background: #ff3333; color: white; }
+  .ev-impact.i8 { background: #ff6644; color: white; }
+  .ev-loc { font-size: 10px; color: #ff6b6b; margin-bottom: 2px; }
+  .ev-summary { font-size: 11px; color: #bbb; line-height: 1.35; margin-bottom: 5px; }
+  .ev-tickers { display: flex; flex-wrap: wrap; gap: 3px; }
+  .chip { font-size: 9px; padding: 1px 5px; border-radius: 2px; background: #1a2a1a; color: #66ff88; border: 1px solid #2a4a2a; }
+  .ev-sectors { font-size: 9px; color: #555; margin-top: 3px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 54px; right: 360px; width: 320px;
+    background: linear-gradient(135deg, #2a0a0a, #1a0a1a);
+    border: 1px solid #ff4444; border-radius: 6px;
+    padding: 12px 14px; box-shadow: 0 4px 24px rgba(255,0,0,0.25);
+    animation: slideIn 0.5s ease-out, fadeOut 0.5s 10s forwards; z-index: 100;
+  }
+  @keyframes slideIn { from { transform: translateX(80px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+  .toast-header { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+  .toast-icon { font-size: 14px; }
+  .toast-title { font-size: 11px; color: #ff6b6b; font-weight: 700; }
+  .toast-body { font-size: 10px; color: #ccc; line-height: 1.35; }
+  .toast-tickers { margin-top: 4px; font-size: 9px; color: #66ff88; }
+
+  .tf-switcher { display: flex; gap: 2px; margin-left: 8px; }
+  .tf-btn {
+    background: #1a1a2a; border: 1px solid #2a2a4a; color: #666; font-size: 10px;
+    padding: 2px 8px; border-radius: 3px; cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+  }
+  .tf-btn:hover { color: #aaa; border-color: #3a3a5a; }
+  .tf-btn.active { background: #00d4ff22; color: #00d4ff; border-color: #00d4ff66; }
+</style>
+</head>
+<body>
+
+<div class="bt-header">
+  <h1>⚡ BREAKINGTRADES</h1>
+  <div class="prices">
+    <span>WTI <b class="up">$97.13</b> <span class="up">+0.8%</span></span>
+    <span>Brent <b class="down">$109.90</b> <span class="down">−3.4%</span></span>
+    <span>NG <b class="down">$3.16</b> <span class="down">−0.3%</span></span>
+    <span>LNG <b class="up">$282.68</b> <span class="up">+6.2%</span></span>
+    <span>SPY <b class="down">$656.00</b> <span class="down">−0.8%</span></span>
+  </div>
+  <span class="live">● LIVE</span>
+</div>
+
+<div class="dashboard">
+
+  <!-- Watchlist -->
+  <div class="watchlist">
+    <div class="wl-title">🛢️ Energy</div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">XLE</span></div><div><span class="up">$59.45 +1.7%</span></div></div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">XOP</span></div><div><span class="up">$175.73 +1.4%</span></div></div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">LNG</span></div><div><span class="up">$282.68 +6.2%</span></div></div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">AIPO</span></div><div><span class="up">$31.87 +4.5%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">CVX</span></div><div><span class="up">$168.22 +0.8%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">COP</span></div><div><span class="up">$106.40 +1.1%</span></div></div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">EQNR</span></div><div><span class="up">$28.41 +3.1%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">EQT</span></div><div><span class="up">$55.12 +2.3%</span></div></div>
+
+    <div class="wl-title">🛡️ Defense</div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">ITA</span></div><div><span class="down">$226.28 −2.2%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">LMT</span></div><div><span class="down">$472.50 −0.4%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">RTX</span></div><div><span class="up">$130.11 +0.2%</span></div></div>
+
+    <div class="wl-title">🚢 Shipping</div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">INSW</span></div><div><span class="up">$52.30 +5.8%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">STNG</span></div><div><span class="up">$48.90 +4.1%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">FRO</span></div><div><span class="up">$22.15 +3.6%</span></div></div>
+
+    <div class="wl-title">📊 Broad</div>
+    <div class="wl-row"><div><span class="ticker">SPY</span></div><div><span class="down">$656.00 −0.8%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">QQQ</span></div><div><span class="down">$541.20 −1.1%</span></div></div>
+    <div class="wl-row"><div><span class="ticker">TLT</span></div><div><span class="up">$88.45 +0.6%</span></div></div>
+    <div class="wl-row geo-flash"><div><span class="geo-dot"></span><span class="ticker">URA</span></div><div><span class="up">$34.12 +8.4%</span></div></div>
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-area">
+    <div id="chart-container">
+      <!-- TradingView Advanced Chart Widget -->
+      <div class="tradingview-widget-container" style="height:100%;width:100%">
+        <div id="tradingview_chart" style="height:100%;width:100%"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+        <script type="text/javascript">
+        new TradingView.widget({
+          "autosize": true,
+          "symbol": "NYMEX:CL1!",
+          "interval": "60",
+          "timezone": "America/New_York",
+          "theme": "dark",
+          "style": "1",
+          "locale": "en",
+          "toolbar_bg": "#0d0d16",
+          "enable_publishing": false,
+          "hide_top_toolbar": false,
+          "hide_legend": false,
+          "save_image": false,
+          "container_id": "tradingview_chart",
+          "backgroundColor": "#0d0d16",
+          "gridColor": "#111122",
+          "studies": ["Volume@tv-basicstudies"],
+          "overrides": {
+            "paneProperties.background": "#0d0d16",
+            "paneProperties.vertGridProperties.color": "#111122",
+            "paneProperties.horzGridProperties.color": "#111122",
+            "mainSeriesProperties.candleStyle.upColor": "#00e676",
+            "mainSeriesProperties.candleStyle.downColor": "#ff5252",
+            "mainSeriesProperties.candleStyle.borderUpColor": "#00e676",
+            "mainSeriesProperties.candleStyle.borderDownColor": "#ff5252",
+            "mainSeriesProperties.candleStyle.wickUpColor": "#00e67688",
+            "mainSeriesProperties.candleStyle.wickDownColor": "#ff525288"
+          }
+        });
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Geo panel -->
+  <div class="geo-panel">
+    <div class="geo-panel-header">
+      <span>🌍</span>
+      <h2>Geo Intel</h2>
+      <span class="count">13</span>
+      <span style="font-size:9px;color:#555;margin-left:auto;">impact ≥ 8</span>
+    </div>
+    <div class="impact-bar">
+      <div class="seg a6"></div><div class="seg a6"></div><div class="seg a7"></div><div class="seg a7"></div>
+      <div class="seg a8"></div><div class="seg a8"></div><div class="seg a8"></div>
+      <div class="seg a9"></div><div class="seg a9"></div><div class="seg a10"></div>
+    </div>
+    <div class="impact-label"><span>Low</span><span style="color:#ff0000;font-weight:700;">⚠ CRITICAL</span><span>Max</span></div>
+
+    <div class="geo-event critical" data-ts="1773838140">
+      <div class="ev-header"><span class="ev-time">8:29 AM ET</span><span class="ev-impact i10">10</span></div>
+      <div class="ev-loc">📍 Bushehr, Iran</div>
+      <div class="ev-summary">Israeli airstrike struck building inside Bushehr nuclear plant complex, ~350m from reactor</div>
+      <div class="ev-tickers"><span class="chip">XLE</span><span class="chip">XOP</span><span class="chip">ITA</span><span class="chip">SPY</span></div>
+      <div class="ev-sectors">defense · oil · insurance · equities</div>
+    </div>
+
+    <div class="geo-event critical" data-ts="1773845640">
+      <div class="ev-header"><span class="ev-time">10:34 AM ET</span><span class="ev-impact i9">9</span></div>
+      <div class="ev-loc">📍 Ras Laffan, Qatar</div>
+      <div class="ev-summary">QatarEnergy: force majeure on LNG — 17% capacity gone for up to 5 years</div>
+      <div class="ev-tickers"><span class="chip">LNG</span><span class="chip">NG</span><span class="chip">AIPO</span><span class="chip">EQT</span></div>
+      <div class="ev-sectors">natural_gas · equities · shipping</div>
+    </div>
+
+    <div class="geo-event critical" data-ts="1773844140">
+      <div class="ev-header"><span class="ev-time">10:09 AM ET</span><span class="ev-impact i9">9</span></div>
+      <div class="ev-loc">📍 Ras Laffan, Qatar</div>
+      <div class="ev-summary">Two LNG trains + GTL facility knocked offline — ~17% of Qatar's LNG capacity</div>
+      <div class="ev-tickers"><span class="chip">LNG</span><span class="chip">NG</span><span class="chip">XLE</span></div>
+      <div class="ev-sectors">natural_gas · oil · shipping</div>
+    </div>
+
+    <div class="geo-event critical" data-ts="1773827940">
+      <div class="ev-header"><span class="ev-time">5:39 AM ET</span><span class="ev-impact i9">9</span></div>
+      <div class="ev-loc">📍 Ras Laffan, Qatar</div>
+      <div class="ev-summary">European gas prices jumped on reports Ras Laffan LNG plant damaged</div>
+      <div class="ev-tickers"><span class="chip">NG</span><span class="chip">LNG</span><span class="chip">AIPO</span></div>
+      <div class="ev-sectors">natural_gas · equities · defense</div>
+    </div>
+
+    <div class="geo-event critical" data-ts="1773851400">
+      <div class="ev-header"><span class="ev-time">12:19 PM ET</span><span class="ev-impact i9">9</span></div>
+      <div class="ev-loc">📍 Bushehr, Iran</div>
+      <div class="ev-summary">Bushehr strike confirmed 200m from reactor unit</div>
+      <div class="ev-tickers"><span class="chip">ITA</span><span class="chip">SPY</span><span class="chip">XLE</span></div>
+      <div class="ev-sectors">defense · insurance · equities · oil</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773847380">
+      <div class="ev-header"><span class="ev-time">11:03 AM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 Haifa, Israel</div>
+      <div class="ev-summary">Direct hit on BAZAN refinery — Israel's largest, 50-60% of domestic fuel</div>
+      <div class="ev-tickers"><span class="chip">CL</span><span class="chip">BZ</span><span class="chip">XLE</span><span class="chip">XOP</span></div>
+      <div class="ev-sectors">oil · defense · insurance</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773839640">
+      <div class="ev-header"><span class="ev-time">8:54 AM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 Kuwait</div>
+      <div class="ev-summary">Fires at Mina Al-Ahmad + Mina Abdullah refineries after Iranian strikes</div>
+      <div class="ev-tickers"><span class="chip">CL</span><span class="chip">BZ</span><span class="chip">XLE</span></div>
+      <div class="ev-sectors">oil · insurance</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773821880">
+      <div class="ev-header"><span class="ev-time">3:58 AM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 Yanbu, Saudi Arabia</div>
+      <div class="ev-summary">Yanbu oil export terminal burning — satellite/NASA fire data confirms</div>
+      <div class="ev-tickers"><span class="chip">CL</span><span class="chip">BZ</span><span class="chip">XOP</span><span class="chip">INSW</span></div>
+      <div class="ev-sectors">oil · shipping · insurance</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773830220">
+      <div class="ev-header"><span class="ev-time">6:17 AM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 Ras Laffan, Qatar</div>
+      <div class="ev-summary">Iran strikes Ras Laffan gas operations in retaliation</div>
+      <div class="ev-tickers"><span class="chip">NG</span><span class="chip">LNG</span></div>
+      <div class="ev-sectors">natural_gas · defense · shipping</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773831420">
+      <div class="ev-header"><span class="ev-time">6:37 AM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 Ras Laffan, Qatar</div>
+      <div class="ev-summary">Shell Pearl GTL plant damaged — production shut</div>
+      <div class="ev-tickers"><span class="chip">NG</span><span class="chip">LNG</span><span class="chip">XLE</span></div>
+      <div class="ev-sectors">natural_gas · oil · defense</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773834780">
+      <div class="ev-header"><span class="ev-time">7:33 AM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 Tel Aviv, Israel</div>
+      <div class="ev-summary">IRGC says Ben Gurion Airport struck</div>
+      <div class="ev-tickers"><span class="chip">ITA</span><span class="chip">XLE</span><span class="chip">SPY</span></div>
+      <div class="ev-sectors">defense · oil · shipping · equities</div>
+    </div>
+
+    <div class="geo-event high" data-ts="1773849300">
+      <div class="ev-header"><span class="ev-time">12:15 PM ET</span><span class="ev-impact i8">8</span></div>
+      <div class="ev-loc">📍 South Pars, Iran</div>
+      <div class="ev-summary">Israel struck South Pars again — Arab govts furious at Washington</div>
+      <div class="ev-tickers"><span class="chip">NG</span><span class="chip">CL</span><span class="chip">XLE</span></div>
+      <div class="ev-sectors">natural_gas · oil · defense</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast">
+  <div class="toast-header">
+    <span class="toast-icon">🔴🔴🔴</span>
+    <span class="toast-title">BREAKING — Impact 10/10</span>
+  </div>
+  <div class="toast-body">Bushehr nuclear plant struck — ~350m from reactor</div>
+  <div class="toast-tickers">📊 Watch: XLE, XOP, ITA, LMT, SPY, QQQ</div>
+</div>
+
+<script>
+// Geo event card clicks — future: sync with TV widget via postMessage
+document.querySelectorAll('.geo-event').forEach(el => {
+  el.addEventListener('click', () => {
+    const ts = parseInt(el.dataset.ts);
+    if (ts) console.log('Geo event clicked:', ts);
+  });
+});
+</script>
+
+</body>
+</html>

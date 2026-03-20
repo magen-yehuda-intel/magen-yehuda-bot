@@ -1,4 +1,26 @@
 
+## 2026-03-19 — LLM Intel Enrichment Pipeline
+
+### New Features
+- **🧠 `enrich-intel.py`**: Batch LLM enrichment pipeline using Azure OpenAI gpt-5-mini
+  - Pre-filters noise (prayers, spam, short posts) — only enriches conflict-relevant events
+  - Extracts per event: location + coords, attacker, target_country, target_type, attack_type, weapon, severity, summary
+  - **Breaking news detection**: `is_breaking` flag distinguishes new events from commentary/analysis
+  - **Market impact scoring**: 0-10 scale (10=Hormuz blocked, 0=commentary) with affected sector tags
+  - **Market sectors**: oil, natural_gas, defense, shipping, crypto, equities, bonds, insurance
+  - Expanded target types: `gas_infrastructure`, `ship`, `missile_launcher`, `pipeline`, `refinery`, `lng_terminal`
+  - Expanded weapons: `torpedo`, `naval_mine`
+  - Dual storage: writes to Azure Table DB + local `enriched-intel.jsonl`
+  - Dedup via `enriched-ids.json` — won't reprocess already-enriched events
+  - Hourly cron (top of hour, 2h lookback, limit 100 events)
+
+### Bug Fixes
+- **Yanbu location bug**: Added missing Saudi cities to `export-feed.py` LOC_MAP (Yanbu, Jeddah, Riyadh, Abqaiq, Jubail, Dammam). Events mentioning "Yanbu port in Saudi Arabia" were geocoded to Iran centroid because "Iran" keyword matched before "Saudi" fallback.
+
+### Infrastructure
+- **DB repopulated**: Pushed 4,077 JSONL events into Azure Table Storage after `publicNetworkAccess: Disabled` was blocking local writes. Events for Mar 15-19 went from 2,669 → 6,452.
+- **DB auth fixed**: Root cause was storage account `publicNetworkAccess: Disabled` — Entra ID RBAC was correctly assigned but all requests from local Mac were rejected at network level.
+
 ## 2026-03-09 — CENTCOM Dashboard Major Update
 
 ### New Features

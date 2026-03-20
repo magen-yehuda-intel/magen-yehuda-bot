@@ -119,7 +119,8 @@ def query_events(hours=6, side=None, event_type=None, limit=500):
         for entity in client.query_entities(
             query_filter=filter_str,
             select=["PartitionKey", "RowKey", "ts", "src", "text", "side", "type",
-                    "sub_event_type", "lat", "lon", "location", "breaking", "confidence"],
+                    "sub_event_type", "lat", "lon", "location", "breaking", "confidence",
+                    "enriched", "enriched_at"],
         ):
             if entity.get("ts", 0) >= cutoff:
                 entities.append(entity)
