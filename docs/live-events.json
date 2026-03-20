@@ -1,15 +1,15 @@
 {
   "events": [
     {
-      "date": "2026-03-20",
-      "time": "10:16:34",
-      "ts": 1773990994,
+      "date": "2026-03-21",
+      "time": "02:22:53",
+      "ts": 1774048973,
       "lat": 32.085,
       "lon": 34.781,
       "type": "missile",
       "actor": "IRGC",
-      "target": "Tel Aviv",
-      "desc": "Ballistic missile (Shahab-3) \u2014 Nationwide sirens with IRGC announcement",
+      "target": "Central Israel",
+      "desc": "Ballistic missile barrage \u2014 Wave 14, nationwide sirens",
       "severity": "critical",
       "origin_lat": 33.5,
       "origin_lon": 48.5,
@@ -18,6 +18,5 @@
       "confidence": 0.95,
       "live": true
     }
-  ],
-  "updated": 1773990994
+  ]
 }
