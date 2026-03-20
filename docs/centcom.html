@@ -2763,10 +2763,34 @@ function toggleOrefHistory() {
       el.innerHTML = '<div style="color:#888;padding:8px 0">No recent sirens recorded</div>';
       return;
     }
+    // Deduplicate: collapse consecutive same-type alerts within 90s into one entry
+    const merged = [];
+    alerts.forEach(a => {
+      const prev = merged[merged.length - 1];
+      const aType = a.type || (a.cat ? String(a.cat) : '');
+      const prevType = prev ? (prev.type || (prev.cat ? String(prev.cat) : '')) : '';
+      const aTs = a.ts ? a.ts * 1000 : (a.utc ? new Date(a.utc).getTime() : 0);
+      const prevTs = prev ? (prev.ts ? prev.ts * 1000 : (prev.utc ? new Date(prev.utc).getTime() : 0)) : 0;
+      if (prev && aType === prevType && Math.abs(aTs - prevTs) < 90000) {
+        // Merge: keep earlier timestamp, combine areas, increment wave count
+        prev._waveCount = (prev._waveCount || 1) + 1;
+        const prevAreas = prev.areas || prev.data || [];
+        const curAreas = a.areas || a.data || [];
+        if (Array.isArray(prevAreas) && Array.isArray(curAreas)) {
+          const combined = [...new Set([...prevAreas, ...curAreas])];
+          prev.areas = combined;
+          prev.area_count = combined.length;
+        }
+      } else {
+        a._waveCount = 1;
+        merged.push(Object.assign({}, a));
+      }
+    });
+
     let html = '';
-    alerts.forEach((a, i) => {
-      // Support both API format (cat/title/areas) and static format (type/severity/utc)
-      const isDispatch = !!a.type; // from dispatch-log
+    let waveNum = merged.length;
+    merged.forEach((a, i) => {
+      const isDispatch = !!a.type;
       let displayTitle, catColor, rawAreas, areaCount, areaList;
       if (isDispatch) {
         displayTitle = _TYPE_LABELS[a.type] || a.type;
@@ -2783,6 +2807,9 @@ function toggleOrefHistory() {
         areaCount = a.area_count || (Array.isArray(rawAreas) ? rawAreas.length : 0);
         areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 4).join(', ') + (rawAreas.length > 4 ? ` +${rawAreas.length - 4} more` : '') : String(rawAreas);
       }
+      // Add wave label to distinguish entries
+      const waveLabel = `Wave ${waveNum--}`;
+      const updateLabel = a._waveCount > 1 ? ` <span style="color:#888;font-size:9px">(${a._waveCount} updates merged)</span>` : '';
       let timeStr = '';
       if (a.ts) {
         const ms = a.ts * 1000;
@@ -2806,6 +2833,7 @@ function toggleOrefHistory() {
       html += `<span style="color:${catColor};font-weight:700;font-size:12px">${displayTitle}</span>`;
       html += `<span style="color:#06b6d4;font-size:9px">${timeStr}</span>`;
       html += `</div>`;
+      html += `<div style="color:#9ca3af;font-size:9px;margin-top:2px;font-weight:600">${waveLabel}${updateLabel}</div>`;
       if (areaCount) html += `<div style="color:#aaa;font-size:10px;margin-top:4px">${areaCount} areas</div>`;
       if (areaList) html += `<div style="color:#666;font-size:9px;margin-top:3px">${areaList}</div>`;
       html += `</div>`;
@@ -2822,7 +2850,7 @@ function toggleOrefHistory() {
   }
 
   if (API_URL) {
-    fetch(`${API_URL}/api/oref/history?limit=10`, {cache:'no-store'})
+    fetch(`${API_URL}/api/oref/history?limit=5`, {cache:'no-store'})
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(d => {
         if (d.alerts && d.alerts.length) { renderSirenHistory(d.alerts); }
