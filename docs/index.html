@@ -3485,7 +3485,7 @@ function toggleMissileAnims() {
 
 // ═══ DEMO MODE — long-press 🚀 for 3s ═══
 window._demoMode = false;
-const DEMO_EVENTS = [
+window.DEMO_EVENTS = [
   { date:'demo', time:'demo', ts:0, lat:32.085, lon:34.781, type:'missile', actor:'IRGC', target:'Tel Aviv', desc:'DEMO — Shahab-3 ballistic missile', severity:'critical', origin_lat:33.5, origin_lon:48.5, source_country:'iran', weapon_type:'ballistic_missile', confidence:1, live:true },
   { date:'demo', time:'demo', ts:0, lat:32.794, lon:34.989, type:'missile', actor:'IRGC', target:'Haifa', desc:'DEMO — Emad MRBM', severity:'critical', origin_lat:34.3, origin_lon:47.1, source_country:'iran', weapon_type:'ballistic_missile', confidence:1, live:true },
   { date:'demo', time:'demo', ts:0, lat:31.768, lon:35.214, type:'missile', actor:'Houthi', target:'Jerusalem', desc:'DEMO — Houthi cruise missile', severity:'high', origin_lat:15.35, origin_lon:44.2, source_country:'yemen', weapon_type:'cruise_missile', confidence:1, live:true },
@@ -3494,7 +3494,7 @@ function toggleDemoMode() {
   window._demoMode = !window._demoMode;
   if (window._demoMode) {
     window._preDemoLive = window._liveEvents ? [...window._liveEvents] : [];
-    window._liveEvents = DEMO_EVENTS;
+    window._liveEvents = window.DEMO_EVENTS;
     window._missileAnimActive = true;
     localStorage.setItem('missileAnim', 'on');
     renderMissileArcs();
