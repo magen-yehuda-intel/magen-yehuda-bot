@@ -3496,7 +3496,11 @@ function fetchLiveEvents() {
 // Poll live events every 30s
 setInterval(fetchLiveEvents, 30000);
 // Initial fetch — wait for map tiles to load
-setTimeout(fetchLiveEvents, 4000);
+// Retry fetchLiveEvents until arcs render (mobile can be slow)
+(function initLiveEvents(attempt) {
+  fetchLiveEvents();
+  if (!window._arcSvg && attempt < 10) setTimeout(() => initLiveEvents(attempt + 1), 3000);
+})(0);
 
 function getMissileEvents() {
   const static_events = V2_DATA.RECENT_EVENTS || [];
