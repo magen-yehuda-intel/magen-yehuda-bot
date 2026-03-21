@@ -1,0 +1,423 @@
+{
+  "updated": "2026-03-21T07:01:26.109598+00:00",
+  "source": "Wikipedia 2026 Strait of Hormuz crisis + ISW + Reuters",
+  "attacks": [
+    {
+      "num": 1,
+      "date": "2026-03-01",
+      "name": "MT\u00a0Skylight",
+      "flag": "Palau",
+      "type": "Oil tanker",
+      "result": "Abandoned; 2 crew killed, including captain",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 2
+    },
+    {
+      "num": 2,
+      "date": "2026-03-01",
+      "name": "MKD\u00a0VYOM",
+      "flag": "Marshall Islands",
+      "type": "Oil tanker",
+      "result": "Abandoned; 1 crew killed",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 1
+    },
+    {
+      "num": 3,
+      "date": "2026-03-01",
+      "name": "MT\u00a0Hercules Star",
+      "flag": "Gibraltar",
+      "type": "Oil tanker",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 4,
+      "date": "2026-03-01",
+      "name": "Ocean Electra",
+      "flag": "Liberia",
+      "type": "Tanker",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 5,
+      "date": "2026-03-01",
+      "name": "LCT\u00a0Ayeh",
+      "flag": "United Arab Emirates",
+      "type": "Oil tanker",
+      "result": "Damaged",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 6,
+      "date": "2026-03-02",
+      "name": "Stena Imperative",
+      "flag": "United States",
+      "type": "Products tanker",
+      "result": "Damaged",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 7,
+      "date": "2026-03-02",
+      "name": "Athe\u00a0Nova",
+      "flag": "Honduras",
+      "type": "Bitumen tanker",
+      "result": "Damaged",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 8,
+      "date": "2026-03-02",
+      "name": "Gold Oak",
+      "flag": "Panama",
+      "type": "Bulk carrier",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 9,
+      "date": "2026-03-03",
+      "name": "Pelagia",
+      "flag": "Malta",
+      "type": "Bulk carrier",
+      "result": "Unharmed",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 10,
+      "date": "2026-03-03",
+      "name": "Libra Trader",
+      "flag": "Marshall Islands",
+      "type": "Crude oil tanker",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 11,
+      "date": "2026-03-04",
+      "name": "MSC\u00a0Grace",
+      "flag": "Liberia",
+      "type": "Container ship",
+      "result": "Unharmed",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 12,
+      "date": "2026-03-04",
+      "name": "Safeen Prestige",
+      "flag": "Malta",
+      "type": "Container ship",
+      "result": "Abandoned",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 13,
+      "date": "2026-03-04",
+      "name": "Sonangol Namibe",
+      "flag": "Bahamas",
+      "type": "Oil tanker",
+      "result": "Damaged",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 14,
+      "date": "2026-03-06",
+      "name": "Mussafah\u00a02",
+      "flag": "United Arab Emirates",
+      "type": "Tugboat",
+      "result": "Sank; 4 crew dead",
+      "abandoned": false,
+      "sunk": true,
+      "ablaze": false,
+      "casualties": 4
+    },
+    {
+      "num": 15,
+      "date": "2026-03-10",
+      "name": "Unknown",
+      "flag": "N/A",
+      "type": "Bulk carrier",
+      "result": "Unharmed",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 16,
+      "date": "2026-03-11",
+      "name": "MV\u00a0Mayuree Naree",
+      "flag": "Thailand",
+      "type": "Bulk carrier",
+      "result": "Abandoned; 3 crew missing",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 3
+    },
+    {
+      "num": 17,
+      "date": "2026-03-11",
+      "name": "One Majesty",
+      "flag": "Japan",
+      "type": "Container ship",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 18,
+      "date": "2026-03-11",
+      "name": "Star Gwyneth",
+      "flag": "Marshall Islands",
+      "type": "Bulk carrier",
+      "result": "Damaged",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 19,
+      "date": "2026-03-11",
+      "name": "Safesea Vishnu",
+      "flag": "Marshall Islands",
+      "type": "Oil tanker",
+      "result": "Set ablaze; abandoned; 1 crew killed",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": true,
+      "casualties": 1
+    },
+    {
+      "num": 20,
+      "date": "2026-03-11",
+      "name": "Zefyros",
+      "flag": "Malta",
+      "type": "Oil tanker",
+      "result": "Set ablaze; abandoned",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": true,
+      "casualties": 0
+    },
+    {
+      "num": 21,
+      "date": "2026-03-12",
+      "name": "Source Blessing",
+      "flag": "Liberia",
+      "type": "Container ship",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 22,
+      "date": "2026-03-17",
+      "name": "Gas Al Ahmadiah",
+      "flag": "Kuwait",
+      "type": "Tanker",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 23,
+      "date": "2026-03-18",
+      "name": "Parimal",
+      "flag": "Palau",
+      "type": "Chemical tanker",
+      "result": "Abandoned; captain missing",
+      "abandoned": true,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 24,
+      "date": "2026-03-19",
+      "name": "Halul 69",
+      "flag": "Qatar",
+      "type": "Offshore vessel",
+      "result": "Minor damage",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    }
+  ],
+  "timeline": [
+    {
+      "date": "2026-02-27",
+      "struck": 0,
+      "shutdown": 0,
+      "ships_attacked": 0,
+      "label": "Pre-war baseline"
+    },
+    {
+      "date": "2026-02-28",
+      "struck": 3,
+      "shutdown": 3,
+      "ships_attacked": 0,
+      "label": "Iran strikes begin: Kharg, Isfahan, Haifa struck; Leviathan/Karish/Tamar shutdown"
+    },
+    {
+      "date": "2026-03-01",
+      "struck": 8,
+      "shutdown": 3,
+      "ships_attacked": 5,
+      "label": "5 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-02",
+      "struck": 12,
+      "shutdown": 4,
+      "ships_attacked": 3,
+      "label": "3 ship(s) attacked; Ras Tanura drone strike; Ras Laffan LNG shutdown"
+    },
+    {
+      "date": "2026-03-03",
+      "struck": 14,
+      "shutdown": 4,
+      "ships_attacked": 2,
+      "label": "2 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-04",
+      "struck": 20,
+      "shutdown": 5,
+      "ships_attacked": 3,
+      "label": "3 ship(s) attacked; Bushehr, Bandar Abbas, Fujairah struck; Mesaieed shutdown"
+    },
+    {
+      "date": "2026-03-05",
+      "struck": 21,
+      "shutdown": 5,
+      "ships_attacked": 0,
+      "label": "Kuwait Mina al-Ahmadi struck"
+    },
+    {
+      "date": "2026-03-06",
+      "struck": 22,
+      "shutdown": 6,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked; North Field shutdown"
+    },
+    {
+      "date": "2026-03-08",
+      "struck": 23,
+      "shutdown": 6,
+      "ships_attacked": 0,
+      "label": "Tehran oil depots bombed by Israel"
+    },
+    {
+      "date": "2026-03-10",
+      "struck": 24,
+      "shutdown": 6,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-11",
+      "struck": 29,
+      "shutdown": 6,
+      "ships_attacked": 5,
+      "label": "5 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-12",
+      "struck": 30,
+      "shutdown": 6,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-16",
+      "struck": 30,
+      "shutdown": 7,
+      "ships_attacked": 0,
+      "label": "UAE Shah gas field suspended"
+    },
+    {
+      "date": "2026-03-17",
+      "struck": 32,
+      "shutdown": 7,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked; Fujairah oil hub hit again"
+    },
+    {
+      "date": "2026-03-18",
+      "struck": 34,
+      "shutdown": 7,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked; IDF strikes South Pars/Asaluyeh"
+    },
+    {
+      "date": "2026-03-19",
+      "struck": 36,
+      "shutdown": 7,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked; Yanbu SAMREF targeted"
+    },
+    {
+      "date": "2026-03-20",
+      "struck": 37,
+      "shutdown": 7,
+      "ships_attacked": 0,
+      "label": "Kuwait Mina al-Ahmadi hit again"
+    }
+  ],
+  "summary": {
+    "total_attacks": 24,
+    "total_casualties": 11,
+    "total_abandoned": 7,
+    "total_sunk": 1,
+    "latest_struck": 37,
+    "latest_shutdown": 7
+  }
+}
