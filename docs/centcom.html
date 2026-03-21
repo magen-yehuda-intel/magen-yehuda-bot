@@ -272,7 +272,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .chip-label { font-family:var(--font-data); font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
 .chip-value { font-family:var(--font-title); font-size:14px; font-weight:700; }
 .chip-alert .chip-value { color:var(--red); }
-.chip-sat .chip-value { color:var(--cyan); }
 .chip-live .chip-value { color:var(--green); }
 .chip-ais .chip-value { color:var(--blue); }
 
@@ -920,9 +919,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn" data-layer="fires" data-color="orange" onclick="cycleFires()">
     <span>🔥</span><div class="tb-tooltip">FIRMS Fires (last 2h)</div>
   </div>
-  <div class="tb-btn" data-layer="satellites" data-color="cyan" onclick="toggleLayer('satellites')">
-    <span>🛰</span><div class="tb-tooltip">Recon Satellites</div>
-  </div>
   <div class="tb-btn" data-layer="osint" data-color="red" onclick="toggleLayer('osint')">
     <span>📌</span><div class="tb-tooltip">OSINT Events</div>
   </div>
@@ -1005,7 +1001,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (6h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
     <div class="sb-row" onclick="toggleLayer('seismic')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Earthquakes</span><span class="sb-row-count" id="cnt-seismic">0</span></div>
     <div class="sb-row" onclick="toggleLayer('correlations')"><div class="sb-dot" style="background:#ff0040;box-shadow:0 0 8px #ff0040"></div><span class="sb-row-name">⚡ Strike Correlations</span><span class="sb-row-count" id="cnt-correlations">0</span></div>
-    <div class="sb-row" onclick="toggleLayer('satellites')"><div class="sb-dot" style="background:#00ff88"></div><span class="sb-row-name">🛰️ Recon Satellites</span><span class="sb-row-count" id="cnt-satellites">0</span></div>
     <div class="sb-row" onclick="toggleLayer('osint')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">OSINT Events</span><span class="sb-row-count" id="cnt-osint">0</span></div>
     <div class="sb-actions">
       <div class="sb-action-btn" onclick="showAllLayers()">Show All Layers</div>
@@ -1052,7 +1047,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- COUNTER CHIPS -->
 <div id="chips">
   <div class="chip chip-alert"><span class="chip-icon">🛡</span><div><div class="chip-label">ALERT</div><div class="chip-value" id="chip-alert">0</div></div></div>
-  <div class="chip chip-sat"><span class="chip-icon">🛰</span><div><div class="chip-label">SAT</div><div class="chip-value" id="chip-sat">12</div></div></div>
   <div class="chip chip-live"><span class="chip-icon">✈</span><div><div class="chip-label">LIVE</div><div class="chip-value" id="chip-live">0</div></div></div>
   <div class="chip chip-ais"><span class="chip-icon">🚢</span><div><div class="chip-label">AIS</div><div class="chip-value" id="chip-ais">0</div></div></div>
 </div>
@@ -1224,7 +1218,6 @@ const layers = {
   aircraft: L.layerGroup(),
   ships: L.layerGroup(),
   gpsjam: L.layerGroup(),
-  satellites: L.layerGroup(),
   strikes: L.layerGroup(),
   seismic: L.layerGroup(),
   correlations: L.layerGroup(),
@@ -1236,11 +1229,11 @@ const activeState = {
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: true,
-  aircraft: false, ships: false, gpsjam: false, satellites: false,
+  aircraft: false, ships: false, gpsjam: false,
 };
 
 // Add default-on layers
-['borders', 'military', 'fires', 'osint', 'sirens', 'strikes', 'seismic', 'correlations', 'ships', 'satellites', 'gpsjam'].forEach(k => { if (layers[k] && activeState[k]) layers[k].addTo(map); });
+['borders', 'military', 'fires', 'osint', 'sirens', 'strikes', 'seismic', 'correlations', 'ships', 'gpsjam'].forEach(k => { if (layers[k] && activeState[k]) layers[k].addTo(map); });
 
 // ═══════════════════════════════════════════════════════════
 // TOGGLE FUNCTIONS
@@ -1260,7 +1253,6 @@ function toggleLayer(name) {
   if (name === 'osint' && activeState.osint) loadOSINT();
   if (name === 'seismic' && activeState.seismic) loadSeismic();
   if (name === 'gpsjam' && activeState.gpsjam) loadGPSJam();
-  if (name === 'satellites' && activeState.satellites) loadSatellites();
   if (name === 'ships' && activeState.ships) loadShips();
   if (name === 'fires' && activeState.fires) loadFIRMS();
 }
@@ -2917,160 +2909,6 @@ function loadGPSJam() {
       label.addTo(layers.gpsjam);
     }
   });
-}
-
-// ═══════════════════════════════════════════════════════════
-// RECON SATELLITE TRACKING (CelesTrak TLE + satellite.js SGP4)
-// ═══════════════════════════════════════════════════════════
-const RECON_SATS = [
-  { id: 40115, name: 'WorldView-3', type: 'EO', op: '🇺🇸 Maxar', res: '0.31m', swath: 13.1 },
-  { id: 48268, name: 'Pléiades Neo 3', type: 'EO', op: '🇫🇷 Airbus', res: '0.30m', swath: 14 },
-  { id: 49070, name: 'Pléiades Neo 4', type: 'EO', op: '🇫🇷 Airbus', res: '0.30m', swath: 14 },
-  { id: 38012, name: 'Pléiades 1A', type: 'EO', op: '🇫🇷 Airbus', res: '0.50m', swath: 20 },
-  { id: 54880, name: 'EROS C3', type: 'EO', op: '🇮🇱 IAI', res: '0.30m', swath: 11.5 },
-  { id: 40536, name: 'KOMPSAT-3A', type: 'EO/IR', op: '🇰🇷 KARI', res: '0.55m', swath: 12 },
-  { id: 40697, name: 'Sentinel-2A', type: 'MSI', op: '🇪🇺 ESA', res: '10m', swath: 290 },
-  { id: 42063, name: 'Sentinel-2B', type: 'MSI', op: '🇪🇺 ESA', res: '10m', swath: 290 },
-  { id: 65565, name: 'PRAETORIAN SDA-602', type: 'Tracking', op: '🇺🇸 SDA', res: 'IR', swath: 0 },
-  { id: 39088, name: 'SAPPHIRE', type: 'SSA', op: '🇨🇦 DND', res: 'Tracking', swath: 0 },
-];
-// Pre-fetched TLE data (updated periodically, avoids CelesTrak CORS)
-let satTLEs = {
-  "40115":{"name":"WORLDVIEW-3 (WV-3)","line1":"1 40115U 14048A   26067.89947747  .00001318  00000+0  16146-3 0  9997","line2":"2 40115  97.8635 144.1029 0000181   8.1946 351.9272 14.84832971627023"},
-  "48268":{"name":"PLEIADES NEO 3","line1":"1 48268U 21034A   26067.76483736  .00000594  00000+0  82086-4 0  9998","line2":"2 48268  97.8930 143.9726 0001286  89.5997 270.5363 14.81674847262783"},
-  "49070":{"name":"PLEIADES NEO 4","line1":"1 49070U 21073E   26067.93365755 -.00000635  00000+0 -74051-4 0  9993","line2":"2 49070  97.8931 144.1351 0001325  91.3415 268.7949 14.81670942246528"},
-  "38012":{"name":"PLEIADES 1A","line1":"1 38012U 11076F   26067.97818378  .00000368  00000+0  89022-4 0  9992","line2":"2 38012  98.2042 144.4003 0001690  89.6947  30.5200 14.58538794757380"},
-  "54880":{"name":"EROS C3","line1":"1 54880U 22179A   26067.96449115  .00008366  00000+0  46503-3 0  9999","line2":"2 54880 139.3352 152.2676 0003324  24.1796 335.9168 15.11801642177169"},
-  "40536":{"name":"KOMPSAT-3A","line1":"1 40536U 15014A   26067.94818758  .00032800  00000+0  56554-3 0  9990","line2":"2 40536  97.6879  52.3988 0063309 180.1739 179.9500 15.48690134606274"},
-  "40697":{"name":"SENTINEL-2A","line1":"1 40697U 15028A   26056.18000490  .00000159  00000+0  76852-4 0  9999","line2":"2 40697  98.5024 132.8928 0054368 194.7437 165.2162 14.30192923557712"},
-  "42063":{"name":"SENTINEL-2B","line1":"1 42063U 17013A   26067.92776985 -.00000051  00000+0 -28971-5 0  9990","line2":"2 42063  98.5653 144.1326 0001121  94.8520 265.2791 14.30818936470306"},
-  "65565":{"name":"PRAETORIAN SDA_602","line1":"1 65565U 25203A   26067.63247980  .00000091  00000+0  71108-4 0  9999","line2":"2 65565  81.3000 103.9187 0007220 104.8575 255.3382 13.84332785 24784"},
-  "39088":{"name":"SAPPHIRE","line1":"1 39088U 13009C   26067.91083356  .00000239  00000+0  98487-4 0  9990","line2":"2 39088  98.4220 249.7562 0011166 181.8714 178.2432 14.35208750682193"}
-};
-let satInterval = null;
-
-async function loadSatellites() {
-  layers.satellites.clearLayers();
-  if (!window.satellite) {
-    // Load satellite.js from CDN
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js';
-      s.onload = resolve; s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
-  // TLEs are pre-embedded in satTLEs (CelesTrak has no CORS)
-
-  updateSatPositions();
-  // Update positions every 5 seconds
-  if (satInterval) clearInterval(satInterval);
-  satInterval = setInterval(updateSatPositions, 5000);
-}
-
-function updateSatPositions() {
-  if (!window.satellite) return;
-  layers.satellites.clearLayers();
-  const now = new Date();
-  let count = 0;
-
-  RECON_SATS.forEach(sat => {
-    const tle = satTLEs[sat.id];
-    if (!tle) return;
-
-    try {
-      const satrec = satellite.twoline2satrec(tle.line1, tle.line2);
-      const posVel = satellite.propagate(satrec, now);
-      if (!posVel.position) return;
-
-      const gmst = satellite.gstime(now);
-      const geo = satellite.eciToGeodetic(posVel.position, gmst);
-      const lat = satellite.degreesLat(geo.latitude);
-      const lon = satellite.degreesLong(geo.longitude);
-      const alt = geo.height; // km
-
-      // Check if over ME region (roughly)
-      const overME = lat >= 10 && lat <= 45 && lon >= 20 && lon <= 65;
-
-      count++;
-      const color = overME ? '#00ff88' : '#06b6d4';
-      const size = overME ? 14 : 10;
-      const icon = L.divIcon({
-        html: `<div style="
-          width:${size}px;height:${size}px;
-          background:${color};
-          border:1.5px solid ${overME ? '#00ff88' : '#0891b2'};
-          border-radius:50%;
-          box-shadow:0 0 ${overME ? 10 : 4}px ${color};
-          opacity:${overME ? 1 : 0.6};
-          ${overME ? 'animation:satPulse 2s ease-in-out infinite;' : ''}
-        "></div>`,
-        className: '', iconSize: [size, size], iconAnchor: [size/2, size/2]
-      });
-
-      const marker = L.marker([lat, lon], { icon }).addTo(layers.satellites);
-
-      // Imaging swath footprint (only for sats with swath > 0 and over ME)
-      if (overME && sat.swath > 0) {
-        const swathKm = sat.swath;
-        L.circle([lat, lon], {
-          radius: swathKm * 500, // half-swath in meters
-          color: '#00ff88', fillColor: '#00ff88',
-          fillOpacity: 0.08, weight: 1, opacity: 0.3,
-          dashArray: '4,4'
-        }).addTo(layers.satellites);
-      }
-
-      // Ground track: propagate ±15 min
-      const trackPts = [];
-      for (let m = -15; m <= 15; m += 0.5) {
-        const t = new Date(now.getTime() + m * 60000);
-        const pv = satellite.propagate(satrec, t);
-        if (!pv.position) continue;
-        const g = satellite.eciToGeodetic(pv.position, satellite.gstime(t));
-        trackPts.push([satellite.degreesLat(g.latitude), satellite.degreesLong(g.longitude)]);
-      }
-      if (trackPts.length > 2) {
-        // Split at antimeridian
-        const segments = [[]];
-        for (let i = 0; i < trackPts.length; i++) {
-          segments[segments.length-1].push(trackPts[i]);
-          if (i < trackPts.length-1 && Math.abs(trackPts[i][1] - trackPts[i+1][1]) > 180) {
-            segments.push([]);
-          }
-        }
-        segments.forEach(seg => {
-          if (seg.length > 1) {
-            L.polyline(seg, {
-              color: overME ? '#00ff88' : '#06b6d4',
-              weight: overME ? 1.5 : 0.8,
-              opacity: overME ? 0.5 : 0.2,
-              dashArray: '3,6'
-            }).addTo(layers.satellites);
-          }
-        });
-      }
-
-      // Direction arrow
-      if (trackPts.length > 2) {
-        const mid = Math.floor(trackPts.length / 2);
-        const heading = Math.atan2(
-          trackPts[mid+1][1] - trackPts[mid-1][1],
-          trackPts[mid+1][0] - trackPts[mid-1][0]
-        ) * 180 / Math.PI;
-      }
-
-      marker.bindPopup(mkPopup(
-        `🛰️ ${sat.name}`,
-        `${sat.op} · ${sat.type}`,
-        `📏 Alt: ${alt.toFixed(0)} km<br>📍 ${lat.toFixed(2)}°, ${lon.toFixed(2)}°<br>🔍 Resolution: ${sat.res}<br>${sat.swath ? '📐 Swath: '+sat.swath+'km' : ''}${overME ? '<br><span style="color:#00ff88;font-weight:700">✅ OVER MIDDLE EAST</span>' : '<br><span style="color:#888">Outside ME region</span>'}`,
-        color
-      ));
-    } catch(e) {}
-  });
-
-  const el = document.getElementById('cnt-satellites');
-  if (el) el.textContent = count;
 }
 
 function loadAircraft() {
