@@ -1994,7 +1994,10 @@ function renderAllLayers() {
   }).catch(e => console.warn('Borders load failed:', e));
 
   // ─── RECENT STRIKES from V2_DATA (with time window) ───
-  window._missileAnimActive = localStorage.getItem('missileAnim') !== 'off';
+  // Embedded live events (updated by watcher push)
+  window._liveEvents = [{"date":"2026-03-21","time":"04:20:18","ts":1774056018,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Tel Aviv","desc":"Ballistic missile — Wave 17","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true},{"date":"2026-03-21","time":"02:22:53","ts":1774048973,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Central Israel","desc":"Ballistic missile barrage — Wave 14","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true}];
+  window._missileAnimActive = true; // Force on — critical live events
+  localStorage.setItem('missileAnim', 'on');
   window._arcSvg = null;
   window._arcPaths = [];
   window._arcAnimId = null;
