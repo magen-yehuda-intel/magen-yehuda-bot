@@ -120,6 +120,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .marker-iran-irgc:hover { box-shadow:0 0 20px rgba(220,38,38,0.6), 0 0 40px rgba(220,38,38,0.2); }
 .marker-iran-energy { filter:drop-shadow(0 0 8px rgba(249,115,22,0.7)); border-color:#fb923c; }
 .marker-iran-energy:hover { box-shadow:0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(249,115,22,0.2); }
+.marker-iran-power { filter:drop-shadow(0 0 8px rgba(234,179,8,0.7)); border-color:#facc15; }
+.marker-iran-water { filter:drop-shadow(0 0 8px rgba(56,189,248,0.7)); border-color:#38bdf8; }
+.marker-iran-telecom { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#22d3ee; }
+.marker-iran-transport { filter:drop-shadow(0 0 8px rgba(45,212,191,0.7)); border-color:#2dd4bf; }
+.marker-iran-industrial { filter:drop-shadow(0 0 8px rgba(148,163,184,0.7)); border-color:#94a3b8; }
 .marker-struck { filter:drop-shadow(0 0 10px rgba(239,68,68,0.8)); border-color:#ef4444; animation:struck-pulse 1.5s ease-in-out infinite alternate; }
 @keyframes struck-pulse { from { filter:drop-shadow(0 0 8px rgba(239,68,68,0.6)); } to { filter:drop-shadow(0 0 16px rgba(239,68,68,1)); } }
 .marker-waterway { filter:drop-shadow(0 0 8px rgba(34,211,238,0.7)); border-color:#67e8f9; }
@@ -967,6 +972,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" onclick="isolateIranLayer('airbases')"><div class="sb-dot" style="background:#a855f7"></div><span class="sb-row-name">Iran Air Bases</span><span class="sb-row-count">29</span></div>
     <div class="sb-row" onclick="isolateIranLayer('irgc')"><div class="sb-dot" style="background:#dc2626"></div><span class="sb-row-name">Iran IRGC Facilities</span><span class="sb-row-count">8</span></div>
     <div class="sb-row" onclick="isolateIranLayer('energy')"><div class="sb-dot" style="background:#fb923c"></div><span class="sb-row-name">Iran Oil & Gas</span><span class="sb-row-count" id="cnt-iran-energy">38</span></div>
+    <div class="sb-row" onclick="toggleLayer('infra')"><div class="sb-dot" style="background:#facc15"></div><span class="sb-row-name">Iran Infrastructure</span><span class="sb-row-count" id="cnt-iran-infra">...</span></div>
     <div style="padding-left:28px;font-size:9px;color:#ef4444;letter-spacing:0.5px" id="struck-count"></div>
     <div class="sb-section-title overlay">OVERLAYS</div>
     <div class="sb-row" onclick="toggleLayer('sirens')"><div class="sb-dot" style="background:#ef4444"></div><span class="sb-row-name">🚨 Active Sirens</span><span class="sb-row-count" id="cnt-sirens">0</span></div>
@@ -1014,6 +1020,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="legend-item"><div class="legend-dot" style="background:#f9a8d4"></div>Iran Naval</div>
     <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>Iran Air Def</div>
     <div class="legend-item"><div class="legend-dot" style="background:#c084fc"></div>Iran Air Base</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#facc15"></div>Power Plant</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>Water Infra</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div>Telecom/IT</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2dd4bf"></div>Transport Hub</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#94a3b8"></div>Industrial</div>
     <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>IRGC</div>
     <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div>Iran Oil & Gas</div>
     <div class="legend-item"><div class="legend-dot" style="background:#ef4444;animation:struck-pulse 1.5s ease-in-out infinite alternate"></div>Struck Facility</div>
@@ -1180,7 +1191,7 @@ function fireClusterIcon(cluster) {
 const layers = {
   borders: L.layerGroup(),
   military: L.markerClusterGroup({ maxClusterRadius: 40, spiderfyOnMaxZoom: true, showCoverageOnHover: false, zoomToBoundsOnClick: true, disableClusteringAtZoom: 9 }),
-  infra: L.layerGroup(),
+  infra: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
   nuclear: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
   missiles: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
   naval: L.markerClusterGroup({ maxClusterRadius: 35, disableClusteringAtZoom: 8, iconCreateFunction: iranClusterIcon }),
@@ -1906,6 +1917,49 @@ function renderAllLayers() {
   const gulfStruck = (V2_DATA.GULF_ENERGY||[]).filter(s => s.struck).length;
   const struckEl = document.getElementById('struck-count');
   if (struckEl && (iranStruck + gulfStruck) > 0) struckEl.textContent = `💥 ${iranStruck + gulfStruck} facilities struck`;
+
+  // ─── IRAN INFRASTRUCTURE (power, water, telecom, transport, industrial) ───
+  (function loadInfrastructure() {
+    const INFRA_CONFIG = {
+      IRAN_POWER_PLANTS: { emoji: '⚡', cssClass: 'marker-iran-power', color: '#facc15', label: 'Power Plant' },
+      IRAN_WATER: { emoji: '💧', cssClass: 'marker-iran-water', color: '#38bdf8', label: 'Water' },
+      IRAN_TELECOM: { emoji: '📡', cssClass: 'marker-iran-telecom', color: '#22d3ee', label: 'Telecom/IT' },
+      IRAN_TRANSPORT: { emoji: '🚢', cssClass: 'marker-iran-transport', color: '#2dd4bf', label: 'Transport' },
+      IRAN_INDUSTRIAL: { emoji: '🏭', cssClass: 'marker-iran-industrial', color: '#94a3b8', label: 'Industrial' },
+    };
+    const typeEmojis = {
+      hydro:'🌊', thermal:'🔥', combined_cycle:'⚙️', nuclear:'☢️', solar:'☀️',
+      dam:'🏗', desal:'🧪', treatment:'🚰',
+      ixp:'🌐', cable_landing:'🔌', datacenter:'🖥', switching:'📞',
+      port:'⚓', airport:'✈️', rail_junction:'🚂',
+      steel:'⛓', cement:'🧱', automotive:'🚗', aluminum:'🔩', mining:'⛏'
+    };
+    fetch('data/iran-infrastructure.json').then(r=>r.json()).then(INFRA_DATA => {
+      let totalCount = 0;
+      Object.entries(INFRA_CONFIG).forEach(([key, cfg]) => {
+        const items = INFRA_DATA[key] || [];
+        items.forEach(s => {
+          const icon = typeEmojis[s.type] || cfg.emoji;
+          const capStr = s.capacity_mw ? `<br>⚡ ${s.capacity_mw.toLocaleString()} MW` : '';
+          const popup = mkPopup(
+            `${icon} ${s.name}`, `${cfg.label} — ${(s.type||'').replace(/_/g,' ').toUpperCase()}`,
+            `${s.desc}${capStr}`, cfg.color
+          );
+          mkMarker(s.lat, s.lon, icon, cfg.cssClass, 20, popup).addTo(layers.infra);
+        });
+        totalCount += items.length;
+      });
+      // Also add energy data to infra layer (duplicate markers for the unified view)
+      (V2_DATA.IRAN_ENERGY||[]).forEach(s => {
+        const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('oil') || s.type.includes('offshore') ? '🛢' : s.type.includes('gas') ? '⛽' : '🛢';
+        const popup = mkPopup(`${emoji} ${s.name}${s.struck?' 💥 STRUCK':''}`, 'Oil & Gas — '+s.type.replace(/_/g,' ').toUpperCase(), s.desc, s.struck?'#ef4444':'#f97316');
+        mkMarker(s.lat, s.lon, emoji, s.struck?'marker-struck':'marker-iran-energy', 20, popup).addTo(layers.infra);
+      });
+      totalCount += (V2_DATA.IRAN_ENERGY||[]).length;
+      const cntEl = document.getElementById('cnt-iran-infra');
+      if (cntEl) cntEl.textContent = totalCount;
+    }).catch(e => console.warn('Infra data load failed:', e));
+  })();
 
   // ─── STRATEGIC WATERWAYS ───
   V2_DATA.WATERWAYS.forEach(w => {
