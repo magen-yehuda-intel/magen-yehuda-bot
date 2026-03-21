@@ -3489,50 +3489,33 @@ function toggleMissileAnims() {
   renderMissileArcs();
 }
 
-// ═══ DEMO MODE — long-press 🚀 for 3s ═══
+// ═══ TEST UTILITIES — console only: window._test.demo() / window._test.demoOff() ═══
 window._demoMode = false;
-window.DEMO_EVENTS = [
-  { date:'demo', time:'demo', ts:0, lat:32.085, lon:34.781, type:'missile', actor:'IRGC', target:'Tel Aviv', desc:'DEMO — Shahab-3 ballistic missile', severity:'critical', origin_lat:33.5, origin_lon:48.5, source_country:'iran', weapon_type:'ballistic_missile', confidence:1, live:true },
-  { date:'demo', time:'demo', ts:0, lat:32.794, lon:34.989, type:'missile', actor:'IRGC', target:'Haifa', desc:'DEMO — Emad MRBM', severity:'critical', origin_lat:34.3, origin_lon:47.1, source_country:'iran', weapon_type:'ballistic_missile', confidence:1, live:true },
-  { date:'demo', time:'demo', ts:0, lat:31.768, lon:35.214, type:'missile', actor:'Houthi', target:'Jerusalem', desc:'DEMO — Houthi cruise missile', severity:'high', origin_lat:15.35, origin_lon:44.2, source_country:'yemen', weapon_type:'cruise_missile', confidence:1, live:true },
-];
-function toggleDemoMode() {
-  window._demoMode = !window._demoMode;
-  if (window._demoMode) {
+window._test = {
+  DEMO_EVENTS: [
+    { date:'demo', time:'demo', ts:0, lat:32.085, lon:34.781, type:'missile', actor:'IRGC', target:'Tel Aviv', desc:'DEMO — Shahab-3 ballistic missile', severity:'critical', origin_lat:33.5, origin_lon:48.5, source_country:'iran', weapon_type:'ballistic_missile', confidence:1, live:true },
+    { date:'demo', time:'demo', ts:0, lat:32.794, lon:34.989, type:'missile', actor:'IRGC', target:'Haifa', desc:'DEMO — Emad MRBM', severity:'critical', origin_lat:34.3, origin_lon:47.1, source_country:'iran', weapon_type:'ballistic_missile', confidence:1, live:true },
+    { date:'demo', time:'demo', ts:0, lat:31.768, lon:35.214, type:'missile', actor:'Houthi', target:'Jerusalem', desc:'DEMO — Houthi cruise missile', severity:'high', origin_lat:15.35, origin_lon:44.2, source_country:'yemen', weapon_type:'cruise_missile', confidence:1, live:true },
+  ],
+  demo: function() {
+    window._demoMode = true;
     window._preDemoLive = window._liveEvents ? [...window._liveEvents] : [];
-    window._liveEvents = window.DEMO_EVENTS;
+    window._liveEvents = window._test.DEMO_EVENTS;
     window._missileAnimActive = true;
     localStorage.setItem('missileAnim', 'on');
     renderMissileArcs();
-    // Flash a toast
-    const toast = document.createElement('div');
-    toast.textContent = '🚀 DEMO MODE — 3 simulated arcs';
-    toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(239,68,68,0.9);color:#fff;padding:10px 24px;border-radius:8px;z-index:9999;font:bold 14px var(--font-data);pointer-events:none;animation:fadeOut 3s forwards';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 3500);
-  } else {
+    console.log('🚀 DEMO MODE ON — 3 simulated arcs');
+  },
+  demoOff: function() {
+    window._demoMode = false;
     window._liveEvents = window._preDemoLive || [];
     if (window._arcAnimId) { cancelAnimationFrame(window._arcAnimId); window._arcAnimId = null; }
     if (window._arcSvg) { window._arcSvg.remove(); window._arcSvg = null; }
     window._arcPaths = [];
     if (window._liveEvents.length) renderMissileArcs();
-    const toast = document.createElement('div');
-    toast.textContent = '✅ Demo cancelled';
-    toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:rgba(34,197,94,0.9);color:#fff;padding:10px 24px;border-radius:8px;z-index:9999;font:bold 14px var(--font-data);pointer-events:none;animation:fadeOut 2s forwards';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2500);
+    console.log('✅ Demo OFF — restored live events');
   }
-}
-// Bind long-press to all 🚀 missile anim buttons
-function bindLongPress(el) {
-  let timer = null;
-  const start = (e) => { timer = setTimeout(() => { e.preventDefault(); toggleDemoMode(); timer = 'fired'; }, 3000); };
-  const end = (e) => { if (timer === 'fired') { e.preventDefault(); e.stopPropagation(); } else { clearTimeout(timer); } timer = null; };
-  el.addEventListener('mousedown', start); el.addEventListener('touchstart', start, {passive:false});
-  el.addEventListener('mouseup', end); el.addEventListener('touchend', end);
-  el.addEventListener('mouseleave', () => { if (timer && timer !== 'fired') clearTimeout(timer); timer = null; });
-}
-document.querySelectorAll('.tb-btn[data-layer="animations"], .mt-btn[data-mt="animations"]').forEach(bindLongPress);
+};
 
 // Live events from watcher classification
 // Embedded fallback (updated by watcher push + git commit)
