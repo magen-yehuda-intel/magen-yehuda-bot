@@ -999,7 +999,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
         <option value="24">24h</option><option value="48">48h</option><option value="168">7d</option><option value="0">All</option>
       </select>
     </div>
-    <div class="sb-row" onclick="toggleMissileAnims()"><div class="sb-dot" style="background:#ef4444" id="anim-dot-sidebar"></div><span class="sb-row-name">🚀 Missile Animations</span></div>
+    <div class="sb-row" onclick="toggleMissileAnims()"><div class="sb-dot" style="background:#ef4444" id="anim-dot-sidebar"></div><span class="sb-row-name" id="anim-label-sidebar">🚀 Missile Animations</span></div>
     <div class="sb-row" onclick="toggleLayer('waterways')"><div class="sb-dot" style="background:#22d3ee"></div><span class="sb-row-name">Strategic Waterways</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('patrol')"><div class="sb-dot" style="background:#22c55e"></div><span class="sb-row-name">Air Patrol Routes</span><span class="sb-row-count"></span></div>
     <div class="sb-row" onclick="toggleLayer('fires')"><div class="sb-dot" style="background:#ff8800"></div><span class="sb-row-name">Fires (6h)</span><span class="sb-row-count" id="cnt-fires">0</span></div>
@@ -3470,22 +3470,59 @@ function applyStrikeWindow() {
   renderStrikeEvents();
 }
 
-// Missile animation state
-window._missileAnimActive = localStorage.getItem('missileAnim') !== 'off';
-// Force animation on if embedded live events have critical severity
+// Missile animation state — 3 modes: 'off' | 'paths' | 'animated'
+window._missileMode = localStorage.getItem('missileMode') || 'off';
+// Legacy compat: migrate old 'missileAnim' key
+if (!localStorage.getItem('missileMode')) {
+  var old = localStorage.getItem('missileAnim');
+  if (old === 'on') window._missileMode = 'animated';
+  else if (old === 'off') window._missileMode = 'off';
+}
+window._missileAnimActive = window._missileMode !== 'off';
+// Force animated if embedded live events have critical severity
 if (window._liveEvents && window._liveEvents.some(function(e){return e.severity==='critical'&&e.live;})) {
+  window._missileMode = 'animated';
   window._missileAnimActive = true;
-  localStorage.setItem('missileAnim', 'on');
+  localStorage.setItem('missileMode', 'animated');
 }
 // NOTE: do NOT reset _arcSvg/_arcPaths here — they may already be rendered by renderStrikeEvents() above
 
+function _showMissileToast(mode) {
+  var msgs = { off: '🚀 Missile Arcs: OFF', paths: '🛤️ Ballistic Paths: ON', animated: '🚀 Missile Animation: ON' };
+  var colors = { off: 'rgba(100,100,100,0.9)', paths: 'rgba(59,130,246,0.9)', animated: 'rgba(239,68,68,0.9)' };
+  var toast = document.createElement('div');
+  toast.textContent = msgs[mode] || mode;
+  toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:'+colors[mode]+';color:#fff;padding:10px 24px;border-radius:8px;z-index:9999;font:bold 14px var(--font-data);pointer-events:none;animation:fadeOut 2.5s forwards;';
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.remove(); }, 3000);
+}
+
+function _updateMissileUI() {
+  var mode = window._missileMode;
+  var btn = document.querySelector('.tb-btn[data-layer="animations"]');
+  var sbDot = document.getElementById('anim-dot-sidebar');
+  var sbLabel = document.getElementById('anim-label-sidebar');
+  if (btn) {
+    btn.classList.toggle('active', mode !== 'off');
+    btn.style.borderColor = mode === 'animated' ? 'rgba(239,68,68,0.5)' : mode === 'paths' ? 'rgba(59,130,246,0.5)' : '';
+    btn.style.boxShadow = mode === 'animated' ? '0 0 12px rgba(239,68,68,0.5)' : mode === 'paths' ? '0 0 12px rgba(59,130,246,0.3)' : '';
+  }
+  if (sbDot) {
+    sbDot.style.background = mode === 'animated' ? '#ef4444' : mode === 'paths' ? '#3b82f6' : '#555';
+    sbDot.style.opacity = mode !== 'off' ? '1' : '0.3';
+  }
+  if (sbLabel) sbLabel.textContent = mode === 'animated' ? '🚀 Missile Animation' : mode === 'paths' ? '🛤️ Ballistic Paths' : '🚀 Missile Arcs (off)';
+}
+
 function toggleMissileAnims() {
-  window._missileAnimActive = !window._missileAnimActive;
-  localStorage.setItem('missileAnim', window._missileAnimActive ? 'on' : 'off');
-  const btn = document.querySelector('.tb-btn[data-layer="animations"]');
-  if (btn) btn.classList.toggle('active', window._missileAnimActive);
-  const sbDot = document.getElementById('anim-dot-sidebar');
-  if (sbDot) sbDot.style.opacity = window._missileAnimActive ? '1' : '0.3';
+  // Cycle: off → paths → animated → off
+  var order = ['off', 'paths', 'animated'];
+  var idx = order.indexOf(window._missileMode);
+  window._missileMode = order[(idx + 1) % 3];
+  window._missileAnimActive = window._missileMode !== 'off';
+  localStorage.setItem('missileMode', window._missileMode);
+  _updateMissileUI();
+  _showMissileToast(window._missileMode);
   renderMissileArcs();
 }
 
@@ -3528,12 +3565,12 @@ function fetchLiveEvents() {
     .then(d => {
       const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
       window._liveEvents = events;
-      // Auto-enable animation if any critical live event
+            // Auto-enable animation if any critical live event
       if (events.some(e => e.severity === 'critical' && e.live)) {
+        window._missileMode = 'animated';
         window._missileAnimActive = true;
-        localStorage.setItem('missileAnim', 'on');
-        var btn = document.querySelector('.tb-btn[data-layer="animations"]');
-        if (btn) btn.classList.add('active');
+        localStorage.setItem('missileMode', 'animated');
+        _updateMissileUI();
       }
       if (events.length) renderMissileArcs();
     }).catch(e => { console.warn('fetchLiveEvents failed:', e.message); });
@@ -3572,6 +3609,9 @@ function renderMissileArcs() {
   if (window._arcAnimId) { cancelAnimationFrame(window._arcAnimId); window._arcAnimId = null; }
   if (window._arcSvg) { window._arcSvg.remove(); window._arcSvg = null; }
   window._arcPaths = [];
+
+  // OFF mode — just clean up
+  if (window._missileMode === 'off') return;
 
   const events = getMissileEvents();
   if (events.length === 0) return;
@@ -3630,7 +3670,7 @@ function renderMissileArcs() {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       updateArcPositions();
-      if (window._missileAnimActive) startArcAnimation();
+      if (window._missileMode === 'animated') startArcAnimation();
       else setStaticArcs();
     });
   });
@@ -3720,11 +3760,8 @@ function startArcAnimation() {
   window._arcAnimId = requestAnimationFrame(tick);
 }
 
-// Init animation toggle button state
-(function() {
-  const btn = document.querySelector('.tb-btn[data-layer="animations"]');
-  if (btn) btn.classList.toggle('active', window._missileAnimActive);
-})();
+// Init animation toggle button + sidebar state
+_updateMissileUI();
 
 // Final arc render — ensures embedded live events display after all init
 if (window._liveEvents && window._liveEvents.length) {
