@@ -3550,17 +3550,13 @@ function fetchLiveEvents() {
 }
 // Poll live events every 30s
 setInterval(fetchLiveEvents, 30000);
-// Initial fetch with aggressive retry — ensures arcs render even on slow connections
-fetchLiveEvents();
-setTimeout(fetchLiveEvents, 2000);
-setTimeout(fetchLiveEvents, 5000);
-setTimeout(fetchLiveEvents, 10000);
-setTimeout(function() {
-  // Final safety net: if arcs still haven't rendered after 15s, force re-render
-  if (!window._arcSvg && window._liveEvents && window._liveEvents.length) {
-    renderMissileArcs();
-  }
-}, 15000);
+// Initial fetch: wait for full page load, then retry aggressively
+window.addEventListener('load', function() {
+  fetchLiveEvents();
+  setTimeout(fetchLiveEvents, 2000);
+  setTimeout(fetchLiveEvents, 5000);
+  setTimeout(fetchLiveEvents, 10000);
+});
 
 function getMissileEvents() {
   const static_events = V2_DATA.RECENT_EVENTS || [];
