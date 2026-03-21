@@ -1996,8 +1996,12 @@ function renderAllLayers() {
   // ─── RECENT STRIKES from V2_DATA (with time window) ───
   // Embedded live events (updated by watcher push)
   window._liveEvents = [{"date":"2026-03-21","time":"04:20:18","ts":1774056018,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Tel Aviv","desc":"Ballistic missile — Wave 17","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true},{"date":"2026-03-21","time":"02:22:53","ts":1774048973,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Central Israel","desc":"Ballistic missile barrage — Wave 14","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true}];
-  window._missileAnimActive = true; // Force on — critical live events
-  localStorage.setItem('missileAnim', 'on');
+  // 3-mode init: off | paths | animated
+  window._missileMode = localStorage.getItem('missileMode') || 'off';
+  if (!localStorage.getItem('missileMode')) { var _old = localStorage.getItem('missileAnim'); if (_old === 'on') window._missileMode = 'animated'; }
+  // Force animated for critical live events
+  if (window._liveEvents.some(function(e){return e.severity==='critical'&&e.live;})) { window._missileMode = 'animated'; localStorage.setItem('missileMode', 'animated'); }
+  window._missileAnimActive = window._missileMode !== 'off';
   window._arcSvg = null;
   window._arcPaths = [];
   window._arcAnimId = null;
@@ -3470,22 +3474,8 @@ function applyStrikeWindow() {
   renderStrikeEvents();
 }
 
-// Missile animation state — 3 modes: 'off' | 'paths' | 'animated'
-window._missileMode = localStorage.getItem('missileMode') || 'off';
-// Legacy compat: migrate old 'missileAnim' key
-if (!localStorage.getItem('missileMode')) {
-  var old = localStorage.getItem('missileAnim');
-  if (old === 'on') window._missileMode = 'animated';
-  else if (old === 'off') window._missileMode = 'off';
-}
-window._missileAnimActive = window._missileMode !== 'off';
-// Force animated if embedded live events have critical severity
-if (window._liveEvents && window._liveEvents.some(function(e){return e.severity==='critical'&&e.live;})) {
-  window._missileMode = 'animated';
-  window._missileAnimActive = true;
-  localStorage.setItem('missileMode', 'animated');
-}
-// NOTE: do NOT reset _arcSvg/_arcPaths here — they may already be rendered by renderStrikeEvents() above
+// Missile mode already initialized in early init block above
+// NOTE: do NOT reset _arcSvg/_arcPaths here — they may already be rendered by renderStrikeEvents()
 
 function _showMissileToast(mode) {
   var msgs = { off: '🚀 Missile Arcs: OFF', paths: '🛤️ Ballistic Paths: ON', animated: '🚀 Missile Animation: ON' };
