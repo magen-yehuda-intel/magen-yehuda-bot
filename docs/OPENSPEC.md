@@ -147,7 +147,16 @@ Grouped layer controls with dot indicators and counts:
 | `dispatch.py` | Multi-output alert router to Telegram channels |
 | `log-intel.py` | Appends structured events to JSONL + Azure Table DB |
 
-## GPS Jamming Layer
+## Hormuz Tracker Pipeline
+- **Dashboard:** `hormuz.html` — reads `hormuz-metrics.jsonl` from same GitHub Pages origin
+- **Collection script:** `~/projects/breaking-trades/articles/hormuz-crisis/collect-and-push.sh`
+- **Cron:** `0 * * * *` (hourly)
+- **Flow:** Cron → browser scrape MarineTraffic AIS tiles → `hormuz-tracker.py` computes metrics → append to `hormuz-metrics.jsonl` (source of truth in `~/projects/breaking-trades/articles/hormuz-crisis/`) → copy to `/tmp/hormuz-site/docs/` → `git pull --rebase` → push to GitHub Pages
+- **MarineTraffic tiles:** 10 tiles at zoom 8, fetched via `XMLHttpRequest` in openclaw browser tab
+- **Vessel dump:** `~/projects/breaking-trades/articles/hormuz-crisis/vessel-dump.json` (raw AIS per collection)
+- **Git clone:** `/tmp/hormuz-site/` (shallow clone of `magen-yehuda-intel/magen-yehuda-bot`)
+- **⚠️ Pull before push:** Script does `git pull --rebase` before pushing to avoid conflicts when dashboard changes are pushed separately
+
 - **NOT live data** — 9 hardcoded zones from EUROCONTROL/OPSGROUP reports
 - Zones: Eastern Mediterranean, Northern Iraq, Strait of Hormuz, Tehran, Isfahan/Natanz, Bushehr, Yemen/Bab el-Mandeb, Eastern Libya, Sinai/Suez
 - Severity levels: high (red pulse), medium (orange), low (yellow)
@@ -175,6 +184,8 @@ Grouped layer controls with dot indicators and counts:
 - **FIX GEOCODING:** Added Diego Garcia to `LOC_MAP` in `export-feed.py`. Changed `detect_location()` to longest keyword match (was first match — "hormuz" matched before "diego garcia").
 - **HORMUZ TRACKER:** Fixed stale data (since Mar 8) — collection script was pushing to wrong repo. Now updating hourly.
 - **INFRA DATA:** Added `data/iran-infrastructure.json` with ~70 entries (power plants, water, telecom, transport, industrial). Not yet wired into dashboard.
+
+- **FIX HORMUZ PIPELINE:** Added `git pull --rebase` before push in `collect-and-push.sh` — was failing because `/tmp/hormuz-site` clone fell behind after dashboard pushes.
 
 ### 2026-03-20
 - **FIX:** Missile arc animation not triggering on page load — removed broken `/api/live-events` API call, now fetches `live-events.json` directly. Increased initial delay from 2s to 4s.
