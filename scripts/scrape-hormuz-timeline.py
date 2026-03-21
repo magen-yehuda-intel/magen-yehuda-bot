@@ -219,5 +219,24 @@ def main():
     except Exception as e:
         print(f'  Warning: could not write to {alt}: {e}')
 
+    # Git push to GitHub Pages
+    import subprocess
+    docs_dir = os.path.dirname(OUT_DIR)  # docs/
+    try:
+        subprocess.run(['git', 'add', 'data/hormuz-timeline.json'], cwd=docs_dir, capture_output=True, timeout=10)
+        diff = subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=docs_dir, capture_output=True, timeout=10)
+        if diff.returncode != 0:
+            subprocess.run(['git', 'pull', '--rebase', 'origin', 'main'], cwd=docs_dir, capture_output=True, timeout=30)
+            subprocess.run(['git', 'commit', '-m', f'auto: hormuz timeline update {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}'], cwd=docs_dir, capture_output=True, timeout=10)
+            r = subprocess.run(['git', 'push', 'origin', 'main'], cwd=docs_dir, capture_output=True, timeout=30, text=True)
+            if r.returncode == 0:
+                print('  Pushed to GitHub Pages')
+            else:
+                print(f'  Push failed: {r.stderr.strip()}')
+        else:
+            print('  No changes to push')
+    except Exception as e:
+        print(f'  Git push error: {e}')
+
 if __name__ == '__main__':
     main()
