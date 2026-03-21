@@ -17,6 +17,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.95,
       "live": true
+    },
+    {
+      "date": "2026-03-21",
+      "time": "04:20:18",
+      "ts": 1774056018,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "Tel Aviv",
+      "desc": "Ballistic missile \u2014 Wave 17 - Active siren alerts nationwide, rockets and missiles",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.95,
+      "live": true
     }
-  ]
+  ],
+  "updated": 1774056018
 }
