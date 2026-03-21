@@ -1987,12 +1987,13 @@ function renderAllLayers() {
 
   // ─── RECENT STRIKES from V2_DATA (with time window) ───
   // Embedded live events (updated by watcher push)
-  window._liveEvents = [{"date":"2026-03-21","time":"04:20:18","ts":1774056018,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Tel Aviv","desc":"Ballistic missile — Wave 17","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true},{"date":"2026-03-21","time":"02:22:53","ts":1774048973,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Central Israel","desc":"Ballistic missile barrage — Wave 14","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true}];
-  // 3-mode init: off | paths | animated
-  window._missileMode = localStorage.getItem('missileMode') || 'off';
-  if (!localStorage.getItem('missileMode')) { var _old = localStorage.getItem('missileAnim'); if (_old === 'on') window._missileMode = 'animated'; }
-  // Force animated for critical live events
-  if (window._liveEvents.some(function(e){return e.severity==='critical'&&e.live;})) { window._missileMode = 'animated'; localStorage.setItem('missileMode', 'animated'); }
+    // Embedded live events — filtered by age (2h max), real data comes from live-events.json fetch
+  var _embeddedRaw = [{"date":"2026-03-21","time":"04:20:18","ts":1774056018,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Tel Aviv","desc":"Ballistic missile — Wave 17","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true},{"date":"2026-03-21","time":"02:22:53","ts":1774048973,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Central Israel","desc":"Ballistic missile barrage — Wave 14","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true}];
+  var _nowTs = Math.floor(Date.now()/1000);
+  window._liveEvents = _embeddedRaw.filter(function(e){ return (_nowTs - e.ts) < 7200; }); // 2h TTL
+  // 3-mode init: off | paths | animated  (default: animated)
+  window._missileMode = localStorage.getItem('missileMode') || 'animated';
+  if (!localStorage.getItem('missileMode')) { var _old = localStorage.getItem('missileAnim'); if (_old === 'on') window._missileMode = 'animated'; else if (_old === 'off') window._missileMode = 'off'; }
   window._missileAnimActive = window._missileMode !== 'off';
   window._arcSvg = null;
   window._arcPaths = [];
@@ -3389,11 +3390,12 @@ function fetchLiveEvents() {
   // Always try static file (most reliable for GitHub Pages)
   // API live-events endpoint not currently implemented
   fetch('live-events.json?t=' + Date.now(), {cache:'no-store'})
-    .then(r => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
+          .then(r => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
     .then(d => {
-      const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
+      var nowTs = Math.floor(Date.now()/1000);
+      const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon && (nowTs - e.ts) < 7200);
       window._liveEvents = events;
-            // Auto-enable animation if any critical live event
+      // Auto-force animated if fresh critical live event
       if (events.some(e => e.severity === 'critical' && e.live)) {
         window._missileMode = 'animated';
         window._missileAnimActive = true;
@@ -3401,6 +3403,7 @@ function fetchLiveEvents() {
         _updateMissileUI();
       }
       if (events.length) renderMissileArcs();
+      else if (!events.length && window._arcSvg) { window._arcSvg.remove(); window._arcSvg = null; window._arcPaths = []; }
     }).catch(e => { console.warn('fetchLiveEvents failed:', e.message); });
 }
 // Poll live events every 30s
