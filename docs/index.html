@@ -3469,9 +3469,12 @@ function applyStrikeWindow() {
 
 // Missile animation state
 window._missileAnimActive = localStorage.getItem('missileAnim') !== 'off';
-window._arcSvg = null;
-window._arcPaths = [];
-window._arcAnimId = null;
+// Force animation on if embedded live events have critical severity
+if (window._liveEvents && window._liveEvents.some(function(e){return e.severity==='critical'&&e.live;})) {
+  window._missileAnimActive = true;
+  localStorage.setItem('missileAnim', 'on');
+}
+// NOTE: do NOT reset _arcSvg/_arcPaths here — they may already be rendered by renderStrikeEvents() above
 
 function toggleMissileAnims() {
   window._missileAnimActive = !window._missileAnimActive;
@@ -3529,7 +3532,8 @@ function bindLongPress(el) {
 document.querySelectorAll('.tb-btn[data-layer="animations"], .mt-btn[data-mt="animations"]').forEach(bindLongPress);
 
 // Live events from watcher classification
-window._liveEvents = [];
+// Embedded fallback (updated by watcher push + git commit)
+window._liveEvents = [{"date":"2026-03-21","time":"04:20:18","ts":1774056018,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Tel Aviv","desc":"Ballistic missile — Wave 17 - Active siren alerts nationwide","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true},{"date":"2026-03-21","time":"02:22:53","ts":1774048973,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Central Israel","desc":"Ballistic missile barrage — Wave 14, nationwide sirens","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true}];
 function fetchLiveEvents() {
   // Always try static file (most reliable for GitHub Pages)
   // API live-events endpoint not currently implemented
@@ -3735,6 +3739,11 @@ function startArcAnimation() {
   const btn = document.querySelector('.tb-btn[data-layer="animations"]');
   if (btn) btn.classList.toggle('active', window._missileAnimActive);
 })();
+
+// Final arc render — ensures embedded live events display after all init
+if (window._liveEvents && window._liveEvents.length) {
+  renderMissileArcs();
+}
 
 function pwaInstall() {
   if (!_deferredInstall) return;
