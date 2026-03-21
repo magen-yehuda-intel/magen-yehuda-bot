@@ -20,6 +20,7 @@ ME_KEYWORDS = re.compile(
 
 LOC_MAP = {
     # Specific cities/ports FIRST (before country-level fallbacks)
+    'diego garcia': ('Diego Garcia', -7.32, 72.42),
     'bandar abbas': ('Bandar Abbas', 27.18, 56.27), 'bandar anzali': ('Bandar Anzali', 37.47, 49.46),
     'chabahar': ('Chabahar', 25.29, 60.64), 'kharg island': ('Kharg Island', 29.24, 50.31),
     'south pars': ('South Pars', 27.50, 52.20), 'assaluyeh': ('Assaluyeh', 27.47, 52.60),
@@ -64,9 +65,14 @@ def detect_side(text):
 
 def detect_location(text):
     t = text.lower()
+    # Prefer longest keyword match (most specific location)
+    best = None
     for kw, (name, lat, lon) in LOC_MAP.items():
         if kw in t:
-            return name, lat, lon
+            if best is None or len(kw) > len(best[0]):
+                best = (kw, name, lat, lon)
+    if best:
+        return best[1], best[2], best[3]
     return '', 32.0, 50.0
 
 def main():

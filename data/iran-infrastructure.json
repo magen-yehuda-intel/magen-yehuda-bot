@@ -1,0 +1,514 @@
+{
+  "IRAN_POWER_PLANTS": [
+    {
+      "name": "Karun-3 Dam",
+      "lat": 32.246,
+      "lon": 48.412,
+      "type": "hydro",
+      "capacity_mw": 2280,
+      "desc": "Major hydroelectric dam on Karun River, third largest hydro facility in Iran"
+    },
+    {
+      "name": "Shahid Abbaspour Dam (Karun-1)",
+      "lat": 32.140,
+      "lon": 48.507,
+      "type": "hydro",
+      "capacity_mw": 2000,
+      "desc": "First major dam on Karun River, completed 1976, key flood control"
+    },
+    {
+      "name": "Masjed Soleyman Dam (Karun-2)",
+      "lat": 32.062,
+      "lon": 49.334,
+      "type": "hydro",
+      "capacity_mw": 2000,
+      "desc": "Second Karun dam, completed 2002, strategic hydroelectric facility"
+    },
+    {
+      "name": "Karun-4 Dam",
+      "lat": 32.387,
+      "lon": 50.211,
+      "type": "hydro",
+      "capacity_mw": 1020,
+      "desc": "Fourth dam in Karun cascade, Chaharmahal and Bakhtiari province"
+    },
+    {
+      "name": "Upper Gotvand Dam",
+      "lat": 32.255,
+      "lon": 48.817,
+      "type": "hydro",
+      "capacity_mw": 1000,
+      "desc": "Khuzestan province, phased construction with expansion to 2000 MW"
+    },
+    {
+      "name": "Siah Bishe Pumped Storage",
+      "lat": 36.412,
+      "lon": 51.667,
+      "type": "hydro",
+      "capacity_mw": 1040,
+      "desc": "Iran's first pumped storage facility, Mazandaran province"
+    },
+    {
+      "name": "Dez Dam",
+      "lat": 32.733,
+      "lon": 48.400,
+      "type": "hydro",
+      "capacity_mw": 520,
+      "desc": "Historic dam completed 1963, Khuzestan province"
+    },
+    {
+      "name": "Karkheh Dam",
+      "lat": 32.233,
+      "lon": 47.967,
+      "type": "hydro",
+      "capacity_mw": 520,
+      "desc": "Built by IRGC, completed 2001, Khuzestan province"
+    },
+    {
+      "name": "Shahid Salimi Neka Combined Power Plant",
+      "lat": 36.650,
+      "lon": 53.300,
+      "type": "combined_cycle",
+      "capacity_mw": 2214,
+      "desc": "Largest gas-fired plant in Mazandaran, natural gas primary fuel"
+    },
+    {
+      "name": "Rudeshur Power Plant",
+      "lat": 34.967,
+      "lon": 50.117,
+      "type": "thermal",
+      "capacity_mw": 2000,
+      "desc": "First private power plant in Iran, Markazi province, OCGT"
+    },
+    {
+      "name": "Kerman Combined Power Plant",
+      "lat": 30.284,
+      "lon": 57.083,
+      "type": "combined_cycle",
+      "capacity_mw": 2000,
+      "desc": "Major combined cycle facility in Kerman province"
+    },
+    {
+      "name": "Khorramabad Combined Power Plant",
+      "lat": 33.488,
+      "lon": 48.355,
+      "type": "combined_cycle",
+      "capacity_mw": 2000,
+      "desc": "Lorestan province, under construction/expansion"
+    },
+    {
+      "name": "Sarakhs Combined Power Plant",
+      "lat": 36.544,
+      "lon": 61.157,
+      "type": "combined_cycle",
+      "capacity_mw": 1650,
+      "desc": "Razavi Khorasan, near Turkmen border"
+    },
+    {
+      "name": "Urmia Combined Power Plant",
+      "lat": 37.548,
+      "lon": 45.076,
+      "type": "combined_cycle",
+      "capacity_mw": 1500,
+      "desc": "West Azerbaijan province, CHP-type thermal station"
+    },
+    {
+      "name": "Aliabad Katool Combined Power Plant",
+      "lat": 37.250,
+      "lon": 55.167,
+      "type": "combined_cycle",
+      "capacity_mw": 1500,
+      "desc": "Golestan province, natural gas with diesel backup"
+    },
+    {
+      "name": "Kazerun Power Plant",
+      "lat": 29.615,
+      "lon": 51.654,
+      "type": "thermal",
+      "capacity_mw": 1373,
+      "desc": "Fars province, first locally-produced Iranian gas turbine"
+    },
+    {
+      "name": "Behistun Steam Power Plant",
+      "lat": 34.377,
+      "lon": 47.165,
+      "type": "thermal",
+      "capacity_mw": 1280,
+      "desc": "Kermanshah province, thermal power station"
+    },
+    {
+      "name": "Bushehr Nuclear Power Plant",
+      "lat": 28.842,
+      "lon": 50.883,
+      "type": "nuclear",
+      "capacity_mw": 915,
+      "desc": "Iran's only operational nuclear power plant, VVER reactor"
+    },
+    {
+      "name": "Nishapur Combined Power Plant",
+      "lat": 36.213,
+      "lon": 58.796,
+      "type": "combined_cycle",
+      "capacity_mw": 1042,
+      "desc": "Razavi Khorasan province, completed 1993"
+    }
+  ],
+  "IRAN_WATER": [
+    {
+      "name": "Golestan Dam",
+      "lat": 37.383,
+      "lon": 55.950,
+      "type": "dam",
+      "desc": "Major water storage, Golestan province, irrigation and flood control"
+    },
+    {
+      "name": "Amir Kabir Dam",
+      "lat": 35.833,
+      "lon": 50.950,
+      "type": "dam",
+      "desc": "Karaj Dam, supplies water to Tehran, completed 1961"
+    },
+    {
+      "name": "Zayanderud Dam",
+      "lat": 32.667,
+      "lon": 51.517,
+      "type": "dam",
+      "desc": "Isfahan province, major water source for central Iran"
+    },
+    {
+      "name": "Manjil Dam",
+      "lat": 36.733,
+      "lon": 49.400,
+      "type": "dam",
+      "desc": "Gilan province, completed 1962, Sefidrud River"
+    },
+    {
+      "name": "Lar Dam",
+      "lat": 35.950,
+      "lon": 52.133,
+      "type": "dam",
+      "desc": "Tehran province water supply, high altitude reservoir"
+    },
+    {
+      "name": "Qeshm Desalination Plant",
+      "lat": 26.950,
+      "lon": 55.633,
+      "type": "desal",
+      "desc": "Island desalination facility, Persian Gulf coast"
+    },
+    {
+      "name": "Bandar Abbas Desalination",
+      "lat": 27.183,
+      "lon": 56.283,
+      "type": "desal",
+      "desc": "Major desalination facility serving Hormozgan province"
+    },
+    {
+      "name": "Bushehr Desalination Plant",
+      "lat": 28.967,
+      "lon": 50.833,
+      "type": "desal",
+      "desc": "Coastal desalination, Bushehr province"
+    },
+    {
+      "name": "Kish Island Desalination",
+      "lat": 26.533,
+      "lon": 53.983,
+      "type": "desal",
+      "desc": "Tourist island water supply, Persian Gulf"
+    },
+    {
+      "name": "Chabahar Desalination",
+      "lat": 25.293,
+      "lon": 60.643,
+      "type": "desal",
+      "desc": "Sistan-Baluchestan coast, strategic port water supply"
+    },
+    {
+      "name": "Tehran Water Treatment Complex",
+      "lat": 35.733,
+      "lon": 51.383,
+      "type": "treatment",
+      "desc": "Primary water treatment for Tehran metropolitan area"
+    },
+    {
+      "name": "Isfahan Water Treatment",
+      "lat": 32.650,
+      "lon": 51.650,
+      "type": "treatment",
+      "desc": "Central Iran regional water treatment facility"
+    },
+    {
+      "name": "Mashhad Water Treatment",
+      "lat": 36.297,
+      "lon": 59.606,
+      "type": "treatment",
+      "desc": "Northeast Iran major water treatment complex"
+    }
+  ],
+  "IRAN_TELECOM": [
+    {
+      "name": "Tehran Internet Exchange",
+      "lat": 35.700,
+      "lon": 51.400,
+      "type": "ixp",
+      "desc": "Primary national internet exchange point, Tehran"
+    },
+    {
+      "name": "Kish Data Center",
+      "lat": 26.533,
+      "lon": 53.983,
+      "type": "datacenter",
+      "desc": "Offshore data center complex, free trade zone"
+    },
+    {
+      "name": "TAE Fiber Landing Station",
+      "lat": 27.183,
+      "lon": 56.283,
+      "type": "cable_landing",
+      "desc": "Trans-Asia-Europe optical fiber terminus, Bandar Abbas"
+    },
+    {
+      "name": "Iran-UAE Submarine Cable",
+      "lat": 26.950,
+      "lon": 55.633,
+      "type": "cable_landing",
+      "desc": "Persian Gulf submarine cable landing, Qeshm"
+    },
+    {
+      "name": "TIC National Network Hub",
+      "lat": 35.733,
+      "lon": 51.383,
+      "type": "switching",
+      "desc": "Telecommunications Infrastructure Company central hub"
+    },
+    {
+      "name": "Shahid Ghandi Satellite Station",
+      "lat": 35.383,
+      "lon": 51.217,
+      "type": "switching",
+      "desc": "Major satellite earth station, Tehran province"
+    },
+    {
+      "name": "Isfahan Telecom Center",
+      "lat": 32.650,
+      "lon": 51.650,
+      "type": "switching",
+      "desc": "Central Iran telecommunications switching center"
+    },
+    {
+      "name": "Boumehen Earth Station",
+      "lat": 35.733,
+      "lon": 51.867,
+      "type": "switching",
+      "desc": "Tehran satellite communications facility"
+    },
+    {
+      "name": "Mashhad Data Center",
+      "lat": 36.297,
+      "lon": 59.606,
+      "type": "datacenter",
+      "desc": "Northeast Iran regional data processing center"
+    },
+    {
+      "name": "GBI Cable Landing",
+      "lat": 28.842,
+      "lon": 50.883,
+      "type": "cable_landing",
+      "desc": "Gulf Bridge International submarine cable, Bushehr"
+    },
+    {
+      "name": "Shiraz Telecom Hub",
+      "lat": 29.591,
+      "lon": 52.584,
+      "type": "switching",
+      "desc": "Southern Iran telecommunications switching center"
+    }
+  ],
+  "IRAN_TRANSPORT": [
+    {
+      "name": "Bandar Abbas Port",
+      "lat": 27.183,
+      "lon": 56.283,
+      "type": "port",
+      "desc": "Iran's largest port, handles 85% of maritime trade, Hormuz Bay"
+    },
+    {
+      "name": "Chabahar Port",
+      "lat": 25.293,
+      "lon": 60.643,
+      "type": "port",
+      "desc": "Strategic Indian Ocean port, gateway to Central Asia"
+    },
+    {
+      "name": "Imam Khomeini Port",
+      "lat": 30.433,
+      "lon": 49.067,
+      "type": "port",
+      "desc": "Major container port, Khuzestan province, Persian Gulf"
+    },
+    {
+      "name": "Bushehr Port",
+      "lat": 28.967,
+      "lon": 50.833,
+      "type": "port",
+      "desc": "Historic Persian Gulf port, oil and general cargo"
+    },
+    {
+      "name": "Mahshahr Port",
+      "lat": 30.533,
+      "lon": 49.183,
+      "type": "port",
+      "desc": "Petrochemical and oil products export terminal"
+    },
+    {
+      "name": "Anzali Port",
+      "lat": 37.467,
+      "lon": 49.467,
+      "type": "port",
+      "desc": "Caspian Sea port, northern trade route"
+    },
+    {
+      "name": "Imam Khomeini Airport",
+      "lat": 35.410,
+      "lon": 51.153,
+      "type": "airport",
+      "desc": "Tehran's main international airport, largest in Iran"
+    },
+    {
+      "name": "Mehrabad Airport",
+      "lat": 35.689,
+      "lon": 51.313,
+      "type": "airport",
+      "desc": "Tehran domestic hub, military and civilian use"
+    },
+    {
+      "name": "Mashhad Airport",
+      "lat": 36.235,
+      "lon": 59.641,
+      "type": "airport",
+      "desc": "Northeast Iran international gateway"
+    },
+    {
+      "name": "Isfahan Airport",
+      "lat": 32.750,
+      "lon": 51.861,
+      "type": "airport",
+      "desc": "Central Iran regional hub"
+    },
+    {
+      "name": "Tehran Central Railway Station",
+      "lat": 35.683,
+      "lon": 51.417,
+      "type": "rail_junction",
+      "desc": "Main railway hub, connects to Turkey, Azerbaijan, Persian Gulf"
+    },
+    {
+      "name": "Tabriz Railway Junction",
+      "lat": 38.083,
+      "lon": 46.283,
+      "type": "rail_junction",
+      "desc": "Northwest rail hub, Turkey connection via Razi border"
+    },
+    {
+      "name": "Jolfa Border Railway",
+      "lat": 38.950,
+      "lon": 45.633,
+      "type": "rail_junction",
+      "desc": "Azerbaijan border connection, bogie-changing station"
+    },
+    {
+      "name": "Bandar Imam Railway",
+      "lat": 30.433,
+      "lon": 49.067,
+      "type": "rail_junction",
+      "desc": "Persian Gulf rail terminus, connects Tehran to ports"
+    }
+  ],
+  "IRAN_INDUSTRIAL": [
+    {
+      "name": "Mobarakeh Steel Company",
+      "lat": 32.333,
+      "lon": 51.500,
+      "type": "steel",
+      "desc": "Largest steel producer in Middle East and North Africa"
+    },
+    {
+      "name": "Isfahan Steel Company",
+      "lat": 32.617,
+      "lon": 51.650,
+      "type": "steel",
+      "desc": "First constructional steel manufacturer in Iran, still largest"
+    },
+    {
+      "name": "Khouzestan Steel Company",
+      "lat": 31.450,
+      "lon": 48.683,
+      "type": "steel",
+      "desc": "Major steel production facility, southwest Iran"
+    },
+    {
+      "name": "Iran Khodro Main Plant",
+      "lat": 35.667,
+      "lon": 51.283,
+      "type": "automotive",
+      "desc": "Largest automaker in Middle East, Tehran assembly"
+    },
+    {
+      "name": "SAIPA Manufacturing",
+      "lat": 35.517,
+      "lon": 51.333,
+      "type": "automotive",
+      "desc": "Second largest Iranian automaker, Karaj facility"
+    },
+    {
+      "name": "Iran Aluminium Company",
+      "lat": 32.467,
+      "lon": 51.583,
+      "type": "aluminum",
+      "desc": "Primary aluminum smelter, Isfahan province"
+    },
+    {
+      "name": "Almahdi Aluminum",
+      "lat": 27.617,
+      "lon": 56.067,
+      "type": "aluminum",
+      "desc": "Hormozgan aluminum smelter complex"
+    },
+    {
+      "name": "Fars Cement Company",
+      "lat": 29.591,
+      "lon": 52.584,
+      "type": "cement",
+      "desc": "Major cement production, Fars province"
+    },
+    {
+      "name": "Tehran Cement",
+      "lat": 35.600,
+      "lon": 51.600,
+      "type": "cement",
+      "desc": "Capital region cement manufacturing"
+    },
+    {
+      "name": "Isfahan Cement",
+      "lat": 32.650,
+      "lon": 51.650,
+      "type": "cement",
+      "desc": "Central Iran cement production facility"
+    },
+    {
+      "name": "Gol-e Gohar Iron Ore",
+      "lat": 29.100,
+      "lon": 56.867,
+      "type": "mining",
+      "desc": "Largest iron ore mining complex, Kerman province"
+    },
+    {
+      "name": "Chadormalu Mining",
+      "lat": 33.883,
+      "lon": 55.167,
+      "type": "mining",
+      "desc": "Major iron ore mine, Yazd province"
+    }
+  ]
+}
