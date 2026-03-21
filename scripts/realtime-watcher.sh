@@ -858,6 +858,8 @@ except:
         local live_result
         live_result=$(echo "$classification" | python3 "$SCRIPT_DIR/write-live-event.py" --oref-areas "$oref_areas" 2>/dev/null)
         log "  Live event: $live_result"
+        # Auto-push live-events.json to GitHub Pages for dashboard missile arcs
+        (cd "$SCRIPT_DIR/../docs" && git add live-events.json && git commit -m "live: missile arc event $(date +%H:%M)" && git push) >/dev/null 2>&1 &
         # Push to API alongside threat level
         curl -sf --max-time 5 -X POST \
           "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \

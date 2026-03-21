@@ -3538,6 +3538,13 @@ function fetchLiveEvents() {
     .then(d => {
       const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon);
       window._liveEvents = events;
+      // Auto-enable animation if any critical live event
+      if (events.some(e => e.severity === 'critical' && e.live)) {
+        window._missileAnimActive = true;
+        localStorage.setItem('missileAnim', 'on');
+        var btn = document.querySelector('.tb-btn[data-layer="animations"]');
+        if (btn) btn.classList.add('active');
+      }
       if (events.length) renderMissileArcs();
     }).catch(e => { console.warn('fetchLiveEvents failed:', e.message); });
 }
