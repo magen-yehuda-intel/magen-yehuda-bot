@@ -197,27 +197,25 @@ def main():
     size_kb = len(feed_json) / 1024
     print(f"Exported {len(events)} events ({size_kb:.0f}KB) → {FEED_FILE}")
 
-    # Sync recent events to Azure Table Storage (best-effort, 30s timeout)
+    # Sync recent events to Azure via API (best-effort, 30s timeout)
+    API_URL = "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io"
+    API_KEY = "myi-fcf15b5484f76e9b"
     try:
-        import signal
-        def _db_timeout(signum, frame): raise TimeoutError("DB sync timed out")
-        signal.signal(signal.SIGALRM, _db_timeout)
-        signal.alarm(30)
-        from db import insert_events, query_events
-        # Get what's already in DB for last 48h
-        db_events = query_events(hours=48, limit=10000)
-        db_keys = set(f"{e.get('src','')}{e.get('text','')[:40]}{e.get('ts',0)}" for e in db_events)
-        # Find events in export that are missing from DB
-        missing = [e for e in events if f"{e.get('src','')}{e.get('text','')[:40]}{e.get('ts',0)}" not in db_keys]
-        if missing:
-            ok, fail = insert_events(missing)
-            print(f"DB sync: {ok} new, {fail} failed (was missing {len(missing)} of {len(events)})")
-        else:
-            print(f"DB sync: up to date ({len(db_events)} in DB)")
+        import urllib.request, urllib.error
+        # Push last 100 events via API (batched to avoid huge payloads)
+        recent = events[-100:] if len(events) > 100 else events
+        payload = json.dumps({"events": recent}).encode()
+        req = urllib.request.Request(
+            f"{API_URL}/api/push/intel",
+            data=payload,
+            headers={"Content-Type": "application/json", "X-API-Key": API_KEY},
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=25) as resp:
+            result = json.loads(resp.read())
+            print(f"API sync: {result}")
     except Exception as ex:
-        print(f"DB sync error: {ex}")
-    finally:
-        signal.alarm(0)  # cancel alarm
+        print(f"API sync error: {ex}")
 
     # Export siren history from dispatch-log.jsonl
     try:
