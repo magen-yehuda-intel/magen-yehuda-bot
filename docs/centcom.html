@@ -848,7 +848,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <option value="24">24h</option>
     <option value="48">48h</option>
     <option value="168">7d</option>
-    <option value="0">All</option>
   </select>
   <div class="mt-sep"></div>
   <div class="mt-btn" data-mt="legend" onclick="toggleLegend()">📋</div>
@@ -935,7 +934,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
       <option value="24">24h</option>
       <option value="48">48h</option>
       <option value="168">7d</option>
-      <option value="0">All</option>
     </select>
   </div>
   <div style="height:1px;width:30px;background:var(--panel-border);margin:4px 0"></div>
@@ -980,7 +978,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <div class="sb-row" style="padding-left:28px;gap:8px">
       <span class="sb-row-name" style="font-size:10px;color:rgba(255,255,255,0.5)">Time Window</span>
       <select id="strike-window-sidebar" onchange="window._strikeWindowHours=parseInt(this.value)||0;localStorage.setItem('strikeWindow',window._strikeWindowHours);var d=document.getElementById('strike-window');if(d)d.value=this.value;var m=document.getElementById('strike-window-mobile');if(m)m.value=this.value;renderStrikeEvents();renderMissileArcs()" style="height:22px;font-family:var(--font-data);font-size:10px;background:rgba(10,15,30,0.9);color:var(--text-dim);border:1px solid var(--panel-border);border-radius:3px;cursor:pointer;padding:0 4px;-webkit-appearance:none;appearance:none;">
-        <option value="24">24h</option><option value="48">48h</option><option value="168">7d</option><option value="0">All</option>
       </select>
     </div>
     <div class="sb-row" onclick="toggleMissileAnims()"><div class="sb-dot" style="background:#ef4444" id="anim-dot-sidebar"></div><span class="sb-row-name" id="anim-label-sidebar">🚀 Missile Animations</span></div>
@@ -2032,20 +2029,20 @@ function renderAllLayers() {
   window._arcSvg = null;
   window._arcPaths = [];
   window._arcAnimId = null;
-  window._strikeWindowHours = parseInt(localStorage.getItem('strikeWindow') || '24');
+  window._strikeWindowHours = Math.min(parseInt(localStorage.getItem('strikeWindow') || '48'), 168);
   const selEl = document.getElementById('strike-window');
-  if (selEl) selEl.value = window._strikeWindowHours || 24;
+  if (selEl) selEl.value = window._strikeWindowHours || 48;
   const selMob = document.getElementById('strike-window-mobile');
-  if (selMob) selMob.value = window._strikeWindowHours || 24;
+  if (selMob) selMob.value = window._strikeWindowHours || 48;
   const selSb = document.getElementById('strike-window-sidebar');
-  if (selSb) selSb.value = window._strikeWindowHours || 24;
+  if (selSb) selSb.value = window._strikeWindowHours || 48;
   renderStrikeEvents();
 }
 
 function renderStrikeEvents() {
   if (!V2_DATA.RECENT_EVENTS) return;
   layers.strikes.clearLayers();
-  const hours = window._strikeWindowHours || 0;
+  const hours = window._strikeWindowHours || 48;
   const now = Date.now();
   const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
   const typeIcons = { strike: '💥', missile: '🚀', naval: '⚓', energy: '⚡', political: '📢' };
@@ -3342,7 +3339,7 @@ function applyStrikeWindow() {
   // Sync all dropdowns
   ['strike-window-mobile','strike-window-sidebar'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.value = window._strikeWindowHours || 24;
+    if (el) el.value = window._strikeWindowHours || 48;
   });
   renderStrikeEvents();
 }
@@ -3452,7 +3449,7 @@ window.addEventListener('load', function() {
 
 function getMissileEvents() {
   const static_events = V2_DATA.RECENT_EVENTS || [];
-  const hours = window._strikeWindowHours || 0;
+  const hours = window._strikeWindowHours || 48;
   const now = Date.now();
   const filtered = static_events.filter(ev => {
     if (!ev.origin_lat || !ev.origin_lon) return false;
