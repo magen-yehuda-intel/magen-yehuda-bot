@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Build standalone dashboard HTML with compacted inline data."""
+"""Build standalone dashboard HTML with compacted inline data.
+
+Creates a self-contained HTML file with all strike data embedded inline for deployment.
+Takes strikes-data.json and inlines it into the dashboard template with size optimization.
+"""
 import json, os, sys, hashlib
 from datetime import datetime
 

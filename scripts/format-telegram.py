@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Format alert check output as a war-room style Telegram HTML message."""
+"""Format alert check output as a war-room style Telegram HTML message.
+
+Reads JSON alert data from stdin and formats it as HTML for Telegram dispatch.
+Outputs formatted message with timestamps, sources, and priority indicators.
+"""
 import sys
 import html
 import json
