@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-03-22T10:15:01Z",
+  "timestamp": "2026-03-22T10:20:00Z",
   "source": "pikud-haoref",
   "poll_interval": "5m",
   "alert_count": 0,
   "alerts": [],
-  "last_siren_ts": "2026-03-22 12:13:33 IST",
+  "last_siren_ts": "2026-03-22 12:19:51 IST",
   "last_siren_title": "חדירת כלי טיס עוין"
 }
