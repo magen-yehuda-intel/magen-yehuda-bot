@@ -151,7 +151,7 @@ Real-time OSINT intelligence platform monitoring the Iran-Israel conflict. Colle
 │  ├── data/iran-infrastructure.json — 108 infrastructure sites  │
 │  ├── data/hormuz-timeline.json — Ship attack timeline          │
 │  ├── sw.js + manifest.json — PWA support                       │
-│  └── v2-archive.html     — Old V2 dashboard (archived)         │
+│  └── v2/index.html       — Redirect (prevents broken links)    │
 │                                                                │
 │  Telegram Channels:                                            │
 │  ├── @magenyehudaupdates       — English, all content          │
@@ -220,7 +220,7 @@ Real-time OSINT intelligence platform monitoring the Iran-Israel conflict. Colle
 | `POST /api/push/threat` | Endpoint | Receives threat level from Mac (API-key protected) |
 | `POST /api/push/intel` | Endpoint | Receives intel events from Mac (API-key protected) |
 
-> ⚠️ **Note:** The Flask app code (`app.py`) is baked into the Docker image (v21) but does NOT exist in the local repo. It was likely created during a prior session and only lives in the ACR image.
+> ✅ The Flask app code (`app.py` + `db.py`) is committed in the `api/` directory (extracted from Docker image v21 on 2026-03-21).
 
 ### GitHub Pages (Dashboard)
 
@@ -380,6 +380,72 @@ Both the Mac watcher AND the Container App poll some of the same sources:
 | DB writes | ✅ | ❌ (reads only) |
 
 The Container App's pollers serve as a **hot cache for the API** — the dashboard gets fast responses without hitting external APIs. The Mac watcher does the heavy lifting (OSINT, LLM, dispatch, DB writes).
+
+---
+
+## Project Directory Structure
+
+```
+iran-israel-alerts/
+├── api/                    # Azure Container App Flask API (extracted from Docker image)
+│   ├── app.py              # Flask app — pollers, REST endpoints, push API
+│   └── db.py               # Azure Table Storage client (Entra ID auth)
+├── scripts/                # All collection, processing, and dispatch scripts
+│   ├── realtime-watcher.sh # Main daemon — orchestrates all polling
+│   ├── ctl.sh              # Master control CLI (start/stop/status)
+│   ├── dispatch.py         # Multi-output Telegram alert router
+│   ├── scan-osint.py       # Unified OSINT scanner (TG+Twitter+RSS)
+│   ├── scan-fires.py       # NASA FIRMS satellite fire detection
+│   ├── scan-seismic.py     # USGS earthquake monitoring
+│   ├── scan-military-flights.py  # OpenSky/FR24 flight tracking
+│   ├── scan_cyber.py       # Cyber threat monitoring
+│   ├── scan_strikes.py     # ACLED conflict event data
+│   ├── scan-blackout.py    # Internet blackout detection
+│   ├── scan-naval.py       # Naval vessel tracking
+│   ├── classify-attack.py  # LLM attack classification (→ Azure OpenAI)
+│   ├── write-live-event.py # Writes missile arc events → live-events.json
+│   ├── correlate-strikes.py# Multi-source strike correlation
+│   ├── db.py               # Azure Table Storage client (shared with api/)
+│   ├── log-intel.py        # Event logger → JSONL + Azure Table
+│   ├── export-feed.py      # JSONL → intel-feed.json + git push (5min cron)
+│   ├── enrich-intel.py     # Batch LLM enrichment (hourly cron)
+│   ├── energy-tracker.py   # Energy infrastructure event tracking
+│   ├── fetch-fr24.sh       # FR24 flight cache (2min cron)
+│   ├── hourly-report.sh    # Hourly status report to Telegram
+│   ├── hourly-brief.sh     # Story-style hourly brief
+│   ├── push-to-api.sh      # Push data to Azure Container App
+│   ├── pinned-status.py    # Telegram pinned status message updater
+│   ├── generate-*.py       # Map/summary/timelapse generators
+│   ├── format-*.py         # Message formatters (fires, osint, seismic)
+│   ├── build-standalone.py # Standalone dashboard HTML builder
+│   └── *.html, *.js        # Dashboard reference files used by scripts
+├── docs/                   # GitHub Pages root + project documentation
+│   ├── index.html          # Production dashboard (= centcom.html)
+│   ├── centcom.html        # Canonical dashboard source (~189KB)
+│   ├── hormuz.html         # Strait of Hormuz shipping tracker
+│   ├── v2-data.js          # Required static data blob (33KB) ⚠️ DO NOT DELETE
+│   ├── *.json              # Live data feeds (intel, fires, oref, fr24, energy)
+│   ├── data/               # Static assets (infrastructure, timeline)
+│   ├── icons/              # PWA icons
+│   ├── v2/                 # Redirect for old V2 links
+│   ├── ARCHITECTURE.md     # This file
+│   ├── OPENSPEC.md         # Dashboard UI specification
+│   ├── TROUBLESHOOTING.md  # Debugging guide
+│   └── INTELLIGENCE_METHODOLOGY.md
+├── references/             # Historical plans, design notes, source docs
+├── tests/                  # Dashboard test pages and scripts
+├── state/                  # Runtime state files (gitignored)
+├── secrets/                # API keys and credentials (gitignored)
+├── logs/                   # Watcher logs (gitignored)
+├── config.json             # Runtime config (gitignored)
+├── config.example.json     # Config template
+├── Dockerfile              # Container App image build
+├── docker-compose.yml      # Local Docker dev setup
+├── requirements.txt        # Python dependencies
+├── SKILL.md                # OpenClaw skill definition
+├── README.md               # Project overview
+└── CHANGELOG.md            # Release notes
+```
 
 ---
 

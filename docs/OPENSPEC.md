@@ -8,7 +8,7 @@
 |------|------|
 | `index.html` | Production dashboard (GitHub Pages root) — copy of centcom.html |
 | `centcom.html` | Working copy / canonical source |
-| `v2-archive.html` | Archived old V2 intel dashboard (5.3MB, do NOT restore) |
+| ~~`v2-archive.html`~~ | Removed (Mar 21 cleanup). Design notes saved in `references/v3-analysis.md` |
 | `v2-data.js` | Required data blob (33KB) — RECENT_EVENTS, base/asset data. **DO NOT DELETE** |
 | `live-events.json` | Live missile events for arc animation. Written by `write-live-event.py` during attacks |
 | `hormuz.html` | Strait of Hormuz shipping tracker dashboard |
@@ -171,6 +171,13 @@ Grouped layer controls with dot indicators and counts:
 - **Planned mode:** OFF → All Infrastructure → OFF (energy layer to be re-homed under infra)
 
 ## Changelog
+
+### 2026-03-21 (cleanup)
+- **REMOVED v1 dashboard** (`docs/v1/`, 5.4MB) — dead, no references anywhere
+- **REMOVED v2-archive.html** (5.3MB) — design notes saved to `references/`
+- **REMOVED dashboard-v3/** — never-built CesiumJS plans, design notes saved to `references/`
+- **COMMITTED Flask API** — `api/app.py` + `api/db.py` extracted from Docker image v21 and committed
+- **PROJECT REORG:** Stale plans → `references/`, `hourly-brief.sh` → `scripts/`, cleaned runtime artifacts
 
 ### 2026-03-21 (session)
 - **3-MODE ARCS:** Replaced binary missile toggle with OFF → PATHS → ANIMATED → OFF cycle. PATHS=static dotted arcs (blue glow), ANIMATED=full rocket animation (red glow). State persisted via `localStorage.missileMode`.
