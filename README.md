@@ -1,15 +1,15 @@
 # 🛡️ Magen Yehuda Bot — Iran-Israel Real-Time Intelligence Monitor
 
-Multi-source intelligence aggregation for Iran/Israel/US military escalation. Adaptive threat-level system, 75+ OSINT sources, satellite fire detection, seismic monitoring, flight tracking, internet blackout detection, strike correlation, cyber warfare monitoring, wire service integration, multi-source corroboration, bilingual alerts with per-channel timezones, and instant Telegram delivery.
+Multi-source intelligence aggregation for Iran/Israel/US military escalation. Adaptive threat-level system, 85+ OSINT sources, satellite fire detection, seismic monitoring, flight tracking, internet blackout detection, strike correlation, cyber warfare monitoring, wire service integration, multi-source corroboration, bilingual alerts with per-channel timezones, and instant Telegram delivery.
 
 ![Threat Levels](https://img.shields.io/badge/threat_levels-GREEN_%7C_ELEVATED_%7C_HIGH_%7C_CRITICAL-brightgreen)
-![Sources](https://img.shields.io/badge/sources-75%2B_channels-blue)
+![Sources](https://img.shields.io/badge/sources-85%2B_channels-blue)
 ![Delivery](https://img.shields.io/badge/delivery-Telegram-26A5E4)
 ![Languages](https://img.shields.io/badge/languages-English_%2B_Hebrew-ff69b4)
 
 ## What It Does
 
-Monitors 75+ intelligence sources across 16 categories, auto-adjusts polling frequency based on threat level, auto-detects and corroborates breaking news from credible sources, and pushes instant bilingual alerts to Telegram channels with per-channel timezones:
+Monitors 85+ intelligence sources across 16 categories, auto-adjusts polling frequency based on threat level, auto-detects and corroborates breaking news from credible sources, and pushes instant bilingual alerts to Telegram channels with per-channel timezones:
 
 | Source | Channels | Speed | Auth Required |
 |--------|----------|-------|---------------|
@@ -341,7 +341,7 @@ Breaking news alerts are tracked per topic. When **3+ reputable sources** report
 3. Entries expire after 2 hours
 4. Header changes: "BREAKING NEWS" → "CONFIRMED" (EN) / "ידיעה חדשותית דחופה" → "ידיעה מאומתת" (HE)
 
-## OSINT Sources (75+ channels)
+## OSINT Sources (85+ channels)
 
 ### Telegram OSINT Channels (10)
 | Channel | Description |
@@ -726,17 +726,14 @@ Automatically identifies whether Israel 🇮🇱 or Iran 🇮🇷 is being targe
 }
 ```
 
-## File Structure
+## Project Structure
 
 ```
 iran-israel-alerts/
-├── README.md                    # This file
-├── SKILL.md                     # OpenClaw skill metadata
-├── ctl.sh                       # Master control script
-├── config.example.json          # Template → copy to config.json
-├── config.json                  # Your config (gitignored)
-├── .gitignore
-├── scripts/
+├── api/                         # Flask Container App code (extracted from Docker image v21)
+│   ├── app.py                   # Flask API server (630 lines)
+│   └── db.py                    # Azure Table Storage ORM (549 lines)
+├── scripts/                     # Collection, processing, and dispatch scripts
 │   ├── realtime-watcher.sh      # Adaptive threat-level daemon
 │   ├── dispatch.py              # Multi-channel alert router
 │   ├── scan-osint.py            # Unified OSINT scanner (TG+X+RSS+seismic)
@@ -747,53 +744,28 @@ iran-israel-alerts/
 │   ├── scan-naval.py            # Naval vessel tracker
 │   ├── scan_cyber.py            # Cyber warfare & hacktivist monitor
 │   ├── correlate-strikes.py     # Fire+seismic strike correlation
-│   ├── generate-fire-map.py     # Satellite intel map generator
-│   ├── generate-flight-map.py   # FR24 air traffic map + intel panel
-│   ├── generate-timelapse.py    # 24h animated time-lapse GIF
-│   ├── generate-summary.py      # Hourly Hebrew+English summaries
-│   ├── format-osint.py          # OSINT bilingual formatter
-│   ├── format-fires.py          # Fire data formatter
-│   ├── format-seismic.py        # Seismic data formatter
-│   ├── format-telegram.py       # War-room HTML formatter
-│   ├── pinned-status.py         # Live pinned status dashboard
-│   ├── log-intel.py             # JSONL intel event logger
+│   ├── hourly-brief.sh          # Quick hourly brief generator
 │   ├── hourly-report.sh         # Hourly cron: map+summaries+GIF
-│   ├── check-alerts.sh          # Full SITREP → JSON
-│   └── post-telegram.sh         # check → format → Telegram
-├── references/
+│   ├── generate-*.py            # Map/timelapse/summary generators
+│   ├── format-*.py              # Bilingual formatters
+│   └── ...                      # 30+ scripts total
+├── docs/                        # GitHub Pages site + documentation (dual purpose)
+│   ├── index.html               # Main dashboard
+│   ├── centcom.html             # CENTCOM operations view
+│   ├── hormuz.html              # Strait of Hormuz monitoring
+│   ├── ARCHITECTURE.md          # Full system architecture
+│   ├── TROUBLESHOOTING.md       # Common issues and fixes
+│   └── ...                      # Feeds, icons, data assets
+├── references/                  # Reference data + historical plans
 │   ├── sources.md               # Full source list with ratings
 │   └── borders.geojson          # Country borders (17 countries)
-├── secrets/                     # gitignored, chmod 600
-│   ├── firms-map-key.txt        # NASA FIRMS API key
-│   ├── nordvpn-auth.txt         # NordVPN creds (optional)
-│   └── proxy-override.txt       # Custom proxy (optional)
-└── state/                       # gitignored, auto-created
-    ├── watcher.pid / watcher.log
-    ├── watcher-threat-level.txt
-    ├── firms-seen.json
-    ├── seismic-seen.json
-    ├── blackout-state.json / blackout-history.json
-    ├── military-flights.json
-    ├── naval-state.json
-    ├── strike-correlations.json
-    ├── intel-log.jsonl           # All alert events (48h retention)
-    ├── flight-history.jsonl      # Air traffic snapshots (7-day)
-    ├── dispatch-log.jsonl        # Dispatch audit trail (7-day)
-    ├── breaking-corroboration.json # Multi-source breaking news tracker (2h window)
-    ├── intel-map-latest.png
-    ├── flight-map.png
-    ├── pinned-message-id-main.txt    # EN channel pinned msg ID
-    ├── pinned-message-id-hebrew.txt  # HE channel pinned msg ID
-    ├── last-standdown-ts.txt    # Standdown throttle timestamp
-    ├── watcher-oref-last.txt    # Last Oref API response
-    ├── poly_current.json        # Current Polymarket state
-    ├── osint-{telegram,twitter,rss,seismic}-seen.json
-    ├── cyber-{telegram,twitter,rss}-seen.json
-    ├── strikes-data.json         # Unified strikes database (ACLED + sensors)
-    ├── strikes-last-fetch.json   # ACLED poll timestamp
-    ├── strikes-map.png           # Latest strikes map image
-    ├── acled-token.json          # ACLED OAuth2 token cache
-    └── logs/                     # Rotated watcher logs (max 5)
+├── secrets/                     # gitignored, API keys
+├── state/                       # gitignored, runtime state
+├── tests/                       # Dashboard and API tests
+├── ctl.sh                       # Master control script
+├── Dockerfile                   # Container build (API + scripts)
+├── config.example.json          # Template → copy to config.json
+└── README.md                    # This file
 ```
 
 ## Cron Setup

@@ -163,3 +163,16 @@ open tests/test-centcom-dashboard.html
 | `API_URL/api/push/threat` | Push threat level + classification |
 | `API_URL/api/live-events` | Live missile events (if API supports it) |
 | `docs/live-events.json` | Static fallback for live events |
+
+---
+
+## Watcher Health Monitoring Gap
+
+**Problem:** There is no automated monitoring for the Mac watcher daemon (`realtime-watcher.sh`). If it dies, nothing alerts — data collection silently stops.
+
+**Current state:** Accepted risk. Manual monitoring only (`ctl.sh status` or `pgrep -f realtime-watcher`).
+
+**Future mitigation options:**
+1. **OpenClaw HEARTBEAT.md check** — Add a periodic heartbeat task that runs `pgrep -f realtime-watcher` and alerts via Telegram if the process is gone.
+2. **Cron watchdog** — A simple cron entry: `*/5 * * * * pgrep -f realtime-watcher || /path/to/ctl.sh start`
+3. **Staleness check** — Monitor `state/last-check.json` mtime; if older than 10 minutes, the watcher is likely dead.

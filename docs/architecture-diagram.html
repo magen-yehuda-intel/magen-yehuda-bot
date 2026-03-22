@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Magen Yehuda — Architecture Flow</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0e17;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;padding:20px;min-height:100vh}
+h1{text-align:center;color:#00d4ff;font-size:22px;margin-bottom:20px;letter-spacing:1px}
+.flow{display:flex;flex-direction:column;gap:12px;max-width:1100px;margin:0 auto}
+.layer{border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;position:relative}
+.layer-label{position:absolute;top:-10px;left:16px;background:#0a0e17;padding:0 8px;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700}
+.sources{border-color:#ff6b35}.sources .layer-label{color:#ff6b35}
+.mac{border-color:#00d4ff}.mac .layer-label{color:#00d4ff}
+.processing{border-color:#b44dff}.processing .layer-label{color:#b44dff}
+.azure{border-color:#0078d4}.azure .layer-label{color:#0078d4}
+.presentation{border-color:#00c853}.presentation .layer-label{color:#00c853}
+.grid{display:grid;gap:8px}
+.grid-6{grid-template-columns:repeat(6,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.box{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;text-align:center;font-size:12px}
+.box .icon{font-size:20px;display:block;margin-bottom:4px}
+.box .name{font-weight:600;color:#fff;font-size:11px}
+.box .detail{color:#888;font-size:10px;margin-top:2px}
+.arrow-row{display:flex;justify-content:center;align-items:center;gap:8px;padding:4px 0}
+.arrow{color:#00d4ff;font-size:20px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.arrow-label{font-size:10px;color:#888;letter-spacing:1px}
+.highlight{border-color:rgba(255,200,0,0.4);background:rgba(255,200,0,0.03)}
+.tag{display:inline-block;font-size:9px;padding:2px 6px;border-radius:4px;margin-top:4px}
+.tag-green{background:rgba(0,200,83,0.15);color:#00c853}
+.tag-blue{background:rgba(0,120,212,0.15);color:#5ba7e8}
+.tag-red{background:rgba(255,82,82,0.15);color:#ff5252}
+.tag-amber{background:rgba(255,183,77,0.15);color:#ffb74d}
+.tag-purple{background:rgba(180,77,255,0.15);color:#b44dff}
+.section-title{font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px;font-weight:600}
+.overlap-note{background:rgba(255,183,77,0.08);border:1px solid rgba(255,183,77,0.2);border-radius:8px;padding:10px;font-size:11px;color:#ffb74d;text-align:center;margin-top:8px}
+.cost-bar{display:flex;justify-content:space-between;align-items:center;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);border-radius:8px;padding:10px 16px;margin-top:8px}
+.cost-bar .amount{font-size:18px;font-weight:700;color:#00d4ff}
+.cost-bar .label{font-size:11px;color:#888}
+.cost-bar .covered{color:#00c853;font-size:11px}
+.debt{border-color:#ff5252}.debt .layer-label{color:#ff5252}
+.debt-item{display:flex;gap:8px;padding:4px 0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.debt-item:last-child{border:none}
+.debt-num{color:#ff5252;font-weight:700;min-width:20px}
+.debt-text{color:#ccc}
+.debt-sev{font-size:9px;padding:1px 5px;border-radius:3px;margin-left:auto;white-space:nowrap}
+.sev-high{background:rgba(255,82,82,0.15);color:#ff5252}
+.sev-med{background:rgba(255,183,77,0.15);color:#ffb74d}
+.sev-low{background:rgba(100,100,100,0.2);color:#888}
+</style>
+</head>
+<body>
+<h1>🛡 MAGEN YEHUDA — System Architecture</h1>
+<div class="flow">
+
+<!-- DATA SOURCES -->
+<div class="layer sources">
+<div class="layer-label">📡 Data Sources (30+)</div>
+<div class="grid grid-6" style="margin-top:8px">
+<div class="box"><span class="icon">🚨</span><span class="name">Pikud HaOref</span><span class="detail">Sirens every 10-30s</span></div>
+<div class="box"><span class="icon">💬</span><span class="name">Telegram</span><span class="detail">12 OSINT channels</span></div>
+<div class="box"><span class="icon">🐦</span><span class="name">Twitter/X</span><span class="detail">13 accounts</span></div>
+<div class="box"><span class="icon">📰</span><span class="name">RSS Feeds</span><span class="detail">7 feeds (Reuters, AP…)</span></div>
+<div class="box"><span class="icon">🌍</span><span class="name">USGS / FIRMS</span><span class="detail">Seismic + Fires</span></div>
+<div class="box"><span class="icon">✈️</span><span class="name">FR24 / OpenSky</span><span class="detail">Military flights</span></div>
+</div>
+</div>
+
+<div class="arrow-row"><span class="arrow">▼ ▼ ▼</span><span class="arrow-label">RAW DATA</span></div>
+
+<!-- MAC WATCHER -->
+<div class="layer mac">
+<div class="layer-label">💻 Mac (Local Machine) — Always On</div>
+<div style="margin-top:8px">
+<div class="section-title">Main Daemon</div>
+<div class="grid grid-4">
+<div class="box" style="grid-column:span 4;background:rgba(0,212,255,0.06)">
+<span class="icon">⚙️</span>
+<span class="name">realtime-watcher.sh</span>
+<span class="detail">Main daemon • Adaptive threat levels: 🟢 GREEN → 🟡 ELEVATED → 🔴 HIGH → ⚫ CRITICAL</span>
+<span class="detail">Polls scale with danger: Oref 10-30s • OSINT 30s-5min • Polymarket 60s-5min</span>
+</div>
+</div>
+<div class="section-title" style="margin-top:10px">Scanner Modules (called by watcher)</div>
+<div class="grid grid-4">
+<div class="box"><span class="icon">🔍</span><span class="name">scan-osint.py</span><span class="detail">TG + Twitter + RSS</span></div>
+<div class="box"><span class="icon">🔥</span><span class="name">scan-fires.py</span><span class="detail">NASA FIRMS</span></div>
+<div class="box"><span class="icon">🌊</span><span class="name">scan-seismic.py</span><span class="detail">USGS earthquakes</span></div>
+<div class="box"><span class="icon">✈️</span><span class="name">scan-flights.py</span><span class="detail">Military aircraft</span></div>
+<div class="box"><span class="icon">💻</span><span class="name">scan_cyber.py</span><span class="detail">Cyber threats</span></div>
+<div class="box"><span class="icon">⚔️</span><span class="name">scan_strikes.py</span><span class="detail">ACLED conflict</span></div>
+<div class="box"><span class="icon">🌑</span><span class="name">scan-blackout.py</span><span class="detail">Internet outages</span></div>
+<div class="box"><span class="icon">🚢</span><span class="name">scan-naval.py</span><span class="detail">Vessel tracking</span></div>
+</div>
+<div class="section-title" style="margin-top:10px">Cron Jobs (Mac crontab)</div>
+<div class="grid grid-3">
+<div class="box"><span class="name">export-feed.py</span><span class="detail">intel-feed.json → git push</span><span class="tag tag-green">*/5 * * * *</span></div>
+<div class="box"><span class="name">fetch-fr24.sh</span><span class="detail">FR24 cache → git push</span><span class="tag tag-green">*/2 * * * *</span></div>
+<div class="box"><span class="name">enrich-intel.py</span><span class="detail">LLM batch enrichment → DB</span><span class="tag tag-purple">0 * * * *</span></div>
+</div>
+</div>
+</div>
+
+<div class="arrow-row">
+<span class="arrow">▼</span><span class="arrow-label">CLASSIFY (LLM)</span>
+<span style="width:40px"></span>
+<span class="arrow">▼</span><span class="arrow-label">DISPATCH (TG)</span>
+<span style="width:40px"></span>
+<span class="arrow">▼</span><span class="arrow-label">PUSH (API + DB + GIT)</span>
+</div>
+
+<!-- PROCESSING -->
+<div class="layer processing">
+<div class="layer-label">🧠 Processing & Output</div>
+<div class="grid grid-3" style="margin-top:8px">
+<div class="box">
+<span class="icon">🤖</span>
+<span class="name">LLM Processing</span>
+<span class="detail">classify-attack.py → weapon/source ID</span>
+<span class="detail">enrich-intel.py → geocode + categorize</span>
+<span class="detail">write-live-event.py → missile arcs</span>
+<span class="tag tag-purple">Azure OpenAI gpt-5-mini</span>
+</div>
+<div class="box">
+<span class="icon">📨</span>
+<span class="name">Telegram Dispatch</span>
+<span class="detail">dispatch.py routes by language/severity</span>
+<div style="margin-top:4px;text-align:left;font-size:10px">
+<div>🇺🇸 @magenyehudaupdates (EN)</div>
+<div>🇮🇱 @opssheagathaariupdates (HE)</div>
+</div>
+<span class="tag tag-blue">Bilingual • Image routing</span>
+</div>
+<div class="box">
+<span class="icon">☁️</span>
+<span class="name">Cloud Push (3 paths)</span>
+<div style="margin-top:4px;text-align:left;font-size:10px">
+<div>1. push-to-api.sh → Container App</div>
+<div>2. log-intel.py → Azure Table Storage</div>
+<div>3. git push → GitHub Pages (static JSON)</div>
+</div>
+<span class="tag tag-green">Redundant delivery</span>
+</div>
+</div>
+</div>
+
+<div class="arrow-row"><span class="arrow">▼ ▼ ▼</span><span class="arrow-label">AZURE INTERNAL</span></div>
+
+<!-- AZURE -->
+<div class="layer azure">
+<div class="layer-label">☁️ Azure (eastus) — RG: magen-yehuda-intel</div>
+<div class="grid grid-3" style="margin-top:8px">
+<div class="box highlight">
+<span class="icon">🐳</span>
+<span class="name">Container App</span>
+<span class="detail">magen-yehuda-api v21</span>
+<span class="detail">0.5 vCPU • 1 GiB • Always-on</span>
+<span class="detail" style="color:#ffb74d">⚠️ app.py NOT in local repo</span>
+<div style="margin-top:6px;text-align:left;font-size:10px">
+<div style="color:#00c853">▸ 4 pollers: Oref (5s), Aircraft (60s), Fires (4m), Seismic (70s)</div>
+<div style="color:#5ba7e8">▸ GET /api/oref, /threat, /intel-feed, /aircraft, /fires, /seismic, /health</div>
+<div style="color:#ff9800">▸ POST /api/push/oref, /push/threat, /push/intel</div>
+</div>
+<span class="tag tag-red">~$39/mo</span>
+</div>
+<div class="box">
+<span class="icon">🗄️</span>
+<span class="name">Table Storage</span>
+<span class="detail">magenyehudadata</span>
+<div style="margin-top:4px;text-align:left;font-size:10px">
+<div>📋 intelevents — OSINT events</div>
+<div>🚨 orefalerts — Siren history</div>
+<div>🔥 fireevents — FIRMS data</div>
+<div>🌍 seismicevents — USGS data</div>
+</div>
+<span class="tag tag-blue">Entra ID auth • Public net required</span>
+<span class="tag tag-green">~$0.10/mo</span>
+</div>
+<div class="box">
+<span class="icon">🧠</span>
+<span class="name">Azure OpenAI</span>
+<span class="detail">gpt-5-mini</span>
+<span class="detail">Attack classification</span>
+<span class="detail">Intel enrichment</span>
+<span class="tag tag-purple">~$1-5/mo</span>
+<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px">
+<span class="icon" style="font-size:14px">📦</span>
+<span class="name" style="font-size:10px">ACR: magenyehudacr</span>
+<span class="detail">Docker images</span>
+<span class="tag tag-amber">~$5/mo</span>
+</div>
+</div>
+</div>
+<div class="overlap-note">
+⚠️ <strong>Redundancy:</strong> Both Mac AND Container App poll Oref, flights, fires, seismic independently.<br>
+Container App = hot cache for dashboard. Mac = OSINT + LLM + dispatch + DB writes.
+</div>
+</div>
+
+<div class="arrow-row"><span class="arrow">▼ ▼</span><span class="arrow-label">SERVE TO USERS</span></div>
+
+<!-- PRESENTATION -->
+<div class="layer presentation">
+<div class="layer-label">🌐 Presentation</div>
+<div class="grid grid-2" style="margin-top:8px">
+<div class="box">
+<span class="icon">🗺️</span>
+<span class="name">CentCom Dashboard</span>
+<span class="detail">magen-yehuda-intel.github.io/magen-yehuda-bot/</span>
+<div style="margin-top:6px;text-align:left;font-size:10px;color:#aaa">
+<div>▸ centcom.html (~189KB single-file) → index.html</div>
+<div>▸ Leaflet.js + CARTO dark + VIIRS night lights</div>
+<div>▸ Polls 7 API endpoints every 15-30s</div>
+<div>▸ Static data: v2-data.js (33KB) ⚠️ DO NOT DELETE</div>
+<div>▸ Missile arc animation (OFF → PATHS → ANIMATED)</div>
+<div>▸ Live feed • Siren HUD • Infrastructure (108 sites)</div>
+<div>▸ Hormuz tracker (hormuz.html, hourly AIS)</div>
+</div>
+<span class="tag tag-green">GitHub Pages — $0</span>
+</div>
+<div class="box">
+<span class="icon">📱</span>
+<span class="name">Telegram Channels</span>
+<div style="margin-top:6px;text-align:left;font-size:11px">
+<div style="color:#fff">🇺🇸 @magenyehudaupdates</div>
+<div style="color:#888;font-size:10px;margin-bottom:6px">English • All content • All images</div>
+<div style="color:#fff">🇮🇱 @opssheagathaariupdates</div>
+<div style="color:#888;font-size:10px;margin-bottom:6px">Hebrew • All content • High-severity images only</div>
+</div>
+<span class="tag tag-blue">dispatch.py routing</span>
+<div style="margin-top:10px;border-top:1px solid rgba(255,255,255,0.06);padding-top:6px;text-align:left;font-size:10px;color:#aaa">
+<div><strong style="color:#fff">Data freshness on dashboard:</strong></div>
+<div>▸ intel-feed.json — every 5 min (git push)</div>
+<div>▸ fr24-cache.json — every 2 min (git push)</div>
+<div>▸ live-events.json — on attack (git push)</div>
+<div>▸ API /api/* — real-time (Container App cache)</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- COST BAR -->
+<div class="cost-bar">
+<div>
+<div class="label">MONTHLY COST</div>
+<div class="amount">~$45-50</div>
+</div>
+<div style="text-align:center">
+<div class="label">BREAKDOWN</div>
+<div style="font-size:11px;color:#fff">Container App $39 + ACR $5 + OpenAI $1-5 + Storage $0.10</div>
+</div>
+<div style="text-align:right">
+<div class="label">MSFT DEV CREDITS</div>
+<div class="covered">✅ $150/mo — fully covered ($0 out of pocket)</div>
+</div>
+</div>
+
+<!-- TECH DEBT -->
+<div class="layer debt" style="margin-top:4px">
+<div class="layer-label">🔴 Known Issues (10)</div>
+<div style="margin-top:8px">
+<div class="debt-item"><span class="debt-num">1</span><span class="debt-text">Flask app.py only in Docker image, not in repo — if image lost, API code lost</span><span class="debt-sev sev-high">HIGH</span></div>
+<div class="debt-item"><span class="debt-num">2</span><span class="debt-text">Python azure-data-tables SDK hangs on query (curl works fine)</span><span class="debt-sev sev-med">MED</span></div>
+<div class="debt-item"><span class="debt-num">3</span><span class="debt-text">Azure Policy blocks shared key access — Entra ID only</span><span class="debt-sev sev-low">LOW</span></div>
+<div class="debt-item"><span class="debt-num">4</span><span class="debt-text">Public network required on storage for Mac DB writes</span><span class="debt-sev sev-med">MED</span></div>
+<div class="debt-item"><span class="debt-num">5</span><span class="debt-text">ctl.sh status checks wrong log path — reports STOPPED when running</span><span class="debt-sev sev-med">MED</span></div>
+<div class="debt-item"><span class="debt-num">6</span><span class="debt-text">Dashboard script silently dies at ~line 3470-3536</span><span class="debt-sev sev-high">HIGH</span></div>
+<div class="debt-item"><span class="debt-num">7</span><span class="debt-text">classify-attack.py chain doesn't always fire during active sirens</span><span class="debt-sev sev-high">HIGH</span></div>
+<div class="debt-item"><span class="debt-num">8</span><span class="debt-text">Azure Table auth tokens expire silently</span><span class="debt-sev sev-med">MED</span></div>
+<div class="debt-item"><span class="debt-num">9</span><span class="debt-text">Duplicate watcher PIDs spawn occasionally</span><span class="debt-sev sev-med">MED</span></div>
+<div class="debt-item"><span class="debt-num">10</span><span class="debt-text">No monitoring — if Mac watcher dies, nothing alerts</span><span class="debt-sev sev-high">HIGH</span></div>
+</div>
+</div>
+
+</div>
+</body>
+</html>

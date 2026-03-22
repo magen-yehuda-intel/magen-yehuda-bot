@@ -3,6 +3,7 @@ state/
 config.json
 *.log
 *.pid
+.DS_Store
 
 # Runtime artifacts
 watcher-poly-alerts.txt
@@ -12,4 +13,9 @@ watcher-twitter-seen.json
 __pycache__/
 *.pyc
 .env
-secrets/
+
+# API
+api/__pycache__/
+
+# Logs
+logs/
