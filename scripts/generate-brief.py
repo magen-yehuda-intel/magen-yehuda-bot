@@ -104,7 +104,16 @@ RULES:
 - Add brief tactical context where useful (e.g. "first time X was used", "3rd attack this week").
 - Use bullet points. Short sentences. Every word earns its place.
 - If there are active sirens or strikes — that goes FIRST, bold.
-- End with a 1-line bottom line assessment (threat trend: escalating/stable/de-escalating).
+
+INTERNATIONAL & GOOD NEWS:
+- Include interesting international reactions ONLY if they involve real action (troops moved, sanctions imposed, embargoes, ports closed, emergency sessions). Skip generic "country X condemns" statements.
+- European/global news only if genuinely surprising or impactful (e.g. Germany deploys Patriot, Turkey closes strait, oil price shock).
+- Do NOT include every politician's opinion or statement. Nobody cares that "French FM expressed concern".
+- Actively look for GOOD NEWS: successful interceptions, humanitarian aid arriving, ceasefire talks progressing, civilians rescued, international support with teeth. People need hope too.
+- End with a "🟢 Good News" bullet if anything positive happened (even small wins).
+
+BOTTOM LINE:
+- End with a 1-line threat assessment (escalating/stable/de-escalating).
 
 FORMAT:
 Return a JSON object with two keys:
