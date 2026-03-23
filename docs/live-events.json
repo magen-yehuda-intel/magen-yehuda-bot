@@ -89,7 +89,25 @@
       "weapon_type": "rocket",
       "confidence": 0.72,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "11:03:44",
+      "ts": 1774253024,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Hamas",
+      "target": "\u05d2\u05d1\u05d9\u05dd",
+      "desc": "Rocket barrage (Qassam) \u2014 The sirens are concentrated in the Gaza envelope/southern and adjacent western Negev areas, and the only recent local OSINT points to an attack in Gaza rather than a long-ran",
+      "severity": "critical",
+      "origin_lat": 31.42,
+      "origin_lon": 34.35,
+      "source_country": "gaza",
+      "weapon_type": "rocket",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774250973
+  "updated": 1774253024
 }
