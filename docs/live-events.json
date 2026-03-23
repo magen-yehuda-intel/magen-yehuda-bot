@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "16:15:40",
-      "ts": 1774271740,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05ea\u05dc \u05d7\u05d9",
-      "desc": "Rocket barrage \u2014 Active sirens are all in the northern border communities of Upper Galilee and the OSINT includes a direct Hebrew cue about an imminent strike on southern Lebanon/ Litani area, making ",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.96,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "16:23:22",
       "ts": 1774272202,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "01:18:55",
+      "ts": 1774304335,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05d0\u05dc\u05d5\u05df \u05d4\u05ea\u05d1\u05d5\u05e8",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Simultaneous sirens across a broad central-northern corridor in Israel combined with recent OSINT about significant attacks in Tehran strongly indicate an Iranian b",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.88,
+      "live": true
     }
   ],
-  "updated": 1774304202
+  "updated": 1774304335
 }
