@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "11:03:44",
-      "ts": 1774253024,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Hamas",
-      "target": "\u05d2\u05d1\u05d9\u05dd",
-      "desc": "Rocket barrage (Qassam) \u2014 The sirens are concentrated in the Gaza envelope/southern and adjacent western Negev areas, and the only recent local OSINT points to an attack in Gaza rather than a long-ran",
-      "severity": "critical",
-      "origin_lat": 31.42,
-      "origin_lon": 34.35,
-      "source_country": "gaza",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "11:10:08",
       "ts": 1774253408,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.62,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "19:52:13",
+      "ts": 1774284733,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e2\u05d9\u05df \u05d9\u05e2\u05e7\u05d1",
+      "desc": "Rocket barrage \u2014 Sirens are in northern Galilee border communities and recent OSINT includes activity in southern Lebanon, while the current pattern best fits short-range fire from Lebanon rather than",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.9,
+      "live": true
     }
   ],
-  "updated": 1774284699
+  "updated": 1774284733
 }
