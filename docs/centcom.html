@@ -931,6 +931,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="tb-btn active" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
     <span>📡</span><div class="tb-tooltip">Live Feed</div>
   </div>
+  <div class="tb-btn" data-layer="brief" data-color="cyan" onclick="toggleBrief()">
+    <span>📋</span><div class="tb-tooltip">Intel Brief</div>
+  </div>
   <div class="tb-btn active" data-layer="oref-toggle" data-color="red" onclick="toggleOrefBanner()">
     <span>🚨</span><div class="tb-tooltip">Pikud HaOref Banner</div>
   </div>
@@ -1485,6 +1488,11 @@ function toggleBrief() {
   closeMobilePanels('brief');
   const panel = document.getElementById('brief-panel');
   const isOpen = panel.classList.toggle('open');
+  const btn = document.querySelector('.tb-btn[data-layer="brief"]');
+  if (btn) btn.classList.toggle('active', isOpen);
+  // Close feed if open
+  const fp = document.getElementById('feed-panel');
+  if (isOpen && fp && fp.classList.contains('open')) { fp.classList.remove('open'); const fb = document.querySelector('.tb-btn[data-layer="feed"]'); if (fb) fb.classList.remove('active'); }
   if (isOpen && !briefData) loadBrief();
 }
 
@@ -1555,6 +1563,9 @@ function toggleFeed() {
   const isOpen = panel.classList.toggle('open');
   const btn = document.querySelector('.tb-btn[data-layer="feed"]');
   if (btn) btn.classList.toggle('active', isOpen);
+  // Close brief if open
+  const bp = document.getElementById('brief-panel');
+  if (isOpen && bp && bp.classList.contains('open')) { bp.classList.remove('open'); const bb = document.querySelector('.tb-btn[data-layer="brief"]'); if (bb) bb.classList.remove('active'); }
   if (isOpen && feedEvents.length === 0) loadFeed();
 }
 
