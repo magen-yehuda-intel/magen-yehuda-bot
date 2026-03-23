@@ -524,6 +524,41 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   color:var(--red); font-weight:700;
 }
 
+/* ═══ BRIEF PANEL ═══ */
+#brief-panel {
+  position:fixed; top:44px; right:0; bottom:0; width:380px; z-index:950;
+  background: linear-gradient(180deg, rgba(5,5,16,0.96), rgba(5,5,16,0.92));
+  backdrop-filter:blur(16px);
+  border-left:1px solid var(--panel-border);
+  transform:translateX(100%); transition:transform 0.3s ease;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+#brief-panel.open { transform:translateX(0); }
+.brief-header { padding:12px 16px 8px; border-bottom:1px solid var(--panel-border); flex-shrink:0; }
+.brief-header-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.brief-title { font-family:var(--font-mil); font-size:13px; font-weight:600; color:var(--text); letter-spacing:1px; }
+.brief-lang-toggle { display:flex; gap:4px; }
+.brief-lang {
+  padding:3px 10px; border-radius:4px; font-size:11px; font-weight:600; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.1); color:var(--text-dim); transition:all 0.2s;
+}
+.brief-lang.active { border-color:rgba(6,182,212,0.5); background:rgba(6,182,212,0.1); color:var(--cyan); }
+.brief-content {
+  flex:1; overflow-y:auto; padding:16px;
+  font-family:var(--font-body); font-size:13px; line-height:1.7; color:var(--text);
+}
+.brief-content[data-lang="he"] { direction:rtl; text-align:right; font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
+.brief-empty { color:var(--text-dim); text-align:center; padding:40px 20px; font-size:12px; }
+.brief-loading { color:var(--cyan); text-align:center; padding:40px 20px; }
+.brief-loading::after { content:''; animation:dots 1.5s infinite; }
+@keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+.brief-section { margin-bottom:16px; }
+.brief-section h3 { font-size:12px; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:1px; margin:0 0 6px; }
+.brief-section p { margin:0 0 6px; }
+.brief-section ul { margin:4px 0; padding-left:18px; }
+.brief-section li { margin-bottom:4px; }
+.brief-meta { padding:8px 16px; border-top:1px solid var(--panel-border); font-size:10px; color:var(--text-dim); flex-shrink:0; }
+
 /* ═══ MOBILE HORIZONTAL TOOLBAR ═══ */
 #mobile-toolbar {
   display:none;
@@ -641,18 +676,6 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   align-items:center; justify-content:center;
   box-shadow:0 0 12px rgba(34,197,94,0.3), 0 0 24px rgba(34,197,94,0.1);
   animation:feed-pulse 2s ease-in-out infinite;
-  position:relative;
-}
-@keyframes feed-pulse {
-  0%,100% { box-shadow:0 0 8px rgba(34,197,94,0.3); }
-  50% { box-shadow:0 0 16px rgba(34,197,94,0.5), 0 0 32px rgba(34,197,94,0.15); }
-}
-.mob-feed .feed-badge {
-  position:absolute; top:-4px; right:-4px;
-  background:#ef4444; color:#fff; font-size:7px; font-weight:700;
-  min-width:14px; height:14px; border-radius:7px;
-  display:flex; align-items:center; justify-content:center;
-  padding:0 3px; border:1.5px solid rgba(5,5,16,0.9);
 }
 
 /* ═══ MOBILE ═══ */
@@ -832,6 +855,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 @media (max-width:768px) {
   #feed-panel { width:100%; top:40px; bottom:52px; }
+  #brief-panel { width:100%; top:40px; bottom:52px; }
 }
 @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:0.5} }
 </style>
@@ -1099,7 +1123,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     </div>
     <div class="feed-updated" id="feed-updated"><span class="refresh-spin" id="feed-spinner">↻</span> <span id="feed-age">connecting...</span></div>
     <div class="feed-time-bar" id="feed-time-bar">
-      <span class="feed-time-chip" data-hours="0.25">15M</span>
+      <span class="feed-time-chip" data-hours="0.5">30M</span>
       <span class="feed-time-chip" data-hours="1">1H</span>
       <span class="feed-time-chip active" data-hours="2">2H</span>
       <span class="feed-time-chip" data-hours="6">6H</span>
@@ -1112,11 +1136,35 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="feed-list" id="feed-list"></div>
 </div>
 
+<!-- BRIEF PANEL -->
+<div id="brief-panel">
+  <div class="brief-header">
+    <div class="brief-header-row">
+      <span class="brief-title">📋 BRIEF</span>
+      <div class="brief-lang-toggle">
+        <span class="brief-lang active" data-lang="en">EN</span>
+        <span class="brief-lang" data-lang="he">עב</span>
+      </div>
+    </div>
+    <div class="feed-time-bar" id="brief-time-bar">
+      <span class="feed-time-chip" data-hours="0.5">30M</span>
+      <span class="feed-time-chip active" data-hours="2">2H</span>
+      <span class="feed-time-chip" data-hours="6">6H</span>
+      <span class="feed-time-chip" data-hours="24">24H</span>
+      <span class="feed-time-chip" data-hours="48">48H</span>
+    </div>
+  </div>
+  <div class="brief-content" id="brief-content">
+    <div class="brief-empty">Tap a time window to generate a brief</div>
+  </div>
+  <div class="brief-meta" id="brief-meta"></div>
+</div>
+
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED<span class="feed-badge" id="feed-badge" style="display:none">0</span></button>
-  <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
+  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED</button>
+  <button class="mob-btn" onclick="toggleBrief()"><span>📋</span>BRIEF</button>
 </div>
 
 <!-- SVG FILTER for neon glow -->
@@ -1294,7 +1342,7 @@ function updateSidebarRows() {
 function closeMobilePanels(except) {
   if (except !== 'sidebar') document.getElementById('sidebar').classList.remove('open');
   if (except !== 'feed') { const fp = document.getElementById('feed-panel'); if (fp) fp.classList.remove('open'); }
-  if (except !== 'legend') { const lg = document.getElementById('legend'); if (lg) lg.classList.remove('visible'); }
+  if (except !== 'brief') { const bp = document.getElementById('brief-panel'); if (bp) bp.classList.remove('open'); }
 }
 function toggleSidebar() {
   closeMobilePanels('sidebar');
@@ -1427,6 +1475,80 @@ let feedActiveCats = new Set();
 const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy:'#f97316', unknown:'#6b7280' };
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
 
+// ─── BRIEF PANEL ───
+let briefData = null;
+let briefLang = 'en';
+let briefHours = 2;
+let briefLastFetch = 0;
+
+function toggleBrief() {
+  closeMobilePanels('brief');
+  const panel = document.getElementById('brief-panel');
+  const isOpen = panel.classList.toggle('open');
+  if (isOpen && !briefData) loadBrief();
+}
+
+function loadBrief() {
+  const content = document.getElementById('brief-content');
+  content.innerHTML = '<div class="brief-loading">Generating brief</div>';
+  fetch(dataUrl('brief') || 'brief.json?t=' + Date.now(), {cache:'no-store'})
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(data => {
+      briefData = data;
+      briefLastFetch = Date.now();
+      renderBrief();
+      const meta = document.getElementById('brief-meta');
+      if (data.generated_at) {
+        const age = Math.round((Date.now() - new Date(data.generated_at).getTime()) / 60000);
+        meta.textContent = age <= 1 ? 'Generated just now' : `Generated ${age}m ago`;
+      }
+    })
+    .catch(() => {
+      content.innerHTML = '<div class="brief-empty">No brief available yet. Briefs are generated every 30 minutes.</div>';
+    });
+}
+
+function renderBrief() {
+  if (!briefData || !briefData.briefs) return;
+  const content = document.getElementById('brief-content');
+  const key = String(briefHours);
+  const brief = briefData.briefs[key];
+  if (!brief) {
+    content.innerHTML = '<div class="brief-empty">No brief for this time window.</div>';
+    return;
+  }
+  const html = briefLang === 'he' ? brief.he : brief.en;
+  content.innerHTML = html || '<div class="brief-empty">No content.</div>';
+  content.setAttribute('data-lang', briefLang);
+  if (brief.count !== undefined) {
+    const meta = document.getElementById('brief-meta');
+    meta.textContent = `${brief.count} events analyzed · ${brief.window || key + 'h'} window`;
+  }
+}
+
+// Brief time bar clicks
+document.getElementById('brief-time-bar').addEventListener('click', e => {
+  const chip = e.target.closest('.feed-time-chip');
+  if (!chip) return;
+  document.querySelectorAll('#brief-time-bar .feed-time-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  briefHours = parseFloat(chip.dataset.hours);
+  renderBrief();
+});
+
+// Brief lang toggle
+document.querySelectorAll('.brief-lang').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.brief-lang').forEach(l => l.classList.remove('active'));
+    el.classList.add('active');
+    briefLang = el.dataset.lang;
+    renderBrief();
+  });
+});
+
+// Auto-refresh brief every 30 min
+setInterval(() => { if (briefData) loadBrief(); }, 30 * 60 * 1000);
+
 function toggleFeed() {
   closeMobilePanels('feed');
   const panel = document.getElementById('feed-panel');
@@ -1501,14 +1623,6 @@ function loadFeed() {
       list.classList.add('feed-flash');
     }
     feedPrevCount = newCount;
-
-    // Update mobile feed badge
-    const badge = document.getElementById('feed-badge');
-    if (badge) {
-      const recent = feedEvents.filter(e => e.ts && (Date.now()/1000 - e.ts) < 3600).length;
-      if (recent > 0) { badge.textContent = recent > 99 ? '99+' : recent; badge.style.display = ''; }
-      else { badge.style.display = 'none'; }
-    }
 
     buildCatChips();
     renderFeed();
