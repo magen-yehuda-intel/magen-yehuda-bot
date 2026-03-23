@@ -2858,7 +2858,6 @@ function toggleOrefHistory() {
     });
 
     let html = '';
-    let waveNum = merged.length;
     merged.forEach((a, i) => {
       const isDispatch = !!a.type;
       let displayTitle, catColor, rawAreas, areaCount, areaList;
@@ -2877,35 +2876,30 @@ function toggleOrefHistory() {
         areaCount = a.area_count || (Array.isArray(rawAreas) ? rawAreas.length : 0);
         areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 4).join(', ') + (rawAreas.length > 4 ? ` +${rawAreas.length - 4} more` : '') : String(rawAreas);
       }
-      // Add wave label to distinguish entries
-      const waveLabel = `Wave ${waveNum--}`;
-      const updateLabel = a._waveCount > 1 ? ` <span style="color:#888;font-size:9px">(${a._waveCount} updates merged)</span>` : '';
+      // Time: show HH:MM (24h). If different day, prefix MM/DD
       let timeStr = '';
-      if (a.ts) {
-        const ms = a.ts * 1000;
-        const ago = Math.round((Date.now() - ms) / 60000);
-        if (ago < 1) timeStr = 'Just now';
-        else if (ago < 60) timeStr = `${ago}m ago`;
-        else if (ago < 1440) timeStr = `${Math.floor(ago / 60)}h ${ago % 60}m ago`;
-        else timeStr = new Date(ms).toLocaleString();
-      } else if (a.utc) {
-        const ms = new Date(a.utc).getTime();
-        const ago = Math.round((Date.now() - ms) / 60000);
-        if (ago < 1) timeStr = 'Just now';
-        else if (ago < 60) timeStr = `${ago}m ago`;
-        else if (ago < 1440) timeStr = `${Math.floor(ago / 60)}h ${ago % 60}m ago`;
-        else timeStr = new Date(ms).toLocaleString();
+      if (a.ts || a.utc) {
+        const ms = a.ts ? a.ts * 1000 : new Date(a.utc).getTime();
+        const d = new Date(ms);
+        const now = new Date();
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mm = String(d.getMinutes()).padStart(2,'0');
+        const sameDay = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        if (sameDay) {
+          timeStr = `${hh}:${mm}`;
+        } else {
+          timeStr = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${hh}:${mm}`;
+        }
       }
       const isFirst = i === 0;
       const borderColor = isFirst ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.06)';
       html += `<div style="padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${borderColor}">`;
       html += `<div style="display:flex;justify-content:space-between;align-items:center">`;
       html += `<span style="color:${catColor};font-weight:700;font-size:12px">${displayTitle}</span>`;
-      html += `<span style="color:#06b6d4;font-size:9px">${timeStr}</span>`;
+      html += `<span style="color:#06b6d4;font-size:10px;font-family:var(--font-mono,monospace)">${timeStr}</span>`;
       html += `</div>`;
-      html += `<div style="color:#9ca3af;font-size:9px;margin-top:2px;font-weight:600">${waveLabel}${updateLabel}</div>`;
-      if (areaCount) html += `<div style="color:#aaa;font-size:10px;margin-top:4px">${areaCount} areas</div>`;
-      if (areaList) html += `<div style="color:#666;font-size:9px;margin-top:3px">${areaList}</div>`;
+      if (areaList) html += `<div style="color:#ccc;font-size:11px;margin-top:4px;font-weight:500">${areaList}</div>`;
+      if (areaCount > 4) html += `<div style="color:#888;font-size:9px;margin-top:2px">${areaCount} areas total</div>`;
       html += `</div>`;
     });
     el.innerHTML = html;
@@ -3169,8 +3163,13 @@ function fetchLastSiren() {
       const a = d.alerts[0];
       const title = SIREN_TITLE_HE[a.title] || a.title || SIREN_TITLES[a.cat] || `Category ${a.cat}`;
       const ts = a.ts * 1000;
-      const ago = formatAgo(Math.round((Date.now() - ts) / 1000));
-      lastSirenCache = `(last: ${title} · ${ago})`;
+      const d = new Date(ts);
+      const now = new Date();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      const sameDay = d.getDate() === now.getDate() && d.getMonth() === now.getMonth();
+      const timeLabel = sameDay ? `${hh}:${mm}` : `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${hh}:${mm}`;
+      lastSirenCache = `(last: ${title} · ${timeLabel})`;
       el.textContent = lastSirenCache;
     }).catch(()=>{ el.textContent = ''; });
   } else {
@@ -3182,8 +3181,13 @@ function fetchLastSiren() {
       const parts = d.last_siren_ts.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
       if (!parts) { el.textContent = ''; return; }
       const ts = new Date(`${parts[1]}-${parts[2]}-${parts[3]}T${parts[4]}:${parts[5]}:${parts[6]}+03:00`).getTime();
-      const ago = formatAgo(Math.round((Date.now() - ts) / 1000));
-      lastSirenCache = `(last: ${title} · ${ago})`;
+      const dd = new Date(ts);
+      const noww = new Date();
+      const hh2 = String(dd.getHours()).padStart(2,'0');
+      const mm2 = String(dd.getMinutes()).padStart(2,'0');
+      const sameDay2 = dd.getDate() === noww.getDate() && dd.getMonth() === noww.getMonth();
+      const timeLabel2 = sameDay2 ? `${hh2}:${mm2}` : `${String(dd.getMonth()+1).padStart(2,'0')}/${String(dd.getDate()).padStart(2,'0')} ${hh2}:${mm2}`;
+      lastSirenCache = `(last: ${title} · ${timeLabel2})`;
       el.textContent = lastSirenCache;
     }).catch(()=>{ el.textContent = ''; });
   }
