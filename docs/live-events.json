@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "16:24:47",
-      "ts": 1774272287,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "unknown",
-      "target": "\u05e2'\u05d2'\u05e8",
-      "desc": "Rocket barrage \u2014 Siren in Ghajar/Golan border area with no explicit Lebanon/Iran launch claim; this border location is most consistent with spillover rocket fire from the Syria/Lebanon frontier.",
-      "severity": "high",
-      "origin_lat": 33.5,
-      "origin_lon": 36.3,
-      "source_country": "syria",
-      "weapon_type": "rocket",
-      "confidence": 0.62,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "16:25:22",
       "ts": 1774272322,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "02:02:40",
+      "ts": 1774306960,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d1\u05e8\u05db\u05d9\u05d4",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Sirens span south, center, and Jerusalem corridor simultaneously and OSINT confirms IRGC missile strikes on Israel, indicating a coordinated Iranian ballistic salvo",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774304585
+  "updated": 1774306960
 }
