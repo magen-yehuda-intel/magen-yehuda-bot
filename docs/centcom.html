@@ -888,7 +888,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span class="oref-shield">🛡</span>
     PIKUD HAOREF
     <span id="oref-conn" style="margin-left:6px;font-size:9px;color:#22c55e">● Live</span>
-    <span id="trump-countdown" title="Trump Hormuz ultimatum deadline" style="margin-left:12px;font-family:var(--font-mono,monospace);font-size:11px;color:#ff6666;white-space:nowrap;background:rgba(180,0,0,0.35);border:1px solid rgba(255,68,68,0.5);border-radius:4px;padding:2px 8px;letter-spacing:0.5px">🇺🇸 HORMUZ <span id="trump-timer" style="font-weight:700">--:--:--</span></span>
+    <span id="trump-countdown" title="Trump Hormuz ultimatum deadline" onclick="showTrumpInfo(event)" style="margin-left:12px;font-family:var(--font-mono,monospace);font-size:11px;color:#ff6666;white-space:nowrap;background:rgba(180,0,0,0.35);border:1px solid rgba(255,68,68,0.5);border-radius:4px;padding:2px 8px;letter-spacing:0.5px;cursor:pointer">🇺🇸 HORMUZ <span id="trump-timer" style="font-weight:700">--:--:--</span></span>
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim);cursor:pointer" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">✅ All Clear</div>
@@ -2581,6 +2581,23 @@ updateClock();
 // ═══════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════
+
+// Trump Hormuz ultimatum info popup
+function showTrumpInfo(e) {
+  e.stopPropagation();
+  let pop = document.getElementById('trump-info-popup');
+  if (pop) { pop.remove(); return; }
+  pop = document.createElement('div');
+  pop.id = 'trump-info-popup';
+  pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(10,15,30,0.96);border:1px solid rgba(255,68,68,0.4);border-radius:10px;padding:20px 24px;max-width:340px;color:#e5e5e5;font-family:var(--font-body);font-size:13px;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,0.6);backdrop-filter:blur(12px)';
+  pop.innerHTML = `<div style="font-size:16px;font-weight:700;color:#ff6666;margin-bottom:10px">🇺🇸 Trump Hormuz Ultimatum</div>
+    <div style="margin-bottom:8px">On <b>March 21, 2026</b>, President Trump issued a <b>48-hour ultimatum to Iran</b>: cease all interference with shipping in the <b>Strait of Hormuz</b> or face military consequences.</div>
+    <div style="margin-bottom:8px">Iran has been seizing tankers and disrupting oil shipments through the strait, a chokepoint for <b>~20% of global oil supply</b>.</div>
+    <div style="color:#999;font-size:11px">Deadline: Mon Mar 23, 7:44 PM ET</div>
+    <div onclick="this.parentElement.remove()" style="margin-top:12px;text-align:center;color:#ff6666;cursor:pointer;font-size:11px;opacity:0.7">tap to close</div>`;
+  document.body.appendChild(pop);
+  setTimeout(() => { document.addEventListener('click', function rm() { if(pop.parentElement) pop.remove(); document.removeEventListener('click',rm); }, {once:true}); }, 100);
+}
 
 // Trump ultimatum countdown — Mon March 23, 2026 7:44 PM ET (23:44 UTC)
 (function initTrumpCountdown() {
