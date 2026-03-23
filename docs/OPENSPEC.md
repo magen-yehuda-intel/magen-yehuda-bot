@@ -95,8 +95,8 @@ Clickable toggle buttons with tooltips:
 | 🚢 | Ships/Naval | blue |
 | 🚨 | Sirens (Oref) | red |
 | 🔥 | Fires (FIRMS) | orange |
-| 📡 | Live Feed | cyan |
-| 📋 | Intel Brief | cyan |
+| 📡 | Live Feed | green | Pulsing green circle (`.tb-feed-btn`), red badge for hourly event count |
+| 📋 | Intel Brief | cyan | Cyan glow circle (`.tb-brief-btn`), matches mobile style |
 | 📌 | OSINT Events | red |
 | 🚀 | Missile Animations | red |
 | Strike window dropdown | 24h/48h/7d (default 48h, no "All") | — |
@@ -133,6 +133,7 @@ Grouped layer controls with dot indicators and counts:
 - **Desktop:** Toggleable via 📡 toolbar button; opening closes Brief panel
 - **Mobile:** Opens via FEED bottom bar button; closes on panel switch
 - **Startup:** Panel hidden by default; feed data pre-loaded silently for badge count
+- **Basemap toggle** shifts right (392px) when feed OR brief panel is open
 
 ### Missile Arc Animation System
 - **3-mode cycle:** OFF → PATHS (static dotted arcs, blue glow) → ANIMATED (full rocket animation, red glow) → OFF
@@ -240,7 +241,10 @@ Grouped layer controls with dot indicators and counts:
 - **Feed/Brief exclusivity**: Opening feed closes brief and vice versa (both desktop and mobile)
 - **Brief panel opaque**: Changed from semi-transparent `rgba` + `backdrop-filter:blur` to fully opaque `#050510` — VIIRS/map tiles no longer bleed through
 - **Feed hidden on startup**: Removed auto-open (`setTimeout(toggleFeed, 500)`); feed pre-loads silently for badge count only
-- **FEED button pulsing**: 48px green circle with breathing glow animation + red badge (events in last hour, capped 99+)
+- **Desktop feed button**: Green pulsing circle (`.tb-feed-btn`) with red event count badge — matches mobile FEED style
+- **Desktop brief button**: Cyan glow circle (`.tb-brief-btn`) — matches mobile BRIEF style
+- **Red badge on both**: Desktop + mobile feed buttons show hourly event count (capped 99+)
+- **Basemap toggle z-fix**: Map/VIIRS toggle (z-index 1001) now shifts right when brief panel is open (was covering EN/עב lang toggle)
 - **Brief prompt**: Added international news (real actions only, no generic "condemns") + 🟢 Good News section
 - **RSS feeds**: Added "EU Defense" + "Good News ME" Google News RSS feeds to config
 - **PWA fixes**: `start_url` → root, `id` field, split icon purpose, SW v5, data JSON offline cache, deprecated meta tag fix
