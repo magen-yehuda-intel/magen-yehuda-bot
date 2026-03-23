@@ -81,7 +81,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .tb-feed-btn {
   background:rgba(34,197,94,0.15) !important; border:2px solid #22c55e !important;
   box-shadow:0 0 12px rgba(34,197,94,0.3), 0 0 24px rgba(34,197,94,0.1);
-  animation:feed-pulse 2s ease-in-out infinite; position:relative;
+  position:relative;
 }
 .tb-feed-btn:hover { border-color:#22c55e !important; transform:scale(1.12); }
 .tb-brief-btn {
@@ -90,6 +90,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 .tb-brief-btn:hover { border-color:#06b6d4 !important; transform:scale(1.12); }
 .tb-brief-btn.active { box-shadow:0 0 16px rgba(6,182,212,0.5), 0 0 32px rgba(6,182,212,0.2); }
+@keyframes notify-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.15); } }
+.tb-feed-btn.has-new, .mob-feed.has-new { animation:notify-pulse 1.5s ease-in-out infinite; }
+.tb-brief-btn.has-new, .mob-btn.mob-brief.has-new { animation:notify-pulse 1.5s ease-in-out infinite; }
 .tb-feed-btn .feed-badge {
   position:absolute; top:-4px; right:-4px; min-width:16px; height:16px;
   background:#ef4444; color:#fff; font-size:9px; font-weight:700;
@@ -698,14 +701,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   display:flex !important; flex-direction:row !important;
   align-items:center; justify-content:center;
   box-shadow:0 0 12px rgba(34,197,94,0.3), 0 0 24px rgba(34,197,94,0.1);
-  animation:feed-pulse 2s ease-in-out infinite;
   position:relative;
-}
-.mob-feed .feed-badge {
-  position:absolute; top:-4px; right:-4px; min-width:16px; height:16px;
-  background:#ef4444; color:#fff; font-size:9px; font-weight:700;
-  border-radius:8px; display:none; align-items:center; justify-content:center;
-  padding:0 4px; line-height:16px; border:1.5px solid #050510;
 }
 
 /* ═══ MOBILE ═══ */
@@ -959,7 +955,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- TOOLBAR -->
 <div id="toolbar">
   <div class="tb-btn tb-feed-btn" data-layer="feed" onclick="toggleFeed()">
-    <span>📡</span><span class="feed-badge" id="feed-badge-desktop"></span><div class="tb-tooltip">Live Feed</div>
+    <span>📡</span><div class="tb-tooltip">Live Feed</div>
   </div>
   <div class="tb-btn tb-brief-btn" data-layer="brief" onclick="toggleBrief()">
     <span>📋</span><div class="tb-tooltip">Intel Brief</div>
@@ -1205,8 +1201,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED<span class="feed-badge" id="feed-badge-mobile"></span></button>
-  <button class="mob-btn" onclick="toggleBrief()"><span>📋</span>BRIEF</button>
+  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED</button>
+  <button class="mob-btn mob-brief" onclick="toggleBrief()"><span>📋</span>BRIEF</button>
 </div>
 
 <!-- SVG FILTER for neon glow -->
@@ -1534,6 +1530,8 @@ function toggleBrief() {
   const isOpen = panel.classList.toggle('open');
   const btn = document.querySelector('.tb-btn[data-layer="brief"]');
   if (btn) btn.classList.toggle('active', isOpen);
+  // Clear new-content pulse
+  if (isOpen) document.querySelectorAll('.tb-brief-btn, .mob-brief').forEach(b => b.classList.remove('has-new'));
   // Close feed if open
   const fp = document.getElementById('feed-panel');
   if (isOpen && fp && fp.classList.contains('open')) { fp.classList.remove('open'); const fb = document.querySelector('.tb-btn[data-layer="feed"]'); if (fb) fb.classList.remove('active'); }
@@ -1549,6 +1547,11 @@ function loadBrief() {
       briefData = data;
       briefLastFetch = Date.now();
       renderBrief();
+      // Pulse brief buttons if panel not currently open
+      const bp = document.getElementById('brief-panel');
+      if (!bp || !bp.classList.contains('open')) {
+        document.querySelectorAll('.tb-brief-btn, .mob-brief').forEach(b => b.classList.add('has-new'));
+      }
       const meta = document.getElementById('brief-meta');
       if (data.generated_at) {
         const age = Math.round((Date.now() - new Date(data.generated_at).getTime()) / 60000);
@@ -1624,6 +1627,8 @@ function toggleFeed() {
   const isOpen = panel.classList.toggle('open');
   const btn = document.querySelector('.tb-btn[data-layer="feed"]');
   if (btn) btn.classList.toggle('active', isOpen);
+  // Clear new-content pulse
+  if (isOpen) document.querySelectorAll('.tb-feed-btn, .mob-feed').forEach(b => b.classList.remove('has-new'));
   // Close brief if open
   const bp = document.getElementById('brief-panel');
   if (isOpen && bp && bp.classList.contains('open')) { bp.classList.remove('open'); const bb = document.querySelector('.tb-btn[data-layer="brief"]'); if (bb) bb.classList.remove('active'); }
@@ -1686,13 +1691,15 @@ function loadFeed() {
     }).sort((a,b) => (b.ts||0) - (a.ts||0));
     feedLastUpdate = Date.now();
 
-    // Flash if new events arrived
+        // Pulse feed buttons if new events arrived
     const newCount = feedEvents.length;
     if (feedPrevCount > 0 && newCount > feedPrevCount) {
       const list = document.getElementById('feed-list');
       list.classList.remove('feed-flash');
-      void list.offsetWidth; // trigger reflow
+      void list.offsetWidth;
       list.classList.add('feed-flash');
+      // Gentle pulse on feed buttons (stops when panel opened)
+      document.querySelectorAll('.tb-feed-btn, .mob-feed').forEach(b => b.classList.add('has-new'));
     }
     feedPrevCount = newCount;
 
@@ -1776,15 +1783,6 @@ function renderFeed() {
   });
 
   document.getElementById('feed-count').textContent = `${filtered.length} events`;
-
-  // Update feed badges (desktop + mobile)
-  const hourAgo = now - 3600;
-  const recentCount = feedEvents.filter(e => (e.ts||0) > hourAgo).length;
-  const badgeText = recentCount > 99 ? '99+' : String(recentCount);
-  document.querySelectorAll('.feed-badge').forEach(b => {
-    if (recentCount > 0) { b.textContent = badgeText; b.style.display = 'flex'; }
-    else { b.style.display = 'none'; }
-  });
 
   const list = document.getElementById('feed-list');
   if (filtered.length === 0) {
