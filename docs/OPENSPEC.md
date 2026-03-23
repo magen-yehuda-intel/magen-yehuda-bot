@@ -266,3 +266,41 @@ Grouped layer controls with dot indicators and counts:
 ---
 
 _Update this spec with every change. Future-you will thank present-you._
+
+## Brief Panel (📋)
+
+### Overview
+AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replaces Legend on mobile bottom bar.
+
+### Architecture
+- **Script:** `scripts/generate-brief.py` — runs every 30 min via cron
+- **LLM:** Azure OpenAI `gpt-5-mini` (same endpoint as classify-attack.py)
+- **Input:** `state/intel-log.jsonl` events (uses `logged_at` or `ts` field)
+- **Output:** `docs/brief.json` — auto git-pushed to GitHub Pages
+- **Time windows:** 30M, 2H, 6H, 24H, 48H (same as feed filters minus 15M)
+- **Languages:** English (default) + Hebrew (RTL, dir='rtl')
+
+### Prompt Design
+- Military intelligence briefing officer persona
+- Rules: direct, concise, no fluff, group by theme, add tactical context
+- Active sirens/strikes go FIRST, bold
+- End with 1-line threat trend assessment
+- Output: JSON `{"en": "<html>", "he": "<html>"}`
+- Under 300 words per brief
+
+### Dashboard UI
+- **Panel:** Same style as feed panel, right-side slide-in, full-width on mobile
+- **Header:** EN/עב language toggle + time window chips (30M/2H/6H/24H/48H)
+- **Content:** Rendered HTML from brief.json, RTL support via `data-lang="he"`
+- **Auto-refresh:** Fetches new brief.json every 30 min
+- **Mutual exclusivity:** Opening brief closes feed/sidebar and vice versa
+
+### Mobile Bottom Bar
+```
+[ LAYERS ] [ FEED ] [ BRIEF ]
+```
+
+### Cron
+```
+*/30 * * * * /opt/homebrew/bin/python3 ~/.openclaw/workspace/skills/iran-israel-alerts/scripts/generate-brief.py >> /tmp/brief-gen.log 2>&1
+```
