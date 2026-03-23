@@ -53,7 +53,25 @@
       "weapon_type": "rocket",
       "confidence": 0.8,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "07:59:03",
+      "ts": 1774241943,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d7\u05d9\u05e4\u05d4 - \u05d1\u05ea \u05d2\u05dc\u05d9\u05dd \u05e7.\u05d0\u05dc\u05d9\u05e2\u05d6\u05e8",
+      "desc": "Ballistic missile \u2014 IDF reported missiles launched from Iran toward Israel and interceptors are operating while active sirens are concentrated in northern districts, consistent with an Iranian ballist",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.95,
+      "live": true
     }
   ],
-  "updated": 1774214465
+  "updated": 1774241943
 }
