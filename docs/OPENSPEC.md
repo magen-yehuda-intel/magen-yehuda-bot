@@ -25,42 +25,91 @@
 
 ## UI Layout
 
+### Wireframe — Desktop (≥1025px)
+```
+┌──────────────────────────────────────────────────────┐
+│  🇺🇸  U.S. & ISRAEL  vs.  IRAN  🇮🇷     [🌗] [📡]  │ Title Bar (44px)
+├──┬───────────────────────────────────────────────────┤
+│  │ 🛡 PIKUD HAOREF ● Live  ⏰ HH:MM:SS    Updated  │ Oref Banner
+│  │ ✅ All Clear  (last: Rockets · 06:52)             │
+│TB├───────────────────────────────────────────────────┤
+│  │                                                   │
+│☰ │                                                   │
+│⭐│                    MAP                            │
+│🏗│               (Leaflet)                           │
+│✈ │                                                   │
+│🚢│                                                   │
+│🚨│                                                   │
+│🔥│  [Chips: 🛡 sirens | ✈ aircraft | 🔥 fires]     │
+│📌│                                                   │
+│🚀│         [Strike: 24h ▾ 48h  7d]                  │
+│📋│                                                   │
+│📍│                                                   │
+└──┴───────────────────────────────────────────────────┘
+```
+
+### Wireframe — Mobile (≤1024px)
+```
+┌─────────────────────────────┐
+│ 🇺🇸 U.S.&ISRAEL vs IRAN 🇮🇷 │ Title Bar (36px)
+├─────────────────────────────┤
+│ ☰ ⭐ 🏗 ✈ 🚢 🚨 🔥 📌 🚀 📍│ Top Toolbar (scroll)
+├─────────────────────────────┤
+│ 🛡 PIKUD HAOREF ●  ⏰ 17:55│ Oref Banner (top:80px)
+│ ✅ All Clear                │
+├─────────────────────────────┤
+│                             │
+│           MAP               │
+│        (Leaflet)            │
+│                             │
+│  [Chips]                    │
+│                             │
+├─────────────────────────────┤
+│  LAYERS  │  FEED  │ LEGEND  │ Bottom Bar (3 buttons)
+└─────────────────────────────┘
+```
+
 ### Title Bar
 - "U.S. & ISRAEL vs. IRAN" with flag emojis
 - Map/VIIRS toggle buttons (top right)
+- **Mobile:** Font 9px, flags 14px, letter-spacing 0.5px, height 36px
 
-### Pikud HaOref Banner (top left)
+### Pikud HaOref Banner (below toolbar)
 - Live connection indicator (green dot)
+- **Trump Ultimatum Countdown** — pill badge `⏰ HH:MM:SS`, inline after "● Live". Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
 - Status: "All Clear" (green) / "ACTIVE SIREN" (red pulsing)
-- Last siren timestamp
-- Click to open **Siren History** popup (scrollable, shows waves with severity)
+- Last siren: shows `HH:MM` (24h clock); different day shows `MM/DD HH:MM`
+- Click to open **Siren History** popup (scrollable, shows areas prominently — no wave labels)
 - Polls `/api/oref` every 15s
+- **Mobile:** top:80px (below mobile toolbar), full-width (left:0; right:0)
 
-### Left Toolbar (desktop — vertical icon strip)
+### Left Toolbar (desktop only — vertical icon strip)
+- **Hidden on screens ≤1024px** (`display:none !important`)
 Clickable toggle buttons with tooltips:
 | Icon | Layer | Color |
 |------|-------|-------|
 | ☰ | Sidebar toggle | — |
-| 🗺 | Borders/Boundaries | blue |
 | ⭐ | Military Bases | cyan |
 | 🏗 | Infrastructure | amber |
 | ✈️ | Aircraft/Flights | blue |
 | 🚢 | Ships/Naval | blue |
-| 🛡 | SAM/AD Sites | green |
-| ↻ | Patrol Routes (desktop only) | purple |
-| 🌊 | Waterways | cyan |
 | 🚨 | Sirens (Oref) | red |
 | 🔥 | Fires (FIRMS) | orange |
 | 📌 | OSINT Events | red |
 | 🚀 | Missile Animations | red |
-| Strike window dropdown | 1h/4h/24h/48h/ALL | — |
+| Strike window dropdown | 24h/48h/7d (default 48h, no "All") | — |
 | 📋 | Legend | — |
 | 🌗 | Basemap toggle (Carto/VIIRS) | — |
 | 📍 | Geolocate | — |
 
-### Mobile Toolbar (bottom horizontal bar)
-Same icons as desktop, horizontally scrollable. Tabs at bottom:
-- LAYERS | BASES | FEED | FIRES | OSINT | LEGEND
+### Mobile Top Toolbar (horizontal scrollable strip)
+- **Visible ≤1024px**, `top:36px`, horizontally scrollable
+- Same toggle icons as desktop toolbar (☰, ⭐, 🏗, ✈️, 🚢, 🚨, 🔥, OSINT, 🚀, 📍)
+
+### Mobile Bottom Bar
+3 buttons only:
+- **LAYERS** | **FEED** | **LEGEND**
+- FEED is center position
 
 ### Sidebar (desktop left, toggleable)
 Grouped layer controls with dot indicators and counts:
@@ -98,9 +147,12 @@ Grouped layer controls with dot indicators and counts:
 - Toggleable overlay explaining all map symbols, colors, and severity levels
 
 ### Siren History Popup
-- Fixed position overlay showing past siren waves
-- Each wave: title, severity badge, timestamp, affected areas
-- Waves merged when updates arrive within same alert cycle
+- Fixed position overlay, opens on Oref banner click
+- Deduplicates alerts within 90s window (merges areas)
+- No wave labels — shows alert type + areas prominently (white, 11px)
+- Time: `HH:MM` 24h clock; different day: `MM/DD HH:MM`
+- Shows "X areas total" if more than 4 areas
+- Color-coded: red=active, amber=standdown
 
 ## Map Layers Detail
 - **CARTO dark** basemap (default) / **VIIRS** night lights
@@ -171,6 +223,17 @@ Grouped layer controls with dot indicators and counts:
 - **Planned mode:** OFF → All Infrastructure → OFF (energy layer to be re-homed under infra)
 
 ## Changelog
+
+### 2026-03-23
+- **Strike map**: Default 48h (was 24h), removed "All" option, max 7d. `config.json` `window_days: 2`
+- **Siren history**: Removed "Wave N" labels; areas shown prominently; time `HH:MM` 24h clock; `MM/DD HH:MM` for different day
+- **Trump countdown**: Pill badge in Oref banner, ticking down to `2026-03-23T23:44:00Z`, color-shifting
+- **JS fix**: `const d` variable collision broke ALL script execution — renamed to unique vars
+- **Mobile breakpoint**: Raised from 768px → 1024px — hides desktop toolbar on tablets too
+- **Mobile title**: Smaller (9px, flags 14px, height 36px) to fit viewport
+- **Mobile Oref banner**: Pushed to `top:80px` below mobile toolbar, full-width
+- **Mobile bottom bar**: Reduced to 3 buttons — LAYERS | FEED | LEGEND (removed BASES, FIRES, OSINT — already on top toolbar)
+- **Mobile sidebar**: Starts closed (`translateX(-100%)`) on mobile
 
 ### 2026-03-21 (cleanup)
 - **REMOVED v1 dashboard** (`docs/v1/`, 5.4MB) — dead, no references anywhere
