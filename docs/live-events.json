@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "12:30:49",
-      "ts": 1774258249,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d1\u05e8\u05e2\u05dd",
-      "desc": "Rocket barrage \u2014 Sirens are in northern border communities near Lebanon, and there is no stronger OSINT pointing elsewhere, making a Hezbollah/Lebanon rocket the most likely source.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "14:11:11",
       "ts": 1774264271,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "22:26:01",
+      "ts": 1774293961,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d0\u05dc \u05e2\u05de\u05d0\u05e8\u05e0\u05d9",
+      "desc": "Ballistic missile (Burkan) \u2014 The sirens are in the southern Arava/Dead Sea area, which can fit a long-range Yemen-origin strike, but the recent OSINT is dominated by Lebanon/Iran context and does not ",
+      "severity": "high",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.34,
+      "live": true
     }
   ],
-  "updated": 1774293940
+  "updated": 1774293961
 }
