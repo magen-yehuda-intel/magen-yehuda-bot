@@ -251,7 +251,25 @@
       "weapon_type": "rocket",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "15:44:38",
+      "ts": 1774269878,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e7\u05e8\u05d9\u05d9\u05ea \u05e9\u05de\u05d5\u05e0\u05d4",
+      "desc": "Rocket barrage \u2014 Active sirens in Kiryat Shmona point to a northern-border attack, and recent OSINT about Hezbollah/Northern border activity makes a Lebanon-origin rocket most likely",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774268502
+  "updated": 1774269878
 }
