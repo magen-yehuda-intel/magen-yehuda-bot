@@ -341,10 +341,53 @@ test('Mobile Bar', 'exactly 3 buttons: LAYERS, FEED, BRIEF', () => {
   const buttons = ['LAYERS', 'FEED', 'BRIEF'];
   assertEqual(buttons.length, 3);
   assertEqual(buttons[1], 'FEED', 'FEED should be middle');
-  assert(!buttons.includes('LEGEND'), 'LEGEND should be removed');
+  assert(!buttons.includes('LEGEND'), 'LEGEND should be removed from mobile bar');
   assert(!buttons.includes('BASES'), 'BASES should be removed');
   assert(!buttons.includes('FIRES'), 'FIRES should be removed');
   assert(!buttons.includes('OSINT'), 'OSINT should be removed');
+});
+
+test('Feed Startup', 'no auto-open setTimeout in centcom.html', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(!html.includes('setTimeout(() => toggleFeed()'), 'Feed should not auto-open on startup');
+  assert(!html.includes("setTimeout(()=>toggleFeed()"), 'Feed should not auto-open on startup (minified)');
+});
+
+test('Feed Startup', 'loadFeed() called for badge count', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(html.includes('loadFeed()'), 'loadFeed() must be called for badge count pre-loading');
+});
+
+test('Desktop Toolbar', 'has brief button', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(html.includes('data-layer="brief"'), 'desktop toolbar should have brief button');
+  assert(html.includes('toggleBrief()'), 'toggleBrief() must be wired');
+});
+
+test('Desktop Toolbar', 'feed and brief are mutually exclusive', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  // toggleFeed should reference brief-panel
+  const feedFn = html.substring(html.indexOf('function toggleFeed()'), html.indexOf('function toggleFeed()') + 600);
+  assert(feedFn.includes('brief-panel'), 'toggleFeed should close brief panel');
+  const briefFn = html.substring(html.indexOf('function toggleBrief()'), html.indexOf('function toggleBrief()') + 600);
+  assert(briefFn.includes('feed-panel'), 'toggleBrief should close feed panel');
+});
+
+test('Brief Panel', 'fully opaque background (no bleed-through)', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  const briefCSS = html.substring(html.indexOf('#brief-panel {'), html.indexOf('#brief-panel {') + 300);
+  assert(!briefCSS.includes('rgba'), 'Brief panel should not use rgba (map bleeds through)');
+  assert(!briefCSS.includes('backdrop-filter'), 'Brief panel should not use backdrop-filter');
 });
 
 // ═══════════════════════════════════════════════════════════

@@ -95,10 +95,11 @@ Clickable toggle buttons with tooltips:
 | 🚢 | Ships/Naval | blue |
 | 🚨 | Sirens (Oref) | red |
 | 🔥 | Fires (FIRMS) | orange |
+| 📡 | Live Feed | cyan |
+| 📋 | Intel Brief | cyan |
 | 📌 | OSINT Events | red |
 | 🚀 | Missile Animations | red |
 | Strike window dropdown | 24h/48h/7d (default 48h, no "All") | — |
-| 📋 | Legend | — |
 | 🌗 | Basemap toggle (Carto/VIIRS) | — |
 | 📍 | Geolocate | — |
 
@@ -108,8 +109,11 @@ Clickable toggle buttons with tooltips:
 
 ### Mobile Bottom Bar
 3 buttons only:
-- **LAYERS** | **FEED** | **LEGEND**
-- FEED is center position
+- **LAYERS** | **FEED** | **BRIEF**
+- FEED is center position, pulsing green circle with breathing glow animation
+- Red badge on FEED shows count of events from last hour (capped at "99+"), hidden when 0
+- Feed data pre-loaded on page load for badge count; **panel stays closed by default**
+- Opening any panel closes the others (mutual exclusivity)
 
 ### Sidebar (desktop left, toggleable)
 Grouped layer controls with dot indicators and counts:
@@ -123,9 +127,12 @@ Grouped layer controls with dot indicators and counts:
 
 ### Live Feed Panel (right side)
 - Real-time OSINT event feed
-- Filterable by time (15m/1h/4h/24h/48h/ALL) and source (ALL/Iran/Israel/Proxy)
+- Filterable by time (30m/1h/4h/24h/48h/ALL) and source (ALL/Iran/Israel/Proxy)
 - Color-coded event cards with source, timestamp, flag
 - Event count in header
+- **Desktop:** Toggleable via 📡 toolbar button; opening closes Brief panel
+- **Mobile:** Opens via FEED bottom bar button; closes on panel switch
+- **Startup:** Panel hidden by default; feed data pre-loaded silently for badge count
 
 ### Missile Arc Animation System
 - **3-mode cycle:** OFF → PATHS (static dotted arcs, blue glow) → ANIMATED (full rocket animation, red glow) → OFF
@@ -171,7 +178,10 @@ Grouped layer controls with dot indicators and counts:
 | `updateArcPositions()` | Repositions arcs on map move/zoom |
 | `pollOref()` | Fetches siren data from API every 15s |
 | `renderStrikeEvents()` | Renders ACLED/FIRMS strike markers |
-| `fetchLiveFeed()` | Loads OSINT events into right panel |
+| `toggleFeed()` | Show/hide feed panel; closes brief on desktop |
+| `toggleBrief()` | Show/hide brief panel; closes feed on desktop |
+| `loadFeed()` | Loads OSINT events into feed panel + updates badge count |
+| `loadBrief()` | Fetches brief.json into brief panel |
 | `isolateIranLayer(key)` | Solo-view a specific Iran infrastructure layer |
 | `mtToggle(layer, el)` | Mobile toolbar layer toggle |
 | `toggleSidebar()` | Show/hide desktop sidebar |
@@ -225,6 +235,16 @@ Grouped layer controls with dot indicators and counts:
 ## Changelog
 
 ### 2026-03-23
+- **LLM upgrade**: `gpt-5-mini` → `gpt-5.4-mini` (v2026-03-17) on `idanshimon-8986-resource` (eastus2)
+- **Brief on desktop**: Added 📋 Intel Brief button to desktop toolbar (was mobile-only)
+- **Feed/Brief exclusivity**: Opening feed closes brief and vice versa (both desktop and mobile)
+- **Brief panel opaque**: Changed from semi-transparent `rgba` + `backdrop-filter:blur` to fully opaque `#050510` — VIIRS/map tiles no longer bleed through
+- **Feed hidden on startup**: Removed auto-open (`setTimeout(toggleFeed, 500)`); feed pre-loads silently for badge count only
+- **FEED button pulsing**: 48px green circle with breathing glow animation + red badge (events in last hour, capped 99+)
+- **Brief prompt**: Added international news (real actions only, no generic "condemns") + 🟢 Good News section
+- **RSS feeds**: Added "EU Defense" + "Good News ME" Google News RSS feeds to config
+- **PWA fixes**: `start_url` → root, `id` field, split icon purpose, SW v5, data JSON offline cache, deprecated meta tag fix
+- **index.html sync**: Fixed stale index.html missing brief panel; added test to catch this automatically
 - **Countdown label**: Changed from `⏰` to `🇺🇸 HORMUZ` — clearly indicates Trump Hormuz ultimatum
 - **Oref connection health**: Blinks green dot on each successful poll; shows "● Retrying (N)..." on failures; switches to **"● Offline"** (red) after 5 consecutive failures; auto-recovers on success
 - **Mobile panel exclusivity**: Opening Feed/Legend/Layers now closes the other panels (no overlap)
@@ -274,7 +294,7 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 
 ### Architecture
 - **Script:** `scripts/generate-brief.py` — runs every 30 min via cron
-- **LLM:** Azure OpenAI `gpt-5-mini` (same endpoint as classify-attack.py)
+- **LLM:** Azure OpenAI `gpt-5.4-mini` on `idanshimon-8986-resource` (eastus2)
 - **Input:** `state/intel-log.jsonl` events (uses `logged_at` or `ts` field)
 - **Output:** `docs/brief.json` — auto git-pushed to GitHub Pages
 - **Time windows:** 30M, 2H, 6H, 24H, 48H (same as feed filters minus 15M)
@@ -283,6 +303,8 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 ### Prompt Design
 - Military intelligence briefing officer persona
 - Rules: direct, concise, no fluff, group by theme, add tactical context
+- International news: only real actions (troops, sanctions, embargoes) — skip generic "condemns" statements
+- 🟢 Good News section: interceptions, humanitarian aid, ceasefire progress, civilians rescued
 - Active sirens/strikes go FIRST, bold
 - End with 1-line threat trend assessment
 - Output: JSON `{"en": "<html>", "he": "<html>"}`
@@ -304,3 +326,33 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 ```
 */30 * * * * /opt/homebrew/bin/python3 ~/.openclaw/workspace/skills/iran-israel-alerts/scripts/generate-brief.py >> /tmp/brief-gen.log 2>&1
 ```
+
+## PWA (Progressive Web App)
+
+### Manifest (`manifest.json`)
+- **name:** "Magen Yehuda Intel", **short_name:** "MYI"
+- **id:** `/magen-yehuda-bot/` (stable identity across installs)
+- **start_url:** `/magen-yehuda-bot/` (serves index.html)
+- **display:** standalone, **orientation:** any
+- **Icons:** 192x192 + 512x512, separate `purpose: "any"` and `purpose: "maskable"` entries (no combined)
+- **theme_color:** `#ff0040`, **background_color:** `#0a0a1a`
+
+### Service Worker (`sw.js`)
+- **Cache name:** `myi-v5` (bump version on shell changes)
+- **Shell URLs cached:** `/`, `/index.html`, `/manifest.json`, icons
+- **Strategy:** Network-first for HTML + data JSON (cache fallback for offline), cache-first for static assets
+- **Data JSON:** All `.json` files (except manifest) cached with network-first + offline fallback `{"error":"offline"}`
+- **API calls:** Always network, returns `{"error":"offline"}` on failure
+- **Lifecycle:** `skipWaiting()` on install, `clients.claim()` on activate, auto-cleans old caches
+
+### HTML Meta Tags
+- `<link rel="manifest" href="manifest.json">`
+- `<meta name="theme-color" content="#ff0040">`
+- `<meta name="mobile-web-app-capable" content="yes">` (NOT apple-mobile-web-app-capable — deprecated)
+- `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
+- `<link rel="apple-touch-icon" href="icons/icon-192.png">`
+
+### Rules
+- **index.html MUST be synced with centcom.html** — run `cp centcom.html index.html` after every change
+- Bump `CACHE_NAME` version in `sw.js` when shell files change
+- Icon purpose must be separate entries (not `"any maskable"` combined)
