@@ -98,9 +98,10 @@ Clickable toggle buttons with tooltips:
 | 🚢 | Ships/Naval | blue |
 | 🚨 | Sirens (Oref) | red |
 | 🔥 | Fires (FIRMS) | orange |
-| 📡 | Live Feed | green | Pulsing green circle (`.tb-feed-btn`), red badge for hourly event count |
-| 📋 | Intel Brief | cyan | Cyan glow circle (`.tb-brief-btn`), matches mobile style |
+| 📡 | Live Feed | green | Green glow circle (`.tb-feed-btn`); pulses (`notify-pulse`) on new events, clears when opened |
+| 📋 | Intel Brief | cyan | Cyan glow circle (`.tb-brief-btn`); pulses on new brief, clears when opened |
 | 📌 | OSINT Events | red |
+| 🏚 (SVG) | Earthquakes (USGS) | purple | Inline SVG building-damage icon from svgrepo |
 | 🚀 | Missile Animations | red |
 | Strike window dropdown | 24h/48h/7d (default 48h, no "All") | — |
 | 📍 | Geolocate | — |
