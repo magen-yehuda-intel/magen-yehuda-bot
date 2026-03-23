@@ -1,6 +1,24 @@
 {
   "alerts": [
     {
+      "ts": 1774264353.653971,
+      "utc": "2026-03-23T11:12:33.653907+00:00",
+      "type": "siren_clear",
+      "severity": "MEDIUM",
+      "areas": [],
+      "desc": ""
+    },
+    {
+      "ts": 1774264266.4566069,
+      "utc": "2026-03-23T11:11:06.456490+00:00",
+      "type": "siren",
+      "severity": "CRITICAL",
+      "areas": [
+        "מטולה"
+      ],
+      "desc": "היכנסו למרחב המוגן"
+    },
+    {
       "ts": 1774258868.132388,
       "utc": "2026-03-23T09:41:08.132207+00:00",
       "type": "siren_standdown",
@@ -22,7 +40,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -32,7 +50,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -58,7 +76,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -68,7 +86,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -78,7 +96,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -88,7 +106,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -98,7 +116,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -108,7 +126,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -126,7 +144,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -136,7 +154,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -162,31 +180,15 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "ברעם"
+        "מטולה"
       ],
       "desc": "היכנסו למרחב המוגן"
-    },
-    {
-      "ts": 1774242504.041406,
-      "utc": "2026-03-23T05:08:24.041352+00:00",
-      "type": "siren_standdown",
-      "severity": "LOW",
-      "areas": [],
-      "desc": ""
-    },
-    {
-      "ts": 1774242023.330219,
-      "utc": "2026-03-23T05:00:23.330164+00:00",
-      "type": "siren_clear",
-      "severity": "MEDIUM",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
-    "ברעם"
+    "מטולה"
   ],
-  "exported": "2026-03-23T11:05:00Z",
+  "exported": "2026-03-23T11:15:00Z",
   "count": 20
 }
