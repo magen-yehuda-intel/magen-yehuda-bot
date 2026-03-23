@@ -78,6 +78,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .tb-btn[data-color="blue"].active { box-shadow:0 0 12px rgba(59,130,246,0.5); border-color:rgba(59,130,246,0.5); }
 .tb-btn[data-color="cyan"].active { box-shadow:0 0 12px rgba(6,182,212,0.5); border-color:rgba(6,182,212,0.5); }
 .tb-btn[data-color="red"].active { box-shadow:0 0 12px rgba(239,68,68,0.5); border-color:rgba(239,68,68,0.5); }
+.tb-feed-btn {
+  background:rgba(34,197,94,0.15) !important; border:2px solid #22c55e !important;
+  box-shadow:0 0 12px rgba(34,197,94,0.3), 0 0 24px rgba(34,197,94,0.1);
+  animation:feed-pulse 2s ease-in-out infinite; position:relative;
+}
+.tb-feed-btn:hover { border-color:#22c55e !important; transform:scale(1.12); }
+.tb-feed-btn .feed-badge {
+  position:absolute; top:-4px; right:-4px; min-width:16px; height:16px;
+  background:#ef4444; color:#fff; font-size:9px; font-weight:700;
+  border-radius:8px; display:none; align-items:center; justify-content:center;
+  padding:0 4px; line-height:16px; border:1.5px solid #050510;
+}
 .tb-btn[data-color="amber"].active { box-shadow:0 0 12px rgba(245,158,11,0.5); border-color:rgba(245,158,11,0.5); }
 .tb-btn[data-color="green"].active { box-shadow:0 0 12px rgba(34,197,94,0.5); border-color:rgba(34,197,94,0.5); }
 .tb-btn[data-color="purple"].active { box-shadow:0 0 12px rgba(168,85,247,0.5); border-color:rgba(168,85,247,0.5); }
@@ -675,6 +687,13 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   align-items:center; justify-content:center;
   box-shadow:0 0 12px rgba(34,197,94,0.3), 0 0 24px rgba(34,197,94,0.1);
   animation:feed-pulse 2s ease-in-out infinite;
+  position:relative;
+}
+.mob-feed .feed-badge {
+  position:absolute; top:-4px; right:-4px; min-width:16px; height:16px;
+  background:#ef4444; color:#fff; font-size:9px; font-weight:700;
+  border-radius:8px; display:none; align-items:center; justify-content:center;
+  padding:0 4px; line-height:16px; border:1.5px solid #050510;
 }
 
 /* ═══ MOBILE ═══ */
@@ -927,8 +946,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- TOOLBAR -->
 <div id="toolbar">
-  <div class="tb-btn active" data-layer="feed" data-color="cyan" onclick="toggleFeed()">
-    <span>📡</span><div class="tb-tooltip">Live Feed</div>
+  <div class="tb-btn tb-feed-btn" data-layer="feed" onclick="toggleFeed()">
+    <span>📡</span><span class="feed-badge" id="feed-badge-desktop"></span><div class="tb-tooltip">Live Feed</div>
   </div>
   <div class="tb-btn" data-layer="brief" data-color="cyan" onclick="toggleBrief()">
     <span>📋</span><div class="tb-tooltip">Intel Brief</div>
@@ -1165,7 +1184,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED</button>
+  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED<span class="feed-badge" id="feed-badge-mobile"></span></button>
   <button class="mob-btn" onclick="toggleBrief()"><span>📋</span>BRIEF</button>
 </div>
 
@@ -1714,6 +1733,15 @@ function renderFeed() {
   });
 
   document.getElementById('feed-count').textContent = `${filtered.length} events`;
+
+  // Update feed badges (desktop + mobile)
+  const hourAgo = now - 3600;
+  const recentCount = feedEvents.filter(e => (e.ts||0) > hourAgo).length;
+  const badgeText = recentCount > 99 ? '99+' : String(recentCount);
+  document.querySelectorAll('.feed-badge').forEach(b => {
+    if (recentCount > 0) { b.textContent = badgeText; b.style.display = 'flex'; }
+    else { b.style.display = 'none'; }
+  });
 
   const list = document.getElementById('feed-list');
   if (filtered.length === 0) {
