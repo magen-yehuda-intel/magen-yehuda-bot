@@ -269,7 +269,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "16:06:56",
+      "ts": 1774271216,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05e9\u05d2\u05d1 \u05e2\u05dd",
+      "desc": "Rocket barrage \u2014 Active sirens in Metula and Misgav Am are a northern border pattern consistent with rocket fire from Lebanon, and recent OSINT mentions southern Lebanon activity and IDF strikes there",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.95,
+      "live": true
     }
   ],
-  "updated": 1774269878
+  "updated": 1774271216
 }
