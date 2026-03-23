@@ -3358,6 +3358,7 @@ function pollOref() {
   }).catch(err => {
     orefFailCount++;
     console.warn(`Oref poll failed (${orefFailCount}x):`, err);
+    const connEl = document.getElementById('oref-conn');
     if (connEl) {
       if (orefFailCount >= 5) {
         connEl.textContent = '● Offline'; connEl.style.color = '#ef4444';
