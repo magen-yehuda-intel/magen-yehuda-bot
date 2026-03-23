@@ -491,6 +491,9 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 
 /* ═══ PIKUD HAOREF BANNER ═══ */
+#oref-history::-webkit-scrollbar { width:4px; }
+#oref-history::-webkit-scrollbar-track { background:transparent; }
+#oref-history::-webkit-scrollbar-thumb { background:rgba(6,182,212,0.2); border-radius:2px; }
 @keyframes oref-live-pulse { 0%,100% { opacity:1; } 20% { opacity:0.2; } 40% { opacity:1; } 60% { opacity:0.2; } 80% { opacity:1; } }
 .oref-live-pulse { animation:oref-live-pulse 1.2s ease-in-out forwards; }
 #oref-banner {
@@ -948,7 +951,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   <div class="oref-status safe" id="oref-status">✅ All Clear</div>
   <div class="oref-last-siren" id="oref-last-siren"></div>
 </div>
-<div id="oref-history" style="display:none;position:fixed;left:10px;top:110px;width:340px;max-height:360px;overflow-y:auto;background:rgba(10,15,25,0.95);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:14px;z-index:2000;backdrop-filter:blur(12px);font-family:var(--font-data);font-size:11px;color:#ccc;box-shadow:0 8px 32px rgba(0,0,0,0.6);">
+<div id="oref-history" style="display:none;position:fixed;left:10px;top:110px;width:340px;max-height:360px;overflow-y:auto;background:rgba(10,15,25,0.97);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:14px;z-index:2000;backdrop-filter:blur(12px);font-family:var(--font-data);font-size:11px;color:#ccc;box-shadow:0 8px 32px rgba(0,0,0,0.6);scrollbar-width:thin;scrollbar-color:rgba(6,182,212,0.2) transparent;">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(6,182,212,0.2)">
     <span style="color:#06b6d4;font-weight:700;font-size:13px">🚨 Siren History</span>
     <span onclick="document.getElementById('oref-history').style.display='none';event.stopPropagation()" style="cursor:pointer;color:#888;font-size:16px;line-height:1">✕</span>
