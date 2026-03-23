@@ -162,7 +162,8 @@ Grouped layer controls with dot indicators and counts:
 - Deduplicates alerts within 90s window (merges areas)
 - No wave labels — shows alert type + areas prominently (white, 11px)
 - Time: `HH:MM` 24h clock; different day: `MM/DD HH:MM`
-- Shows "X areas total" if more than 4 areas
+- **Expandable items**: Tap to expand all areas (joined with `·`) + alert description (amber italic). Tap again to collapse. Hover highlight on items.
+- Shows first 4 areas in summary; "X areas total" if more than 4
 - Color-coded: red=active, amber=standdown
 
 ## Map Layers Detail
