@@ -166,6 +166,7 @@ Grouped layer controls with dot indicators and counts:
 - Region classified from area names via regex (Hebrew city/region matching)
 - Time: `HH:MM` 24h clock; different day: `MM/DD HH:MM`
 - **Expandable items**: Tap to expand all areas (joined with `·`) + alert description (amber italic). Tap again to collapse. Hover highlight on items.
+- Thin dark scrollbar on desktop (`scrollbar-width:thin`, 4px webkit, cyan-tinted track)
 - Shows first 4 areas in summary; "X areas total" if more than 4
 - Color-coded: red=active, amber=standdown
 
