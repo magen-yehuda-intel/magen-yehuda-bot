@@ -3138,13 +3138,25 @@ function toggleOrefHistory() {
       }
       const isFirst = i === 0;
       const borderColor = isFirst ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.06)';
-      html += `<div style="padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${borderColor}">`;
+      html += `<div onclick="var d=document.getElementById('siren-detail-${i}');if(d)d.style.display=d.style.display==='none'?'block':'none'" style="padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:6px;border-left:3px solid ${borderColor};cursor:pointer;transition:background 0.2s" onmouseenter="this.style.background='rgba(255,255,255,0.06)'" onmouseleave="this.style.background='rgba(255,255,255,0.03)'">`;
       html += `<div style="display:flex;justify-content:space-between;align-items:center">`;
       html += `<span style="color:${catColor};font-weight:700;font-size:12px">${displayTitle}</span>`;
       html += `<span style="color:#06b6d4;font-size:10px;font-family:var(--font-mono,monospace)">${timeStr}</span>`;
       html += `</div>`;
       if (areaList) html += `<div style="color:#ccc;font-size:11px;margin-top:4px;font-weight:500">${areaList}</div>`;
       if (areaCount > 4) html += `<div style="color:#888;font-size:9px;margin-top:2px">${areaCount} areas total</div>`;
+      // Expandable detail section (all areas + desc)
+      const allAreas = Array.isArray(rawAreas) ? rawAreas : [];
+      const desc = a.desc || '';
+      if (allAreas.length > 4 || desc) {
+        const detailId = 'siren-detail-' + i;
+        html += `<div id="${detailId}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">`;
+        if (desc) html += `<div style="color:#f59e0b;font-size:10px;margin-bottom:6px;font-style:italic">${desc}</div>`;
+        if (allAreas.length > 0) {
+          html += `<div style="color:#aaa;font-size:10px;line-height:1.5">${allAreas.join(' · ')}</div>`;
+        }
+        html += `</div>`;
+      }
       html += `</div>`;
     });
     el.innerHTML = html;
