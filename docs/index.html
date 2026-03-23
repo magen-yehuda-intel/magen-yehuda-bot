@@ -3068,6 +3068,15 @@ function toggleOrefHistory() {
   const panel = document.getElementById('oref-history');
   if (panel.style.display !== 'none') { panel.style.display = 'none'; return; }
   panel.style.display = 'block';
+  // Close when clicking outside
+  setTimeout(() => {
+    document.addEventListener('click', function _closeHistory(e) {
+      if (!panel.contains(e.target) && !document.getElementById('oref-banner').contains(e.target)) {
+        panel.style.display = 'none';
+        document.removeEventListener('click', _closeHistory);
+      }
+    });
+  }, 50);
   const el = document.getElementById('oref-history-content');
   el.innerHTML = '<div style="color:#888;padding:8px 0">Loading...</div>';
 
