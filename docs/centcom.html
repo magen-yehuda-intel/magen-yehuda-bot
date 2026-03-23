@@ -494,8 +494,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 #oref-history::-webkit-scrollbar { width:4px; }
 #oref-history::-webkit-scrollbar-track { background:transparent; }
 #oref-history::-webkit-scrollbar-thumb { background:rgba(6,182,212,0.2); border-radius:2px; }
-@keyframes oref-live-pulse { 0%,100% { opacity:1; } 20% { opacity:0.2; } 40% { opacity:1; } 60% { opacity:0.2; } 80% { opacity:1; } }
-.oref-live-pulse { animation:oref-live-pulse 1.2s ease-in-out forwards; }
+@keyframes oref-live-pulse { 0% { opacity:1; text-shadow:0 0 8px #22c55e; } 50% { opacity:0.3; text-shadow:none; } 100% { opacity:1; text-shadow:none; } }
+.oref-live-pulse { animation:oref-live-pulse 0.8s ease-in-out; }
 #oref-banner {
   position:fixed; top:44px; left:54px; right:0; z-index:850;
   background:rgba(5,5,16,0.92);
@@ -1262,6 +1262,7 @@ const cartoTile = L.tileLayer(CARTO_URL, { maxZoom: 18, attribution: '© CARTO',
 window.map = L.map('map', {
   center: [28, 52], zoom: 5,
   zoomControl: false,
+  boxZoom: false,
   layers: [cartoTile],
   attributionControl: false,
 });
@@ -3136,8 +3137,19 @@ function toggleOrefHistory() {
         catColor = _TYPE_COLORS[a.type] || '#ef4444';
         rawAreas = a.areas || [];
         areaCount = Array.isArray(rawAreas) ? rawAreas.length : 0;
-        displayTitle = classifyRegion(rawAreas) || _TYPE_LABELS[a.type] || a.type;
-        areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 3).join(', ') + (rawAreas.length > 3 ? ` +${rawAreas.length - 3}` : '') : (a.severity || '');
+        const region = classifyRegion(rawAreas);
+        if (region) {
+          displayTitle = region;
+        } else if (a.type === 'siren') {
+          displayTitle = '🚨 Incoming Attack';
+        } else if (a.type === 'siren_clear') {
+          displayTitle = '✅ All Clear';
+        } else if (a.type === 'siren_standdown') {
+          displayTitle = '⏹ Alert Ended';
+        } else {
+          displayTitle = _TYPE_LABELS[a.type] || a.type;
+        }
+        areaList = Array.isArray(rawAreas) && rawAreas.length > 0 ? rawAreas.slice(0, 3).join(', ') + (rawAreas.length > 3 ? ` +${rawAreas.length - 3}` : '') : '';
       } else {
         catColor = isStandDown(a) ? '#f59e0b' : '#ef4444';
         rawAreas = a.areas || a.data || [];
