@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "07:59:03",
-      "ts": 1774241943,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d7\u05d9\u05e4\u05d4 - \u05d1\u05ea \u05d2\u05dc\u05d9\u05dd \u05e7.\u05d0\u05dc\u05d9\u05e2\u05d6\u05e8",
-      "desc": "Ballistic missile \u2014 IDF reported missiles launched from Iran toward Israel and interceptors are operating while active sirens are concentrated in northern districts, consistent with an Iranian ballist",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.95,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "10:29:33",
       "ts": 1774250973,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "18:54:42",
+      "ts": 1774281282,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d7\u05d5\u05e3 \u05d0\u05db\u05d6\u05d9\u05d1",
+      "desc": "Rocket barrage \u2014 Sirens are confined to northern border communities near Lebanon, and recent OSINT includes Beirut/Dahieh activity plus an unrelated Lebanon context, making a Hezbollah rocket launch t",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774281110
+  "updated": 1774281282
 }
