@@ -233,7 +233,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "15:21:42",
+      "ts": 1774268502,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d1\u05d9\u05ea \u05d4\u05dc\u05dc",
+      "desc": "Rocket barrage \u2014 The sirens are confined to northern border communities in the Upper Galilee and recent OSINT has no alternative launch origin, making a Hezbollah/Lebanon rocket attack the most likely",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774267330
+  "updated": 1774268502
 }
