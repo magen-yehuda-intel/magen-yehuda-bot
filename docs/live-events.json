@@ -125,7 +125,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "11:12:34",
+      "ts": 1774253554,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d1\u05df \u05e9\u05de\u05d5\u05d0\u05dc",
+      "desc": "Ballistic missile \u2014 Wide southern-front sirens across Gaza envelope and nearby communities align with the OSINT report that missiles were launched from Iran toward Israel.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774253408
+  "updated": 1774253554
 }
