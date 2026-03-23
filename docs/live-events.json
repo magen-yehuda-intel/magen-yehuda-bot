@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "10:29:33",
-      "ts": 1774250973,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d7\u05e0\u05d9\u05ea\u05d4",
-      "desc": "Rocket barrage \u2014 Hanitah is a northern border town and the recent OSINT is unrelated to the siren location, making a Lebanon-origin rocket the most likely threat",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.72,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "11:03:44",
       "ts": 1774253024,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "19:51:39",
+      "ts": 1774284699,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05de\u05e0\u05d5\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The active sirens are in northern Galilee near the Lebanon border, but the recent OSINT is dominated by an Iranian strike wave and IRGC-related reporting, which can",
+      "severity": "high",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.62,
+      "live": true
     }
   ],
-  "updated": 1774281282
+  "updated": 1774284699
 }
