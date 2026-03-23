@@ -305,7 +305,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "16:15:40",
+      "ts": 1774271740,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05ea\u05dc \u05d7\u05d9",
+      "desc": "Rocket barrage \u2014 Active sirens are all in the northern border communities of Upper Galilee and the OSINT includes a direct Hebrew cue about an imminent strike on southern Lebanon/ Litani area, making ",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.96,
+      "live": true
     }
   ],
-  "updated": 1774271569
+  "updated": 1774271740
 }
