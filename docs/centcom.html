@@ -632,6 +632,15 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 .mob-btn.active { color:var(--cyan); }
 .mob-btn span:first-child { font-size:20px; }
+.mob-feed {
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(34,197,94,0.15); border:1.5px solid #22c55e !important;
+  color:#22c55e !important; font-size:9px !important; font-weight:700;
+  letter-spacing:0.5px; padding:0 !important;
+  display:flex !important; flex-direction:row !important;
+  align-items:center; justify-content:center;
+  box-shadow:0 0 8px rgba(34,197,94,0.2);
+}
 
 /* ═══ MOBILE ═══ */
 @media (max-width:1024px) {
@@ -1093,7 +1102,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn" onclick="toggleFeed()"><span>📡</span>FEED</button>
+  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED</button>
   <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
 </div>
 
