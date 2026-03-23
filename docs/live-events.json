@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "16:25:22",
-      "ts": 1774272322,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05e2\u05d9\u05d9\u05df \u05d1\u05e8\u05d5\u05da",
-      "desc": "Rocket barrage \u2014 Active sirens in northern border towns near Lebanon strongly indicate a short-range cross-border rocket attack, and there is no recent OSINT pointing to Iran/Yemen launch from long ra",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.86,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "17:39:48",
       "ts": 1774276788,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "02:08:15",
+      "ts": 1774307295,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d2\u05d1\u05e2\u05d5\u05ea \u05e2\u05d3\u05df",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Widespread sirens across south and center combined with OSINT explicitly stating missiles launched from Iran and inbound to central and southern Israel indicates an",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774306960
+  "updated": 1774307295
 }
