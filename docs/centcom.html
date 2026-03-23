@@ -394,7 +394,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   border:1px solid var(--panel-border);
   transition: right 0.3s ease;
 }
-#feed-panel.open ~ #basemap-toggle, body:has(#feed-panel.open) #basemap-toggle {
+#feed-panel.open ~ #basemap-toggle, body:has(#feed-panel.open) #basemap-toggle,
+#brief-panel.open ~ #basemap-toggle, body:has(#brief-panel.open) #basemap-toggle {
   right: 392px;
 }
 .bm-btn {
