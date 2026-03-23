@@ -1,6 +1,40 @@
 {
   "alerts": [
     {
+      "ts": 1774265563.0570939,
+      "utc": "2026-03-23T11:32:43.056930+00:00",
+      "type": "siren_standdown",
+      "severity": "LOW",
+      "areas": [],
+      "desc": ""
+    },
+    {
+      "ts": 1774265475.566602,
+      "utc": "2026-03-23T11:31:15.566444+00:00",
+      "type": "siren_clear",
+      "severity": "MEDIUM",
+      "areas": [],
+      "desc": ""
+    },
+    {
+      "ts": 1774265475.133482,
+      "utc": "2026-03-23T11:31:15.133420+00:00",
+      "type": "siren_clear",
+      "severity": "MEDIUM",
+      "areas": [],
+      "desc": ""
+    },
+    {
+      "ts": 1774265442.548212,
+      "utc": "2026-03-23T11:30:42.548060+00:00",
+      "type": "siren",
+      "severity": "CRITICAL",
+      "areas": [
+        "דוב''ב"
+      ],
+      "desc": "היכנסו למרחב המוגן"
+    },
+    {
       "ts": 1774264862.784429,
       "utc": "2026-03-23T11:21:02.784358+00:00",
       "type": "siren_standdown",
@@ -22,7 +56,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -48,7 +82,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -58,7 +92,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -84,7 +118,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -94,7 +128,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -104,7 +138,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -114,7 +148,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -124,7 +158,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -134,7 +168,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מטולה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -145,48 +179,12 @@
       "severity": "MEDIUM",
       "areas": [],
       "desc": ""
-    },
-    {
-      "ts": 1774253019.3598459,
-      "utc": "2026-03-23T08:03:39.359752+00:00",
-      "type": "siren",
-      "severity": "CRITICAL",
-      "areas": [
-        "מטולה"
-      ],
-      "desc": "היכנסו למרחב המוגן"
-    },
-    {
-      "ts": 1774253019.1851342,
-      "utc": "2026-03-23T08:03:39.185063+00:00",
-      "type": "siren",
-      "severity": "CRITICAL",
-      "areas": [
-        "מטולה"
-      ],
-      "desc": "היכנסו למרחב המוגן"
-    },
-    {
-      "ts": 1774251558.8555882,
-      "utc": "2026-03-23T07:39:18.855506+00:00",
-      "type": "siren_standdown",
-      "severity": "LOW",
-      "areas": [],
-      "desc": ""
-    },
-    {
-      "ts": 1774251004.4449768,
-      "utc": "2026-03-23T07:30:04.444841+00:00",
-      "type": "siren_clear",
-      "severity": "MEDIUM",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
-    "מטולה"
+    "דוב''ב"
   ],
-  "exported": "2026-03-23T11:30:01Z",
+  "exported": "2026-03-23T11:35:01Z",
   "count": 20
 }
