@@ -239,12 +239,39 @@ def main():
                             'utc': entry.get('utc'),
                             'type': entry.get('type'),
                             'severity': entry.get('severity', ''),
+                            'areas': entry.get('areas', []),
+                            'desc': entry.get('desc', ''),
                         })
                 except:
                     pass
         # Keep last 20 siren events, newest first
         siren_history.sort(key=lambda x: x.get('ts', 0), reverse=True)
         siren_history = siren_history[:20]
+
+        # Enrich siren entries with areas from oref-alert-tmp.json and watcher snapshot
+        oref_tmp_path = os.path.join(STATE_DIR, 'oref-alert-tmp.json')
+        oref_snapshot = os.path.join(STATE_DIR, '.oref-classify-snapshot.json')
+        for src_file in [oref_tmp_path, oref_snapshot]:
+            if not os.path.exists(src_file):
+                continue
+            try:
+                with open(src_file) as f:
+                    snap = json.load(f)
+                snap_alerts = snap if isinstance(snap, list) else ([snap] if isinstance(snap, dict) and 'data' in snap else [])
+                for sa in snap_alerts:
+                    sa_areas = sa.get('data', [])
+                    sa_desc = sa.get('desc', '')
+                    if not sa_areas:
+                        continue
+                    # Attach to siren entries that have no areas
+                    for sh in siren_history:
+                        if sh.get('type') == 'siren' and not sh.get('areas'):
+                            sh['areas'] = sa_areas if isinstance(sa_areas, list) else [sa_areas]
+                            if sa_desc and not sh.get('desc'):
+                                sh['desc'] = sa_desc
+            except Exception:
+                pass
+
         # Also pull area info from oref-alert-tmp.json if available
         oref_tmp = os.path.join(STATE_DIR, 'oref-alert-tmp.json')
         last_areas = []
