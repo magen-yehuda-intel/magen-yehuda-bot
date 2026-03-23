@@ -1,7 +1,8 @@
 // Magen Yehuda Intel — Service Worker (cache-first for shell, network-first for data)
-const CACHE_NAME = 'myi-v4';
+const CACHE_NAME = 'myi-v5';
 const SHELL_URLS = [
-  '/magen-yehuda-bot/centcom.html',
+  '/magen-yehuda-bot/',
+  '/magen-yehuda-bot/index.html',
   '/magen-yehuda-bot/manifest.json',
   '/magen-yehuda-bot/icons/icon-192.png',
   '/magen-yehuda-bot/icons/icon-512.png'
@@ -43,6 +44,21 @@ self.addEventListener('fetch', e => {
         }
         return resp;
       }).catch(() => caches.match(e.request).then(r => r || new Response('Offline', { status: 503 })))
+    );
+    return;
+  }
+  // Data JSON files — network first, cache fallback (for offline)
+  if (url.pathname.endsWith('.json') && !url.pathname.endsWith('manifest.json')) {
+    e.respondWith(
+      fetch(e.request).then(resp => {
+        if (resp.ok) {
+          const clone = resp.clone();
+          caches.open(CACHE_NAME).then(c => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => caches.match(e.request).then(r => r || new Response('{"error":"offline"}', {
+        headers: {'Content-Type': 'application/json'}
+      })))
     );
     return;
   }
