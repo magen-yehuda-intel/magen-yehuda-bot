@@ -30,7 +30,7 @@
 ┌──────────────────────────────────────────────────────┐
 │  🇺🇸  U.S. & ISRAEL  vs.  IRAN  🇮🇷     [🌗] [📡]  │ Title Bar (44px)
 ├──┬───────────────────────────────────────────────────┤
-│  │ 🛡 PIKUD HAOREF ● Live  ⏰ HH:MM:SS    Updated  │ Oref Banner
+│  │ 🛡 PIKUD HAOREF ● Live  🇺🇸 HORMUZ HH:MM:SS  Updated │ Oref Banner
 │  │ ✅ All Clear  (last: Rockets · 06:52)             │
 │TB├───────────────────────────────────────────────────┤
 │  │                                                   │
@@ -55,7 +55,7 @@
 ├─────────────────────────────┤
 │ ☰ ⭐ 🏗 ✈ 🚢 🚨 🔥 📌 🚀 📍│ Top Toolbar (scroll)
 ├─────────────────────────────┤
-│ 🛡 PIKUD HAOREF ●  ⏰ 17:55│ Oref Banner (top:80px)
+│ 🛡 PIKUD HAOREF ● Live 🇺🇸HORMUZ 17:55│ Oref Banner (top:80px)
 │ ✅ All Clear                │
 ├─────────────────────────────┤
 │                             │
@@ -75,8 +75,8 @@
 - **Mobile:** Font 9px, flags 14px, letter-spacing 0.5px, height 36px
 
 ### Pikud HaOref Banner (below toolbar)
-- Live connection indicator (green dot)
-- **Trump Ultimatum Countdown** — pill badge `⏰ HH:MM:SS`, inline after "● Live". Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
+- **Connection health**: Green dot blinks on each successful poll. After 5 consecutive failures → "● Offline" (red). Auto-recovers.
+- **Trump Hormuz Countdown** — pill badge `🇺🇸 HORMUZ HH:MM:SS`, inline after status. Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
 - Status: "All Clear" (green) / "ACTIVE SIREN" (red pulsing)
 - Last siren: shows `HH:MM` (24h clock); different day shows `MM/DD HH:MM`
 - Click to open **Siren History** popup (scrollable, shows areas prominently — no wave labels)
@@ -225,14 +225,16 @@ Grouped layer controls with dot indicators and counts:
 ## Changelog
 
 ### 2026-03-23
+- **Countdown label**: Changed from `⏰` to `🇺🇸 HORMUZ` — clearly indicates Trump Hormuz ultimatum
+- **Oref connection health**: Blinks green dot on each successful poll; shows "● Retrying (N)..." on failures; switches to **"● Offline"** (red) after 5 consecutive failures; auto-recovers on success
+- **Mobile panel exclusivity**: Opening Feed/Legend/Layers now closes the other panels (no overlap)
+- **Mobile bottom bar**: Reduced to 3 buttons — LAYERS | FEED | LEGEND; FEED is green circle
 - **Strike map**: Default 48h (was 24h), removed "All" option, max 7d. `config.json` `window_days: 2`
 - **Siren history**: Removed "Wave N" labels; areas shown prominently; time `HH:MM` 24h clock; `MM/DD HH:MM` for different day
-- **Trump countdown**: Pill badge in Oref banner, ticking down to `2026-03-23T23:44:00Z`, color-shifting
 - **JS fix**: `const d` variable collision broke ALL script execution — renamed to unique vars
 - **Mobile breakpoint**: Raised from 768px → 1024px — hides desktop toolbar on tablets too
 - **Mobile title**: Smaller (9px, flags 14px, height 36px) to fit viewport
 - **Mobile Oref banner**: Pushed to `top:80px` below mobile toolbar, full-width
-- **Mobile bottom bar**: Reduced to 3 buttons — LAYERS | FEED | LEGEND (removed BASES, FIRES, OSINT — already on top toolbar)
 - **Mobile sidebar**: Starts closed (`translateX(-100%)`) on mobile
 
 ### 2026-03-21 (cleanup)

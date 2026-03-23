@@ -875,7 +875,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span class="oref-shield">🛡</span>
     PIKUD HAOREF
     <span id="oref-conn" style="margin-left:6px;font-size:9px;color:#22c55e">● Live</span>
-    <span id="trump-countdown" style="margin-left:12px;font-family:var(--font-mono,monospace);font-size:11px;color:#ff6666;white-space:nowrap;background:rgba(180,0,0,0.35);border:1px solid rgba(255,68,68,0.5);border-radius:4px;padding:2px 8px;letter-spacing:0.5px">⏰ <span id="trump-timer" style="font-weight:700">--:--:--</span></span>
+    <span id="trump-countdown" title="Trump Hormuz ultimatum deadline" style="margin-left:12px;font-family:var(--font-mono,monospace);font-size:11px;color:#ff6666;white-space:nowrap;background:rgba(180,0,0,0.35);border:1px solid rgba(255,68,68,0.5);border-radius:4px;padding:2px 8px;letter-spacing:0.5px">🇺🇸 HORMUZ <span id="trump-timer" style="font-weight:700">--:--:--</span></span>
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim);cursor:pointer" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">✅ All Clear</div>
@@ -3096,7 +3096,12 @@ function pollOref() {
   .then(data => {
     orefFailCount = 0;
     const connEl = document.getElementById('oref-conn');
-    if (connEl) { connEl.textContent = '● Live'; connEl.style.color = '#22c55e'; }
+    if (connEl) {
+      connEl.textContent = '● Live'; connEl.style.color = '#22c55e';
+      // Blink on successful update
+      connEl.style.opacity = '0.3';
+      setTimeout(() => { connEl.style.opacity = '1'; }, 300);
+    }
     try {
       const alerts = data.alerts || [];
       // Filter stand-down notices (text contains "ניתן לצאת") — NOT by cat number
@@ -3107,10 +3112,12 @@ function pollOref() {
   }).catch(err => {
     orefFailCount++;
     console.warn(`Oref poll failed (${orefFailCount}x):`, err);
-    const connEl = document.getElementById('oref-conn');
     if (connEl) {
-      connEl.textContent = orefFailCount >= 3 ? `● Reconnecting (${orefFailCount})...` : '● Retrying...';
-      connEl.style.color = '#f59e0b';
+      if (orefFailCount >= 5) {
+        connEl.textContent = '● Offline'; connEl.style.color = '#ef4444';
+      } else {
+        connEl.textContent = `● Retrying (${orefFailCount})...`; connEl.style.color = '#f59e0b';
+      }
     }
     // Never give up — the regular setInterval will keep retrying
   });
