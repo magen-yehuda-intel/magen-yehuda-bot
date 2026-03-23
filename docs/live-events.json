@@ -107,7 +107,25 @@
       "weapon_type": "rocket",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "11:10:08",
+      "ts": 1774253408,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e0\u05d9\u05e6\u05e0\u05d9\u05dd",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span south and center-adjacent regions in a broad multi-area pattern, and recent OSINT explicitly states missiles launched from Iran toward Israel.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774253024
+  "updated": 1774253408
 }
