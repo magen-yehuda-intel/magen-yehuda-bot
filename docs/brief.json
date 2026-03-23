@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-03-23T07:02:59.702717+00:00",
+  "generated_at": "2026-03-23T07:03:24.727435+00:00",
   "briefs": {
     "0.5": {
       "en": "<p>Brief generation failed for 30 minutes window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
-      "count": 6
+      "count": 5
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
