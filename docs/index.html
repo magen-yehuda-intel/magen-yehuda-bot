@@ -2874,15 +2874,15 @@ function toggleOrefHistory() {
       let timeStr = '';
       if (a.ts || a.utc) {
         const ms = a.ts ? a.ts * 1000 : new Date(a.utc).getTime();
-        const d = new Date(ms);
-        const now = new Date();
-        const hh = String(d.getHours()).padStart(2,'0');
-        const mm = String(d.getMinutes()).padStart(2,'0');
-        const sameDay = d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        const dt = new Date(ms);
+        const nowDt = new Date();
+        const hh = String(dt.getHours()).padStart(2,'0');
+        const mmm = String(dt.getMinutes()).padStart(2,'0');
+        const sameDay = dt.getDate() === nowDt.getDate() && dt.getMonth() === nowDt.getMonth() && dt.getFullYear() === nowDt.getFullYear();
         if (sameDay) {
-          timeStr = `${hh}:${mm}`;
+          timeStr = `${hh}:${mmm}`;
         } else {
-          timeStr = `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${hh}:${mm}`;
+          timeStr = `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')} ${hh}:${mmm}`;
         }
       }
       const isFirst = i === 0;
@@ -3157,12 +3157,12 @@ function fetchLastSiren() {
       const a = d.alerts[0];
       const title = SIREN_TITLE_HE[a.title] || a.title || SIREN_TITLES[a.cat] || `Category ${a.cat}`;
       const ts = a.ts * 1000;
-      const d = new Date(ts);
-      const now = new Date();
-      const hh = String(d.getHours()).padStart(2,'0');
-      const mm = String(d.getMinutes()).padStart(2,'0');
-      const sameDay = d.getDate() === now.getDate() && d.getMonth() === now.getMonth();
-      const timeLabel = sameDay ? `${hh}:${mm}` : `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${hh}:${mm}`;
+      const sdt = new Date(ts);
+      const snoww = new Date();
+      const shh = String(sdt.getHours()).padStart(2,'0');
+      const smm = String(sdt.getMinutes()).padStart(2,'0');
+      const sameDay = sdt.getDate() === snoww.getDate() && sdt.getMonth() === snoww.getMonth();
+      const timeLabel = sameDay ? `${shh}:${smm}` : `${String(sdt.getMonth()+1).padStart(2,'0')}/${String(sdt.getDate()).padStart(2,'0')} ${shh}:${smm}`;
       lastSirenCache = `(last: ${title} · ${timeLabel})`;
       el.textContent = lastSirenCache;
     }).catch(()=>{ el.textContent = ''; });
