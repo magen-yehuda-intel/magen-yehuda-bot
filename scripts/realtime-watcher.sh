@@ -832,43 +832,56 @@ except:
     -H "X-API-Key: $PUSH_API_KEY" \
     -d "$push_payload" >/dev/null 2>&1 &
 
-  # Classify attack source/weapon using AI (non-blocking)
-  # Only run when we have active alerts (not on clear/standdown)
-  if [ "$alert_type" = "ACTIVE_THREAT" ]; then
-    (
-      local oref_areas
-      oref_areas=$(python3 -c "
+  # Classify attack source/weapon and write live event for dashboard missile arcs
+  # Runs INLINE (not subshell) to avoid race conditions with _alerts_tmp
+  if [ "$alert_type" = "ACTIVE_THREAT" ] || [ "$alert_type" = "THREAT" ]; then
+    # Save a copy of alerts for classification (temp file may be overwritten by next loop)
+    local _classify_tmp="$STATE_DIR/.oref-classify-snapshot.json"
+    cp "$_alerts_tmp" "$_classify_tmp" 2>/dev/null
+
+    local oref_areas
+    oref_areas=$(python3 -c "
 import json, sys
 raw = sys.stdin.read().strip()
 try:
     alerts = json.loads(raw) if raw and raw != '[]' else []
     if not isinstance(alerts, list): alerts = [alerts]
-    areas = [a.get('data','') or a.get('title','') or a.get('area','') for a in alerts]
-    print(','.join([a for a in areas if a]))
+    all_areas = []
+    for a in alerts:
+        d = a.get('data', [])
+        if isinstance(d, list):
+            all_areas.extend(d)
+        elif d:
+            all_areas.append(str(d))
+    print(','.join(all_areas))
 except:
     print('')
-" < "$_alerts_tmp" 2>/dev/null)
-      
-      local classification
-      classification=$(python3 "$SCRIPT_DIR/classify-attack.py" --oref-areas "$oref_areas" 2>/dev/null)
-      
-      if [ -n "$classification" ] && echo "$classification" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); assert d.get('source','unknown') != 'unknown'" 2>/dev/null; then
-        log "  Attack classification: $classification"
-        # Write live event for dashboard missile arcs
-        local live_result
-        live_result=$(echo "$classification" | python3 "$SCRIPT_DIR/write-live-event.py" --oref-areas "$oref_areas" 2>/dev/null)
-        log "  Live event: $live_result"
-        # Auto-push live-events.json to GitHub Pages for dashboard missile arcs
-        (cd "$SCRIPT_DIR/../docs" && git add live-events.json && git commit -m "live: missile arc event $(date +%H:%M)" && git push) >/dev/null 2>&1 &
-        # Push to API alongside threat level
-        curl -sf --max-time 5 -X POST \
-          "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
-          -H "Content-Type: application/json" \
-          -H "X-API-Key: $PUSH_API_KEY" \
-          -d "{\"level\":\"$THREAT_LEVEL\",\"score\":$THREAT_SCORE,\"reason\":\"Active sirens\",\"attack_class\":$classification}" \
-          >/dev/null 2>&1
-      fi
-    ) &
+" < "$_classify_tmp" 2>/dev/null)
+    log "  Oref areas for classification: ${oref_areas:0:120}"
+
+    local classification
+    classification=$(python3 "$SKILL_DIR/scripts/classify-attack.py" --oref-areas "$oref_areas" 2>&1)
+    local classify_rc=$?
+    log "  classify-attack.py exit=$classify_rc output=${classification:0:200}"
+
+    if [ $classify_rc -eq 0 ] && [ -n "$classification" ] && echo "$classification" | python3 -c "import json,sys; d=json.loads(sys.stdin.read()); assert d.get('source','unknown') != 'unknown'" 2>/dev/null; then
+      log "  Attack classification: $classification"
+      # Write live event for dashboard missile arcs
+      local live_result
+      live_result=$(echo "$classification" | python3 "$SKILL_DIR/scripts/write-live-event.py" --oref-areas "$oref_areas" 2>&1)
+      log "  Live event: $live_result"
+      # Auto-push live-events.json to GitHub Pages for dashboard missile arcs
+      (cd "$SKILL_DIR/docs" && git add live-events.json && git commit -m "live: missile arc event $(date +%H:%M)" && git pull --rebase origin main 2>/dev/null; git push origin main) >/dev/null 2>&1 &
+      # Push to API alongside threat level
+      curl -sf --max-time 5 -X POST \
+        "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+        -H "Content-Type: application/json" \
+        -H "X-API-Key: $PUSH_API_KEY" \
+        -d "{\"level\":\"$THREAT_LEVEL\",\"score\":$THREAT_SCORE,\"reason\":\"Active sirens\",\"attack_class\":$classification}" \
+        >/dev/null 2>&1
+    else
+      log "  ⚠️ Classification failed or source=unknown (rc=$classify_rc)"
+    fi
   fi
 }
 
@@ -1303,19 +1316,10 @@ check_fires_seismic() {
   
   rm -f "$fire_tmp" "$seismic_tmp"
   
-  # ── Send map via dispatcher ──
+  # ── Fire map disabled (low value for Telegram audience) ──
+  # Map still generated for dashboard/API use, just not dispatched to Telegram
   if [ $map_ok -eq 0 ] && [ -f "$map_file" ]; then
-    local caption="🛰️ Iran Intel Map"
-    [ "${new_fires:-0}" != "0" ] && caption="$caption — ${new_fires} fires"
-    [ "${new_quakes:-0}" != "0" ] && caption="$caption — ${new_quakes} quakes"
-    
-    # Determine image importance based on what was detected
-    local img_importance="medium"
-    [ "${new_fires:-0}" -gt 5 ] 2>/dev/null && img_importance="high"
-    [ "${new_quakes:-0}" -gt 0 ] 2>/dev/null && img_importance="high"
-    
-    emit_alert "map" "MEDIUM" "" "" "$map_file" "$img_importance" "$caption"
-    log "  📸 Intel map dispatched"
+    log "  📸 Intel map generated (Telegram dispatch disabled)"
   fi
   
   # ── Send fire text alert ──
