@@ -3168,11 +3168,11 @@ function toggleOrefHistory() {
       html += `<span style="color:#06b6d4;font-size:10px;font-family:var(--font-mono,monospace)">${timeStr}</span>`;
       html += `</div>`;
       if (areaList) html += `<div style="color:#ccc;font-size:11px;margin-top:4px;font-weight:500">${areaList}</div>`;
-      if (areaCount > 4) html += `<div style="color:#888;font-size:9px;margin-top:2px">${areaCount} areas total</div>`;
+      if (areaCount > 3) html += `<div style="color:#888;font-size:9px;margin-top:2px">${areaCount} areas total · tap for details</div>`;
       // Expandable detail section (all areas + desc)
       const allAreas = Array.isArray(rawAreas) ? rawAreas : [];
-      const desc = a.desc || '';
-      if (allAreas.length > 4 || desc) {
+      const desc = a.desc || a.severity || '';
+      if (allAreas.length > 0 || desc) {
         const detailId = 'siren-detail-' + i;
         html += `<div id="${detailId}" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06)">`;
         if (desc) html += `<div style="color:#f59e0b;font-size:10px;margin-bottom:6px;font-style:italic">${desc}</div>`;
