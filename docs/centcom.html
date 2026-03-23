@@ -3397,7 +3397,7 @@ function updateOrefBanner(alerts, serverTs, note) {
     status.className = 'oref-status danger';
     const areas = activeAlerts.flatMap(a => Array.isArray(a.data) ? a.data : [a.title || a.area || '']).filter(Boolean);
     const areaCount = areas.length;
-    status.textContent = `🚨 ACTIVE: ${activeAlerts.length} alert${activeAlerts.length > 1 ? 's' : ''} — ${areas.slice(0,3).join(', ')}${areaCount > 3 ? ' +' + (areaCount-3) + ' more' : ''}`;
+    status.textContent = `🚨 ACTIVE SIREN — ${areas.slice(0,3).join(', ')}${areaCount > 3 ? ' +' + (areaCount-3) + ' more areas' : ''}`;
     document.getElementById('chip-alert').textContent = activeAlerts.length;
     // Still show last siren info even during active alerts
     fetchLastSiren();

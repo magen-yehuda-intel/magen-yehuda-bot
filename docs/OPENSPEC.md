@@ -77,7 +77,10 @@
 ### Pikud HaOref Banner (below toolbar)
 - **Connection health**: "● Live" text pulses 3 times on each successful Oref poll (`.oref-live-pulse` animation, 1.8s). After 5 consecutive failures → "● Offline" (red). Auto-recovers.
 - **Trump Hormuz Countdown** — pill badge `🇺🇸 HORMUZ HH:MM:SS`, inline after status. Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
-- Status: "All Clear" (green) / "ACTIVE SIREN" (red pulsing)
+- **Alert states:**
+  - `✅ All Clear` — green, safe. Shows last siren info below.
+  - `🚨 ACTIVE SIREN — area1, area2, area3 +N more areas` — red, pulsing. `alert-active` class on banner. Areas extracted from `alert.data[]` array via `flatMap`.
+  - `⚠️ Recent Alert — sirens ended Xm ago` — amber/warning, 10min cooldown after active alerts end.
 - Last siren: shows `HH:MM` (24h clock); different day shows `MM/DD HH:MM`
 - Click to open **Siren History** popup (scrollable, shows areas prominently — no wave labels)
 - Polls `/api/oref` every 15s
