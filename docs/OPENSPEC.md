@@ -75,7 +75,7 @@
 - **Mobile:** Font 9px, flags 14px, letter-spacing 0.5px, height 36px
 
 ### Pikud HaOref Banner (below toolbar)
-- **Connection health**: "● Live" text pulses 3 times on each successful Oref poll (`.oref-live-pulse` animation, 1.8s). After 5 consecutive failures → "● Offline" (red). Auto-recovers.
+- **Connection health**: "● Live" text pulses 2 times on each successful Oref poll (`.oref-live-pulse` animation, 1.2s). After 5 consecutive failures → "● Offline" (red). Auto-recovers.
 - **Trump Hormuz Countdown** — pill badge `🇺🇸 HORMUZ HH:MM:SS`, inline after status. Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
 - **Alert states:**
   - `✅ All Clear` — green, safe. Shows last siren info below.
@@ -160,7 +160,9 @@ Grouped layer controls with dot indicators and counts:
 ### Siren History Popup
 - Fixed position overlay, opens on Oref banner click
 - Deduplicates alerts within 90s window (merges areas)
-- No wave labels — shows alert type + areas prominently (white, 11px)
+- No wave labels — shows **target region** (North, Haifa & North, Center, South) as title with color-coded left border
+- Summary shows first 3 area names; full area list revealed on tap
+- Region classified from area names via regex (Hebrew city/region matching)
 - Time: `HH:MM` 24h clock; different day: `MM/DD HH:MM`
 - **Expandable items**: Tap to expand all areas (joined with `·`) + alert description (amber italic). Tap again to collapse. Hover highlight on items.
 - Shows first 4 areas in summary; "X areas total" if more than 4
@@ -257,7 +259,7 @@ Grouped layer controls with dot indicators and counts:
 - **PWA fixes**: `start_url` → root, `id` field, split icon purpose, SW v5, data JSON offline cache, deprecated meta tag fix
 - **index.html sync**: Fixed stale index.html missing brief panel; added test to catch this automatically
 - **Countdown label**: Changed from `⏰` to `🇺🇸 HORMUZ` — clearly indicates Trump Hormuz ultimatum
-- **Oref connection health**: "● Live" pulses 3 times (`.oref-live-pulse`, 1.8s) on each successful poll; shows "● Retrying (N)..." on failures; switches to **"● Offline"** (red) after 5 consecutive failures; auto-recovers on success
+- **Oref connection health**: "● Live" pulses 2 times (`.oref-live-pulse`, 1.2s) on each successful poll; shows "● Retrying (N)..." on failures; switches to **"● Offline"** (red) after 5 consecutive failures; auto-recovers on success
 - **Mobile panel exclusivity**: Opening Feed/Legend/Layers now closes the other panels (no overlap)
 - **Mobile bottom bar**: Reduced to 3 buttons — LAYERS | FEED | LEGEND; FEED is green circle
 - **Strike map**: Default 48h (was 24h), removed "All" option, max 7d. `config.json` `window_days: 2`

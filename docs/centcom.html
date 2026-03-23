@@ -491,8 +491,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 }
 
 /* ═══ PIKUD HAOREF BANNER ═══ */
-@keyframes oref-live-pulse { 0%,100% { opacity:1; } 15% { opacity:0.2; } 30% { opacity:1; } 45% { opacity:0.2; } 60% { opacity:1; } 75% { opacity:0.2; } 90% { opacity:1; } }
-.oref-live-pulse { animation:oref-live-pulse 1.8s ease-in-out forwards; }
+@keyframes oref-live-pulse { 0%,100% { opacity:1; } 20% { opacity:0.2; } 40% { opacity:1; } 60% { opacity:0.2; } 80% { opacity:1; } }
+.oref-live-pulse { animation:oref-live-pulse 1.2s ease-in-out forwards; }
 #oref-banner {
   position:fixed; top:44px; left:54px; right:0; z-index:850;
   background:rgba(5,5,16,0.92);
@@ -3073,6 +3073,20 @@ function toggleOrefHistory() {
   const _TYPE_LABELS = {'siren':'🚨 Rockets & Missiles','siren_clear':'✅ All Clear','siren_standdown':'⏹ Alert Ended'};
   const _TYPE_COLORS = {'siren':'#ef4444','siren_clear':'#22c55e','siren_standdown':'#f59e0b'};
 
+  function classifyRegion(areas) {
+    if (!Array.isArray(areas) || !areas.length) return '';
+    const text = areas.join(' ');
+    const north = /חיפה|עכו|נהריה|צפת|טבריה|כרמיאל|קריית שמונה|גולן|גליל|מטולה|חניתה|שלומי|ראש הנקרה|עפולה|בית שאן|נצרת|כרמל|קריות/.test(text);
+    const center = /תל אביב|רמת גן|גבעתיים|בני ברק|הרצליה|רעננה|כפר סבא|פתח תקווה|ראשון|חולון|בת ים|נתניה|רחובות|לוד|רמלה|מודיעין|ירושלים|בית שמש|השרון/.test(text);
+    const south = /באר שבע|אשדוד|אשקלון|שדרות|נתיבות|אופקים|ערד|דימונה|קריית גת|גבים|ניר עם|עוטף|נגב|שלומית|כיסופים|יבול|ארז|זיקים|מפלסים|נירים/.test(text);
+    const parts = [];
+    if (north) parts.push(/חיפה|כרמל|קריות/.test(text) ? 'Haifa & North' : 'North');
+    if (center) parts.push('Center');
+    if (south) parts.push('South');
+    if (!parts.length) return areas.slice(0, 2).join(', ');
+    return parts.join(' · ');
+  }
+
   function renderSirenHistory(alerts) {
     if (!alerts || !alerts.length) {
       el.innerHTML = '<div style="color:#888;padding:8px 0">No recent sirens recorded</div>';
@@ -3107,19 +3121,17 @@ function toggleOrefHistory() {
       const isDispatch = !!a.type;
       let displayTitle, catColor, rawAreas, areaCount, areaList;
       if (isDispatch) {
-        displayTitle = _TYPE_LABELS[a.type] || a.type;
         catColor = _TYPE_COLORS[a.type] || '#ef4444';
         rawAreas = a.areas || [];
-        areaCount = 0;
-        areaList = a.severity || '';
+        areaCount = Array.isArray(rawAreas) ? rawAreas.length : 0;
+        displayTitle = classifyRegion(rawAreas) || _TYPE_LABELS[a.type] || a.type;
+        areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 3).join(', ') + (rawAreas.length > 3 ? ` +${rawAreas.length - 3}` : '') : (a.severity || '');
       } else {
-        const catTitle = _TITLES[String(a.cat)] || 'Alert';
-        const heTitle = a.title ? (_TITLES_HE[a.title] || null) : null;
-        displayTitle = heTitle || catTitle;
         catColor = isStandDown(a) ? '#f59e0b' : '#ef4444';
         rawAreas = a.areas || a.data || [];
         areaCount = a.area_count || (Array.isArray(rawAreas) ? rawAreas.length : 0);
-        areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 4).join(', ') + (rawAreas.length > 4 ? ` +${rawAreas.length - 4} more` : '') : String(rawAreas);
+        displayTitle = classifyRegion(rawAreas) || (_TITLES[String(a.cat)] || 'Alert');
+        areaList = Array.isArray(rawAreas) ? rawAreas.slice(0, 3).join(', ') + (rawAreas.length > 3 ? ` +${rawAreas.length - 3}` : '') : String(rawAreas);
       }
       // Time: show HH:MM (24h). If different day, prefix MM/DD
       let timeStr = '';
