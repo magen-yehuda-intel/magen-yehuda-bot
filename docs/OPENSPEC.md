@@ -75,7 +75,7 @@
 - **Mobile:** Font 9px, flags 14px, letter-spacing 0.5px, height 36px
 
 ### Pikud HaOref Banner (below toolbar)
-- **Connection health**: Green dot blinks on each successful poll. After 5 consecutive failures → "● Offline" (red). Auto-recovers.
+- **Connection health**: "● Live" text pulses 3 times on each successful Oref poll (`.oref-live-pulse` animation, 1.8s). After 5 consecutive failures → "● Offline" (red). Auto-recovers.
 - **Trump Hormuz Countdown** — pill badge `🇺🇸 HORMUZ HH:MM:SS`, inline after status. Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
 - Status: "All Clear" (green) / "ACTIVE SIREN" (red pulsing)
 - Last siren: shows `HH:MM` (24h clock); different day shows `MM/DD HH:MM`
@@ -245,13 +245,15 @@ Grouped layer controls with dot indicators and counts:
 - **Desktop brief button**: Cyan glow circle (`.tb-brief-btn`) — matches mobile BRIEF style
 - **Red badge on both**: Desktop + mobile feed buttons show hourly event count (capped 99+)
 - **Basemap toggle z-fix**: Map/VIIRS toggle (z-index 1001) now shifts right when brief panel is open (was covering EN/עב lang toggle)
+- **Oref Live pulse**: "● Live" text pulses 3 times (opacity flash) on each successful Oref poll, replacing single blink
+- **Feed/Brief new-content pulse**: Badges removed; buttons pulse gently (`notify-pulse`) when new events/brief arrive; clears when panel opened
 - **Basemap moved to sidebar**: Floating Map/VIIRS toggle removed from map overlay; VIIRS Night Lights now a toggle row in sidebar Layers tab (under BASEMAP section). Mobile toolbar 🌗 button retained for quick access.
 - **Brief prompt**: Added international news (real actions only, no generic "condemns") + 🟢 Good News section
 - **RSS feeds**: Added "EU Defense" + "Good News ME" Google News RSS feeds to config
 - **PWA fixes**: `start_url` → root, `id` field, split icon purpose, SW v5, data JSON offline cache, deprecated meta tag fix
 - **index.html sync**: Fixed stale index.html missing brief panel; added test to catch this automatically
 - **Countdown label**: Changed from `⏰` to `🇺🇸 HORMUZ` — clearly indicates Trump Hormuz ultimatum
-- **Oref connection health**: Blinks green dot on each successful poll; shows "● Retrying (N)..." on failures; switches to **"● Offline"** (red) after 5 consecutive failures; auto-recovers on success
+- **Oref connection health**: "● Live" pulses 3 times (`.oref-live-pulse`, 1.8s) on each successful poll; shows "● Retrying (N)..." on failures; switches to **"● Offline"** (red) after 5 consecutive failures; auto-recovers on success
 - **Mobile panel exclusivity**: Opening Feed/Legend/Layers now closes the other panels (no overlap)
 - **Mobile bottom bar**: Reduced to 3 buttons — LAYERS | FEED | LEGEND; FEED is green circle
 - **Strike map**: Default 48h (was 24h), removed "All" option, max 7d. `config.json` `window_days: 2`
