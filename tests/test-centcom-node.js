@@ -381,6 +381,33 @@ test('Desktop Toolbar', 'feed and brief are mutually exclusive', () => {
   assert(briefFn.includes('feed-panel'), 'toggleBrief should close feed panel');
 });
 
+test('Basemap', 'floating basemap-toggle is hidden', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  const css = html.substring(html.indexOf('#basemap-toggle {'), html.indexOf('#basemap-toggle {') + 100);
+  assert(css.includes('display:none'), 'Floating basemap toggle should be display:none');
+});
+
+test('Basemap', 'VIIRS toggle exists in sidebar layers', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(html.includes('sb-bm-dot'), 'Sidebar should have basemap dot (sb-bm-dot)');
+  assert(html.includes('sb-bm-label'), 'Sidebar should have basemap label (sb-bm-label)');
+  assert(html.includes('VIIRS Night Lights'), 'Sidebar should show VIIRS Night Lights label');
+});
+
+test('Basemap', 'mobile toolbar still has 🌗 quick toggle', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  const mtStart = html.indexOf('id="mobile-toolbar"');
+  const mtEnd = html.indexOf('</div>\n\n', mtStart);
+  const mtSection = html.substring(mtStart, mtEnd);
+  assert(mtSection.includes('🌗'), 'Mobile toolbar should retain 🌗 basemap toggle');
+});
+
 test('Brief Panel', 'fully opaque background (no bleed-through)', () => {
   const fs = require('fs');
   const path = require('path');

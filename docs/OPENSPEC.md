@@ -28,7 +28,7 @@
 ### Wireframe — Desktop (≥1025px)
 ```
 ┌──────────────────────────────────────────────────────┐
-│  🇺🇸  U.S. & ISRAEL  vs.  IRAN  🇮🇷     [🌗] [📡]  │ Title Bar (44px)
+│  🇺🇸  U.S. & ISRAEL  vs.  IRAN  🇮🇷             │ Title Bar (44px)
 ├──┬───────────────────────────────────────────────────┤
 │  │ 🛡 PIKUD HAOREF ● Live  🇺🇸 HORMUZ HH:MM:SS  Updated │ Oref Banner
 │  │ ✅ All Clear  (last: Rockets · 06:52)             │
@@ -100,7 +100,6 @@ Clickable toggle buttons with tooltips:
 | 📌 | OSINT Events | red |
 | 🚀 | Missile Animations | red |
 | Strike window dropdown | 24h/48h/7d (default 48h, no "All") | — |
-| 🌗 | Basemap toggle (Carto/VIIRS) | — |
 | 📍 | Geolocate | — |
 
 ### Mobile Top Toolbar (horizontal scrollable strip)
@@ -117,6 +116,7 @@ Clickable toggle buttons with tooltips:
 
 ### Sidebar (desktop left, toggleable)
 Grouped layer controls with dot indicators and counts:
+- **Basemap:** VIIRS Night Lights toggle (🌗) — replaces floating Map/VIIRS buttons
 - **Borders:** Borders, Buffer Zones, Exclusion Zones
 - **U.S. Military:** Bases (29), Carrier Groups, Patrol Routes, Aircraft
 - **Israel:** IDF Bases (14), Iron Dome (12), David's Sling (7), Arrow (4), Naval
@@ -245,6 +245,7 @@ Grouped layer controls with dot indicators and counts:
 - **Desktop brief button**: Cyan glow circle (`.tb-brief-btn`) — matches mobile BRIEF style
 - **Red badge on both**: Desktop + mobile feed buttons show hourly event count (capped 99+)
 - **Basemap toggle z-fix**: Map/VIIRS toggle (z-index 1001) now shifts right when brief panel is open (was covering EN/עב lang toggle)
+- **Basemap moved to sidebar**: Floating Map/VIIRS toggle removed from map overlay; VIIRS Night Lights now a toggle row in sidebar Layers tab (under BASEMAP section). Mobile toolbar 🌗 button retained for quick access.
 - **Brief prompt**: Added international news (real actions only, no generic "condemns") + 🟢 Good News section
 - **RSS feeds**: Added "EU Defense" + "Good News ME" Google News RSS feeds to config
 - **PWA fixes**: `start_url` → root, `id` field, split icon purpose, SW v5, data JSON offline cache, deprecated meta tag fix
