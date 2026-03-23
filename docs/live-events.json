@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "19:51:39",
-      "ts": 1774284699,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05de\u05e0\u05d5\u05ea",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The active sirens are in northern Galilee near the Lebanon border, but the recent OSINT is dominated by an Iranian strike wave and IRGC-related reporting, which can",
-      "severity": "high",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.62,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "19:52:13",
       "ts": 1774284733,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.72,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "02:23:33",
+      "ts": 1774308213,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e4\u05e1\u05d5\u05d8\u05d4",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Although the current sirens are in the far north, recent OSINT reports an IRGC missile strike on Dimona, Eilat, and other Israeli locations, indicating a coordinate",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774308098
+  "updated": 1774308213
 }
