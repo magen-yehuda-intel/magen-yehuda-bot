@@ -347,6 +347,115 @@ test('Mobile Bar', 'exactly 3 buttons: LAYERS, FEED, BRIEF', () => {
   assert(!buttons.includes('OSINT'), 'OSINT should be removed');
 });
 
+// ═══════════════════════════════════════════════════════════
+// PWA MANIFEST & SERVICE WORKER
+// ═══════════════════════════════════════════════════════════
+
+test('PWA', 'manifest.json exists and is valid JSON', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const mp = path.join(__dirname, '..', 'docs', 'manifest.json');
+  assert(fs.existsSync(mp), 'manifest.json not found');
+  JSON.parse(fs.readFileSync(mp, 'utf-8')); // throws if invalid
+});
+
+test('PWA', 'manifest has required fields', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const m = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'manifest.json'), 'utf-8'));
+  assert(m.name, 'missing name');
+  assert(m.short_name, 'missing short_name');
+  assert(m.start_url, 'missing start_url');
+  assert(m.display, 'missing display');
+  assert(m.icons && m.icons.length > 0, 'missing icons');
+  assert(m.id, 'missing id (required for stable PWA identity)');
+});
+
+test('PWA', 'start_url points to root (not centcom.html)', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const m = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'manifest.json'), 'utf-8'));
+  assert(!m.start_url.includes('centcom.html'), 'start_url should not reference centcom.html directly');
+  assert(m.start_url.endsWith('/'), 'start_url should end with /');
+});
+
+test('PWA', 'icons have separate purpose (not combined "any maskable")', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const m = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'manifest.json'), 'utf-8'));
+  for (const icon of m.icons) {
+    assert(!icon.purpose.includes(' '), `Icon ${icon.sizes} has combined purpose "${icon.purpose}" — should be separate entries`);
+  }
+});
+
+test('PWA', 'has 192 and 512 icons', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const m = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'manifest.json'), 'utf-8'));
+  const sizes = m.icons.map(i => i.sizes);
+  assert(sizes.includes('192x192'), 'missing 192x192 icon');
+  assert(sizes.includes('512x512'), 'missing 512x512 icon');
+});
+
+test('PWA', 'icon files exist on disk', () => {
+  const fs = require('fs');
+  const path = require('path');
+  assert(fs.existsSync(path.join(__dirname, '..', 'docs', 'icons', 'icon-192.png')), 'icon-192.png missing');
+  assert(fs.existsSync(path.join(__dirname, '..', 'docs', 'icons', 'icon-512.png')), 'icon-512.png missing');
+});
+
+test('PWA', 'sw.js exists', () => {
+  const fs = require('fs');
+  const path = require('path');
+  assert(fs.existsSync(path.join(__dirname, '..', 'docs', 'sw.js')), 'sw.js missing');
+});
+
+test('PWA', 'sw.js caches root URL and index.html', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'docs', 'sw.js'), 'utf-8');
+  assert(sw.includes('/magen-yehuda-bot/'), 'sw.js should cache root URL');
+  assert(sw.includes('index.html'), 'sw.js should cache index.html');
+});
+
+test('PWA', 'sw.js handles data JSON offline', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const sw = fs.readFileSync(path.join(__dirname, '..', 'docs', 'sw.js'), 'utf-8');
+  assert(sw.includes('.json'), 'sw.js should handle JSON files');
+  assert(sw.includes('offline'), 'sw.js should have offline fallback');
+});
+
+test('PWA', 'index.html is synced with centcom.html', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const centcom = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  const index = fs.readFileSync(path.join(__dirname, '..', 'docs', 'index.html'), 'utf-8');
+  assertEqual(centcom.length, index.length, `index.html (${index.length}) differs from centcom.html (${centcom.length}) — run: cp centcom.html index.html`);
+});
+
+test('PWA', 'centcom.html references manifest.json', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(html.includes('rel="manifest"'), 'missing <link rel="manifest">');
+  assert(html.includes('manifest.json'), 'manifest.json not referenced');
+});
+
+test('PWA', 'centcom.html registers service worker', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(html.includes('serviceWorker.register'), 'missing SW registration');
+});
+
+test('PWA', 'no deprecated apple-mobile-web-app-capable', () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'docs', 'centcom.html'), 'utf-8');
+  assert(!html.includes('apple-mobile-web-app-capable'), 'apple-mobile-web-app-capable is deprecated — use mobile-web-app-capable');
+});
+
 // Summary
 console.log(`\n${passed} passed, ${failed} failed — ${passed+failed} total\n`);
 process.exit(failed > 0 ? 1 : 0);
