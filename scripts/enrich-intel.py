@@ -14,8 +14,8 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPT_DIR)
 import db
 
-AOAI_ENDPOINT = os.environ.get("AOAI_ENDPOINT", "https://openai-dev-nt6mukageprxm.openai.azure.com")
-AOAI_DEPLOYMENT = os.environ.get("AOAI_DEPLOYMENT", "gpt-5-mini")
+AOAI_ENDPOINT = os.environ.get("AOAI_ENDPOINT", "https://idanshimon-8986-resource.cognitiveservices.azure.com")
+AOAI_DEPLOYMENT = os.environ.get("AOAI_DEPLOYMENT", "gpt-5.4-mini")
 AOAI_API_VERSION = "2025-01-01-preview"
 
 BATCH_SIZE = 10  # events per LLM call

@@ -14,8 +14,8 @@ ROOT = os.path.dirname(DIR)
 INTEL_LOG = os.path.join(ROOT, "state", "intel-log.jsonl")
 OUTPUT = os.path.join(ROOT, "docs", "brief.json")
 
-AOAI_ENDPOINT = os.environ.get("AOAI_ENDPOINT", "https://openai-dev-nt6mukageprxm.openai.azure.com")
-AOAI_DEPLOYMENT = os.environ.get("AOAI_DEPLOYMENT", "gpt-5-mini")
+AOAI_ENDPOINT = os.environ.get("AOAI_ENDPOINT", "https://idanshimon-8986-resource.cognitiveservices.azure.com")
+AOAI_DEPLOYMENT = os.environ.get("AOAI_DEPLOYMENT", "gpt-5.4-mini")
 AOAI_API_VERSION = "2025-01-01-preview"
 
 TIME_WINDOWS = [0.5, 2, 6, 24, 48]  # hours
