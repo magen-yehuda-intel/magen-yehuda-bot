@@ -633,13 +633,26 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .mob-btn.active { color:var(--cyan); }
 .mob-btn span:first-child { font-size:20px; }
 .mob-feed {
-  width:44px; height:44px; border-radius:50%;
-  background:rgba(34,197,94,0.15); border:1.5px solid #22c55e !important;
+  width:48px; height:48px; border-radius:50%;
+  background:rgba(34,197,94,0.15); border:2px solid #22c55e !important;
   color:#22c55e !important; font-size:9px !important; font-weight:700;
   letter-spacing:0.5px; padding:0 !important;
   display:flex !important; flex-direction:row !important;
   align-items:center; justify-content:center;
-  box-shadow:0 0 8px rgba(34,197,94,0.2);
+  box-shadow:0 0 12px rgba(34,197,94,0.3), 0 0 24px rgba(34,197,94,0.1);
+  animation:feed-pulse 2s ease-in-out infinite;
+  position:relative;
+}
+@keyframes feed-pulse {
+  0%,100% { box-shadow:0 0 8px rgba(34,197,94,0.3); }
+  50% { box-shadow:0 0 16px rgba(34,197,94,0.5), 0 0 32px rgba(34,197,94,0.15); }
+}
+.mob-feed .feed-badge {
+  position:absolute; top:-4px; right:-4px;
+  background:#ef4444; color:#fff; font-size:7px; font-weight:700;
+  min-width:14px; height:14px; border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 3px; border:1.5px solid rgba(5,5,16,0.9);
 }
 
 /* ═══ MOBILE ═══ */
@@ -1102,7 +1115,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- MOBILE BOTTOM BAR -->
 <div id="mobile-bar">
   <button class="mob-btn" onclick="toggleSidebar()"><span>☰</span>LAYERS</button>
-  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED</button>
+  <button class="mob-btn mob-feed" onclick="toggleFeed()">FEED<span class="feed-badge" id="feed-badge" style="display:none">0</span></button>
   <button class="mob-btn" onclick="toggleLegend()"><span>📋</span>LEGEND</button>
 </div>
 
@@ -1488,6 +1501,14 @@ function loadFeed() {
       list.classList.add('feed-flash');
     }
     feedPrevCount = newCount;
+
+    // Update mobile feed badge
+    const badge = document.getElementById('feed-badge');
+    if (badge) {
+      const recent = feedEvents.filter(e => e.ts && (Date.now()/1000 - e.ts) < 3600).length;
+      if (recent > 0) { badge.textContent = recent > 99 ? '99+' : recent; badge.style.display = ''; }
+      else { badge.style.display = 'none'; }
+    }
 
     buildCatChips();
     renderFeed();
@@ -2594,6 +2615,7 @@ loadFIRMS();
 loadSeismic();
 loadSirens();
 pollOref();
+loadFeed(); // Pre-load for badge count
 updateLayerCount();
 updateMobileButtons();
 
