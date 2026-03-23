@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-23",
-      "time": "15:02:10",
-      "ts": 1774267330,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05e0\u05e8\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens are limited to northern border communities near Lebanon, and no OSINT suggests a wider long-range attack, so this is most likely Hezbollah rocket fire from Lebanon",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-23",
       "time": "15:21:42",
       "ts": 1774268502,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.87,
       "live": true
+    },
+    {
+      "date": "2026-03-23",
+      "time": "23:03:33",
+      "ts": 1774296213,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (Fateh-110/Zelzal) \u2014 Active sirens are only in Eilat/Arava with OSINT explicitly stating missiles launched from Iran and a missile toward Eilat by the Red Sea, matching a Yemen/Iran ",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.96,
+      "live": true
     }
   ],
-  "updated": 1774295803
+  "updated": 1774296213
 }
