@@ -20,6 +20,7 @@
 ## Architecture
 - **Single-file HTML** (~189KB, 3700 lines) — all CSS, JS, and inline data
 - **Leaflet.js** map with CARTO dark basemap + VIIRS night lights toggle
+  - `boxZoom: false` — no blue rectangle on shift-click/country click
 - **Data source:** `v2-data.js` (static) + API (`magen-yehuda-api` Azure Container App) + `live-events.json`
 - **API URL:** `https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io`
 
@@ -167,6 +168,8 @@ Grouped layer controls with dot indicators and counts:
 - Time: `HH:MM` 24h clock; different day: `MM/DD HH:MM`
 - **Expandable items**: Tap to expand all areas (joined with `·`) + alert description (amber italic). Tap again to collapse. Hover highlight on items.
 - Thin dark scrollbar on desktop (`scrollbar-width:thin`, 4px webkit, cyan-tinted track)
+- Region classification (`classifyRegion`): North, Haifa & North, Center, South, or city names — severity labels (CRITICAL/LOW/MEDIUM) never shown
+- **Live pulse**: Green text-shadow flash (0.8s) on `● Live` every 10s on successful Oref poll
 - Shows first 4 areas in summary; "X areas total" if more than 4
 - Color-coded: red=active, amber=standdown
 
