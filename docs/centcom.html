@@ -634,10 +634,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .mob-btn span:first-child { font-size:20px; }
 
 /* ═══ MOBILE ═══ */
-@media (max-width:768px) {
-  #toolbar { display:none; }
+@media (max-width:1024px) {
+  #toolbar { display:none !important; }
   #mobile-toolbar { display:flex; top:36px; }
-  #oref-banner { left:0; top:70px; padding:4px 8px; }
+  #oref-banner { left:0; right:0; top:70px; padding:4px 8px; box-sizing:border-box; overflow:hidden; }
   #oref-banner .oref-title { font-size:9px; gap:3px; letter-spacing:0.5px; }
   #oref-banner .oref-status { font-size:10px; }
   #trump-countdown { font-size:8px !important; padding:1px 4px !important; }
@@ -658,7 +658,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   .leaflet-popup-content-wrapper { max-width:280px !important; }
   #legend { bottom:60px; right:8px; max-width:220px; }
 }
-@media (min-width:769px) {
+@media (min-width:1025px) {
   #oref-banner { top:44px; }
   #map { top:80px; }
 }
