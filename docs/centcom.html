@@ -558,6 +558,18 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   flex:1; overflow-y:auto; padding:16px;
   font-family:var(--font-body); font-size:13px; line-height:1.7; color:var(--text);
 }
+.brief-content h3 { font-family:var(--font-mil); font-size:12px; font-weight:700; color:var(--cyan); letter-spacing:1px; text-transform:uppercase; margin:16px 0 8px; padding-bottom:4px; border-bottom:1px solid rgba(6,182,212,0.2); }
+.brief-content h3:first-child { margin-top:0; }
+.brief-content ul { margin:4px 0 12px; padding-left:18px; }
+.brief-content li { margin-bottom:6px; font-size:12px; line-height:1.6; }
+.brief-content b { color:#e2e8f0; }
+.brief-stamp {
+  display:flex; align-items:center; justify-content:space-between; padding:8px 16px;
+  background:rgba(6,182,212,0.06); border-bottom:1px solid rgba(6,182,212,0.15);
+  font-family:var(--font-data); font-size:10px; color:var(--text-dim); flex-shrink:0;
+}
+.brief-stamp-time { color:var(--cyan); font-weight:600; }
+.brief-stamp-count { color:var(--text-dim); }
 .brief-content[data-lang="he"] { direction:rtl; text-align:right; font-family:'Segoe UI',Tahoma,Arial,sans-serif; }
 .brief-empty { color:var(--text-dim); text-align:center; padding:40px 20px; font-size:12px; }
 .brief-loading { color:var(--cyan); text-align:center; padding:40px 20px; }
@@ -1180,6 +1192,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
       <span class="feed-time-chip" data-hours="48">48H</span>
     </div>
   </div>
+  <div class="brief-stamp" id="brief-stamp" style="display:none">
+    <span class="brief-stamp-time" id="brief-stamp-time"></span>
+    <span class="brief-stamp-count" id="brief-stamp-count"></span>
+  </div>
   <div class="brief-content" id="brief-content">
     <div class="brief-empty">Tap a time window to generate a brief</div>
   </div>
@@ -1547,15 +1563,32 @@ function loadBrief() {
 function renderBrief() {
   if (!briefData || !briefData.briefs) return;
   const content = document.getElementById('brief-content');
+  const stamp = document.getElementById('brief-stamp');
   const key = String(briefHours);
   const brief = briefData.briefs[key];
   if (!brief) {
     content.innerHTML = '<div class="brief-empty">No brief for this time window.</div>';
+    stamp.style.display = 'none';
     return;
   }
   const html = briefLang === 'he' ? brief.he : brief.en;
   content.innerHTML = html || '<div class="brief-empty">No content.</div>';
   content.setAttribute('data-lang', briefLang);
+
+  // Timestamp + event count stamp
+  stamp.style.display = 'flex';
+  const genAt = briefData.generated_at ? new Date(briefData.generated_at) : null;
+  const stampTime = document.getElementById('brief-stamp-time');
+  const stampCount = document.getElementById('brief-stamp-count');
+  if (genAt) {
+    const age = Math.round((Date.now() - genAt.getTime()) / 60000);
+    const timeStr = genAt.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',hour12:false});
+    stampTime.textContent = age <= 1 ? `Generated ${timeStr} (just now)` : `Generated ${timeStr} (${age}m ago)`;
+  } else {
+    stampTime.textContent = '';
+  }
+  stampCount.textContent = brief.count !== undefined ? `${brief.count} events · ${brief.window || key + 'h'}` : '';
+
   if (brief.count !== undefined) {
     const meta = document.getElementById('brief-meta');
     meta.textContent = `${brief.count} events analyzed · ${brief.window || key + 'h'} window`;
