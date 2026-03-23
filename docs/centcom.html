@@ -1278,7 +1278,13 @@ function updateSidebarRows() {
   });
 }
 
+function closeMobilePanels(except) {
+  if (except !== 'sidebar') document.getElementById('sidebar').classList.remove('open');
+  if (except !== 'feed') { const fp = document.getElementById('feed-panel'); if (fp) fp.classList.remove('open'); }
+  if (except !== 'legend') { const lg = document.getElementById('legend'); if (lg) lg.classList.remove('visible'); }
+}
 function toggleSidebar() {
+  closeMobilePanels('sidebar');
   document.getElementById('sidebar').classList.toggle('open');
 }
 
@@ -1336,6 +1342,7 @@ function updateAllButtons() {
 }
 
 function toggleLegend() {
+  closeMobilePanels('legend');
   const el = document.getElementById('legend');
   el.classList.toggle('visible');
   const btn = document.querySelector('.tb-btn[data-layer="legend"]');
@@ -1408,6 +1415,7 @@ const SIDE_COLORS = { israel:'#3b82f6', iran:'#ef4444', us:'#60a5fa', iran_proxy
 const SIDE_LABELS = { israel:'🇮🇱 Israel', iran:'🇮🇷 Iran', us:'🇺🇸 US', iran_proxy:'🇮🇷 Proxy', unknown:'🌍 Other' };
 
 function toggleFeed() {
+  closeMobilePanels('feed');
   const panel = document.getElementById('feed-panel');
   const isOpen = panel.classList.toggle('open');
   const btn = document.querySelector('.tb-btn[data-layer="feed"]');
