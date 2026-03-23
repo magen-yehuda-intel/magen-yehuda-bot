@@ -1,6 +1,14 @@
 {
   "alerts": [
     {
+      "ts": 1774258868.132388,
+      "utc": "2026-03-23T09:41:08.132207+00:00",
+      "type": "siren_standdown",
+      "severity": "LOW",
+      "areas": [],
+      "desc": ""
+    },
+    {
       "ts": 1774258436.213987,
       "utc": "2026-03-23T09:33:56.213762+00:00",
       "type": "siren_clear",
@@ -173,20 +181,12 @@
       "severity": "MEDIUM",
       "areas": [],
       "desc": ""
-    },
-    {
-      "ts": 1774242023.2575932,
-      "utc": "2026-03-23T05:00:23.257500+00:00",
-      "type": "siren_clear",
-      "severity": "MEDIUM",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
     "ברעם"
   ],
-  "exported": "2026-03-23T09:40:01Z",
+  "exported": "2026-03-23T09:45:01Z",
   "count": 20
 }
