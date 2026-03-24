@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "09:59:21",
-      "ts": 1774335561,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05e9\u05dc\u05d9\u05dd",
-      "desc": "Ballistic missile (cluster warhead missile) \u2014 The sirens cover a broad south/Arava/Negev region consistent with a long-range Iranian strike, and recent OSINT explicitly reports an Iranian cluster miss",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.9,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "10:00:57",
       "ts": 1774335657,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "18:10:41",
+      "ts": 1774365041,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e8\u05de\u05d5\u05ea \u05e0\u05e4\u05ea\u05dc\u05d9",
+      "desc": "Rocket barrage \u2014 Active siren in Ramot Naftali indicates a northern border incident, and recent OSINT points to Iranian activity and an interceptor falling in Lebanon, making a Lebanon-origin rocket t",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.88,
+      "live": true
     }
   ],
-  "updated": 1774363816
+  "updated": 1774365041
 }
