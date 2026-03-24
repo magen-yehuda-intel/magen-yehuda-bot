@@ -567,7 +567,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .brief-content {
   flex:1; overflow-y:auto; padding:16px;
   font-family:var(--font-body); font-size:13px; line-height:1.7; color:var(--text);
+  scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;
 }
+.brief-content::-webkit-scrollbar { width:4px; }
+.brief-content::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
 .brief-content h3 { font-family:var(--font-mil); font-size:12px; font-weight:700; color:var(--cyan); letter-spacing:1px; text-transform:uppercase; margin:16px 0 8px; padding-bottom:4px; border-bottom:1px solid rgba(6,182,212,0.2); }
 .brief-content h3:first-child { margin-top:0; }
 .brief-content ul { margin:4px 0 12px; padding-left:18px; }

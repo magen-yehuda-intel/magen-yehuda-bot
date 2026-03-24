@@ -247,6 +247,7 @@ Grouped layer controls with dot indicators and counts:
 ## Changelog
 
 ### 2026-03-24
+- **Brief panel scrollbar:** Added thin custom scrollbar to `.brief-content` matching the live feed panel (`.feed-list`) style — `scrollbar-width:thin`, 4px webkit, `rgba(255,255,255,0.1)` thumb on transparent track. Was using default browser scrollbar.
 - **Trump countdown → Breaking Banner:** Replaced `#trump-countdown` + `initTrumpCountdown()` + `showTrumpInfo()` with generic `#breaking-banner` system. Hidden by default. API: `window._showBreaking(label, popupHtml)` / `window._hideBreaking()`. Reusable for any future breaking event.
 - **Stale missile arcs fixed:** Hardcoded `window._liveEvents` (2 events from Mar 21) was assigned AFTER the 2h TTL filter, overriding it. Cleared to empty array — `fetchLiveEvents()` now the sole data source.
 - **Brief LLM switched:** `gpt-5.4-mini` → `gpt-5-mini` (old resource `openai-dev-nt6mukageprxm`). Reason: `gpt-5.4-mini` content filter blocks all brief generation when OSINT contains strike/attack data (`ResponsibleAIPolicyViolation`). Short windows (30min/2h/6h) still fail to parse — patched with manual brief.
