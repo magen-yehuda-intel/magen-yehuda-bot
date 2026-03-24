@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "01:16:42",
-      "ts": 1774304202,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05d1\u05e8-\u05dc\u05d1",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Simultaneous sirens across north, center, and south in a broad coordinated pattern combined with OSINT reporting significant explosions in Tehran strongly indicates",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "01:18:55",
       "ts": 1774304335,
       "lat": 32.085,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "07:09:45",
+      "ts": 1774325385,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e1\u05e2\u05d5\u05d5\u05d4",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Wide simultaneous sirens across the Negev, Arad, Beersheva, Dimona and Dead Sea area with OSINT explicitly stating Iran fired missiles at Israel, indicating a coord",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774319419
+  "updated": 1774325385
 }
