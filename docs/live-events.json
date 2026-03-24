@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "00:40:48",
-      "ts": 1774302048,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d0\u05d1\u05d9\u05d1\u05d9\u05dd",
-      "desc": "Rocket barrage \u2014 Sirens in Avivim and Yiron are northern border towns near Lebanon, and the recent OSINT context shows active Israel-Lebanon conflict with strikes in Beirut, making a Hezbollah rocket ",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "00:49:17",
       "ts": 1774302557,
       "lat": 32.794,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "05:27:31",
+      "ts": 1774319251,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e2\u05d3\u05d9 \u05e2\u05d3",
+      "desc": "Ballistic missile (unknown) \u2014 Sirens span central Israel and the West Bank in a wide simultaneous pattern consistent with a long-range ballistic salvo, while recent OSINT involving Iran suggests an Ir",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.86,
+      "live": true
     }
   ],
-  "updated": 1774317540
+  "updated": 1774319251
 }
