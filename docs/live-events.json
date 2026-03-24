@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "02:28:10",
-      "ts": 1774308490,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e9\u05d5\u05de\u05e8\u05d4",
-      "desc": "Rocket barrage \u2014 Shomera and Zarit are northern border areas, and the only relevant OSINT points to Hezbollah-linked activity in Lebanon rather than a wider regional launch.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "03:24:01",
       "ts": 1774311841,
       "lat": 32.794,
@@ -361,7 +343,25 @@
       "weapon_type": "rocket",
       "confidence": 0.89,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "13:30:11",
+      "ts": 1774348211,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Although the sirens are in the far north, recent OSINT explicitly reports Iran launching missile waves toward Israel after Israeli strikes on Iran, which fits a coo",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774344523
+  "updated": 1774348211
 }
