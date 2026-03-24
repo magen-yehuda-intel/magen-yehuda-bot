@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "15:38:35",
-      "ts": 1774355915,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Hamas",
-      "target": "\u05d2\u05d1\u05d9\u05dd",
-      "desc": "Rocket barrage (Qassam) \u2014 The sirens are concentrated overwhelmingly in the Gaza envelope and nearby southern communities, which most strongly indicates a short-range rocket barrage from Gaza despite ",
-      "severity": "critical",
-      "origin_lat": 31.42,
-      "origin_lon": 34.35,
-      "source_country": "gaza",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "15:44:11",
       "ts": 1774356251,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "01:39:04",
+      "ts": 1774391944,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d1\u05d0\u05e8 \u05d0\u05d5\u05e8\u05d4",
+      "desc": "Ballistic missile \u2014 Bara Ora/Eilat-area sirens combined with recent Iran-related OSINT suggest a long-range retaliatory launch consistent with Yemen-origin ballistic activity.",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774388689
+  "updated": 1774391944
 }
