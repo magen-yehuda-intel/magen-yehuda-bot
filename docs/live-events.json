@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "13:49:55",
-      "ts": 1774349395,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e0\u05d5\u05d5\u05d4 \u05de\u05d9\u05db\u05d0\u05dc - \u05e8\u05d5\u05d2\u05dc\u05d9\u05ea",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span north, south, center, and Eilat simultaneously, and OSINT explicitly states missiles were launched from Iran toward Israel.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "14:59:34",
       "ts": 1774353574,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "00:29:02",
+      "ts": 1774387742,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (Burkan) \u2014 Sirens are limited to Eilat area, and in this context the most plausible long-range threat is a Yemen-origin ballistic strike rather than the ongoing Iranian central-Israe",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.86,
+      "live": true
     }
   ],
-  "updated": 1774371704
+  "updated": 1774387742
 }
