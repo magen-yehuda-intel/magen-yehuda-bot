@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "05:27:31",
-      "ts": 1774319251,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e2\u05d3\u05d9 \u05e2\u05d3",
-      "desc": "Ballistic missile (unknown) \u2014 Sirens span central Israel and the West Bank in a wide simultaneous pattern consistent with a long-range ballistic salvo, while recent OSINT involving Iran suggests an Ir",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.86,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "05:30:19",
       "ts": 1774319419,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "16:34:30",
+      "ts": 1774359270,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d3\u05d9\u05e9\u05d5\u05df",
+      "desc": "Rocket barrage \u2014 Sirens are in northern border towns near Lebanon and the recent OSINT centers on southern Lebanon activity, making a Hezbollah rocket attack the most likely source.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.91,
+      "live": true
     }
   ],
-  "updated": 1774356251
+  "updated": 1774359270
 }
