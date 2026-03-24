@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "05:30:19",
-      "ts": 1774319419,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e0\u05d7\u05dc\u05d9\u05dd",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Simultaneous sirens across Tel Aviv, Gush Dan, Sharon, and surrounding central areas with IDF OSINT explicitly stating missiles launched from Iran indicate an Irani",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "07:09:45",
       "ts": 1774325385,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.91,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "16:39:23",
+      "ts": 1774359563,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e1\u05e2\u05d5\u05d5\u05d4",
+      "desc": "Ballistic missile (Fateh-110/Emad) \u2014 The active sirens span a broad south-to-center desert belt deep in Israel, which is more consistent with a long-range ballistic strike than rockets, and recent OSI",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774359270
+  "updated": 1774359563
 }
