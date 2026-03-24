@@ -2942,9 +2942,11 @@ function renderTickerItems(recent, isStatic) {
 loadTicker();
 setInterval(loadTicker, 30000); // refresh ticker every 30s
 
-// Show data mode
-document.getElementById('oref-mode').textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
-document.getElementById('oref-interval').textContent = API_URL ? '~10s' : '~2min';
+// Show data mode (elements may not exist in current layout)
+const _orefMode = document.getElementById('oref-mode');
+const _orefInterval = document.getElementById('oref-interval');
+if (_orefMode) _orefMode.textContent = API_URL ? 'Live API' : 'Static (GitHub Pages)';
+if (_orefInterval) _orefInterval.textContent = API_URL ? '~10s' : '~2min';
 
 // ── Live Aircraft (OpenSky) ──
 // MIL_CALLSIGNS, MIL_TYPES, _activeTrail moved to top of script (avoid TDZ)
