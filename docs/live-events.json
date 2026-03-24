@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "01:18:55",
-      "ts": 1774304335,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05d0\u05dc\u05d5\u05df \u05d4\u05ea\u05d1\u05d5\u05e8",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Simultaneous sirens across a broad central-northern corridor in Israel combined with recent OSINT about significant attacks in Tehran strongly indicate an Iranian b",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "01:23:05",
       "ts": 1774304585,
       "lat": 32.085,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "07:17:02",
+      "ts": 1774325822,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e2\u05d9\u05d3\u05df \u05d4\u05e0\u05d2\u05d1",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Wide southern/central Negev sirens combined with OSINT explicitly stating missiles launched from Iran toward Israel indicate an Iranian ballistic salvo.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774325385
+  "updated": 1774325822
 }
