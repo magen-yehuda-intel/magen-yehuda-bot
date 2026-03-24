@@ -1,31 +1,30 @@
 {
-  "generated_at": "2026-03-24T06:02:00.007528+00:00",
+  "generated_at": "2026-03-24T06:31:55.937396+00:00",
   "briefs": {
     "0.5": {
-      "en": "<h3>Day 24 — Immediate</h3><ul><li><b>Active strikes/sirens:</b> Iran launched toward central Israel. Impacts reported in central Israel. IDF search-and-rescue teams en route. Public told to avoid impact sites.</li><li><b>IDF strike:</b> IDF reports strike on IRGC headquarters in Tehran. One man lightly wounded.</li><li><b>Iranian attacks:</b> Iran continues strikes on Israel and Gulf states while US says it is in talks to end the war.</li><li><b>Ultimatum deadline:</b> US 48-hour Hormuz ultimatum from March 21 expires tonight (Mar 23, 23:44 UTC). Iran warned it may mine the Strait if a US ground operation begins.</li><li>Diplomacy: US and Iran disagree on terms for talks. TASS reports Israel is not participating in potential US-Iran talks.</li><li>Russia: Kremlin says it will take all measures to address crimes related to attacks on airfields.</li><li>Tactical context: Multiple ISR and strike reports in short window. Central Israel impacts + Tehran HQ strike indicate continued tit-for-tat air/missile exchanges.</li><li>Public safety: Avoid reported impact sites. Follow official IDF and Home Front instructions.</li><li>🟢 Good News: Only a light wound reported in Tehran so far. Search-and-rescue units mobilized quickly to central Israel.</li><li><b>Threat assessment:</b> Escalating.</li></ul>",
-      "he": "<div dir=\"rtl\"><h3>יום 24 — מיידי</h3><ul><li><b>ירי/אזעקות פעילים:</b> שיגור מאיראן לכיוון מרכז ישראל. נקודות פגיעה מדווחות במרכז. כוחות חילוץ של צה\"ל בדרך. הציבור התבקש להימנע מהתכנסות באזורים אלו.</li><li><b>פעולת צה\"ל:</b> צה\"ל מדווח על תקיפה של מטה משמרות המהפכה בטהראן. אדם פצוע קל.</li><li><b>התקפות איראניות:</b> איראן ממשיכה לכוון את ישראל ומדינות המפרץ, בזמן שארה\"ב טוענת שהיא במשא ומתן לסיום המלחמה.</li><li><b>מועד האולטימטום:</b> אולטימטום הורמוז של ארה\"ב (48 שעות) מ-21 במרץ מסתיים הלילה (23:44 UTC). איראן הזהירה שתמנע תנועת נתיב המצר אם תהיה פעולה קרקעית אמריקאית.</li><li>דיפלומטיה: ארה\"ב ואיראן לא מסכימות על תנאי שיחות. לפי TASS, ישראל לא משתתפת בשיחות פוטנציאליות.</li><li>רוסיה: הקרמלין אומר שתנקט כל הצעדים לטיפול בפשעים הקשורים להתקפות על שדות תעופה.</li><li>הקשר טקטי: תיעודים מרובים של ISR ותקיפות בפרק זמן קצר. פגיעות במרכז ישראל לצד תקיפת מטה בטהראן — המשך חילופי מהלומות אוויריים/טילים.</li><li>בטיחות הציבור: הימנעו מאזורי פגיעה ודלגו להוראות רשמיות של צה\"ל והחמ\"ל האזרחי.</li><li>🟢 חדשות טובות: עד כה דווח על פצוע קל בלבד בטהראן. יחידות חילוץ הוזנקו במהירות למרכז ישראל.</li><li><b>הערכת איום:</b> במגמה של ההסלמה.</li></ul></div>",
-      "count": 22,
-      "window": "30 minutes"
+      "en": "<p>Brief generation failed for 30 minutes window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
+      "count": 19
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 84
+      "count": 72
     },
     "6": {
       "en": "<p>Brief generation failed for 6 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 211
+      "count": 215
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1342
+      "count": 1351
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 2259
+      "count": 2245
     }
   }
 }
