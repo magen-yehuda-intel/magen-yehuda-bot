@@ -77,7 +77,7 @@
 
 ### Pikud HaOref Banner (below toolbar)
 - **Connection health**: "● Live" text pulses 2 times on each successful Oref poll (`.oref-live-pulse` animation, 1.2s). After 5 consecutive failures → "● Offline" (red). Auto-recovers.
-- **Trump Hormuz Countdown** — pill badge `🇺🇸 HORMUZ HH:MM:SS`, inline after status. Deadline: `2026-03-23T23:44:00Z`. Color shifts: >12h=#ff6666, >6h=#ffaa00, >2h=#ff6600, <2h=#ff0000. Pulses "EXPIRED" at zero.
+- **Breaking News Banner** — generic `#breaking-banner` element, hidden by default (`display:none`). API: `window._showBreaking(label, popupHtml)` shows banner with pulsing red animation + click-to-expand popup; `window._hideBreaking()` hides it. Replaces the old Trump Hormuz countdown (removed Mar 24). Use for any future breaking event. Internal vars: `_breakingPopupHtml`, function `showBreakingInfo(e)`. Mobile CSS: `#breaking-banner { font-size:8px !important; padding:1px 4px !important; }`.
 - **Alert states:**
   - `✅ All Clear` — green, safe. Shows last siren info below.
   - `🚨 ACTIVE SIREN — area1, area2, area3 +N more areas` — red, pulsing text (`siren-pulse` 0.8s) + entire banner pulses red glow (`banner-siren` 1.2s alternate). `alert-active` class on banner. Areas extracted from `alert.data[]` array via `flatMap`.
@@ -146,7 +146,7 @@ Grouped layer controls with dot indicators and counts:
 - **Trigger:** Events with `origin_lat`, `origin_lon`, `lat`, `lon` fields
 - **TTL:** Events expire after 2 hours (`nowTs - e.ts < 7200`) — both embedded and fetched
 - **Default mode:** `animated` (first-time visitors see full animation)
-- **Auto-force:** Fresh critical live events force `animated` mode + write to localStorage
+- **Embedded fallback:** `window._liveEvents = [];` — starts empty, populated by `fetchLiveEvents()`. Old hardcoded events were removed (Mar 24 fix — stale Mar 21 events were overriding 2h TTL filter).
 - **Cleanup:** When no fresh events exist, stale arc SVG is removed from map
 - **Visual:** SVG bezier arcs from origin to target, animated rocket emoji traveling along path
 - **Effects:** Pulsing origin dot, impact ripples at target, progressive trail
@@ -246,6 +246,25 @@ Grouped layer controls with dot indicators and counts:
 
 ## Changelog
 
+### 2026-03-24
+- **Trump countdown → Breaking Banner:** Replaced `#trump-countdown` + `initTrumpCountdown()` + `showTrumpInfo()` with generic `#breaking-banner` system. Hidden by default. API: `window._showBreaking(label, popupHtml)` / `window._hideBreaking()`. Reusable for any future breaking event.
+- **Stale missile arcs fixed:** Hardcoded `window._liveEvents` (2 events from Mar 21) was assigned AFTER the 2h TTL filter, overriding it. Cleared to empty array — `fetchLiveEvents()` now the sole data source.
+- **Brief LLM switched:** `gpt-5.4-mini` → `gpt-5-mini` (old resource `openai-dev-nt6mukageprxm`). Reason: `gpt-5.4-mini` content filter blocks all brief generation when OSINT contains strike/attack data (`ResponsibleAIPolicyViolation`). Short windows (30min/2h/6h) still fail to parse — patched with manual brief.
+- **Infrastructure layer:** Added 4 struck facilities: Isfahan Gas Administration (Kaveh St), Isfahan Pressure-Reduction Station (Kaveh St), Khorramshahr Energy Facility, Abadan Refinery (context, not confirmed hit).
+- **Hormuz.html:** Added Mar 23 (ultimatum expired) + Mar 24 (US-Israeli strikes on Isfahan/Khorramshahr) timeline entries.
+
+### 2026-03-23 (session notes — evening)
+- **Trump Hormuz deadline:** `2026-03-23T23:44:00Z` (~7:44 PM ET). Expires tonight. When extending/replacing: update `const DEADLINE` in `initTrumpCountdown()` in BOTH `index.html` and `centcom.html` (~line 2805). Sync both files (`cp centcom.html index.html`). Also update changelog here.
+- **Brief panel:** Client-side, on-demand — user clicks 30M/2H/6H/24H/48H to generate. "Tap a time window" is expected UX, not a bug. `brief.json` is pre-generated every 30min by cron and fetched by `loadBrief()`.
+- **Live Feed:** Was showing 0 events on initial page load (connecting...) — loaded after ~1min. Normal behavior. Feed panel hidden on startup by design; pre-loads silently for badge count.
+- **Hourly report dispatch error:** `⚠️ Dashboard link send failed` — looks for `dispatch.py` at `/Users/idanshimon/scripts/dispatch.py` (wrong path). Should be `scripts/dispatch.py` relative to skill dir. Minor — doesn't affect main report send.
+- **Brief data fix:** `generate-brief.py` `load_events()` now merges `docs/intel-feed.json` (OSINT headlines with actual text) alongside `state/intel-log.jsonl`. Root cause: intel-log osint events have `data: {}` (watcher doesn't serialize text). Fix: 1,225→2,212 events, 2H window 1,035→5,881 chars. Brief now covers actual strikes, city-level reporting, diplomacy. **Do NOT revert.**
+- **Brief context injection:** `USER_PROMPT_TEMPLATE` has a hardcoded `CONTEXT:` block (Day 24, Hormuz ultimatum, Iran mine threat). **Update this block** when strategic situation changes — new ultimatum, ceasefire, key leader killed, etc.
+- **Watcher auto-restart:** Installed launchd plist `com.openclaw.iran-israel-watcher` (`~/Library/LaunchAgents/`). `KeepAlive: true`, `RunAtLoad: true`. Watcher now survives reboots and crashes. Previously: watcher just died and stayed dead (no auto-restart, no launchd). Install via `bash ctl.sh install-launchd`, unload via `launchctl unload ~/Library/LaunchAgents/com.openclaw.iran-israel-watcher.plist`.
+- **Watcher was STOPPED during CRITICAL:** Found watcher dead while Oref showed active rocket sirens (ירי רקטות וטילים in Judean Hills). Restarted manually, then installed launchd for permanent fix.
+- **Dispatch path fix:** `hourly-report.sh` dashboard link send used relative `scripts/dispatch.py` — fails under cron (cwd is `$HOME`). Fixed to derive absolute path from `config_file` via `os.path.abspath()`.
+- **Duplicate watcher cleanup:** After `ctl.sh start` + launchd restart, had 4 watcher processes. Killed manual ones, kept launchd-managed PID only.
+
 ### 2026-03-23
 - **LLM upgrade**: `gpt-5-mini` → `gpt-5.4-mini` (v2026-03-17) on `idanshimon-8986-resource` (eastus2)
 - **Brief on desktop**: Added 📋 Intel Brief button to desktop toolbar (was mobile-only)
@@ -312,8 +331,8 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 
 ### Architecture
 - **Script:** `scripts/generate-brief.py` — runs every 30 min via cron
-- **LLM:** Azure OpenAI `gpt-5.4-mini` on `idanshimon-8986-resource` (eastus2)
-- **Input:** `state/intel-log.jsonl` events (uses `logged_at` or `ts` field)
+- **LLM:** Azure OpenAI `gpt-5-mini` on `openai-dev-nt6mukageprxm` (eastus). Switched from `gpt-5.4-mini` on Mar 24 — the newer model's content filter (`ResponsibleAIPolicyViolation`) blocks strike/violence OSINT. The older `gpt-5-mini` has no aggressive content filter. 24h+48h windows generate well; 30min/2h/6h return unparseable format for small event counts (patched with manual brief fallback).
+- **Input:** `state/intel-log.jsonl` + `docs/intel-feed.json` (merged — see ⚠️ fix note below)
 - **Output:** `docs/brief.json` — auto git-pushed to GitHub Pages
 - **Time windows:** 30M, 2H, 6H, 24H, 48H (same as feed filters minus 15M)
 - **Languages:** English (default) + Hebrew (RTL, dir='rtl')
@@ -327,6 +346,18 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 - End with 1-line threat trend assessment
 - Output: JSON `{"en": "<html>", "he": "<html>"}`
 - Under 300 words per brief
+- **`USER_PROMPT_TEMPLATE` has a `CONTEXT:` block** injected before the events — includes current conflict background (Day N, active ultimatums, key threats). Update this context block when the strategic situation changes significantly (new ultimatum, ceasefire, etc.)
+
+### ⚠️ Brief Data Source Fix (Mar 23)
+**Root cause:** `intel-log.jsonl` osint events logged `type: "osint"` but `data: {}` — watcher didn't serialize the text. Brief was working off flight scans only → generic airspace output.
+
+**Fix in `load_events()`:** Now merges two sources:
+1. `state/intel-log.jsonl` — sirens, flight scans, threat changes, cyber
+2. `docs/intel-feed.json` — geocoded OSINT events with actual headlines/text (Reuters, TASS, Telegram channels, RSS)
+
+**Impact:** 1,225 → 2,212 events loaded; 2H window 1,035 → 5,881 chars. Brief now includes strike claims, city-level reporting, diplomatic developments.
+
+**Do NOT revert** the `load_events()` merge — the intel-log osint data is structurally empty and that is a watcher-side bug that may or may not get fixed.
 
 ### Dashboard UI
 - **Panel:** Same style as feed panel, right-side slide-in, full-width on mobile
