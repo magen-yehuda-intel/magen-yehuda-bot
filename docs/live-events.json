@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "07:09:45",
-      "ts": 1774325385,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e1\u05e2\u05d5\u05d5\u05d4",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Wide simultaneous sirens across the Negev, Arad, Beersheva, Dimona and Dead Sea area with OSINT explicitly stating Iran fired missiles at Israel, indicating a coord",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "07:17:02",
       "ts": 1774325822,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "16:42:31",
+      "ts": 1774359751,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d4\u05e8 \u05d7\u05dc\u05d5\u05e5",
+      "desc": "Rocket barrage \u2014 Sirens are concentrated in northern Galilee/Carmiel area and recent OSINT explicitly states missiles launched from Iran, but the localized north-only pattern fits a Lebanon-origin bar",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774359563
+  "updated": 1774359751
 }
