@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "02:23:50",
-      "ts": 1774308230,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e4\u05e1\u05d5\u05d8\u05d4",
-      "desc": "Rocket barrage \u2014 Siren areas in Ptasuta/Netu'a are northern border towns and the only relevant OSINT item is a recent Iranian Haifa strike report plus no new attack indication, so this most likely ref",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "02:26:02",
       "ts": 1774308362,
       "lat": 32.794,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "11:30:09",
+      "ts": 1774341009,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d2\u05e9\u05e8 \u05d4\u05d6\u05d9\u05d5",
+      "desc": "Rocket barrage \u2014 Active sirens are concentrated in northern coastal border towns near Lebanon, and the OSINT includes a report of a missile strike in Tel Aviv that suggests concurrent broader conflict",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774340834
+  "updated": 1774341009
 }
