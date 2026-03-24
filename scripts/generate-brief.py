@@ -12,10 +12,11 @@ from datetime import datetime, timezone
 DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(DIR)
 INTEL_LOG = os.path.join(ROOT, "state", "intel-log.jsonl")
+INTEL_FEED = os.path.join(ROOT, "docs", "intel-feed.json")
 OUTPUT = os.path.join(ROOT, "docs", "brief.json")
 
-AOAI_ENDPOINT = os.environ.get("AOAI_ENDPOINT", "https://idanshimon-8986-resource.cognitiveservices.azure.com")
-AOAI_DEPLOYMENT = os.environ.get("AOAI_DEPLOYMENT", "gpt-5.4-mini")
+AOAI_ENDPOINT = os.environ.get("AOAI_ENDPOINT", "https://openai-dev-nt6mukageprxm.openai.azure.com")
+AOAI_DEPLOYMENT = os.environ.get("AOAI_DEPLOYMENT", "gpt-5-mini")
 AOAI_API_VERSION = "2025-01-01-preview"
 
 TIME_WINDOWS = [0.5, 2, 6, 24, 48]  # hours
@@ -31,9 +32,11 @@ def _get_token():
         sys.exit(1)
 
 def load_events(max_hours=48):
-    """Load events from intel-log.jsonl within the last max_hours."""
+    """Load events from intel-log.jsonl + intel-feed.json within the last max_hours."""
     cutoff = time.time() - (max_hours * 3600)
     events = []
+
+    # Load from intel-log.jsonl
     try:
         with open(INTEL_LOG, "r") as f:
             for line in f:
@@ -44,13 +47,38 @@ def load_events(max_hours=48):
                     ev = json.loads(line)
                     ts = ev.get("ts") or ev.get("logged_at") or 0
                     if ts >= cutoff:
-                        ev["_ts"] = ts  # normalize
+                        ev["_ts"] = ts
                         events.append(ev)
                 except json.JSONDecodeError:
                     continue
     except FileNotFoundError:
         print(f"No intel log at {INTEL_LOG}", file=sys.stderr)
-        return []
+
+    # Load from intel-feed.json (OSINT events with actual text)
+    seen_texts = set()
+    try:
+        with open(INTEL_FEED, "r") as f:
+            feed = json.load(f)
+        feed_events = feed if isinstance(feed, list) else feed.get("events", feed.get("data", []))
+        for ev in feed_events:
+            ts = ev.get("ts", 0)
+            if ts < cutoff:
+                continue
+            text = (ev.get("notes") or ev.get("text") or "").strip()
+            if not text or text in seen_texts:
+                continue
+            seen_texts.add(text)
+            events.append({
+                "_ts": ts,
+                "type": "osint",
+                "src": ev.get("src", ev.get("source", "")),
+                "text": text,
+                "loc": ev.get("location", ev.get("loc", "")),
+                "side": ev.get("side", ""),
+            })
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Could not load intel-feed.json: {e}", file=sys.stderr)
+
     return sorted(events, key=lambda e: e.get("_ts", 0), reverse=True)
 
 def filter_events(events, hours):
@@ -122,7 +150,9 @@ Return a JSON object with two keys:
 
 Keep each brief under 300 words. Quality over quantity."""
 
-USER_PROMPT_TEMPLATE = """Generate a situation brief from these {count} intel events from the last {window}:
+USER_PROMPT_TEMPLATE = """CONTEXT: This is Day 24 of the US-Israel military campaign against Iran. Trump issued a 48-hour Hormuz ultimatum on March 21 — deadline is tonight (March 23, 23:44 UTC). Iran has threatened to mine the Strait if the US launches a ground operation. The conflict includes Israeli/US airstrikes on Iran and Iranian missile counterstrikes on Israel (including at Dimona nuclear area, Haifa, Eilat) and US bases.
+
+Generate a situation brief from these {count} intel events from the last {window}:
 
 {events}
 
