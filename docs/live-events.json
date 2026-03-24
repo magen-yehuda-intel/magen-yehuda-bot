@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "15:22:48",
-      "ts": 1774354968,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d7\u05e0\u05d9\u05ea\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens in northern border villages near Lebanon with recent OSINT referencing southern Lebanon strikes strongly indicate a Hezbollah launch from Lebanon.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.96,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "15:38:35",
       "ts": 1774355915,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.62,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "00:44:49",
+      "ts": 1774388689,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05ea\u05dc \u05d0\u05d1\u05d9\u05d1 - \u05d3\u05e8\u05d5\u05dd \u05d4\u05e2\u05d9\u05e8 \u05d5\u05d9\u05e4\u05d5",
+      "desc": "Ballistic missile (Fateh-110/Emad) \u2014 Mass sirens across center and south plus IDF OSINT confirming missiles launched from Iran indicate a coordinated Iranian ballistic salvo.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774388163
+  "updated": 1774388689
 }
