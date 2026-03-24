@@ -1,24 +1,6 @@
 {
   "events": [
     {
-      "date": "2026-03-23",
-      "time": "23:04:16",
-      "ts": 1774296256,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
-      "desc": "Ballistic missile (Burkan) \u2014 Sirens are confined to Eilat/Arava area and OSINT explicitly says an Iranian missile toward Eilat by the Red Sea, indicating a Yemen-origin long-range strike.",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
       "date": "2026-03-24",
       "time": "00:40:48",
       "ts": 1774302048,
@@ -361,7 +343,25 @@
       "weapon_type": "rocket",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "04:59:00",
+      "ts": 1774317540,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d1\u05d9\u05d1\u05d9\u05dd",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Although the sirens are concentrated in northern border communities, the OSINT explicitly states missiles were launched from Iran toward Israel, which supersedes th",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774317267
+  "updated": 1774317540
 }
