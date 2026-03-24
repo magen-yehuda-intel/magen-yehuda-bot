@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "12:28:43",
-      "ts": 1774344523,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e7\u05e8\u05d9\u05d9\u05ea \u05e9\u05de\u05d5\u05e0\u05d4",
-      "desc": "Rocket barrage \u2014 Kiryat Shmona is a northern border siren area and the OSINT context points to Hezbollah activity in southern Lebanon rather than a wider Iranian strike pattern.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.89,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "13:30:11",
       "ts": 1774348211,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.89,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "19:58:20",
+      "ts": 1774371500,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d7\u05de\u05ea \u05d2\u05d3\u05e8",
+      "desc": "Rocket barrage \u2014 The active sirens are concentrated across northern Israel and the Golan/Upper Galilee, and recent OSINT explicitly references Hezbollah rocket fire in northern Israel from Lebanon.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.96,
+      "live": true
     }
   ],
-  "updated": 1774369861
+  "updated": 1774371500
 }
