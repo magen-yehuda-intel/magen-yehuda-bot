@@ -718,7 +718,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   #oref-banner { left:0; right:0; top:80px; padding:4px 8px; box-sizing:border-box; overflow:hidden; }
   #oref-banner .oref-title { font-size:9px; gap:3px; letter-spacing:0.5px; }
   #oref-banner .oref-status { font-size:10px; }
-  #trump-countdown { font-size:8px !important; padding:1px 4px !important; }
+  #breaking-banner { font-size:8px !important; padding:1px 4px !important; }
   .oref-title .oref-shield { font-size:10px; }
   #map { left:0; top:122px; bottom:76px; }
   #chips { left:8px; bottom:60px; gap:4px; }
@@ -945,7 +945,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
     <span class="oref-shield">🛡</span>
     PIKUD HAOREF
     <span id="oref-conn" style="margin-left:6px;font-size:9px;color:#22c55e">● Live</span>
-    <span id="trump-countdown" title="Trump Hormuz ultimatum deadline" onclick="showTrumpInfo(event)" style="margin-left:12px;font-family:var(--font-mono,monospace);font-size:11px;color:#ff6666;white-space:nowrap;background:rgba(180,0,0,0.35);border:1px solid rgba(255,68,68,0.5);border-radius:4px;padding:2px 8px;letter-spacing:0.5px;cursor:pointer">🇺🇸 HORMUZ <span id="trump-timer" style="font-weight:700">--:--:--</span></span>
+    <span id="breaking-banner" onclick="showBreakingInfo(event)" style="display:none;margin-left:12px;font-family:var(--font-mono,monospace);font-size:11px;color:#ff6666;white-space:nowrap;background:rgba(180,0,0,0.35);border:1px solid rgba(255,68,68,0.5);border-radius:4px;padding:2px 8px;letter-spacing:0.5px;cursor:pointer"><span id="breaking-label">BREAKING</span></span>
     <span style="margin-left:auto;font-size:9px;color:var(--text-dim);cursor:pointer" id="oref-updated"></span>
   </div>
   <div class="oref-status safe" id="oref-status">✅ All Clear</div>
@@ -2784,48 +2784,35 @@ updateClock();
 // ═══════════════════════════════════════════════════════════
 
 // Trump Hormuz ultimatum info popup
-function showTrumpInfo(e) {
+// Breaking news banner — hidden by default
+// To show: window._showBreaking('🔴 BREAKING TEXT', '<popup html>');
+// To hide: window._hideBreaking();
+var _breakingPopupHtml = '';
+function showBreakingInfo(e) {
   e.stopPropagation();
-  let pop = document.getElementById('trump-info-popup');
+  if (!_breakingPopupHtml) return;
+  let pop = document.getElementById('breaking-info-popup');
   if (pop) { pop.remove(); return; }
   pop = document.createElement('div');
-  pop.id = 'trump-info-popup';
-  pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(10,15,30,0.96);border:1px solid rgba(255,68,68,0.4);border-radius:10px;padding:20px 24px;max-width:340px;color:#e5e5e5;font-family:var(--font-body);font-size:13px;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,0.6);backdrop-filter:blur(12px)';
-  pop.innerHTML = `<div style="font-size:16px;font-weight:700;color:#ff6666;margin-bottom:10px">🇺🇸 Trump Hormuz Ultimatum</div>
-    <div style="margin-bottom:8px">On <b>March 21, 2026</b>, President Trump issued a <b>48-hour ultimatum to Iran</b>: cease all interference with shipping in the <b>Strait of Hormuz</b> or face military consequences.</div>
-    <div style="margin-bottom:8px">Iran has been seizing tankers and disrupting oil shipments through the strait, a chokepoint for <b>~20% of global oil supply</b>.</div>
-    <div style="color:#999;font-size:11px">Deadline: Mon Mar 23, 7:44 PM ET</div>
-    <div onclick="this.parentElement.remove()" style="margin-top:12px;text-align:center;color:#ff6666;cursor:pointer;font-size:11px;opacity:0.7">tap to close</div>`;
+  pop.id = 'breaking-info-popup';
+  pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:rgba(10,15,30,0.96);border:1px solid rgba(255,68,68,0.4);border-radius:10px;padding:20px 24px;max-width:380px;color:#e5e5e5;font-family:var(--font-body);font-size:13px;line-height:1.6;box-shadow:0 8px 32px rgba(0,0,0,0.6);backdrop-filter:blur(12px)';
+  pop.innerHTML = _breakingPopupHtml + '<div onclick="this.parentElement.remove()" style="margin-top:12px;text-align:center;color:#ff6666;cursor:pointer;font-size:11px;opacity:0.7">tap to close</div>';
   document.body.appendChild(pop);
   setTimeout(() => { document.addEventListener('click', function rm() { if(pop.parentElement) pop.remove(); document.removeEventListener('click',rm); }, {once:true}); }, 100);
 }
-
-// Trump ultimatum countdown — Mon March 23, 2026 7:44 PM ET (23:44 UTC)
-(function initTrumpCountdown() {
-  const DEADLINE = new Date('2026-03-23T23:44:00Z').getTime();
-  const el = document.getElementById('trump-timer');
-  const wrap = document.getElementById('trump-countdown');
-  if (!el || !wrap) return;
-  function tick() {
-    const diff = DEADLINE - Date.now();
-    if (diff <= 0) {
-      el.textContent = 'EXPIRED';
-      el.style.color = '#ff0000';
-      wrap.style.animation = 'pulse-red 1s infinite';
-      return;
-    }
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor((diff % 3600000) / 60000);
-    const s = Math.floor((diff % 60000) / 1000);
-    el.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    if (h < 2) { el.style.color = '#ff0000'; wrap.style.borderColor = '#ff0000'; }
-    else if (h < 6) { el.style.color = '#ff6600'; }
-    else if (h < 12) { el.style.color = '#ffaa00'; }
-    else { el.style.color = '#ff6666'; }
-  }
-  tick();
-  setInterval(tick, 1000);
-})();
+window._showBreaking = function(label, popupHtml) {
+  const el = document.getElementById('breaking-banner');
+  const lb = document.getElementById('breaking-label');
+  if (!el || !lb) return;
+  lb.innerHTML = label;
+  _breakingPopupHtml = popupHtml || '';
+  el.style.display = 'inline';
+  el.style.animation = 'pulse-red 1.5s infinite';
+};
+window._hideBreaking = function() {
+  const el = document.getElementById('breaking-banner');
+  if (el) { el.style.display = 'none'; el.style.animation = ''; }
+};
 
 renderAllLayers();
 loadConfig(); // Restore saved layer preferences from localStorage
