@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "15:44:11",
-      "ts": 1774356251,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e6\u05d5\u05d7\u05e8",
-      "desc": "Ballistic missile (Kheibarshekan/Emad/Sejjil) \u2014 Active sirens in the Beersheba and central Negev area combined with OSINT explicitly stating missiles launched from Iran and IRGC strike claims indicate",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "16:34:30",
       "ts": 1774359270,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.72,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "01:42:41",
+      "ts": 1774392161,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Eilat/Arava sirens combined with IDF OSINT explicitly stating missiles launched from Iran indicate an Iranian ballistic missile attack.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774391944
+  "updated": 1774392161
 }
