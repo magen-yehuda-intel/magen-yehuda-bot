@@ -85,7 +85,7 @@ def filter_events(events, hours):
     cutoff = time.time() - (hours * 3600)
     return [e for e in events if e.get("_ts", 0) >= cutoff]
 
-def events_to_text(events, max_chars=8000):
+def events_to_text(events, max_chars=5000):
     """Convert events to compact text for LLM prompt."""
     lines = []
     for e in events:
@@ -167,7 +167,7 @@ def call_llm(events_text, count, window_label, token):
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": user_msg}
         ],
-        "max_completion_tokens": 2000,
+        "max_completion_tokens": 4000,
     }
 
     req = urllib.request.Request(
@@ -184,15 +184,40 @@ def call_llm(events_text, count, window_label, token):
         with urllib.request.urlopen(req, timeout=60) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             content = data["choices"][0]["message"]["content"]
+            # Debug: log raw response
+            print(f"[DEBUG {window_label}] Raw LLM response ({len(content)} chars): {content[:300]}...", file=sys.stderr)
+            print(f"[DEBUG {window_label}] Full API response keys: {list(data.keys())}", file=sys.stderr)
+            choice = data["choices"][0]
+            print(f"[DEBUG {window_label}] finish_reason={choice.get('finish_reason')}, content_filter={choice.get('content_filter_results','none')}", file=sys.stderr)
+            if not content:
+                print(f"[DEBUG {window_label}] EMPTY — full choice: {json.dumps(choice)[:500]}", file=sys.stderr)
             # Try direct JSON parse first
             try:
                 return json.loads(content)
             except json.JSONDecodeError:
-                # Extract JSON from markdown code block
+                # Try extracting from markdown code block
                 import re
-                m = re.search(r'\{[\s\S]*\}', content)
-                if m:
-                    return json.loads(m.group())
+                # Strip ```json ... ``` wrapper if present
+                stripped = re.sub(r'^```(?:json)?\s*', '', content.strip())
+                stripped = re.sub(r'\s*```$', '', stripped.strip())
+                try:
+                    return json.loads(stripped)
+                except json.JSONDecodeError:
+                    pass
+                # Try fixing common issues: unescaped newlines in strings
+                fixed = stripped.replace('\n', '\\n').replace('\r', '')
+                try:
+                    return json.loads(fixed)
+                except json.JSONDecodeError:
+                    pass
+                # Last resort: extract "en" and "he" values manually
+                en_m = re.search(r'"en"\s*:\s*"((?:[^"\\]|\\.)*)"', content, re.DOTALL)
+                he_m = re.search(r'"he"\s*:\s*"((?:[^"\\]|\\.)*)"', content, re.DOTALL)
+                if en_m or he_m:
+                    return {
+                        "en": en_m.group(1).replace('\\n', '\n') if en_m else "",
+                        "he": he_m.group(1).replace('\\n', '\n') if he_m else ""
+                    }
                 print(f"Could not parse LLM response: {content[:200]}", file=sys.stderr)
                 return None
     except Exception as e:
