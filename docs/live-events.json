@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "02:08:15",
-      "ts": 1774307295,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d2\u05d1\u05e2\u05d5\u05ea \u05e2\u05d3\u05df",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Widespread sirens across south and center combined with OSINT explicitly stating missiles launched from Iran and inbound to central and southern Israel indicates an",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "02:10:19",
       "ts": 1774307419,
       "lat": 32.085,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.9,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "10:00:57",
+      "ts": 1774335657,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Hamas",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e0.\u05e2.\u05de",
+      "desc": "Rocket barrage \u2014 The sirens are concentrated in the western Negev/Gaza envelope and Beersheba-area south, matching a southern rocket barrage from Gaza rather than a long-range multi-region attack.",
+      "severity": "critical",
+      "origin_lat": 31.42,
+      "origin_lon": 34.35,
+      "source_country": "gaza",
+      "weapon_type": "rocket",
+      "confidence": 0.94,
+      "live": true
     }
   ],
-  "updated": 1774335561
+  "updated": 1774335657
 }
