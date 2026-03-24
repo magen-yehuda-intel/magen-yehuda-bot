@@ -1,31 +1,30 @@
 {
-  "generated_at": "2026-03-24T10:02:14.123149+00:00",
+  "generated_at": "2026-03-24T10:32:23.840590+00:00",
   "briefs": {
     "0.5": {
       "en": "<p>Brief generation failed for 30 minutes window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
-      "count": 24
+      "count": 22
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 84
+      "count": 81
     },
     "6": {
-      "en": "<h3>Current Snapshot — Day 24, 6‑hour update</h3><ul><li><b>Ongoing strikes:</b> IDF and US airstrikes continue across Iran. Iran continues missile strikes on Israel (recent strikes hit Tel Aviv area).</li><li><b>Northern Border / Lebanon:</b> IDF struck Hezbollah infrastructure and headquarters in Beirut. Reports of two killed in Beirut. IDF destroyed Hezbollah weapons compound and a tunnel shaft (Mountains Brigade).</li><li>Tel Aviv strike detail: Open-source reports claim Iran used a new missile/warhead — single missile releasing multiple ~100kg sub‑warheads. Investigations ongoing.</li><li>Domestic Israel measures: Government preparing to extend state of emergency to April 14.</li><li>Iraq & Syria theatre: US completed evacuation of Victoria Base; US forces struck PMU/PMF positions after ceasefire lapse. Deadly air attacks hit Iran‑backed PMF in Iraq.</li><li>Maritime / Hormuz: 48‑hour US ultimatum to Tehran expires tonight (23:44 UTC). Iran has threatened to mine the Strait if a US ground operation begins.</li><li>International moves: FlightScan shows airports in Iran and Iraq closed. NATO political backing reported; Saudi/UAE reportedly considering direct involvement (unconfirmed trend report).</li><li>Economy & comms: Iran internet blackout continues (24th day). Asian stocks pressured on oil‑shock fears; AWS Bahrain region disruption reported after drone activity.</li><li>Information warfare: IDF claims 3,000+ strikes in Iran since operation start. Tehran denies talks; White House says negotiations fluid.</li><li>🟢 Good News: IDF reports tactical successes — Hezbollah weapons site and tunnel shaft destroyed; US evacuation completed without reported casualties.</li></ul><b>Threat assessment:</b> Escalating.",
-      "he": "<h3 dir=\"rtl\">סיכום מצב — יום 24, עדכון 6 שעות</h3><ul dir=\"rtl\"><li><b>תקיפות שוטפות:</b> מטסי תקיפה של צה\"ל והארה\"ב ממשיכים על מטרות באיראן. איראן ממשיכה שיגור טילים לעבר ישראל (פגיעה באיזור תל‑אביב).</li><li><b>גבול צפון / לבנון:</b> צה\"ל תקף תשתיות וארמונות של חיזבאללה בביירות. דווח על שני הרוגים בביירות. צה\"ל השמיד מחסן אמל\"ח וציר מנהרה (חטיבת ההרים).</li><li>ליל תקיפה על תל‑אביב: מקורות פתוחים מדווחים על שימוש בטיל/ראש קרב חדש שמשחרר כמה תת‑ראשי משקל ~100 ק\"ג. בדיקה נמשכת.</li><li>צעדים פנימיים בישראל: מתכננים להאריך מצב חירום עד 14.4.</li><li>עיראק וסוריה: כוחות ארה\"ב השלימו פינוי מבסיס ויקטוריה; כוחות ארה\"ב תקפו עמדות מיליציות לאחר קרע בהפסקת האש. תקיפות אוויריות קטלניות פגעו בכוחות פרו‑איראניים בעיראק.</li><li>ימי־תעבורה / הורמוז: אולטימטום ארה\"ב לטרהאן יפוג הערב (23:44 UTC). איראן איימה להונאות את מצר הורמוז במקרה של מבצע קרקעי אמריקאי.</li><li>מהלכים בינלאומיים: FlightScan — נמלי תעופה באיראן ובעיראק סגורים. דיווחים על גיבוי פוליטי נאט\"ו; סעודיה/אבו־דאבי מדווחות כי שוקלות מעורבות ישירה (מגמה, לא מאומתת באופן מלא).</li><li>כלכלה ותשתיות: שיתוק אינטרנט באיראן נמשך (יום 24). שווקים אסייתיים תחת לחץ מפני זעזועי מחירי נפט; הפרעת שירות AWS בבחריין גלויה לאחר פעילות רחפנים.</li><li>לוחמה מידעית: צה\"ל טוען ל‑3,000+ תקיפות על איראן מאז תחילת המבצע. טהרן מכחישה שיחות; הבית הלבן מכנה את המצב זורם.</li><li>🟢 חדשות טובות: צה\"ל מדווח על הצלחות טקטיות — השמדת אתר אמל\"ח ומנהרה; פינוי אמריקאי מבוצע ללא דיווח על נפגעים.</li></ul><b>הערכת איום:</b> מתבהר/בעירה (Escalating).",
-      "count": 248,
-      "window": "6 hours"
+      "en": "<p>Brief generation failed for 6 hours window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
+      "count": 240
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1285
+      "count": 1287
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 2268
+      "count": 2263
     }
   }
 }
