@@ -1,31 +1,30 @@
 {
-  "generated_at": "2026-03-24T04:31:58.244481+00:00",
+  "generated_at": "2026-03-24T05:01:51.830818+00:00",
   "briefs": {
     "0.5": {
-      "en": "<h3>Day 24 — Situation Report</h3>\n<ul>\n<li><b>Active launches reported:</b> Multiple reports in last 30 minutes of missile/rocket launches from Iran toward the Negev and Dead Sea. Track for interceptions and damage reports.</li>\n\n<li><b>Strikes on Iranian energy infrastructure:</b> US/Israeli strikes reported on energy facilities in Isfahan and Khorramshahr (gas administration building, pressure-reduction station). Targets indicate escalation to civilian energy nodes.</li>\n\n<li><b>Airspace / airports:</b> Flight-scan shows airports closed in Iran, Iraq and Lebanon. Civilian air traffic disrupted regionally.</li>\n\n<li><b>Strait of Hormuz / Diplomacy:</b> European Commission President von der Leyen said Europe will only send a mission to the Strait after the US‑Israel war ends. Reduces chance of an imminent multinational escort mission.</li>\n\n<li><b>Domestic Iranian picture:</b> Large pro-war demonstrations reported in major Iranian cities calling to continue the conflict. Signals regime mobilization and domestic political support for escalation.</li>\n\n<li><b>Intelligence note:</b> Multiple open-source telegram/rss posts in the last 30 minutes. Prioritize verification from military/intel channels before acting on tactical claims.</li>\n</ul>\n\n<b>Threat assessment:</b> Escalating.",
-      "he": "<div dir=\"rtl\"><h3>יום 24 — דוח מצב</h3>\n<ul>\n<li><b>ירי פעיל מדווח:</b> דוחות מרובים ב-30 הדקות האחרונות על שיגורים ממדינת איראן לעבר הנגב וים המוות. במעקב אחר יירוטים ונזק.</li>\n\n<li><b>פגיעה בתשתיות אנרגיה באיראן:</b> דיווחים על תקיפות אמריקאיות/ישראליות באתרי אנרגיה באיספהאן ובחורמסהר (משרדי גז, תחנת הפחתת לחץ). בחירת יעדים מצביעה על הסלמה לעבר תשתיות אזרחיות.</li>\n\n<li><b>מנעדי טיס ונתיבי אוויר:</b> דיווחי flight-scan — שדות תעופה סגורים באיראן, עיראק ולבנון. שיבוש תעבורת נוסעים אזורית.</li>\n\n<li><b>מפרץ הורמוז / דיפלומטיה:</b> נשיאת הנציבות האירופית פון דר ליין הצהירה שאירופה תשלח משימה למפרץ רק לאחר סיום המלחמה בין ארה\"ב לישראל לאיראן. מקטין סיכוי למשלחות חילוניות מיידיות.</li>\n\n<li><b>מצב פנימי באיראן:</b> הככרות המוניות בעיירות הגדולות קוראות להמשך המלחמה. רמז למוביליות משטרית וללחץ פנימי להסלמה.</li>\n\n<li><b>הערת מודיעין:</b> מספר דיווחים בטלגרם ו‑RSS ב-30 הדקות האחרונות. יש לאמת מול ערוצי צבא/מודיעין לפני החלטות שדה.</li>\n</ul>\n\n<b>הערכת איום:</b> מדרדר.</div>",
-      "count": 30,
-      "window": "30 minutes"
+      "en": "<p>Brief generation failed for 30 minutes window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
+      "count": 17
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 70
+      "count": 61
     },
     "6": {
       "en": "<p>Brief generation failed for 6 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 237
+      "count": 236
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1334
+      "count": 1327
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 2259
+      "count": 2262
     }
   }
 }
