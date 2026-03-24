@@ -1,31 +1,30 @@
 {
-  "generated_at": "2026-03-24T14:42:23.608136+00:00",
+  "generated_at": "2026-03-24T14:52:04.386608+00:00",
   "briefs": {
     "0.5": {
       "en": "<p>Brief generation failed for 30 minutes window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
-      "count": 34
+      "count": 28
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 136
+      "count": 130
     },
     "6": {
-      "en": "<h3>Situation Report — Day 24 (last 6 hrs)</h3><ul><li><b>Active strikes/sirens:</b> Iranian forces reported strikes on Dimona, Eilat, northern Tel Aviv and several US bases. Tehran-state outlets also reported strikes on Rafael and Israel Aerospace Industries facilities in Haifa.</li><li><b>Deadline tonight:</b> Trump’s 48‑hr Hormuz ultimatum expires today at 23:44 UTC. Iran has warned it will mine the Strait if the US launches a ground operation.</li><li>Northern border / Lebanon: IDF conducted airstrikes across Lebanon targeting fuel depots funding Hezbollah. Golani Brigade raid killed 8 Hezbollah operatives. Missile debris and at least one Iranian missile impact reported in Lebanon and Jordan.</li><li>Negev / home front: Missile fragments from interceptions hit the Negev; several wounded reported. Debris from interceptions fell in Keserwan (Lebanon) and other coastal areas.</li><li>US & regional military: Multiple US bases reported struck. Flight-scan indicates Iran and Iraq airports closed.</li><li>Diplomacy / politics: Pakistan offered to host US‑Iran talks and is actively mediating. Tehran officially rejects a unilateral ceasefire and seeks broad guarantees. Lebanon declared an Iranian diplomat persona non grata.</li><li>Alliances & equipment: Israel transferred an Arrow‑3 system to Germany (defense cooperation continues). Reports an Emirati serviceman died in Bahrain during Iranian attacks.</li><li>Tactical context: This is another concentrated IRGC missile phase and simultaneous strike set — continuation of pattern since February. Targeting now includes strategic industrial sites and nuclear-area strikes near Dimona.</li><li>🟢 Good News: Successful interceptions reported. IDF eliminated hostile cells in Lebanon. Pakistan’s mediation offer creates a diplomatic channel.</li><li><b>Threat assessment:</b> Escalating.</li></ul>",
-      "he": "<h3 dir=\"rtl\">דוח מצב — יום 24 (6 השעות האחרונות)</h3><ul dir=\"rtl\"><li><b>ירי/אזעקות פעילים:</b> גורמים איראניים דיווחו על תקיפות על דימונה, אילת, צפון ת\"א וכמה בסיסים אמריקאיים. סוכנויות טלוזורת מדינתיות דיווחו גם על פגיעה באתרי תעשייה של רפאל וחברת התעשייה האווירית בחיפה.</li><li><b>מועד אחרון הלילה:</b> אולטימטום הורמוז של טראמפ מסתיים היום ב‑23:44 UTC. איראן איימה להטביע את המיצר אם תחל פעולה קרקעית של ארה\"ב.</li><li>גבול צפון / לבנון: צה\"ל תקף תחנות דלק המממנות חיזבאללה. לוחמי גולני חיסלו 8 לוחמי חיזבאללה במבצע קרקעי. שברי טילים וירי איראני דווחו בלבנון ובירדן.</li><li>נגב / חזית הביתית: שברי טילים מפגיעות שניירו יורדים בנגב; כמה נפצעו. שברי יירוט נפלו באזור קסרוואן וחופי לבנון.</li><li>ארה\"ב ואזור: דיווחים על פגיעה במספר בסיסים אמריקאיים. נתוני תעופה מראים שדות תעופה באירן ועיראק סגורים.</li><li>דיפלומטיה/פוליטיקה: פקיסטן הציעה לארח שיחות ופעילה בתיווך. איראן דוחה הפסקת אש חד‑צדדית ודורשת ערבויות רחבות. לבנון הכריזה על דיפלומט איראני כפדרה בלתי רצויה.</li><li>בריתות וחימוש: ישראל העבירה מערכת Arrow‑3 לגרמניה — שיתוף פעולה צבאי נמשך. דווח על מותו של חייל אמירתי בבחריין במהלך התקפות איראניות.</li><li>הקשר taktי: שלב נוסף של תקיפות וטילים של משמרות המהפכה. יעדים כוללים כעת מתקנים תעשייתיים ואתרים בסמיכות לדימונה.</li><li>🟢 חדשות טובות: יירוטים הצליחו. צה\"ל חיסל חוליות אויב בלבנון. הצעת תיווך מפקיסטן פותחת ערוץ דיפלומטי.</li><li><b>הערכת איום:</b> בעלייה.</li></ul>",
-      "count": 408,
-      "window": "6 hours"
+      "en": "<p>Brief generation failed for 6 hours window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
+      "count": 410
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1270
+      "count": 1264
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 2397
+      "count": 2398
     }
   }
 }
