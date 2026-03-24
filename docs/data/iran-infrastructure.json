@@ -10,7 +10,7 @@
     },
     {
       "name": "Shahid Abbaspour Dam (Karun-1)",
-      "lat": 32.140,
+      "lat": 32.14,
       "lon": 48.507,
       "type": "hydro",
       "capacity_mw": 2000,
@@ -51,7 +51,7 @@
     {
       "name": "Dez Dam",
       "lat": 32.733,
-      "lon": 48.400,
+      "lon": 48.4,
       "type": "hydro",
       "capacity_mw": 520,
       "desc": "Historic dam completed 1963, Khuzestan province"
@@ -66,8 +66,8 @@
     },
     {
       "name": "Shahid Salimi Neka Combined Power Plant",
-      "lat": 36.650,
-      "lon": 53.300,
+      "lat": 36.65,
+      "lon": 53.3,
       "type": "combined_cycle",
       "capacity_mw": 2214,
       "desc": "Largest gas-fired plant in Mazandaran, natural gas primary fuel"
@@ -114,7 +114,7 @@
     },
     {
       "name": "Aliabad Katool Combined Power Plant",
-      "lat": 37.250,
+      "lat": 37.25,
       "lon": 55.167,
       "type": "combined_cycle",
       "capacity_mw": 1500,
@@ -151,20 +151,52 @@
       "type": "combined_cycle",
       "capacity_mw": 1042,
       "desc": "Razavi Khorasan province, completed 1993"
+    },
+    {
+      "name": "Isfahan Gas Administration (STRUCK)",
+      "lat": 32.654,
+      "lon": 51.676,
+      "type": "gas",
+      "capacity_mw": null,
+      "desc": "Gas distribution admin building on Kaveh St — struck by US 24 Mar 2026"
+    },
+    {
+      "name": "Isfahan Pressure-Reduction Station (STRUCK)",
+      "lat": 32.648,
+      "lon": 51.681,
+      "type": "gas",
+      "capacity_mw": null,
+      "desc": "Natural gas pressure-reduction station on Kaveh St — struck by US 24 Mar 2026"
+    },
+    {
+      "name": "Khorramshahr Energy Facility (STRUCK)",
+      "lat": 30.44,
+      "lon": 48.166,
+      "type": "energy",
+      "capacity_mw": null,
+      "desc": "Energy infrastructure in Khorramshahr — struck by US 24 Mar 2026"
+    },
+    {
+      "name": "Abadan Refinery",
+      "lat": 30.339,
+      "lon": 48.303,
+      "type": "refinery",
+      "capacity_mw": null,
+      "desc": "Oldest and one of largest refineries in Iran, 400k bpd capacity, near Khorramshahr"
     }
   ],
   "IRAN_WATER": [
     {
       "name": "Golestan Dam",
       "lat": 37.383,
-      "lon": 55.950,
+      "lon": 55.95,
       "type": "dam",
       "desc": "Major water storage, Golestan province, irrigation and flood control"
     },
     {
       "name": "Amir Kabir Dam",
       "lat": 35.833,
-      "lon": 50.950,
+      "lon": 50.95,
       "type": "dam",
       "desc": "Karaj Dam, supplies water to Tehran, completed 1961"
     },
@@ -178,20 +210,20 @@
     {
       "name": "Manjil Dam",
       "lat": 36.733,
-      "lon": 49.400,
+      "lon": 49.4,
       "type": "dam",
       "desc": "Gilan province, completed 1962, Sefidrud River"
     },
     {
       "name": "Lar Dam",
-      "lat": 35.950,
+      "lat": 35.95,
       "lon": 52.133,
       "type": "dam",
       "desc": "Tehran province water supply, high altitude reservoir"
     },
     {
       "name": "Qeshm Desalination Plant",
-      "lat": 26.950,
+      "lat": 26.95,
       "lon": 55.633,
       "type": "desal",
       "desc": "Island desalination facility, Persian Gulf coast"
@@ -233,8 +265,8 @@
     },
     {
       "name": "Isfahan Water Treatment",
-      "lat": 32.650,
-      "lon": 51.650,
+      "lat": 32.65,
+      "lon": 51.65,
       "type": "treatment",
       "desc": "Central Iran regional water treatment facility"
     },
@@ -249,8 +281,8 @@
   "IRAN_TELECOM": [
     {
       "name": "Tehran Internet Exchange",
-      "lat": 35.700,
-      "lon": 51.400,
+      "lat": 35.7,
+      "lon": 51.4,
       "type": "ixp",
       "desc": "Primary national internet exchange point, Tehran"
     },
@@ -270,7 +302,7 @@
     },
     {
       "name": "Iran-UAE Submarine Cable",
-      "lat": 26.950,
+      "lat": 26.95,
       "lon": 55.633,
       "type": "cable_landing",
       "desc": "Persian Gulf submarine cable landing, Qeshm"
@@ -291,8 +323,8 @@
     },
     {
       "name": "Isfahan Telecom Center",
-      "lat": 32.650,
-      "lon": 51.650,
+      "lat": 32.65,
+      "lon": 51.65,
       "type": "switching",
       "desc": "Central Iran telecommunications switching center"
     },
@@ -370,7 +402,7 @@
     },
     {
       "name": "Imam Khomeini Airport",
-      "lat": 35.410,
+      "lat": 35.41,
       "lon": 51.153,
       "type": "airport",
       "desc": "Tehran's main international airport, largest in Iran"
@@ -391,7 +423,7 @@
     },
     {
       "name": "Isfahan Airport",
-      "lat": 32.750,
+      "lat": 32.75,
       "lon": 51.861,
       "type": "airport",
       "desc": "Central Iran regional hub"
@@ -412,7 +444,7 @@
     },
     {
       "name": "Jolfa Border Railway",
-      "lat": 38.950,
+      "lat": 38.95,
       "lon": 45.633,
       "type": "rail_junction",
       "desc": "Azerbaijan border connection, bogie-changing station"
@@ -429,20 +461,20 @@
     {
       "name": "Mobarakeh Steel Company",
       "lat": 32.333,
-      "lon": 51.500,
+      "lon": 51.5,
       "type": "steel",
       "desc": "Largest steel producer in Middle East and North Africa"
     },
     {
       "name": "Isfahan Steel Company",
       "lat": 32.617,
-      "lon": 51.650,
+      "lon": 51.65,
       "type": "steel",
       "desc": "First constructional steel manufacturer in Iran, still largest"
     },
     {
       "name": "Khouzestan Steel Company",
-      "lat": 31.450,
+      "lat": 31.45,
       "lon": 48.683,
       "type": "steel",
       "desc": "Major steel production facility, southwest Iran"
@@ -484,21 +516,21 @@
     },
     {
       "name": "Tehran Cement",
-      "lat": 35.600,
-      "lon": 51.600,
+      "lat": 35.6,
+      "lon": 51.6,
       "type": "cement",
       "desc": "Capital region cement manufacturing"
     },
     {
       "name": "Isfahan Cement",
-      "lat": 32.650,
-      "lon": 51.650,
+      "lat": 32.65,
+      "lon": 51.65,
       "type": "cement",
       "desc": "Central Iran cement production facility"
     },
     {
       "name": "Gol-e Gohar Iron Ore",
-      "lat": 29.100,
+      "lat": 29.1,
       "lon": 56.867,
       "type": "mining",
       "desc": "Largest iron ore mining complex, Kerman province"
