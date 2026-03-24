@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "02:21:38",
-      "ts": 1774308098,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d0\u05d1\u05df \u05de\u05e0\u05d7\u05dd",
-      "desc": "Rocket barrage \u2014 The active sirens are confined to northern border communities near Lebanon, which most strongly indicates a short-range rocket attack despite unrelated Iran-related OSINT in the feed.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.72,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "02:23:33",
       "ts": 1774308213,
       "lat": 32.085,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "11:24:36",
+      "ts": 1774340676,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d0\u05e4\u05e7",
+      "desc": "Rocket barrage \u2014 The sirens are concentrated in the Haifa Bay and Acre/northern coastal corridor, which matches a northern border rocket salvo more than the Iran-related OSINT, which is not tied to th",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.84,
+      "live": true
     }
   ],
-  "updated": 1774335902
+  "updated": 1774340676
 }
