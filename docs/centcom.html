@@ -2263,7 +2263,7 @@ function renderAllLayers() {
     // Embedded live events — filtered by age (2h max), real data comes from live-events.json fetch
   var _embeddedRaw = [{"date":"2026-03-21","time":"04:20:18","ts":1774056018,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Tel Aviv","desc":"Ballistic missile — Wave 17","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true},{"date":"2026-03-21","time":"02:22:53","ts":1774048973,"lat":32.085,"lon":34.781,"type":"missile","actor":"IRGC","target":"Central Israel","desc":"Ballistic missile barrage — Wave 14","severity":"critical","origin_lat":33.5,"origin_lon":48.5,"source_country":"iran","weapon_type":"ballistic_missile","confidence":0.95,"live":true}];
   var _nowTs = Math.floor(Date.now()/1000);
-  window._liveEvents = _embeddedRaw.filter(function(e){ return (_nowTs - e.ts) < 7200; }); // 2h TTL
+  window._liveEvents = _embeddedRaw.filter(function(e){ return (_nowTs - e.ts) < 900; }); // 15min TTL
   // 3-mode init: off | paths | animated  (default: animated)
   window._missileMode = localStorage.getItem('missileMode') || 'animated';
   if (!localStorage.getItem('missileMode')) { var _old = localStorage.getItem('missileAnim'); if (_old === 'on') window._missileMode = 'animated'; else if (_old === 'off') window._missileMode = 'off'; }
@@ -2381,7 +2381,7 @@ function renderOSINTMarkers(events) {
     count++;
     const ts = ev.timestamp || ev.ts || 0;
     const recent = ts && (now - ts) < 86400;
-    const veryRecent = ts && (now - ts) < 7200; // last 2h
+    const veryRecent = ts && (now - ts) < 900; // last 15min
     const srcName = ev.actor1 || ev.source || ev.src || '';
     const srcUrl = getSrcLink(srcName);
     const srcHtml = srcUrl
@@ -3304,7 +3304,7 @@ setInterval(() => { if (activeState.aircraft && aircraftMode > 0) loadAircraft()
 function loadTrail(icao24, lat, lon) {
   if (_activeTrail) { map.removeLayer(_activeTrail); _activeTrail = null; }
   const now = Math.floor(Date.now()/1000);
-  const begin = now - 7200; // last 2h
+  const begin = now - 7200; // last 15min
   const url = `https://opensky-network.org/api/tracks/all?icao24=${icao24}&time=0`;
   const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
   fetch(proxyUrl, {signal: AbortSignal.timeout(10000)}).then(r => r.ok ? r.json() : Promise.reject('proxy'))
@@ -3756,7 +3756,7 @@ function fetchLiveEvents() {
           .then(r => { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
     .then(d => {
       var nowTs = Math.floor(Date.now()/1000);
-      const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon && (nowTs - e.ts) < 7200);
+      const events = (d.events || []).filter(e => e.origin_lat && e.origin_lon && (nowTs - e.ts) < 900);
       window._liveEvents = events;
       // Auto-force animated if fresh critical live event
       if (events.some(e => e.severity === 'critical' && e.live)) {
