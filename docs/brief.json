@@ -1,30 +1,31 @@
 {
-  "generated_at": "2026-03-24T02:31:58.993765+00:00",
+  "generated_at": "2026-03-24T03:02:00.722725+00:00",
   "briefs": {
     "0.5": {
       "en": "<p>Brief generation failed for 30 minutes window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
-      "count": 18
+      "count": 27
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 71
+      "count": 84
     },
     "6": {
-      "en": "<p>Brief generation failed for 6 hours window.</p>",
-      "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 270
+      "en": "<h3><b>ACTIVE: Alarms / Incoming strikes</b></h3><ul><li><b>Alarms & inbound missiles:</b> Central and northern Israel reported alarms. IRGC ballistic launches reported toward Tel Aviv. IDF issued early-warning for northern Israel.</li><li><b>Confirmed strikes:</b> IRGC/TASS claims missile strikes on Dimona and Eilat and on US bases. Israeli search-and-rescue at Arad impact site.</li><li><b>Israeli/US strikes inside Iran:</b> Coalition strikes hit gas pipeline/distribution sites in Isfahan and Khorramshahr.</li><li><b>Lebanon:</b> Israeli strike on a gas station in southern Lebanon (targeting underground fuel/logistics). Israeli evacuation warnings issued for villages near Hezbollah activity. Airstrike reported in Bshamoun/Mount Lebanon.</li><li><b>Iraq / Kurdistan:</b> Reported missile/strike on Erbil. Attack on Al-Hashd Al-Shaabi HQ in Anbar caused multiple casualties.</li><li><b>Logistics & civil impact:</b> Airports closed across Iran, Iraq, Syria, Lebanon. Israel's second-largest airline moved operations to Jordan and Egypt. Flight traffic falling.</li><li><b>Strategic / political:</b> Trump extended his 48-hour Hormuz ultimatum; deadline tonight (Mar 23, 23:44 UTC). Iran warns it will mine the Strait if a US ground operation occurs and says hostilities continue until sanctions lifted.</li><li><b>Markets & diplomacy:</b> Oil and gold volatile. Pakistan said ready to host US–Iran talks. Reports the U.S. is negotiating with a senior Iranian official.</li><li><b>Operational notes:</b> IDF claims 330 of ~470 Iranian ballistic launchers destroyed (~70%). Multiple energy-target strikes mark continuation of campaign against Iranian infrastructure.</li><li><b>🟢 Good News:</b> U.S. reportedly postponed strikes on Iranian power plants for five days; some reports of no injuries from cluster strike in Haifa.</li></ul><h3>Bottom line:</h3><ul><li>Threat assessment: Escalating.</li></ul>",
+      "he": "<h3 dir=\"rtl\"><b>פעיל: אזעקות / שיגורים נכנסים</b></h3><ul dir=\"rtl\"><li><b>אזעקות ושיגורים:</b> אזעקות במרכז ובצפון. דיווחים על שיגורי טילים של משמרות המהפכה לעבר תל‑אביב. אזהרות מוקדמות ליישובי הצפון.</li><li><b>פגיעות מאושרות:</b> משמרות המהפכה טענו לפגיעה בדימונה ובאילת ולפגיעה בבסיסים אמריקאיים. כוחות חילוץ בזירת הפגיעה בארד.</li><li><b>תקיפות ישראל–ארה\"ב בתוך איראן:</b> תקיפות על צנרת גז ומתקני חלוקה באיספהאן ובח'ורמסהר.</li><li><b>לבנון:</b> תקיפת תחנת דלק בדרום לבנון (מכלי דלק תת‑קרקעיים ולוגיסטיקה של חיזבאללה). הודעות פינוי לכפרים סביב פעילות חיזבאללה. תקיפה בבשמונה/הר לבנון.</li><li><b>עיראק/כורדים:</b> דיווח על תקיפה על אירביל. פיצוץ במטה אל‑חשד באנבר — נפגעים רבים.</li><li><b>לוגיסטיקה ואזרחים:</b> נמלי תעופה סגורים באיראן, עיראק, סוריה ולבנון. חברת התעופה השנייה של ישראל העבירה פעילות לירדן ומצרים. תנועת טיסות יורדת.</li><li><b>אסטרטגי/מדיני:</b> טראמפ האריך את אולטימטום המצריים ל‑48 שעות; הדדליין הלילה (23:44 UTC, 23 במרץ). איראן מאיימת לכרות את המיצר אם תתבצע פעולה קרקעית אמריקאית ואומרת שהלחימה עד הסרת הסנקציות.</li><li><b>שווקים ודיפלומטיה:</b> שוק הנפט והזהב תנודתי. פקיסטן הציעה לארח שיחות. דיווחים על משא ומתן אמריקאי עם בכיר איראני.</li><li><b>הערות מבצעיות:</b> צה\"ל טוען שחוסלו/הושבתו ~330 מתוך ~470 משגרים איראניים (כ‑70%). תקיפות על תשתיות אנרגיה נמשכות.</li><li><b>🟢 חדשות טובות:</b> דיווחים שהממשלה האמריקאית דחתה תקיפות על תחנות כוח איראניות למשך חמישה ימים; דיווחים על היעדר פצועים מהתקיפה בארץ בחיפה.</li></ul><h3 dir=\"rtl\">סיכום מצב:</h3><ul dir=\"rtl\"><li>הערכת איום: מתדרגת.</li></ul>",
+      "count": 277,
+      "window": "6 hours"
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1315
+      "count": 1323
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 2266
+      "count": 2285
     }
   }
 }
