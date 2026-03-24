@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "13:44:08",
-      "ts": 1774349048,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d2\u05d1\u05d9\u05dd",
-      "desc": "Ballistic missile \u2014 Simultaneous sirens across the south, center, Jerusalem area, and West Bank with OSINT explicitly stating Iran launches waves of missiles towards Israel indicate an Iranian coordin",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "13:49:55",
       "ts": 1774349395,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "20:01:44",
+      "ts": 1774371704,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d7\u05e6\u05d5\u05e8 \u05d4\u05d2\u05dc\u05d9\u05dc\u05d9\u05ea",
+      "desc": "Rocket barrage \u2014 Active siren in the Upper Galilee near the Lebanon border plus recent OSINT explicitly mentioning Hezbollah rocket fire in northern Israel and launches from Lebanon.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774371611
+  "updated": 1774371704
 }
