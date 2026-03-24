@@ -1,24 +1,6 @@
 {
   "events": [
     {
-      "date": "2026-03-24",
-      "time": "03:28:12",
-      "ts": 1774312092,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d9\u05e2\u05e8\u05d4",
-      "desc": "Rocket barrage \u2014 Active sirens in northern border towns Yaara, Hanita, and Shlomi fit a Hezbollah/Lebanon short-range rocket pattern, with no OSINT indicating another source.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
       "id": "us_strike_isfahan_1774314649",
       "ts": 1774314649,
       "time_utc": "2026-03-24T01:10:49.968888+00:00",
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "13:49:55",
+      "ts": 1774349395,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e0\u05d5\u05d5\u05d4 \u05de\u05d9\u05db\u05d0\u05dc - \u05e8\u05d5\u05d2\u05dc\u05d9\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span north, south, center, and Eilat simultaneously, and OSINT explicitly states missiles were launched from Iran toward Israel.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774349048
+  "updated": 1774349395
 }
