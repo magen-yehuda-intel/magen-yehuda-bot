@@ -1,25 +1,6 @@
 {
   "events": [
     {
-      "id": "us_strike_isfahan_1774314649",
-      "ts": 1774314649,
-      "time_utc": "2026-03-24T01:10:49.968888+00:00",
-      "type": "us_strike",
-      "title": "\ud83c\uddfa\ud83c\uddf8 US strikes Isfahan energy infrastructure",
-      "desc": "Iranian state TV confirms US attacked gas administration building and pressure-reduction station on Kaveh St., Isfahan",
-      "actor": "United States",
-      "weapon": "Cruise missile / air strike",
-      "source": "us",
-      "origin_lat": 29.0,
-      "origin_lon": 50.5,
-      "lat": 32.65,
-      "lon": 51.68,
-      "origin_label": "US forces (Persian Gulf)",
-      "target_label": "Isfahan, Iran",
-      "severity": "critical",
-      "confirmed": true
-    },
-    {
       "id": "us_strike_khorramshahr_1774314649",
       "ts": 1774314649,
       "time_utc": "2026-03-24T01:10:49.968888+00:00",
@@ -361,7 +342,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "14:59:34",
+      "ts": 1774353574,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05d2'\u05d3\u05dc \u05e9\u05de\u05e1",
+      "desc": "Rocket barrage \u2014 M\u05d2'\u05d3\u05dc \u05e9\u05de\u05e1 is a northern Golan area near the Lebanon/Syria border and recent OSINT points to ongoing Israeli strikes in southern Lebanon amid Iranian-related regional tension, making a",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774349395
+  "updated": 1774353574
 }
