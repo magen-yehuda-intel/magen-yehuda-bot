@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "02:20:18",
-      "ts": 1774308018,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d6\u05e8\u05e2\u05d9\u05ea",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Although the active siren is only in Zra'it, recent OSINT explicitly confirms missile launches from Iran with additional reports of strikes toward central, southern",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "02:21:38",
       "ts": 1774308098,
       "lat": 32.794,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "10:05:02",
+      "ts": 1774335902,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e0.\u05e2.\u05de",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Wide southern sirens in the Beersheba/Netivot/Ofaqim area combined with IDF OSINT explicitly stating missiles launched from Iran indicate an Iranian ballistic missi",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774335744
+  "updated": 1774335902
 }
