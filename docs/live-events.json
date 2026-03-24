@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "02:02:40",
-      "ts": 1774306960,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d1\u05e8\u05db\u05d9\u05d4",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Sirens span south, center, and Jerusalem corridor simultaneously and OSINT confirms IRGC missile strikes on Israel, indicating a coordinated Iranian ballistic salvo",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "02:08:15",
       "ts": 1774307295,
       "lat": 32.085,
@@ -361,7 +343,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "09:59:21",
+      "ts": 1774335561,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05e9\u05dc\u05d9\u05dd",
+      "desc": "Ballistic missile (cluster warhead missile) \u2014 The sirens cover a broad south/Arava/Negev region consistent with a long-range Iranian strike, and recent OSINT explicitly reports an Iranian cluster miss",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.9,
+      "live": true
     }
   ],
-  "updated": 1774330348
+  "updated": 1774335561
 }
