@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "13:30:11",
-      "ts": 1774348211,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Although the sirens are in the far north, recent OSINT explicitly reports Iran launching missile waves toward Israel after Israeli strikes on Iran, which fits a coo",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "13:44:08",
       "ts": 1774349048,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.96,
       "live": true
+    },
+    {
+      "date": "2026-03-24",
+      "time": "20:00:11",
+      "ts": 1774371611,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d1\u05d9\u05ea \u05d4\u05e2\u05de\u05e7",
+      "desc": "Ballistic missile (unknown) \u2014 The sirens span the entire north and are accompanied by OSINT explicitly stating missiles were launched from Iran toward Israel, indicating a coordinated long-range balli",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774371500
+  "updated": 1774371611
 }
