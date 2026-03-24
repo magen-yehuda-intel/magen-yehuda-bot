@@ -1,32 +1,30 @@
 {
-  "generated_at": "2026-03-24T02:01:50.963806+00:00",
+  "generated_at": "2026-03-24T02:31:58.993765+00:00",
   "briefs": {
     "0.5": {
-      "en": "<h3>Situation Report — Day 24 (last 30 min)</h3><ul><li><b>Active alerts:</b> Early-warning launch alert for northern Israel. Missile strike reportedly struck Erbil, Iraq.</li></ul><h3>Air / Strike Activity</h3><ul><li>US–Israel struck Iranian energy infrastructure. Reports: pipeline and gas distribution station hit in Fars and Isfahan provinces.</li><li>Israeli strikes struck gas station in southern Lebanon (Al Manah area).</li></ul><h3>Northern Border</h3><ul><li>Early-warning system issued launch alert to northern Israel. Continue shelters and radar coverage.</li></ul><h3>Iraq</h3><ul><li>Missile strike reported on Erbil. Source: open reporting. Monitor for damage to US/Coalition assets or regional escalation.</li></ul><h3>Iran</h3><ul><li>Targeting of gas infrastructure indicates deliberate pressure on Iranian logistics and civilian energy networks. Escalatory signal ahead of tonight's deadline.</li><li>Tactical note: strikes on fixed infrastructure degrade Iran's fuel distribution, not just military assets.</li></ul><h3>Lebanon</h3><ul><li>Israeli strike on gas station in southern Lebanon — part of ongoing campaign against Hezbollah-linked sites and cross-border threats.</li></ul><h3>Political / Strategic</h3><ul><li>US internal planning reports: White House reportedly assessing Iran parliament speaker Ghalibaf as potential political alternative (Reuters/Politico reporting).</li><li>Reminder: US 48-hour ultimatum on Hormuz expires tonight at 23:44 UTC. Iran has threatened to mine the Strait if a US ground operation begins.</li></ul><h3>🟢 Good News</h3><ul><li>Early-warning system detected launch and issued alert — sensors and command chain functioning.</li></ul><h3>Bottom line</h3><ul><li>Threat assessment: Escalating — high risk of wider strikes and regional spillover.</li></ul>",
-      "he": "<div dir=\"rtl\"><h3>דו\"ח מצב — יום 24 (30 הדקות האחרונות)</h3><ul><li><b>אזעקות פעילות:</b> התרעת שיגור לצפון ישראל. דיווח על פגיעה טילית בעיר ארביל, עיראק.</li></ul><h3>פעילות אווירית / תקיפות</h3><ul><li>ארה\"ב–ישראל תקפו תשתיות אנרגיה באיראן. דיווחים: פגיעה בצינור ובתחנת הפצת גז במחוזות פרס ואספהאן.</li><li>תקיפה ישראלית פגעה בתחנת דלק בדרום לבנון (אזור אל-מנח).</li></ul><h3>גבול צפוני</h3><ul><li>מנגנון ההתראה הפיצה התרעת שיגור לצפון. שמרו על כוננות ומכסים מפני רקטות.</li></ul><h3>עיראק</h3><ul><li>דיווח על פגיעה בעיר ארביל. מקור: דוברות פתוחה. יש לעקוב אחר פגיעה בנכסי כוחות אמריקאיים/קואליציה והחמרת המצב.</li></ul><h3>איראן</h3><ul><li>מכוון תשתיות גז מעיד על לחץ מכוון על לוגיסטיקה אזרחית ואספקת דלק. איתות הסלמה לפני דדליין הלילה.</li><li>הערה טקטית: תקיפות תשתית קבועה פוגעות בשרשרת אספקת הדלק, לא רק במטרות צבאיות.</li></ul><h3>לבנון</h3><ul><li>תקיפה בתחנת דלק בדרום לבנון — חלק ממסע נגד אתרים המקושרים לחיזבאללה והאיומים מחוץ לגבול.</li></ul><h3>פוליטי / אסטרטגי</h3><ul><li>דיווח פנימי: הבית הלבן שוקל את יו\"ר פרלמנט איראן גלאיבף כאופציה פוליטית (Reuters/Politico).</li><li>תזכורת: האולטימטום של 48 שעות להורמוז מסתיים הלילה ב-23:44 UTC. איראן איימה לכרות את המיצר במקרה של מבצע קרקעי אמריקאי.</li></ul><h3>🟢 חדשות טובות</h3><ul><li>מנגנון ההתראה פעל וגילה שיגור — חיישנים וקשר פיקודי פועלים.</li></ul><h3>שורה תחתונה</h3><ul><li>הערכת איום: במגמת הסלמה — סיכון גבוה להתרחבות ולשפעות אזוריות.</li></ul></div>",
-      "count": 20,
-      "window": "30 minutes"
+      "en": "<p>Brief generation failed for 30 minutes window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
+      "count": 18
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 69
+      "count": 71
     },
     "6": {
       "en": "<p>Brief generation failed for 6 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 276
+      "count": 270
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1308
+      "count": 1315
     },
     "48": {
-      "en": "<h3>Situation Report — Day 24 (48h)</h3>\n<ul>\n<li><b>ACTIVE: Multiple Iranian missile strikes on Israel — Dimona area, Eilat, Haifa and central/northern impacts reported. Sirens and IDF Search & Rescue active.</b></li>\n\n<li><b>Israeli/US strikes inside Iran:</b> Targeted energy infrastructure and a gas distribution site (Isfahan, Khorramshahr). Reports of strikes on pipelines and gas stations. IRGC warns of responses to energy targets.</li>\n\n<li><b>Northern border / Lebanon:</b> Israeli strikes on southern Lebanon (gas station, apartment in Bshamoun). IDF issued evacuation warnings for Lebanese villages near Hezbollah activity.</li>\n\n<li>Iraq/Syria: Missile/rocket activity reported — strike on Erbil area and attack on an Anbar headquarters of Shia militias with casualties reported.</li>\n\n<li>Energy & shipping:</li>\n<li>- Airports closed across Iran, Iraq, Syria and Lebanon (flight scans).</li>\n<li>- First confirmed China-owned feeder ship transited Hormuz via Iran’s 'safe' corridor. Tehran threatened to mine the Strait if a US ground operation begins.</li>\n\n<li>Diplomacy & signals:</li>\n<li>- US 48-hour Hormuz ultimatum from President Trump expires tonight (Mar 23, 23:44 UTC).</li>\n<li>- Pakistan offered to host US–Iran talks; reports of US negotiating with a senior Iranian official.</li>\n\n<li>Domestic / political moves: Iranian leadership says sanctions must be lifted before ending hostilities. Speculation over internal Iranian leadership shifts in Western media.</li>\n\n<li>International military posture: Increased US base targeting claimed by IRGC. Flight scans show multiple military aircraft in the region.</li>\n\n<li>🟢 Good News: US reportedly postponed planned strikes on Iranian power plants for five days.</li>\n\n<li><b>Bottom line:</b> Escalating.</li>\n</ul>",
-      "he": "<h3 dir='rtl'>דוח מצב — יום 24 (48 שעות)</h3>\n<ul dir='rtl'>\n<li><b>פעיל: תקיפות טילים איראניות מרובות לעבר ישראל — אזור דימונה, אילת, חיפה ומרכז/צפון. אזעקות ופעילות חילוץ של כוחות צה\"ל.</b></li>\n\n<li><b>תקיפות ישראל־ארה\"ב בתוך איראן:</b> מטרות תשתית אנרגיה ותחנת פצת גז (איספהאן, ח'ורמסהאר). דיווחים על פגיעה בצינורות ובתחנות דלק. משמרות המהפכה איימו להגיב על מתקני אנרגיה.</li>\n\n<li><b>גבול צפוני / לבנון:</b> תקיפות ישראל בלבנון הדרומית (תחנת דלק, דירה בבשמואון). צה\"ל פרסם הודעות פינוי לכפרים בקרבת פעילות חיזבאללה.</li>\n\n<li>עיראק/סוריה: דיווחי תקיפות טילים/רקטות — פגיעה באזור ארביל ודיווח על מתקפה על מטה מיליציות שיעיות באנבר עם נפגעים.</li>\n\n<li>אנרגיה ומשלוחים:</li>\n<li>- שדות תעופה סגורים באיראן, עיראק, סוריה ולבנון (סריקות טיסות).</li>\n<li>- אוניית מזנין בבעלות סינית עברה את הורמוז בערוץ 'בטוח' של איראן. טהראן איימה להטמין מוקשים במיצר אם יחל מבצע קרקעי אמריקאי.</li>\n\n<li>דיפלומטיה וסיגנלים:</li>\n<li>- האולטימטום של טראמפ להורמוז לתקופת 48 שעות מסתיים הלילה (23:44 UTC).</li>\n<li>- פקיסטן הציעה לארח שיחות ארה\"ב–איראן; דיווחים על מגעים אמריקאיים עם בכיר איראני.</li>\n\n<li>🟢 חדשות טובות: דיווח על דחיית תקיפות מתוכננות על תחנות כוח איראניות בחמישה ימים.</li>\n\n<li><b>סיכום:</b> בעלייה במתיחות (escalating).</li>\n</ul>",
-      "count": 2257,
-      "window": "48 hours"
+      "en": "<p>Brief generation failed for 48 hours window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
+      "count": 2266
     }
   }
 }
