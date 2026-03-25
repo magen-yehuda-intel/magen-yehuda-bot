@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "18:10:41",
-      "ts": 1774365041,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e8\u05de\u05d5\u05ea \u05e0\u05e4\u05ea\u05dc\u05d9",
-      "desc": "Rocket barrage \u2014 Active siren in Ramot Naftali indicates a northern border incident, and recent OSINT points to Iranian activity and an interceptor falling in Lebanon, making a Lebanon-origin rocket t",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "18:37:23",
       "ts": 1774366643,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.91,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "07:29:16",
+      "ts": 1774412956,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d1\u05d9\u05e8\u05d9\u05d4",
+      "desc": "Rocket barrage \u2014 Biriya is in the Upper Galilee/northern border corridor, and with no explicit OSINT launch claim the nearest likely source is Lebanon/Hezbollah.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.7,
+      "live": true
     }
   ],
-  "updated": 1774411421
+  "updated": 1774412956
 }
