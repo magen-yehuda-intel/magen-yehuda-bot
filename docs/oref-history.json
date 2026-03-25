@@ -1,6 +1,14 @@
 {
   "alerts": [
     {
+      "ts": 1774468718.1088,
+      "utc": "2026-03-25T19:58:38.108694+00:00",
+      "type": "siren_standdown",
+      "severity": "LOW",
+      "areas": [],
+      "desc": ""
+    },
+    {
       "ts": 1774468011.3158982,
       "utc": "2026-03-25T19:46:51.315811+00:00",
       "type": "siren_clear",
@@ -167,20 +175,12 @@
       "severity": "LOW",
       "areas": [],
       "desc": ""
-    },
-    {
-      "ts": 1774458734.741201,
-      "utc": "2026-03-25T17:12:14.741093+00:00",
-      "type": "siren_standdown",
-      "severity": "LOW",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
     "נווה אטי''ב"
   ],
-  "exported": "2026-03-25T19:55:01Z",
+  "exported": "2026-03-25T20:05:01Z",
   "count": 20
 }
