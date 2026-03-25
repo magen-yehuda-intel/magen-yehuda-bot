@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "19:22:02",
-      "ts": 1774369322,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05e0\u05e8\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens are confined to northern border communities near Lebanon, and there is no conflicting OSINT indicating another launch origin.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "19:24:52",
       "ts": 1774369492,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "08:15:57",
+      "ts": 1774415757,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05e0\u05d0\u05d5\u05ea \u05d4\u05db\u05d9\u05db\u05e8",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Sirens are in the south/Negev with OSINT explicitly stating missiles launched from Iran toward Israel, indicating a coordinated Iranian ballistic attack.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774414631
+  "updated": 1774415757
 }
