@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "15:19:58",
-      "ts": 1774441198,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d1\u05d5 \u05e7\u05e8\u05d9\u05e0\u05d0\u05ea",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Central-south desert and Dead Sea sirens match a long-range Iranian salvo, and OSINT explicitly states missiles launched from Iran toward Israel.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "15:31:06",
       "ts": 1774441866,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "02:18:24",
+      "ts": 1774480704,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05ea\u05dc \u05d0\u05d1\u05d9\u05d1 - \u05e2\u05d1\u05e8 \u05d4\u05d9\u05e8\u05e7\u05d5\u05df",
+      "desc": "Ballistic missile \u2014 Sirens in the Tel Aviv and central Sharon corridor are consistent with a long-range attack, and the recent Iran-related OSINT raises the likelihood of an Iranian ballistic launch d",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774470900
+  "updated": 1774480704
 }
