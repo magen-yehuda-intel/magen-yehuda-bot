@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "19:13:28",
-      "ts": 1774368808,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Rocket barrage \u2014 Active siren in Metula is a northern border area and recent OSINT does not indicate another launch axis, making a Lebanon-origin rocket the most likely threat.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "19:22:02",
       "ts": 1774369322,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "07:57:11",
+      "ts": 1774414631,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d1\u05d9\u05e8\u05d9\u05d4",
+      "desc": "Ballistic missile (splitter missile) \u2014 Sirens in Upper Galilee/Safed area combined with OSINT explicitly stating a missile launched from Iran that struck Bnei Brak indicate an Iranian ballistic strike",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774414536
+  "updated": 1774414631
 }
