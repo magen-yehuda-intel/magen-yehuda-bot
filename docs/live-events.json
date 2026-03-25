@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "20:00:11",
-      "ts": 1774371611,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d1\u05d9\u05ea \u05d4\u05e2\u05de\u05e7",
-      "desc": "Ballistic missile (unknown) \u2014 The sirens span the entire north and are accompanied by OSINT explicitly stating missiles were launched from Iran toward Israel, indicating a coordinated long-range balli",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "20:01:44",
       "ts": 1774371704,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.74,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "11:07:04",
+      "ts": 1774426024,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e9\u05d3\u05d4 \u05d0\u05dc\u05d9\u05e2\u05d6\u05e8",
+      "desc": "Rocket barrage \u2014 The active sirens are in Upper Galilee border communities, which most closely match a northern Lebanon threat, and there is no OSINT indicating a different launch origin.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774425810
+  "updated": 1774426024
 }
