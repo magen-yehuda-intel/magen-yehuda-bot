@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "16:39:23",
-      "ts": 1774359563,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e1\u05e2\u05d5\u05d5\u05d4",
-      "desc": "Ballistic missile (Fateh-110/Emad) \u2014 The active sirens span a broad south-to-center desert belt deep in Israel, which is more consistent with a long-range ballistic strike than rockets, and recent OSI",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.78,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "16:42:31",
       "ts": 1774359751,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "03:54:50",
+      "ts": 1774400090,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d7\u05d5\u05d5\u05ea \u05d2\u05dc\u05e2\u05d3",
+      "desc": "Ballistic missile (unknown) \u2014 Simultaneous sirens across the center and northern coastal/plain belt together with IDF OSINT explicitly stating missiles launched from Iran indicate an Iranian ballistic",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774395638
+  "updated": 1774400090
 }
