@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-24",
-      "time": "19:31:01",
-      "ts": 1774369861,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e0\u05d4\u05e8\u05d9\u05d4",
-      "desc": "Rocket barrage \u2014 Active sirens in Nahariya indicate a northern border attack pattern, and nearby OSINT references missiles intercepted over Lebanon support a Lebanon-origin strike.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.89,
-      "live": true
-    },
-    {
-      "date": "2026-03-24",
       "time": "19:58:20",
       "ts": 1774371500,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.96,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "11:00:47",
+      "ts": 1774425647,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e7\u05dc\u05e2 \u05d0\u05dc\u05d5\u05df",
+      "desc": "Rocket barrage \u2014 The sirens are concentrated in northern border communities adjacent to Lebanon, and recent OSINT shows ongoing IDF-Hezbollah exchanges in south Lebanon, making a Hezbollah rocket barr",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.96,
+      "live": true
     }
   ],
-  "updated": 1774425426
+  "updated": 1774425647
 }
