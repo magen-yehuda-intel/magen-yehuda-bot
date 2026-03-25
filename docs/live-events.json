@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "00:36:03",
-      "ts": 1774388163,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
-      "desc": "Ballistic missile (unknown) \u2014 Eilat-area sirens indicate a southern long-range threat, and while OSINT is dominated by Iran-wide missile context, the specific alert geography best fits a Yemen-origin ",
-      "severity": "high",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.62,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "00:44:49",
       "ts": 1774388689,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.82,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "11:19:10",
+      "ts": 1774426750,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e2\u05de\u05d9\u05e2\u05d3",
+      "desc": "Rocket barrage \u2014 The sirens are in the Upper Galilee/Ramot Koorazim area, which fits the northern Lebanon corridor, while recent OSINT does not indicate a different launch origin.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.76,
+      "live": true
     }
   ],
-  "updated": 1774426472
+  "updated": 1774426750
 }
