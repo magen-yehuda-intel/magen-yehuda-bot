@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "14:34:46",
-      "ts": 1774438486,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e2\u05e8\u05d1 \u05d0\u05dc \u05e2\u05e8\u05d0\u05de\u05e9\u05d4",
-      "desc": "Rocket barrage (Katyusha) \u2014 Sirens in northern border village \u05e2\u05e8\u05d1 \u05d0\u05dc \u05e2\u05e8\u05d0\u05de\u05e9\u05d4 fit a short-range cross-border barrage, and the recent Iranian-related OSINT does not directly indicate a different launch o",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.8,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "14:37:50",
       "ts": 1774438670,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "22:15:44",
+      "ts": 1774466144,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d0\u05d3\u05de\u05d9\u05ea",
+      "desc": "Rocket barrage \u2014 The active sirens are in northern border communities near Lebanon, which most strongly indicates a Hezbollah rocket salvo absent a direct OSINT launch claim.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.9,
+      "live": true
     }
   ],
-  "updated": 1774462052
+  "updated": 1774466144
 }
