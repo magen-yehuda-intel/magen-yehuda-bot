@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "11:46:55",
-      "ts": 1774428415,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d1\u05ea \u05d7\u05e4\u05e8",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span north, center, and south simultaneously and OSINT explicitly states missiles were launched from Iran toward Israel, indicating a coordinated Iranian",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "11:49:57",
       "ts": 1774428597,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-25",
+      "time": "17:20:51",
+      "ts": 1774448451,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Eilat-area sirens combined with explicit OSINT confirming missiles launched from Iran indicate a coordinated Iranian ballistic attack toward southern Israel.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774448331
+  "updated": 1774448451
 }
