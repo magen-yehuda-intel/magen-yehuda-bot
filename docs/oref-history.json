@@ -1,6 +1,24 @@
 {
   "alerts": [
     {
+      "ts": 1774529657.250828,
+      "utc": "2026-03-26T12:54:17.250682+00:00",
+      "type": "siren_clear",
+      "severity": "MEDIUM",
+      "areas": [],
+      "desc": ""
+    },
+    {
+      "ts": 1774529560.705098,
+      "utc": "2026-03-26T12:52:40.704832+00:00",
+      "type": "siren",
+      "severity": "CRITICAL",
+      "areas": [
+        "דוב''ב"
+      ],
+      "desc": "היכנסו למרחב המוגן"
+    },
+    {
       "ts": 1774528717.163455,
       "utc": "2026-03-26T12:38:37.163369+00:00",
       "type": "siren_clear",
@@ -14,7 +32,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -48,7 +66,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -74,7 +92,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -84,7 +102,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -102,7 +120,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -120,7 +138,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -138,7 +156,7 @@
       "type": "siren",
       "severity": "CRITICAL",
       "areas": [
-        "מלכיה"
+        "דוב''ב"
       ],
       "desc": "היכנסו למרחב המוגן"
     },
@@ -157,30 +175,12 @@
       "severity": "MEDIUM",
       "areas": [],
       "desc": ""
-    },
-    {
-      "ts": 1774519247.562839,
-      "utc": "2026-03-26T10:00:47.562691+00:00",
-      "type": "siren",
-      "severity": "CRITICAL",
-      "areas": [
-        "מלכיה"
-      ],
-      "desc": "היכנסו למרחב המוגן"
-    },
-    {
-      "ts": 1774516249.181163,
-      "utc": "2026-03-26T09:10:49.181038+00:00",
-      "type": "siren_standdown",
-      "severity": "LOW",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
-    "מלכיה"
+    "דוב''ב"
   ],
-  "exported": "2026-03-26T12:50:01Z",
+  "exported": "2026-03-26T12:55:00Z",
   "count": 20
 }
