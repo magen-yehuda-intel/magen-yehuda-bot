@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "17:56:09",
-      "ts": 1774450569,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e0\u05e9\u05e8",
-      "desc": "Rocket barrage (cluster warhead) \u2014 Sirens are concentrated in Haifa Bay and Krayot northern Israel, and recent OSINT specifically mentions a projectile fired from Lebanon today, making Hezbollah/Leban",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "18:45:13",
       "ts": 1774453513,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "08:59:43",
+      "ts": 1774504783,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
+      "desc": "Rocket barrage \u2014 Metula is a northern border siren area and the only recent operational OSINT indicates impacts in central Israel from a separate incident, so this alert most likely reflects a short-r",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774502277
+  "updated": 1774504783
 }
