@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "10:12:22",
-      "ts": 1774509142,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05de\u05e0\u05e8\u05d4",
-      "desc": "Ballistic missile \u2014 Active sirens in northern border towns with OSINT indicating ongoing Iranian launches affecting central and northern Israel, consistent with a wider ballistic salvo rather than loc",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.71,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "10:15:21",
       "ts": 1774509321,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "14:26:07",
+      "ts": 1774524367,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d2\u05de\u05d6\u05d5",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Modi'in-area sirens together with explicit OSINT confirming missiles launched from Iran indicate an Iranian ballistic missile salvo.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774524208
+  "updated": 1774524367
 }
