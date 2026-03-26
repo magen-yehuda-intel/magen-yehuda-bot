@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "17:02:12",
-      "ts": 1774533732,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d1\u05df \u05e2\u05de\u05d9",
-      "desc": "Rocket barrage \u2014 Nahariya and Ben Ami are northern border siren areas, and recent OSINT emphasizes Hezbollah activity near the Lebanon border rather than a wider Iranian strike pattern.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.86,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "17:23:46",
       "ts": 1774535026,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "00:19:15",
+      "ts": 1774559955,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
+      "desc": "Rocket barrage \u2014 Metula is a northern border siren area and there is no specific OSINT launch origin, so the most likely source is a short-range cross-border rocket from Lebanon.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.76,
+      "live": true
     }
   ],
-  "updated": 1774558242
+  "updated": 1774559955
 }
