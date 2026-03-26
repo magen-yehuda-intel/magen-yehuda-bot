@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "11:38:36",
-      "ts": 1774514316,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d4\u05de\u05e8\u05db\u05d6 \u05d4\u05d0\u05e7\u05d3\u05de\u05d9 \u05e8\u05d5\u05e4\u05d9\u05df",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Widespread sirens across the center and Sharon regions combined with OSINT explicitly stating missiles were launched from Iran toward Israel indicate a coordinated ",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "11:41:22",
       "ts": 1774514482,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "18:31:03",
+      "ts": 1774539063,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e7\u05dc\u05e2 \u05d0\u05dc\u05d5\u05df",
+      "desc": "Rocket barrage \u2014 The sirens are concentrated in northern Golan/Upper Galilee border communities, which fit a short-range launch from Lebanon rather than the no-all-clear OSINT items that indicate no n",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774537791
+  "updated": 1774539063
 }
