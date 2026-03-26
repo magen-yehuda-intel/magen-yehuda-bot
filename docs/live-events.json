@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "15:36:03",
-      "ts": 1774528563,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05dc\u05db\u05d9\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens in Malkia are a northern border alert and the only recent launch-related OSINT mentions north-of-Kiryat-Shmona areas without a clear Iran-origin confirmation for this specific ",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.78,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "15:52:45",
       "ts": 1774529565,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.84,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "22:11:18",
+      "ts": 1774552278,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d0\u05d5\u05e9\u05d4",
+      "desc": "Rocket barrage \u2014 The sirens are concentrated across Haifa and the northern Galilee/Haifa Bay corridor, and recent OSINT points to active Hezbollah action in southern Lebanon, making a Lebanon-origin r",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.82,
+      "live": true
     }
   ],
-  "updated": 1774551916
+  "updated": 1774552278
 }
