@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "10:21:25",
-      "ts": 1774509685,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05de\u05e0\u05d7\u05ea \u05de\u05d7\u05e0\u05d9\u05d9\u05dd",
-      "desc": "Ballistic missile (Fateh-110/Emad) \u2014 Active sirens in northern Galilee plus OSINT reporting launches from Iran toward central and northern Israel and an Iranian missile impact in Kfar Qasem indicate a",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "10:24:15",
       "ts": 1774509855,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "15:52:45",
+      "ts": 1774529565,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d3\u05d5\u05d1''\u05d1",
+      "desc": "Rocket barrage \u2014 Sirens in \u05d3\u05d5\u05d1''\u05d1 are in the northern border area and recent OSINT mentions Hezbollah rockets and drones at the north, making a Lebanon-origin rocket the most likely threat.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.86,
+      "live": true
     }
   ],
-  "updated": 1774528563
+  "updated": 1774529565
 }
