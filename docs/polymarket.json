@@ -1,0 +1,79 @@
+{
+  "updated": "2026-03-26T13:43:18.196456+00:00",
+  "markets": [
+    {
+      "question": "Georgia vs. Israel: O/U 3.5",
+      "slug": "fif-geo-isr-2026-03-26-total-3pt5",
+      "yes": 29.5,
+      "volume": 99.022487,
+      "url": "https://polymarket.com/event/fif-geo-isr-2026-03-26-total-3pt5"
+    },
+    {
+      "question": "Iran leadership change by May 31?",
+      "slug": "iran-leadership-change-by-may-31-593-194-829",
+      "yes": 28.5,
+      "volume": 9809.067264999998,
+      "url": "https://polymarket.com/event/iran-leadership-change-by-may-31-593-194-829"
+    },
+    {
+      "question": "Will Iran conduct a military action against Israel on March 25, 2026?",
+      "slug": "will-iran-conduct-a-military-action-against-israel-on-march-25-2026-431",
+      "yes": 90.1,
+      "volume": 97038.73407399992,
+      "url": "https://polymarket.com/event/will-iran-conduct-a-military-action-against-israel-on-march-25-2026-431"
+    },
+    {
+      "question": "Will Israel take military action in Lebanon on March 29, 2026?",
+      "slug": "will-israel-take-military-action-in-lebanon-on-march-29-2026",
+      "yes": 91.5,
+      "volume": 9689.061145,
+      "url": "https://polymarket.com/event/will-israel-take-military-action-in-lebanon-on-march-29-2026"
+    },
+    {
+      "question": "Will Iran strike Burj Khalifa by March 31?",
+      "slug": "will-iran-strike-burj-khalifa-by-march-31",
+      "yes": 5.5,
+      "volume": 964.3950729999998,
+      "url": "https://polymarket.com/event/will-iran-strike-burj-khalifa-by-march-31"
+    }
+  ],
+  "events": [
+    {
+      "title": "Military action against Iran ends on...?",
+      "slug": "military-action-against-iran-ends-on",
+      "url": "https://polymarket.com/event/military-action-against-iran-ends-on",
+      "markets": [
+        {
+          "question": "Military action against Iran continues through March 31, 2026?",
+          "yes": 87.0,
+          "volume": 536456.9963580013
+        },
+        {
+          "question": "Military action against Iran ends on March 30, 2026?",
+          "yes": 3.6,
+          "volume": 268167.36509799975
+        },
+        {
+          "question": "Military action against Iran ends on March 29, 2026?",
+          "yes": 2.8,
+          "volume": 245191.49210199935
+        },
+        {
+          "question": "Military action against Iran ends on March 31, 2026?",
+          "yes": 2.3,
+          "volume": 351072.1058450004
+        },
+        {
+          "question": "Military action against Iran ends on March 28, 2026?",
+          "yes": 1.2,
+          "volume": 280995.5393729997
+        },
+        {
+          "question": "Military action against Iran ends on March 27, 2026?",
+          "yes": 0.4,
+          "volume": 287793.83730200026
+        }
+      ]
+    }
+  ]
+}
