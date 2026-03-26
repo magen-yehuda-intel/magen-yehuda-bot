@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "09:55:13",
-      "ts": 1774508113,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d1\u05e8\u05db\u05d9\u05d4",
-      "desc": "Rocket barrage \u2014 The siren footprint is nationwide but the strongest fresh OSINT signal specifically mentions a wave of missiles fired from Lebanon to Israel, so I assess a Hezbollah northern launch w",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.78,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "10:00:37",
       "ts": 1774508437,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "14:13:13",
+      "ts": 1774523593,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e8\u05d9\u05d7\u05d0\u05e0\u05d9\u05d9\u05d4",
+      "desc": "Rocket barrage \u2014 Active sirens are in northern border villages near Lebanon and the recent OSINT mainly references Iran without a specific new launch type, so the nearest threat is a Hezbollah rocket ",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.86,
+      "live": true
     }
   ],
-  "updated": 1774520120
+  "updated": 1774523593
 }
