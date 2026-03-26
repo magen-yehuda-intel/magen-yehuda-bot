@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "17:23:46",
-      "ts": 1774535026,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05dc\u05db\u05d9\u05d4",
-      "desc": "UAV/Drone attack (FPV loitering munition) \u2014 Malchia is a northern border area and the recent OSINT reports Hezbollah activity in Lebanon using Iranian-made FPV loitering munitions, making a Lebanon-or",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "uav_drone",
-      "confidence": 0.74,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "17:31:03",
       "ts": 1774535463,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.76,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "00:52:05",
+      "ts": 1774561925,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05e9\u05db\u05d5\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (unknown) \u2014 Simultaneous sirens across the south, Negev, Arad/Dead Sea, and Eilat corridor indicate a long-range coordinated strike consistent with Iranian ballistic missiles amid re",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.84,
+      "live": true
     }
   ],
-  "updated": 1774559955
+  "updated": 1774561925
 }
