@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "20:54:39",
-      "ts": 1774461279,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Syrian_army",
-      "target": "\u05de\u05d2'\u05d3\u05dc \u05e9\u05de\u05e1",
-      "desc": "Rocket barrage \u2014 Siren areas are in the Golan Heights border zone and recent OSINT is not a launch claim, so the most likely source is nearby Syria or spillover fire from the northeast.",
-      "severity": "high",
-      "origin_lat": 33.5,
-      "origin_lon": 36.3,
-      "source_country": "syria",
-      "weapon_type": "rocket",
-      "confidence": 0.55,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "21:00:46",
       "ts": 1774461646,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "10:12:22",
+      "ts": 1774509142,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05de\u05e0\u05e8\u05d4",
+      "desc": "Ballistic missile \u2014 Active sirens in northern border towns with OSINT indicating ongoing Iranian launches affecting central and northern Israel, consistent with a wider ballistic salvo rather than loc",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.71,
+      "live": true
     }
   ],
-  "updated": 1774508899
+  "updated": 1774509142
 }
