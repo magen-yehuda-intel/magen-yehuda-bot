@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "08:59:43",
-      "ts": 1774504783,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Rocket barrage \u2014 Metula is a northern border siren area and the only recent operational OSINT indicates impacts in central Israel from a separate incident, so this alert most likely reflects a short-r",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "09:24:23",
       "ts": 1774506263,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "11:59:22",
+      "ts": 1774515562,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05ea\u05dc \u05d0\u05d1\u05d9\u05d1 - \u05d3\u05e8\u05d5\u05dd \u05d4\u05e2\u05d9\u05e8 \u05d5\u05d9\u05e4\u05d5",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Wide simultaneous sirens across Tel Aviv, the center, and the Sharon/Lod regions combined with OSINT explicitly stating missiles launched from Iran toward Israel in",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774515306
+  "updated": 1774515562
 }
