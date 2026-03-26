@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "07:49:43",
-      "ts": 1774500583,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d9\u05e8\u05d5\u05e9\u05dc\u05d9\u05dd - \u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e2\u05d8\u05e8\u05d5\u05ea",
-      "desc": "Ballistic missile (unknown) \u2014 Sirens span Jerusalem, Tel Aviv, central Israel, and wide southern/Ben Gurion-area coverage, which matches a coordinated long-range salvo; recent OSINT also references Ir",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.91,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "08:11:56",
       "ts": 1774501916,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.84,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "11:38:36",
+      "ts": 1774514316,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d4\u05de\u05e8\u05db\u05d6 \u05d4\u05d0\u05e7\u05d3\u05de\u05d9 \u05e8\u05d5\u05e4\u05d9\u05df",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Widespread sirens across the center and Sharon regions combined with OSINT explicitly stating missiles were launched from Iran toward Israel indicate a coordinated ",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774514109
+  "updated": 1774514316
 }
