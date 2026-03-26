@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "10:08:19",
-      "ts": 1774508899,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05d9\u05e7\u05e0\u05e2\u05dd \u05e2\u05d9\u05dc\u05d9\u05ea",
-      "desc": "Ballistic missile \u2014 The sirens span a very large multi-region area including north and center, and OSINT explicitly states missiles launched from Iran with a cluster targeting central Israel.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "10:12:22",
       "ts": 1774509142,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.94,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "14:23:28",
+      "ts": 1774524208,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d7\u05e9\u05de\u05d5\u05e0\u05d0\u05d9\u05dd",
+      "desc": "Ballistic missile (unknown) \u2014 Sirens span the Tel Aviv center, Gush Dan, Modi'in, Sharon, and surrounding areas, and OSINT explicitly states missiles were launched from Iran toward Israel.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774523945
+  "updated": 1774524208
 }
