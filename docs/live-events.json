@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "08:11:56",
-      "ts": 1774501916,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05e8\u05d2\u05de\u05df",
-      "desc": "Ballistic missile \u2014 Simultaneous sirens across the center, Sharon, West Bank, and northern Israel match a coordinated long-range Iranian salvo, and OSINT explicitly detects a launch from Iran.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "08:17:57",
       "ts": 1774502277,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "11:41:22",
+      "ts": 1774514482,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05de\u05e9\u05db\u05d9\u05d5\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The active sirens are in central/northeast Israel and the OSINT explicitly states missiles launched from Iran toward Israel, indicating an Iranian ballistic salvo.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774514316
+  "updated": 1774514482
 }
