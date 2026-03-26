@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "10:30:15",
-      "ts": 1774510215,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d2\u05d3\u05dc",
-      "desc": "Mortar fire \u2014 Migdal and Ginosar are in the northern Galilee near the Lebanese border, and the only relevant recent OSINT is a mortar attack in southern Lebanon, making a short-range cross-border mort",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "mortar",
-      "confidence": 0.86,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "10:31:51",
       "ts": 1774510311,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.86,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "17:23:46",
+      "ts": 1774535026,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05dc\u05db\u05d9\u05d4",
+      "desc": "UAV/Drone attack (FPV loitering munition) \u2014 Malchia is a northern border area and the recent OSINT reports Hezbollah activity in Lebanon using Iranian-made FPV loitering munitions, making a Lebanon-or",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "uav_drone",
+      "confidence": 0.74,
+      "live": true
     }
   ],
-  "updated": 1774533732
+  "updated": 1774535026
 }
