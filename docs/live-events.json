@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "11:55:06",
-      "ts": 1774515306,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d7\u05d5\u05e3 \u05d1\u05e6\u05ea",
-      "desc": "Rocket barrage \u2014 The active sirens are in northern coastal border towns near Lebanon, which matches a short-range rocket attack from Hezbollah despite unrelated OSINT noise.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "11:59:22",
       "ts": 1774515562,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.52,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "18:44:05",
+      "ts": 1774539845,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d1\u05d9\u05ea \u05d0\u05dc",
+      "desc": "Rocket barrage \u2014 The sirens are in isolated central-West Bank communities near the Jerusalem corridor, and the only nearby active OSINT cue is IDF ground operations in southern Lebanon, making a Hezbo",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774539219
+  "updated": 1774539845
 }
