@@ -150,7 +150,7 @@ Return a JSON object with two keys:
 
 Keep each brief under 300 words. Quality over quantity."""
 
-USER_PROMPT_TEMPLATE = """CONTEXT: This is Day 27 of the US-Israel military campaign against Iran. Trump's 48-hour Hormuz ultimatum (Mar 21) expired and was called off — he announced a 5-day hold on energy strikes citing "strong talks," but US/Israeli jets struck Isfahan and Khorramshahr energy infrastructure hours later anyway. Iran denies direct talks with the US. Pakistan is mediating. The conflict continues with Israeli/US airstrikes on Iran and Iranian/Hezbollah/Hamas missile counterstrikes on Israel. Northern border (Hezbollah) active daily. Iran has allowed passage for friendly nations (Russia, India, China) through Hormuz while blocking others.
+USER_PROMPT_TEMPLATE = """CONTEXT: This is Day 27 of the US-Israel military campaign against Iran. Trump announced a SECOND pause on Iran energy strikes (10 days, deadline April 6, 2026 8 PM ET) citing "Iranian Government request" and claiming talks are "going very well" — Iran denies any direct talks. The first pause (5-day, Mar 23) was violated hours later when US/Israeli jets struck Isfahan and Khorramshahr. Pakistan is mediating. The conflict continues with Israeli/US airstrikes on Iran and Iranian/Hezbollah/Hamas missile counterstrikes on Israel. Northern border (Hezbollah) active daily. Iran has allowed Hormuz passage for friendly nations (Russia, India, China) while blocking others.
 
 Generate a situation brief from these {count} intel events from the last {window}:
 

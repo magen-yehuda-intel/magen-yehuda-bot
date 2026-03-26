@@ -2817,6 +2817,30 @@ window._hideBreaking = function() {
   if (el) { el.style.display = 'none'; el.style.animation = ''; }
 };
 
+// Trump Iran energy strike pause — April 6, 2026 8:00 PM ET (00:00 UTC Apr 7)
+(function initTrumpPauseCountdown() {
+  const DEADLINE = new Date('2026-04-07T00:00:00Z').getTime();
+  const popupHtml = `<div style="font-size:16px;font-weight:700;color:#ff6666;margin-bottom:10px">🇺🇸 Trump Iran Energy Strike Pause</div>
+    <div style="margin-bottom:8px">On <b>March 26, 2026</b>, Trump posted: "As per Iranian Government request, I am <b>pausing the period of Energy Plant destruction by 10 Days</b> to Monday, April 6, 2026, at 8 P.M., Eastern Time."</div>
+    <div style="margin-bottom:8px">This is the <b>2nd pause</b> — the first (Mar 23, 5-day) was violated hours later when US/Israeli jets struck Isfahan &amp; Khorramshahr energy infrastructure.</div>
+    <div style="margin-bottom:8px;color:#f59e0b">⚠️ Iran reportedly requested this pause. Trump claims talks are "going very well." Iran publicly denies any direct negotiations.</div>
+    <div style="color:#999;font-size:11px">Source: @realDonaldTrump · Truth Social · Mar 26, 2026</div>`;
+  function tick() {
+    const diff = DEADLINE - Date.now();
+    if (diff <= 0) {
+      window._showBreaking('🇺🇸 PAUSE EXPIRED', popupHtml);
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const label = d > 0 ? `🇺🇸 STRIKE PAUSE ${d}d ${h}h` : `🇺🇸 STRIKE PAUSE ${h}h ${m}m`;
+    window._showBreaking(label, popupHtml);
+  }
+  tick();
+  setInterval(tick, 60000);
+})();
+
 renderAllLayers();
 loadConfig(); // Restore saved layer preferences from localStorage
 loadFIRMS();
