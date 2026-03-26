@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "21:07:32",
-      "ts": 1774462052,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Rocket barrage \u2014 Metula is a northern border siren area and the available OSINT is Iran-focused but not launch-specific, so the most likely nearest threat is a rocket from Lebanon",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.78,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "22:15:44",
       "ts": 1774466144,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "10:17:57",
+      "ts": 1774509477,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d7\u05d5\u05dc\u05ea\u05d4",
+      "desc": "Ballistic missile (Fateh-110/Emad) \u2014 Sirens in the northern Galilee with OSINT describing Iranian launches toward central and northern Israel and a documented Iranian missile impact, indicating a coor",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.91,
+      "live": true
     }
   ],
-  "updated": 1774509321
+  "updated": 1774509477
 }
