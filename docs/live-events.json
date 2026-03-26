@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "10:31:51",
-      "ts": 1774510311,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d8\u05d1\u05e8\u05d9\u05d4",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Active sirens in Tiberias/Wadi al-Hamam plus OSINT reporting another launch from Iran toward the north and concurrent Iranian missile attack context indicate a ball",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "11:22:28",
       "ts": 1774513348,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "uav_drone",
       "confidence": 0.74,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "17:31:03",
+      "ts": 1774535463,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d2\u05d5\u05e8\u05e0\u05d5\u05ea \u05d4\u05d2\u05dc\u05d9\u05dc",
+      "desc": "Rocket barrage \u2014 Sirens are in northern border communities in the Galilee, and recent OSINT points to Hezbollah activity in Lebanon near Taybeh, consistent with a northern rocket attack from Lebanon.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774535026
+  "updated": 1774535463
 }
