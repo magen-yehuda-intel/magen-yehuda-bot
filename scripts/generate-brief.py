@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-generate-brief.py — Generate LLM-powered intel briefs (EN + HE) from recent events.
+generate-brief.py - Generate LLM-powered intel briefs (EN + HE) from recent events.
 Runs every 30 min via cron. Reads intel-log.jsonl, calls gpt-5-mini, writes docs/brief.json.
 
 Output format: { "generated_at": ISO, "briefs": { "0.5": {"en":..,"he":..}, "2": {...}, ... } }
@@ -94,14 +94,14 @@ def events_to_text(events, max_chars=5000):
         src = e.get("src", "") or e.get("source", "") or e.get("type", "")
         loc = e.get("loc", "") or e.get("location", "")
         text = (e.get("text", "") or e.get("summary", "") or "").strip()[:200]
-        
+
         # For flight_scan events, build a summary
         if e.get("type") == "flight_scan" and e.get("data"):
             d = e["data"]
             text = f"Flight scan: {d.get('total',0)} aircraft, {d.get('military_count',0)} military ({', '.join(d.get('military_callsigns',[])[:3])})"
             if d.get('airports_closed'):
                 text += f", airports closed: {', '.join(d['airports_closed'])}"
-        
+
         # For cyber_scan events
         if e.get("type") == "cyber_scan":
             text = f"Cyber scan: {e.get('count',0)} incidents, severity {e.get('severity','?')}"
@@ -131,7 +131,7 @@ RULES:
 - Group related events into themes (e.g. "Northern Border", "Hormuz", "Diplomacy").
 - Add brief tactical context where useful (e.g. "first time X was used", "3rd attack this week").
 - Use bullet points. Short sentences. Every word earns its place.
-- If there are active sirens or strikes — that goes FIRST, bold.
+- If there are active sirens or strikes - that goes FIRST, bold.
 
 INTERNATIONAL & GOOD NEWS:
 - Include interesting international reactions ONLY if they involve real action (troops moved, sanctions imposed, embargoes, ports closed, emergency sessions). Skip generic "country X condemns" statements.
@@ -146,11 +146,11 @@ BOTTOM LINE:
 FORMAT:
 Return a JSON object with two keys:
 - "en": English brief (HTML, use <b>, <ul>, <li>, <h3> tags)
-- "he": Hebrew brief (HTML, RTL, same content translated naturally — not robotic translation, write like a Hebrew news anchor)
+- "he": Hebrew brief (HTML, RTL, same content translated naturally - not robotic translation, write like a Hebrew news anchor)
 
 Keep each brief under 300 words. Quality over quantity."""
 
-USER_PROMPT_TEMPLATE = """CONTEXT: This is Day 24 of the US-Israel military campaign against Iran. Trump issued a 48-hour Hormuz ultimatum on March 21 — deadline is tonight (March 23, 23:44 UTC). Iran has threatened to mine the Strait if the US launches a ground operation. The conflict includes Israeli/US airstrikes on Iran and Iranian missile counterstrikes on Israel (including at Dimona nuclear area, Haifa, Eilat) and US bases.
+USER_PROMPT_TEMPLATE = """CONTEXT: This is Day 27 of the US-Israel military campaign against Iran. Trump's 48-hour Hormuz ultimatum (Mar 21) expired and was called off — he announced a 5-day hold on energy strikes citing "strong talks," but US/Israeli jets struck Isfahan and Khorramshahr energy infrastructure hours later anyway. Iran denies direct talks with the US. Pakistan is mediating. The conflict continues with Israeli/US airstrikes on Iran and Iranian/Hezbollah/Hamas missile counterstrikes on Israel. Northern border (Hezbollah) active daily. Iran has allowed passage for friendly nations (Russia, India, China) through Hormuz while blocking others.
 
 Generate a situation brief from these {count} intel events from the last {window}:
 
@@ -161,7 +161,7 @@ Return ONLY valid JSON: {{"en": "<html brief>", "he": "<html brief>"}}"""
 def call_llm(events_text, count, window_label, token):
     url = f"{AOAI_ENDPOINT}/openai/deployments/{AOAI_DEPLOYMENT}/chat/completions?api-version={AOAI_API_VERSION}"
     user_msg = USER_PROMPT_TEMPLATE.format(count=count, window=window_label, events=events_text)
-    
+
     payload = {
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -190,7 +190,7 @@ def call_llm(events_text, count, window_label, token):
             choice = data["choices"][0]
             print(f"[DEBUG {window_label}] finish_reason={choice.get('finish_reason')}, content_filter={choice.get('content_filter_results','none')}", file=sys.stderr)
             if not content:
-                print(f"[DEBUG {window_label}] EMPTY — full choice: {json.dumps(choice)[:500]}", file=sys.stderr)
+                print(f"[DEBUG {window_label}] EMPTY - full choice: {json.dumps(choice)[:500]}", file=sys.stderr)
             # Try direct JSON parse first
             try:
                 return json.loads(content)
@@ -223,7 +223,7 @@ def call_llm(events_text, count, window_label, token):
     except Exception as e:
         if hasattr(e, 'read'):
             body = e.read().decode('utf-8','ignore')[:500]
-            print(f"LLM call failed for {window_label}: {e} — {body}", file=sys.stderr)
+            print(f"LLM call failed for {window_label}: {e} - {body}", file=sys.stderr)
         else:
             print(f"LLM call failed for {window_label}: {e}", file=sys.stderr)
         return None
@@ -278,10 +278,21 @@ def main():
         "briefs": briefs
     }
 
-    with open(OUTPUT, "w") as f:
+    TMP_OUTPUT = "/tmp/myi-brief.json"
+    with open(TMP_OUTPUT, "w") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
-    print(f"Written to {OUTPUT}")
-
+    
+    # Copy to docs/ (may fail under cron sandbox — use shutil)
+    import shutil
+    try:
+        shutil.copy2(TMP_OUTPUT, OUTPUT)
+        print(f"Written to {OUTPUT}")
+    except PermissionError:
+        # Fallback: use subprocess cp which may have different permissions
+        import subprocess
+        subprocess.run(["cp", TMP_OUTPUT, OUTPUT], check=True)
+        print(f"Written to {OUTPUT} (via cp)")
+    
     # Git push
     import subprocess
     try:
