@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "20:02:09",
-      "ts": 1774458129,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e2\u05e8\u05d1 \u05d0\u05dc \u05e2\u05e8\u05d0\u05de\u05e9\u05d4",
-      "desc": "Rocket barrage \u2014 Active siren in \u05e2\u05e8\u05d1 \u05d0\u05dc \u05e2\u05e8\u05d0\u05de\u05e9\u05d4 is a northern border location near Lebanon, and there is no stronger conflicting OSINT indicating another launch origin.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "20:06:15",
       "ts": 1774458375,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "09:55:13",
+      "ts": 1774508113,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d1\u05e8\u05db\u05d9\u05d4",
+      "desc": "Rocket barrage \u2014 The siren footprint is nationwide but the strongest fresh OSINT signal specifically mentions a wave of missiles fired from Lebanon to Israel, so I assess a Hezbollah northern launch w",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774506416
+  "updated": 1774508113
 }
