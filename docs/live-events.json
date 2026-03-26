@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "11:41:22",
-      "ts": 1774514482,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05de\u05e9\u05db\u05d9\u05d5\u05ea",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The active sirens are in central/northeast Israel and the OSINT explicitly states missiles launched from Iran toward Israel, indicating an Iranian ballistic salvo.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "11:55:06",
       "ts": 1774515306,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "18:33:39",
+      "ts": 1774539219,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Syrian_army",
+      "target": "\u05d0\u05d5\u05d3\u05dd",
+      "desc": "Rocket barrage \u2014 Single siren in Odem near the Golan Heights with no launch-claim OSINT, making a Syria/Golan-area rocket or spillover the most likely classification.",
+      "severity": "high",
+      "origin_lat": 33.5,
+      "origin_lon": 36.3,
+      "source_country": "syria",
+      "weapon_type": "rocket",
+      "confidence": 0.52,
+      "live": true
     }
   ],
-  "updated": 1774539063
+  "updated": 1774539219
 }
