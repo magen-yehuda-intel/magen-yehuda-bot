@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "17:10:19",
-      "ts": 1774447819,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d0\u05d9\u05dc\u05d5\u05ea",
-      "desc": "Ballistic missile \u2014 Sirens are confined to Eilat area, which most strongly matches a Yemen-origin long-range attack pattern rather than Gaza/Lebanon border fire; no explicit OSINT confirms the launch ",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.7,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "17:15:52",
       "ts": 1774448152,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.72,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "06:32:11",
+      "ts": 1774495931,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05e0\u05e8\u05d4",
+      "desc": "Rocket barrage \u2014 Sirens in Manara and Margaliot are northern border locations and the limited footprint fits a short-range rocket attack from Lebanon; recent OSINT about Iran does not indicate the lau",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774487748
+  "updated": 1774495931
 }
