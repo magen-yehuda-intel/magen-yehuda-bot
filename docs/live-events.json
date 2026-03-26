@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-25",
-      "time": "22:45:20",
-      "ts": 1774467920,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e0\u05d5\u05d5\u05d4 \u05d0\u05d8\u05d9''\u05d1",
-      "desc": "Rocket barrage \u2014 Single northern siren in Neve Ativ (Golan Heights) with Hezbollah-linked OSINT and no conflicting launch origin suggests a short-range rocket from Lebanon or spillover from the north",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.72,
-      "live": true
-    },
-    {
-      "date": "2026-03-25",
       "time": "23:35:00",
       "ts": 1774470900,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.96,
       "live": true
+    },
+    {
+      "date": "2026-03-26",
+      "time": "10:27:17",
+      "ts": 1774510037,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d0\u05de\u05e0\u05d5\u05df",
+      "desc": "Mortar fire \u2014 The only active siren location, Amnon in the Upper Galilee, fits the northern Lebanon threat corridor and recent OSINT mentions a mortar attack in south Lebanon rather than a wider Iran ",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "mortar",
+      "confidence": 0.7,
+      "live": true
     }
   ],
-  "updated": 1774509856
+  "updated": 1774510037
 }
