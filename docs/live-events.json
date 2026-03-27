@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "22:11:18",
-      "ts": 1774552278,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d0\u05d5\u05e9\u05d4",
-      "desc": "Rocket barrage \u2014 The sirens are concentrated across Haifa and the northern Galilee/Haifa Bay corridor, and recent OSINT points to active Hezbollah action in southern Lebanon, making a Lebanon-origin r",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "23:48:00",
       "ts": 1774558080,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "14:20:38",
+      "ts": 1774610438,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d1\u05df \u05e9\u05de\u05d5\u05d0\u05dc",
+      "desc": "Ballistic missile (unknown) \u2014 Simultaneous sirens across the south and central coastal plain align with a coordinated Iranian long-range strike, reinforced by recent OSINT describing ongoing Iranian f",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.91,
+      "live": true
     }
   ],
-  "updated": 1774610189
+  "updated": 1774610438
 }
