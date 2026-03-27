@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "23:48:00",
-      "ts": 1774558080,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d1\u05e6\u05ea",
-      "desc": "Rocket barrage \u2014 Sirens in northern border towns in western Galilee, combined with recent OSINT about Hezbollah fire from Lebanon and ground operations in southern Lebanon, indicate a Lebanon-origin r",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "23:50:42",
       "ts": 1774558242,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.91,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "14:24:06",
+      "ts": 1774610646,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d0\u05d1\u05df \u05de\u05e0\u05d7\u05dd",
+      "desc": "Rocket barrage \u2014 Siren areas are northern border towns near Lebanon, which usually indicates short-range rocket fire; recent OSINT is dominated by Iran-wide context but does not specifically tie this ",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774610438
+  "updated": 1774610646
 }
