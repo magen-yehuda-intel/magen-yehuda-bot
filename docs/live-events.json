@@ -1,24 +1,6 @@
 {
   "events": [
     {
-      "date": "2026-03-26",
-      "time": "23:50:42",
-      "ts": 1774558242,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05e0\u05d5\u05ea",
-      "desc": "Rocket barrage \u2014 The sirens are in northern border communities near the Lebanon frontier, and there is no contradicting OSINT pointing elsewhere, making a Hezbollah-style rocket attack most likely.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
       "date": "2026-03-27",
       "time": "00:19:15",
       "ts": 1774559955,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "14:27:01",
+      "ts": 1774610821,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e9\u05d5\u05de\u05e8\u05d4",
+      "desc": "Rocket barrage \u2014 The sirens are in far-north border towns adjacent to Lebanon, which fits a Hezbollah rocket barrage; the Iran-focused OSINT appears unrelated to this localized northern alert.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774610646
+  "updated": 1774610821
 }
