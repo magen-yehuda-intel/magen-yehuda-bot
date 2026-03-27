@@ -1,6 +1,14 @@
 {
   "alerts": [
     {
+      "ts": 1774585949.809061,
+      "utc": "2026-03-27T04:32:29.808808+00:00",
+      "type": "siren_standdown",
+      "severity": "LOW",
+      "areas": [],
+      "desc": ""
+    },
+    {
       "ts": 1774578926.4688551,
       "utc": "2026-03-27T02:35:26.468745+00:00",
       "type": "siren_clear",
@@ -163,20 +171,12 @@
       "severity": "LOW",
       "areas": [],
       "desc": ""
-    },
-    {
-      "ts": 1774558332.295941,
-      "utc": "2026-03-26T20:52:12.295762+00:00",
-      "type": "siren_clear",
-      "severity": "MEDIUM",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
     "קריית שמונה"
   ],
-  "exported": "2026-03-27T04:30:01Z",
+  "exported": "2026-03-27T04:35:01Z",
   "count": 20
 }
