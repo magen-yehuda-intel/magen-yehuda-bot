@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "18:33:39",
-      "ts": 1774539219,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Syrian_army",
-      "target": "\u05d0\u05d5\u05d3\u05dd",
-      "desc": "Rocket barrage \u2014 Single siren in Odem near the Golan Heights with no launch-claim OSINT, making a Syria/Golan-area rocket or spillover the most likely classification.",
-      "severity": "high",
-      "origin_lat": 33.5,
-      "origin_lon": 36.3,
-      "source_country": "syria",
-      "weapon_type": "rocket",
-      "confidence": 0.52,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "18:44:05",
       "ts": 1774539845,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "10:34:04",
+      "ts": 1774596844,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d0\u05e9\u05db\u05d5\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (Burkan) \u2014 Sirens are concentrated in the south and Negev/Dead Sea area, and recent OSINT indicates an Iran-linked regional escalation with drone/missile activity from the Gulf/Yemen",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.73,
+      "live": true
     }
   ],
-  "updated": 1774596054
+  "updated": 1774596844
 }
