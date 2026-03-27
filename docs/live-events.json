@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-26",
-      "time": "20:28:04",
-      "ts": 1774546084,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d0\u05d3\u05de\u05d9\u05ea",
-      "desc": "Rocket barrage \u2014 Sirens are limited to northern border communities near Lebanon, and there is no contradicting OSINT pointing elsewhere, making a Hezbollah rocket attack the most likely source.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-26",
       "time": "21:05:34",
       "ts": 1774548334,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "13:24:51",
+      "ts": 1774607091,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e9\u05d7\u05e7",
+      "desc": "UAV/Drone attack (Shahed-136) \u2014 The sirens span multiple distant areas from the West Bank/Judea and Samaria through Jerusalem outskirts, which fits a coordinated long-range strike, and recent OSINT re",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "uav_drone",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774605746
+  "updated": 1774607091
 }
