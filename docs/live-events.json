@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "00:19:15",
-      "ts": 1774559955,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Rocket barrage \u2014 Metula is a northern border siren area and there is no specific OSINT launch origin, so the most likely source is a short-range cross-border rocket from Lebanon.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.76,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "00:52:05",
       "ts": 1774561925,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-27",
+      "time": "15:07:21",
+      "ts": 1774613241,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e7\u05e8\u05d9\u05d9\u05ea \u05e9\u05de\u05d5\u05e0\u05d4",
+      "desc": "Rocket barrage \u2014 Active siren in Kiryat Shmona is a northern border event and recent OSINT includes Hezbollah activity and Lebanon-focused reports, making a Lebanon-origin rocket most likely.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.84,
+      "live": true
     }
   ],
-  "updated": 1774610821
+  "updated": 1774613241
 }
