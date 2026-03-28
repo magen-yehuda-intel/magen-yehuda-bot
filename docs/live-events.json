@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "14:27:01",
-      "ts": 1774610821,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e9\u05d5\u05de\u05e8\u05d4",
-      "desc": "Rocket barrage \u2014 The sirens are in far-north border towns adjacent to Lebanon, which fits a Hezbollah rocket barrage; the Iran-focused OSINT appears unrelated to this localized northern alert.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "15:07:21",
       "ts": 1774613241,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.82,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "08:47:04",
+      "ts": 1774676824,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d1\u05d9\u05ea \u05e1\u05d5\u05d4\u05e8 \u05e7\u05d9\u05e9\u05d5\u05df",
+      "desc": "Ballistic missile \u2014 The active sirens are in the north/Haifa area, but recent OSINT explicitly reports a missile launched from Yemen toward Israel and another note mentions continuous northern sirens,",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.84,
+      "live": true
     }
   ],
-  "updated": 1774676734
+  "updated": 1774676824
 }
