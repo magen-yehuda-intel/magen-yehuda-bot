@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "13:02:26",
-      "ts": 1774605746,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d1\u05d9\u05ea \u05d4\u05dc\u05dc",
-      "desc": "Rocket barrage \u2014 Sirens in the Upper Galilee border villages of Beit Hillel and Sde Nehemia match a northern border attack pattern, and recent OSINT references southern Lebanon and Israeli strikes on ",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "13:24:51",
       "ts": 1774607091,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.72,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "08:22:28",
+      "ts": 1774675348,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e7\u05dc\u05e2 \u05d0\u05dc\u05d5\u05df",
+      "desc": "Rocket barrage \u2014 Sirens are concentrated in the northern border and Golan/Upper Galilee area, and recent OSINT mentions Israel's attacks in Lebanon, making a Hezbollah/Lebanon rocket attack the most l",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774674382
+  "updated": 1774675348
 }
