@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "14:12:16",
-      "ts": 1774609936,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e2\u05d3\u05d9 \u05e2\u05d3",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span a wide cluster across the West Bank/central hill regions, and recent OSINT explicitly states missiles were launched from Iran toward Israel.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "14:16:29",
       "ts": 1774610189,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.82,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "08:38:26",
+      "ts": 1774676306,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e7\u05e8\u05d9\u05d9\u05ea \u05d1\u05d9\u05d0\u05dc\u05d9\u05e7",
+      "desc": "Ballistic missile \u2014 A siren in Kiryat Bialik aligns with northern/central Israel, and recent OSINT explicitly reports a missile launched from Yemen toward Israel, making a Yemen-origin strike the best",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.78,
+      "live": true
     }
   ],
-  "updated": 1774676217
+  "updated": 1774676306
 }
