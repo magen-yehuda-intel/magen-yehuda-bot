@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "10:36:43",
-      "ts": 1774597003,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d1\u05e0\u05d9 \u05d3\u05e7\u05dc\u05d9\u05dd",
-      "desc": "Ballistic missile (unknown) \u2014 The sirens span multiple distant Judea/Samaria and Dead Sea-area communities, and recent OSINT indicates an active Iran war context with Iranian strike/retaliation report",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.74,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "11:58:03",
       "ts": 1774601883,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "06:19:07",
+      "ts": 1774667947,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d7\u05e0\u05d9\u05d0\u05dc",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Widespread sirens across the center and surrounding areas together with IDF OSINT confirming missiles launched from Iran indicate an Iranian ballistic missile salvo",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774667574
+  "updated": 1774667947
 }
