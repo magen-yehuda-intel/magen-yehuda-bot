@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "14:20:38",
-      "ts": 1774610438,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d1\u05df \u05e9\u05de\u05d5\u05d0\u05dc",
-      "desc": "Ballistic missile (unknown) \u2014 Simultaneous sirens across the south and central coastal plain align with a coordinated Iranian long-range strike, reinforced by recent OSINT describing ongoing Iranian f",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.91,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "14:24:06",
       "ts": 1774610646,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.86,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "08:43:56",
+      "ts": 1774676636,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05e0\u05e9\u05e8",
+      "desc": "Ballistic missile \u2014 The sirens are in the Haifa/Krayot area and recent OSINT explicitly reports a missile launched from Yemen toward Israel, which best fits a Yemen-origin long-range strike.",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774676478
+  "updated": 1774676636
 }
