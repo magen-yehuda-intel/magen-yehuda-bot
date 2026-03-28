@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "08:36:57",
-      "ts": 1774676217,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e9\u05e2\u05e8 \u05e0\u05e2\u05de\u05df",
-      "desc": "Rocket barrage \u2014 The sirens are in the Acre/Nahariya northern corridor, which aligns with a Lebanon-origin rocket attack, while the OSINT is unrelated to an ongoing Israel strike cycle in Iran.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "08:38:26",
       "ts": 1774676306,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.96,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "18:54:53",
+      "ts": 1774713293,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e0.\u05e2.\u05de",
+      "desc": "Ballistic missile (Burkan) \u2014 The sirens are concentrated in the south and Negev/Dead Sea areas, and recent OSINT includes Houthis claiming an attack on Israel, which best fits a Yemen-origin long-rang",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.88,
+      "live": true
     }
   ],
-  "updated": 1774710010
+  "updated": 1774713293
 }
