@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "18:59:23",
-      "ts": 1774627163,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens in Metula and Misgav Am are northern border areas consistent with Lebanon-origin fire, and the broader OSINT context is focused on the Iran war without a clearer alternative so",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "19:07:43",
       "ts": 1774627663,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.81,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "14:18:31",
+      "ts": 1774696711,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05e9\u05db\u05d5\u05dc\u05d5\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Simultaneous sirens across south, center, and West Bank areas with IDF OSINT explicitly stating missiles launched from Iran indicate a coordinated Iranian ballistic",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774696466
+  "updated": 1774696711
 }
