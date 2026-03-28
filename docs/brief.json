@@ -1,30 +1,30 @@
 {
-  "generated_at": "2026-03-28T01:00:09.195494+00:00",
+  "generated_at": "2026-03-28T01:30:10.235222+00:00",
   "briefs": {
     "0.5": {
       "en": "<p>Brief generation failed for 30 minutes window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
-      "count": 19
+      "count": 9
     },
     "2": {
       "en": "<p>Brief generation failed for 2 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 74
+      "count": 62
     },
     "6": {
       "en": "<p>Brief generation failed for 6 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 237
+      "count": 225
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 1022
+      "count": 1018
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 2161
+      "count": 2154
     }
   }
 }
