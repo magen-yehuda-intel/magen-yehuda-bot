@@ -22,11 +22,21 @@ AOAI_API_VERSION = "2025-01-01-preview"
 TIME_WINDOWS = [0.5, 2, 6, 24, 48]  # hours
 
 def _get_token():
+    # Hardcode dev tenant to avoid breaking when az context switches to corp
+    DEV_TENANT_ID = "dc617093-60a7-4d4d-9f6f-828c0db25804"
     try:
-        from azure.identity import DefaultAzureCredential
-        cred = DefaultAzureCredential()
-        token = cred.get_token("https://cognitiveservices.azure.com/.default")
-        return token.token
+        import subprocess
+        result = subprocess.run(
+            ['az', 'account', 'get-access-token',
+             '--resource', 'https://cognitiveservices.azure.com',
+             '--tenant', DEV_TENANT_ID,
+             '--query', 'accessToken', '-o', 'tsv'],
+            capture_output=True, text=True, timeout=30
+        )
+        if result.returncode != 0:
+            print(f"Auth failed: {result.stderr.strip()}", file=sys.stderr)
+            sys.exit(1)
+        return result.stdout.strip()
     except Exception as e:
         print(f"Auth failed: {e}", file=sys.stderr)
         sys.exit(1)
