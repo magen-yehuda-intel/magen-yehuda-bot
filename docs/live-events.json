@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "16:43:53",
-      "ts": 1774705433,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05e8\u05db\u05d6 \u05d0\u05d6\u05d5\u05e8\u05d9 \u05de\u05d1\u05d5\u05d0\u05d5\u05ea \u05d7\u05e8\u05de\u05d5\u05df",
-      "desc": "Rocket barrage \u2014 The sirens are in the northern Galilee border area, which fits a Lebanon-origin attack more than Gaza or long-range Iran/Yemen fire; no explicit OSINT confirms a different launch orig",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "16:45:56",
       "ts": 1774705556,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "01:57:52",
+      "ts": 1774738672,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05de\u05e8\u05e2\u05d9\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Sirens span south, center-adjacent, and multiple distant regions simultaneously, and recent OSINT explicitly states missiles launched from Iran toward Israel",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774738413
+  "updated": 1774738672
 }
