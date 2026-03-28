@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "08:43:56",
-      "ts": 1774676636,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05e0\u05e9\u05e8",
-      "desc": "Ballistic missile \u2014 The sirens are in the Haifa/Krayot area and recent OSINT explicitly reports a missile launched from Yemen toward Israel, which best fits a Yemen-origin long-range strike.",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.72,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "08:45:34",
       "ts": 1774676734,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.98,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "19:18:46",
+      "ts": 1774714726,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05e2\u05d9\u05d9\u05df \u05d1\u05e8\u05d5\u05da",
+      "desc": "Rocket barrage \u2014 Ma'ayan Baruch is a northern border siren area and the all-clear message indicates no new nationwide attack, so the most likely active threat is a short-range Lebanon-origin rocket sa",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.86,
+      "live": true
     }
   ],
-  "updated": 1774713599
+  "updated": 1774714726
 }
