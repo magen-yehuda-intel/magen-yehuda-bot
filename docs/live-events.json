@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "08:38:26",
-      "ts": 1774676306,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e7\u05e8\u05d9\u05d9\u05ea \u05d1\u05d9\u05d0\u05dc\u05d9\u05e7",
-      "desc": "Ballistic missile \u2014 A siren in Kiryat Bialik aligns with northern/central Israel, and recent OSINT explicitly reports a missile launched from Yemen toward Israel, making a Yemen-origin strike the best",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.78,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "08:41:18",
       "ts": 1774676478,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "18:58:26",
+      "ts": 1774713506,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05e7\u05e1\u05e8 \u05d0-\u05e1\u05e8",
+      "desc": "Ballistic missile (Burkan) \u2014 Siren pattern is concentrated in the Negev/Dead Sea area and recent OSINT cites Houthis and Iran-related retaliation, consistent with a Yemen-origin long-range strike.",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.88,
+      "live": true
     }
   ],
-  "updated": 1774713293
+  "updated": 1774713506
 }
