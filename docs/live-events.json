@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "08:06:22",
-      "ts": 1774674382,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d7\u05e0\u05d9\u05ea\u05d4",
-      "desc": "Ballistic missile \u2014 The active sirens are in the far north, which does not fit Yemen geographically, but the only relevant recent OSINT is a Reuters report of a missile launch from Yemen, making this ",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.72,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "08:22:28",
       "ts": 1774675348,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.82,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "16:45:56",
+      "ts": 1774705556,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d9\u05e4\u05ea\u05d7",
+      "desc": "Rocket barrage \u2014 Sirens in Yiftach and Ramat Naftali are in the far northern border area, which most closely fits a Lebanon-origin rocket attack despite the mixed and weak OSINT context.",
+      "severity": "high",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.63,
+      "live": true
     }
   ],
-  "updated": 1774705433
+  "updated": 1774705556
 }
