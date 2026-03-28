@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "16:34:38",
-      "ts": 1774704878,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens are concentrated in northern border towns near Lebanon and recent OSINT references a Hezbollah/Radwan target, making a Lebanon-origin rocket salvo most likely.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "16:37:57",
       "ts": 1774705077,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.96,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "01:11:45",
+      "ts": 1774735905,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e9\u05d3\u05d4 \u05e0\u05d7\u05de\u05d9\u05d4",
+      "desc": "Rocket barrage \u2014 Sirens in Kiryat Shmona and Sde Nehemia are northern border locations, and without contrary OSINT the most likely source is Lebanon/Hezbollah rockets.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774735742
+  "updated": 1774735905
 }
