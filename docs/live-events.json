@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "06:19:07",
-      "ts": 1774667947,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d7\u05e0\u05d9\u05d0\u05dc",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Widespread sirens across the center and surrounding areas together with IDF OSINT confirming missiles launched from Iran indicate an Iranian ballistic missile salvo",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "07:27:54",
       "ts": 1774672074,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "16:40:54",
+      "ts": 1774705254,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e9\u05de\u05d9\u05e8",
+      "desc": "Rocket barrage \u2014 A single siren area in Shamir points to a northern border threat, and the OSINT does not confirm a different launch source, so Lebanon/Hezbollah is the most likely origin.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774705077
+  "updated": 1774705254
 }
