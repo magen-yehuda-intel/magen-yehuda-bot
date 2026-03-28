@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-27",
-      "time": "11:58:03",
-      "ts": 1774601883,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d3\u05d5\u05d1''\u05d1",
-      "desc": "Rocket barrage \u2014 Sirens are confined to northern border communities near Lebanon, which strongly matches a Hezbollah rocket attack despite the unrelated OSINT items.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.97,
-      "live": true
-    },
-    {
-      "date": "2026-03-27",
       "time": "12:01:36",
       "ts": 1774602096,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "07:27:54",
+      "ts": 1774672074,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Houthis",
+      "target": "\u05d9\u05e2\u05e8\u05d4",
+      "desc": "Ballistic missile \u2014 Recent OSINT explicitly reports a launch from Yemen, but the active sirens are only in far-northern border areas so the match is less direct and confidence is moderate.",
+      "severity": "critical",
+      "origin_lat": 15.35,
+      "origin_lon": 44.2,
+      "source_country": "yemen",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774667947
+  "updated": 1774672074
 }
