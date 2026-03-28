@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "06:06:01",
-      "ts": 1774667161,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05dc\u05db\u05d9\u05d4",
-      "desc": "Rocket barrage \u2014 Malchiya is a northern border locality near Lebanon, and the recent OSINT does not contradict a likely Hezbollah rocket launch from Lebanon.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.78,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "06:12:54",
       "ts": 1774667574,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "16:34:38",
+      "ts": 1774704878,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
+      "desc": "Rocket barrage \u2014 Sirens are concentrated in northern border towns near Lebanon and recent OSINT references a Hezbollah/Radwan target, making a Lebanon-origin rocket salvo most likely.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774697169
+  "updated": 1774704878
 }
