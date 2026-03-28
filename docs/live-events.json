@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "08:47:04",
-      "ts": 1774676824,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d1\u05d9\u05ea \u05e1\u05d5\u05d4\u05e8 \u05e7\u05d9\u05e9\u05d5\u05df",
-      "desc": "Ballistic missile \u2014 The active sirens are in the north/Haifa area, but recent OSINT explicitly reports a missile launched from Yemen toward Israel and another note mentions continuous northern sirens,",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.84,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "08:51:54",
       "ts": 1774677114,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-28",
+      "time": "20:45:43",
+      "ts": 1774719943,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d9\u05e2\u05e8\u05d4",
+      "desc": "Rocket barrage \u2014 Sirens in Ya'ara and Arab al-Aramshe are in the far north border area, and with no relevant OSINT the most likely source is Lebanon/Hezbollah rockets.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.83,
+      "live": true
     }
   ],
-  "updated": 1774717509
+  "updated": 1774719943
 }
