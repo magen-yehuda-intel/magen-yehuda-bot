@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "05:21:25",
-      "ts": 1774750885,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Hamas",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e0.\u05e2.\u05de",
-      "desc": "Rocket barrage \u2014 Sirens are concentrated in the Gaza envelope/Netivot area and there is no OSINT indicating a wider Iranian or Yemen attack, so this matches a short-range launch from Gaza.",
-      "severity": "critical",
-      "origin_lat": 31.42,
-      "origin_lon": 34.35,
-      "source_country": "gaza",
-      "weapon_type": "rocket",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "05:24:09",
       "ts": 1774751049,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.92,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "15:19:02",
+      "ts": 1774786742,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d1\u05d0\u05e8 \u05e9\u05d1\u05e2 - \u05d3\u05e8\u05d5\u05dd",
+      "desc": "Ballistic missile (Fateh-110/Sejjil) \u2014 Simultaneous sirens across the south, Negev, and Dead Sea/Merhavim suggest a long-range coordinated salvo consistent with an Iranian ballistic missile attack.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.84,
+      "live": true
     }
   ],
-  "updated": 1774785896
+  "updated": 1774786742
 }
