@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "10:00:43",
-      "ts": 1774767643,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e2\u05e8\u05e2\u05e8\u05d4 \u05d1\u05e0\u05d2\u05d1",
-      "desc": "Ballistic missile \u2014 Multiple sirens across the Negev and Dead Sea area plus OSINT explicitly stating missiles launched from Iran indicate an Iranian ballistic missile attack.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "10:13:17",
       "ts": 1774768397,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "19:24:43",
+      "ts": 1774801483,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d2\u05d1\u05d9\u05dd",
+      "desc": "Mortar fire \u2014 The sirens are concentrated in the Gaza envelope and western Negev, but recent OSINT includes Hezbollah activity in southern Lebanon with attempted mortar fire, making a Lebanon-origin s",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "mortar",
+      "confidence": 0.71,
+      "live": true
     }
   ],
-  "updated": 1774795200
+  "updated": 1774801483
 }
