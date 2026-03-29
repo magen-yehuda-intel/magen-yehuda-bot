@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "06:23:05",
-      "ts": 1774754585,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Syrian_army",
-      "target": "\u05e2'\u05d2'\u05e8",
-      "desc": "Rocket barrage \u2014 The only active siren area is Golan-adjacent \u05e2'\u05d2'\u05e8, which points to the Syrian border corridor, and there is no direct OSINT confirming another origin.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 36.3,
-      "source_country": "syria",
-      "weapon_type": "rocket",
-      "confidence": 0.72,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "06:25:57",
       "ts": 1774754757,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "16:08:39",
+      "ts": 1774789719,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05e0\u05e8\u05d4",
+      "desc": "Rocket barrage \u2014 Single northern-border siren in Manara points to a short-range launch from Lebanon, with no recent OSINT indicating another source; the all-clear message is not a new attack.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774787732
+  "updated": 1774789719
 }
