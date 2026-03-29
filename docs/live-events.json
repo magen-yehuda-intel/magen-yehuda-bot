@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "18:59:59",
-      "ts": 1774713599,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05dc\u05e7\u05d9\u05d4",
-      "desc": "Ballistic missile \u2014 The active sirens are in the south/Negev and recent IDF OSINT explicitly states missiles were launched from Iran toward Israel, indicating an Iranian ballistic salvo.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "19:18:46",
       "ts": 1774714726,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "06:23:05",
+      "ts": 1774754585,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Syrian_army",
+      "target": "\u05e2'\u05d2'\u05e8",
+      "desc": "Rocket barrage \u2014 The only active siren area is Golan-adjacent \u05e2'\u05d2'\u05e8, which points to the Syrian border corridor, and there is no direct OSINT confirming another origin.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 36.3,
+      "source_country": "syria",
+      "weapon_type": "rocket",
+      "confidence": 0.72,
+      "live": true
     }
   ],
-  "updated": 1774751049
+  "updated": 1774754585
 }
