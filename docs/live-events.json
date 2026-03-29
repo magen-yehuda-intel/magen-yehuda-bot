@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "18:54:53",
-      "ts": 1774713293,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e0.\u05e2.\u05de",
-      "desc": "Ballistic missile (Burkan) \u2014 The sirens are concentrated in the south and Negev/Dead Sea areas, and recent OSINT includes Houthis claiming an attack on Israel, which best fits a Yemen-origin long-rang",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "18:58:26",
       "ts": 1774713506,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "05:21:25",
+      "ts": 1774750885,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Hamas",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e0.\u05e2.\u05de",
+      "desc": "Rocket barrage \u2014 Sirens are concentrated in the Gaza envelope/Netivot area and there is no OSINT indicating a wider Iranian or Yemen attack, so this matches a short-range launch from Gaza.",
+      "severity": "critical",
+      "origin_lat": 31.42,
+      "origin_lon": 34.35,
+      "source_country": "gaza",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774750793
+  "updated": 1774750885
 }
