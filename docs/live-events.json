@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "09:55:12",
-      "ts": 1774767312,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d1\u05d5 \u05e7\u05e8\u05d9\u05e0\u05d0\u05ea",
-      "desc": "Ballistic missile \u2014 The sirens span a very large area across the south and Negev, and recent OSINT references IDF strikes in Tehran consistent with an Iranian retaliatory ballistic salvo.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.94,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "10:00:43",
       "ts": 1774767643,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.78,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "17:40:00",
+      "ts": 1774795200,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d1\u05d0\u05e8 \u05e9\u05d1\u05e2 - \u05d3\u05e8\u05d5\u05dd",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Sirens span Beersheba and many southern Negev/Bedouin communities, and OSINT explicitly states missiles launched from Iran toward Israel.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774794018
+  "updated": 1774795200
 }
