@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "21:07:33",
-      "ts": 1774721253,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05de\u05d9\u05ea\u05e8",
-      "desc": "Ballistic missile \u2014 Single siren in the south with explicit IDF OSINT confirming missiles launched from Iran toward Israel, indicating a long-range ballistic attack rather than a local rocket salvo",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "22:51:02",
       "ts": 1774727462,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.96,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "07:51:20",
+      "ts": 1774759880,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e9\u05d5\u05de\u05e8\u05d4",
+      "desc": "Rocket barrage \u2014 Sirens in Shomera and Arab al-Aramshe are northern border communities consistent with short-range fire from Lebanon, and there is no stronger OSINT pointing elsewhere",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774755184
+  "updated": 1774759880
 }
