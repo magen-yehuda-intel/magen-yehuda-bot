@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "13:36:12",
-      "ts": 1774780572,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05e6\u05e4\u05ea - \u05e0\u05d5\u05e3 \u05db\u05e0\u05e8\u05ea",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Massive multi-region sirens across north, center, and south with OSINT explicitly stating missiles launched from Iran toward Israel.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "13:45:09",
       "ts": 1774781109,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "22:09:22",
+      "ts": 1774811362,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d6\u05d5\u05e8 \u05ea\u05e2\u05e9\u05d9\u05d9\u05d4 \u05e2\u05d3 \u05d4\u05dc\u05d5\u05dd",
+      "desc": "Ballistic missile (unknown) \u2014 Mass sirens across the south, center, Jerusalem, and West Bank areas combined with active strikes on Iran indicate a coordinated Iranian long-range ballistic attack wave.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.92,
+      "live": true
     }
   ],
-  "updated": 1774809434
+  "updated": 1774811362
 }
