@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "15:19:02",
-      "ts": 1774786742,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d1\u05d0\u05e8 \u05e9\u05d1\u05e2 - \u05d3\u05e8\u05d5\u05dd",
-      "desc": "Ballistic missile (Fateh-110/Sejjil) \u2014 Simultaneous sirens across the south, Negev, and Dead Sea/Merhavim suggest a long-range coordinated salvo consistent with an Iranian ballistic missile attack.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.84,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "15:35:32",
       "ts": 1774787732,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.84,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "02:52:12",
+      "ts": 1774828332,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05e2'\u05d2'\u05e8",
+      "desc": "Mortar fire \u2014 Sirens in \u05e2'\u05d2'\u05e8 indicate a northern border incident, and with no contrary OSINT the most likely source is short-range fire from Lebanon near the border.",
+      "severity": "high",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "mortar",
+      "confidence": 0.66,
+      "live": true
     }
   ],
-  "updated": 1774825073
+  "updated": 1774828332
 }
