@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "15:04:56",
-      "ts": 1774785896,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e1\u05e2\u05e8",
-      "desc": "Rocket barrage \u2014 The active sirens are in northern border communities near Lebanon, which strongly matches a Hezbollah rocket attack despite unrelated Iran OSINT.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "15:19:02",
       "ts": 1774786742,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "01:57:53",
+      "ts": 1774825073,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05d3\u05d5\u05d1''\u05d1",
+      "desc": "Rocket barrage \u2014 Dov'ev is a northern border siren area and the recent OSINT is not explicit on launch origin, so the most likely source is Lebanon/Hezbollah.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.84,
+      "live": true
     }
   ],
-  "updated": 1774815030
+  "updated": 1774825073
 }
