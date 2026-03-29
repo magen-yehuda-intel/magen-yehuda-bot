@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "01:53:33",
-      "ts": 1774738413,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d2\u05d1\u05d9\u05dd",
-      "desc": "Ballistic missile \u2014 Despite the siren locations being in the Gaza envelope, the recent OSINT explicitly states missiles launched from Iran toward Israel, which overrides local geography.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.98,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "01:57:52",
       "ts": 1774738672,
       "lat": 32.085,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.99,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "13:30:27",
+      "ts": 1774780227,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d9\u05e8\u05d5\u05e9\u05dc\u05d9\u05dd - \u05de\u05d6\u05e8\u05d7",
+      "desc": "Ballistic missile \u2014 Eastern Jerusalem/Dead Sea-adjacent sirens combined with IDF OSINT explicitly stating missiles launched from Iran indicate a confirmed Iranian ballistic attack",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.98,
+      "live": true
     }
   ],
-  "updated": 1774780105
+  "updated": 1774780227
 }
