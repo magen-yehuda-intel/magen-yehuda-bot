@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "13:56:31",
-      "ts": 1774781791,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05de\u05dc\u05db\u05d9\u05d4",
-      "desc": "Rocket barrage \u2014 Malkia is a northern border community and recent OSINT includes Hezbollah-linked reports of heavy fire in south Lebanon, making a Lebanon-origin rocket most likely.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "15:01:26",
       "ts": 1774785686,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "23:06:55",
+      "ts": 1774814815,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05dc\u05d9\u05e4\u05d6 \u05d5\u05de\u05db\u05e8\u05d5\u05ea \u05ea\u05de\u05e0\u05e2",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span a wide southern corridor including the Eilat/Arava and Dead Sea area, which fits a long-range coordinated strike, and the recent OSINT shows an acti",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774811576
+  "updated": 1774814815
 }
