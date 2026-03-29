@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-28",
-      "time": "18:58:26",
-      "ts": 1774713506,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Houthis",
-      "target": "\u05e7\u05e1\u05e8 \u05d0-\u05e1\u05e8",
-      "desc": "Ballistic missile (Burkan) \u2014 Siren pattern is concentrated in the Negev/Dead Sea area and recent OSINT cites Houthis and Iran-related retaliation, consistent with a Yemen-origin long-range strike.",
-      "severity": "critical",
-      "origin_lat": 15.35,
-      "origin_lon": 44.2,
-      "source_country": "yemen",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-28",
       "time": "18:59:59",
       "ts": 1774713599,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "05:24:09",
+      "ts": 1774751049,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d1\u05d5 \u05e7\u05e8\u05d9\u05e0\u05d0\u05ea",
+      "desc": "Ballistic missile \u2014 Siren locations in the Negev/Dead Sea area together with IDF OSINT explicitly stating missiles launched from Iran indicate an Iranian ballistic missile attack",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774750885
+  "updated": 1774751049
 }
