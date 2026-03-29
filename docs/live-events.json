@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "02:40:48",
-      "ts": 1774741248,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d3\u05d9\u05e9\u05d5\u05df",
-      "desc": "Rocket barrage \u2014 Sirens in Dishon and Malkia are northern border areas and the OSINT does not indicate a relevant Yemen launch, making a Lebanon-origin rocket attack most likely.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.88,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "05:07:03",
       "ts": 1774750023,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.91,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "13:56:31",
+      "ts": 1774781791,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05dc\u05db\u05d9\u05d4",
+      "desc": "Rocket barrage \u2014 Malkia is a northern border community and recent OSINT includes Hezbollah-linked reports of heavy fire in south Lebanon, making a Lebanon-origin rocket most likely.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.88,
+      "live": true
     }
   ],
-  "updated": 1774781109
+  "updated": 1774781791
 }
