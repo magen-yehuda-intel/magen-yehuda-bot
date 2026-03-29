@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "15:01:26",
-      "ts": 1774785686,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e8\u05d0\u05e9 \u05d4\u05e0\u05e7\u05e8\u05d4",
-      "desc": "Rocket barrage \u2014 Sirens in \u05e8\u05d0\u05e9 \u05d4\u05e0\u05e7\u05e8\u05d4 indicate a northern border attack and recent OSINT focuses on Hezbollah activity, making a Lebanon-origin rocket the most likely threat.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.92,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "15:04:56",
       "ts": 1774785896,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "23:10:30",
+      "ts": 1774815030,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05dc \u05e2\u05de\u05d0\u05e8\u05e0\u05d9",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Sirens in the Arava/Eilat area combined with explicit OSINT stating missiles launched from Iran indicate an Iranian ballistic missile attack.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.99,
+      "live": true
     }
   ],
-  "updated": 1774814815
+  "updated": 1774815030
 }
