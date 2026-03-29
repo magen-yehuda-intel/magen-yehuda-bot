@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "10:13:17",
-      "ts": 1774768397,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05d1\u05d5 \u05e7\u05e8\u05d9\u05e0\u05d0\u05ea",
-      "desc": "Ballistic missile \u2014 The sirens span the south and Negev in a wide multi-city pattern, and recent OSINT explicitly states missiles were launched from Iran toward Israel.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.99,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "10:20:00",
       "ts": 1774768800,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "mortar",
       "confidence": 0.71,
       "live": true
+    },
+    {
+      "date": "2026-03-29",
+      "time": "19:30:47",
+      "ts": 1774801847,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05dc \u05e4\u05d5\u05e8\u05e2\u05d4",
+      "desc": "Ballistic missile \u2014 The sirens span a wide southern/central-adjacent area and OSINT explicitly reports missiles launched from Iran toward Israel, consistent with a coordinated ballistic salvo.",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.96,
+      "live": true
     }
   ],
-  "updated": 1774801483
+  "updated": 1774801847
 }
