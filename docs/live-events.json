@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-30",
-      "time": "07:09:29",
-      "ts": 1774843769,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "Hamas",
-      "target": "\u05d9\u05e8\u05d5\u05d7\u05dd",
-      "desc": "Rocket barrage \u2014 The sirens are concentrated in the southern Negev/Beersheva and Gaza-envelope belt, which most strongly indicates a Gaza-origin rocket barrage despite unrelated recent OSINT.",
-      "severity": "critical",
-      "origin_lat": 31.42,
-      "origin_lon": 34.35,
-      "source_country": "gaza",
-      "weapon_type": "rocket",
-      "confidence": 0.82,
-      "live": true
-    },
-    {
-      "date": "2026-03-30",
       "time": "07:33:04",
       "ts": 1774845184,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "16:51:09",
+      "ts": 1774878669,
+      "lat": 32.794,
+      "lon": 34.989,
+      "type": "missile",
+      "actor": "Hezbollah",
+      "target": "\u05de\u05d8\u05d5\u05dc\u05d4",
+      "desc": "Rocket barrage \u2014 Sirens only in Metula indicate a northern border attack, and the recent Lebanon-focused OSINT makes Hezbollah/Lebanon the most likely source.",
+      "severity": "critical",
+      "origin_lat": 33.85,
+      "origin_lon": 35.86,
+      "source_country": "lebanon",
+      "weapon_type": "rocket",
+      "confidence": 0.93,
+      "live": true
     }
   ],
-  "updated": 1774876819
+  "updated": 1774878669
 }
