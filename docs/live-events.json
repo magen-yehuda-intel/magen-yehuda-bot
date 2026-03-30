@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "19:30:47",
-      "ts": 1774801847,
-      "lat": 32.085,
-      "lon": 34.781,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05dc \u05e4\u05d5\u05e8\u05e2\u05d4",
-      "desc": "Ballistic missile \u2014 The sirens span a wide southern/central-adjacent area and OSINT explicitly reports missiles launched from Iran toward Israel, consistent with a coordinated ballistic salvo.",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.96,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "19:57:04",
       "ts": 1774803424,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.82,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "07:33:04",
+      "ts": 1774845184,
+      "lat": 31.252,
+      "lon": 34.791,
+      "type": "missile",
+      "actor": "Hamas",
+      "target": "\u05e1\u05e2\u05d5\u05d5\u05d4",
+      "desc": "Rocket barrage \u2014 The sirens are concentrated in the Gaza envelope and southern Negev/Beer Sheva area, which matches a rocket barrage from Gaza, while the OSINT is only an all-clear and not a new attac",
+      "severity": "critical",
+      "origin_lat": 31.42,
+      "origin_lon": 34.35,
+      "source_country": "gaza",
+      "weapon_type": "rocket",
+      "confidence": 0.86,
+      "live": true
     }
   ],
-  "updated": 1774843769
+  "updated": 1774845184
 }
