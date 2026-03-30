@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-30",
-      "time": "02:52:12",
-      "ts": 1774828332,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05e2'\u05d2'\u05e8",
-      "desc": "Mortar fire \u2014 Sirens in \u05e2'\u05d2'\u05e8 indicate a northern border incident, and with no contrary OSINT the most likely source is short-range fire from Lebanon near the border.",
-      "severity": "high",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "mortar",
-      "confidence": 0.66,
-      "live": true
-    },
-    {
-      "date": "2026-03-30",
       "time": "04:01:39",
       "ts": 1774832499,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "ballistic_missile",
       "confidence": 0.97,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "12:43:51",
+      "ts": 1774863831,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05d1\u05d5 \u05e7\u05e8\u05d9\u05e0\u05d0\u05ea",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 Wide southern-negev sirens combined with OSINT reporting a recent Iranian/Hezbollah missile barrage hitting Haifa indicate a coordinated long-range Iranian ballisti",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.94,
+      "live": true
     }
   ],
-  "updated": 1774859509
+  "updated": 1774863831
 }
