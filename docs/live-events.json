@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-29",
-      "time": "23:06:55",
-      "ts": 1774814815,
-      "lat": 31.252,
-      "lon": 34.791,
-      "type": "missile",
-      "actor": "IRGC",
-      "target": "\u05d0\u05dc\u05d9\u05e4\u05d6 \u05d5\u05de\u05db\u05e8\u05d5\u05ea \u05ea\u05de\u05e0\u05e2",
-      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens span a wide southern corridor including the Eilat/Arava and Dead Sea area, which fits a long-range coordinated strike, and the recent OSINT shows an acti",
-      "severity": "critical",
-      "origin_lat": 33.5,
-      "origin_lon": 48.5,
-      "source_country": "iran",
-      "weapon_type": "ballistic_missile",
-      "confidence": 0.93,
-      "live": true
-    },
-    {
-      "date": "2026-03-29",
       "time": "23:10:30",
       "ts": 1774815030,
       "lat": 31.252,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.93,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "11:21:38",
+      "ts": 1774858898,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05d0\u05db\u05e1\u05d0\u05dc",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The siren footprint spans northern Israel including Haifa and the Galilee, and OSINT explicitly states missiles launched from Iran toward Israel with incoming missi",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774858554
+  "updated": 1774858898
 }
