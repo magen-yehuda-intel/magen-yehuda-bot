@@ -141,10 +141,10 @@
 
     <!-- Summary Cards -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
-      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;text-align:center" data-tooltip="Total tracked energy facilities across Iran, Gulf states, and Israel. Baseline: 44 all operational pre-war.">
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px;text-align:center" data-tooltip="Total tracked energy facilities across Iran, Gulf states, and Israel. Baseline: 40 all operational pre-war.">
         <div style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">Total Tracked</div>
-        <div style="color:#fbbf24;font-size:28px;font-weight:800" id="facilityTotal">44</div>
-        <div style="color:#64748b;font-size:10px">baseline: 44</div>
+        <div style="color:#fbbf24;font-size:28px;font-weight:800" id="facilityTotal">40</div>
+        <div style="color:#64748b;font-size:10px">baseline: 40</div>
       </div>
       <div style="background:#1e293b;border:1px solid #34d399;border-radius:8px;padding:12px;text-align:center" data-tooltip="Facilities with no reported damage or shutdown orders. Can still be operating under elevated threat.">
         <div style="color:#94a3b8;font-size:10px;text-transform:uppercase;letter-spacing:1px">Operational</div>
@@ -498,7 +498,7 @@
         <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin:0">🔥 Natural Gas / LNG — 1 Month</h3>
         <div style="display:flex;gap:14px;font-size:11px">
           <span style="color:#34d399">● NG: <b style="color:#6ee7b7">$2.87</b></span>
-          <span style="color:#8b5cf6">● UNG ETF: <b style="color:#c4b5fd">$12.75</b></span>
+          <span style="color:#8b5cf6">● UNG ETF: <b style="color:#c4b5fd">$11.66</b></span>
         </div>
       </div>
       <canvas id="ngFuturesChart" style="max-height:240px"></canvas>
@@ -1521,7 +1521,7 @@ setInterval(tryFetchMetrics, 60000);
 // ── NATURAL GAS / LNG FUTURES CHART ──
 (function() {
   const ng = [{"d":"02-09","p":3.14},{"d":"02-10","p":3.12},{"d":"02-11","p":3.16},{"d":"02-12","p":3.22},{"d":"02-13","p":3.24},{"d":"02-17","p":3.03},{"d":"02-18","p":3.01},{"d":"02-19","p":3.0},{"d":"02-20","p":3.05},{"d":"02-23","p":2.98},{"d":"02-24","p":2.91},{"d":"02-25","p":2.97},{"d":"02-26","p":2.83},{"d":"02-27","p":2.86},{"d":"03-02","p":2.96},{"d":"03-03","p":3.05},{"d":"03-04","p":2.92},{"d":"03-05","p":3.0},{"d":"03-06","p":3.19},{"d":"03-09","p":3.12},{"d":"03-10","p":3.02},{"d":"03-11","p":3.21},{"d":"03-12","p":3.23},{"d":"03-13","p":3.13},{"d":"03-16","p":3.02},{"d":"03-17","p":3.03},{"d":"03-18","p":3.07},{"d":"03-19","p":3.17},{"d":"03-20","p":3.1},{"d":"03-23","p":2.89},{"d":"03-24","p":2.94},{"d":"03-25","p":2.95},{"d":"03-26","p":3.0},{"d":"03-27","p":3.1},{"d":"03-30","p":2.87}];
-  const ung = [{"d":"02-09","p":12.17},{"d":"02-10","p":12.13},{"d":"02-11","p":12.32},{"d":"02-12","p":12.43},{"d":"02-13","p":12.44},{"d":"02-17","p":11.9},{"d":"02-18","p":11.87},{"d":"02-19","p":11.8},{"d":"02-20","p":12.01},{"d":"02-23","p":11.74},{"d":"02-24","p":11.46},{"d":"02-25","p":11.6},{"d":"02-26","p":11.38},{"d":"02-27","p":11.52},{"d":"03-02","p":12.0},{"d":"03-03","p":12.28},{"d":"03-04","p":11.78},{"d":"03-05","p":12.05},{"d":"03-06","p":12.75}];
+  const ung = [{"d":"02-09","p":12.17},{"d":"02-10","p":12.13},{"d":"02-11","p":12.32},{"d":"02-12","p":12.43},{"d":"02-13","p":12.44},{"d":"02-17","p":11.9},{"d":"02-18","p":11.87},{"d":"02-19","p":11.8},{"d":"02-20","p":12.01},{"d":"02-23","p":11.74},{"d":"02-24","p":11.46},{"d":"02-25","p":11.6},{"d":"02-26","p":11.38},{"d":"02-27","p":11.52},{"d":"03-02","p":12.0},{"d":"03-03","p":12.28},{"d":"03-04","p":11.78},{"d":"03-05","p":12.05},{"d":"03-06","p":12.75},{"d":"03-09","p":12.31},{"d":"03-10","p":12.27},{"d":"03-11","p":12.88},{"d":"03-12","p":13.04},{"d":"03-13","p":12.64},{"d":"03-16","p":12.21},{"d":"03-17","p":12.2},{"d":"03-18","p":12.67},{"d":"03-19","p":12.56},{"d":"03-20","p":12.39},{"d":"03-23","p":11.73},{"d":"03-24","p":11.73},{"d":"03-25","p":11.86},{"d":"03-26","p":11.84},{"d":"03-27","p":12.28},{"d":"03-30","p":11.66}];
 
   const ctx = document.getElementById('ngFuturesChart').getContext('2d');
   new Chart(ctx, {
@@ -1607,13 +1607,15 @@ setInterval(tryFetchMetrics, 60000);
     // Iran — Struck
     { name: "Kharg Island Terminal", country: "Iran", type: "Oil Terminal", capacity: "~6M bpd exports", lat: 29.24, lon: 50.33, status: "struck", date: "2026-02-28", source: "Reuters", note: "Israeli airstrikes, main oil export terminal" },
     { name: "Isfahan Refinery", country: "Iran", type: "Refinery", capacity: "375k bpd", lat: 32.65, lon: 51.68, status: "struck", date: "2026-02-28", source: "Reuters", note: "Struck in initial wave" },
-    { name: "South Pars Gas Field", country: "Iran", type: "Gas Field", capacity: "14 bcf/day", lat: 27.50, lon: 52.60, status: "struck", date: "2025-06-15", source: "AP News", note: "Struck Jun 2025, partially restored" },
+    { name: "South Pars Gas Field", country: "Iran", type: "Gas Field", capacity: "14 bcf/day", lat: 27.50, lon: 52.60, status: "struck", date: "2026-03-18", source: "ISW/Reuters", note: "IDF strikes South Pars/Asaluyeh complex; previously struck Jun 2025, partially restored" },
     { name: "Bushehr", country: "Iran", type: "Nuclear/Energy", capacity: "1GW", lat: 28.97, lon: 50.84, status: "struck", date: "2026-03-04", source: "Energy Feed", note: "Confirmed hit" },
     { name: "Bandar Abbas Refinery", country: "Iran", type: "Refinery", capacity: "320k bpd", lat: 27.19, lon: 56.27, status: "struck", date: "2026-03-04", source: "Energy Feed", note: "Near Hormuz, strategic target" },
     { name: "Abadan Refinery", country: "Iran", type: "Refinery", capacity: "400k bpd", lat: 30.34, lon: 48.28, status: "operational", note: "No confirmed strikes" },
     { name: "Tehran Refinery", country: "Iran", type: "Refinery", capacity: "250k bpd", lat: 35.59, lon: 51.37, status: "struck", note: "Oil depots bombed Mar 7-8 by Israel (Al Jazeera)" },
     { name: "Tabriz Refinery", country: "Iran", type: "Refinery", capacity: "110k bpd", lat: 38.00, lon: 46.30, status: "operational", note: "Northwest, not struck" },
-    { name: "Asaluyeh Petrochemical", country: "Iran", type: "Petrochemical", capacity: "Major hub", lat: 27.48, lon: 52.61, status: "operational", note: "Near South Pars" },
+    { name: "Asaluyeh Petrochemical", country: "Iran", type: "Petrochemical", capacity: "Major hub", lat: 27.48, lon: 52.61, status: "struck", date: "2026-03-18", source: "ISW/Reuters", note: "Near South Pars; struck alongside gas field" },
+    { name: "Isfahan Gas Station", country: "Iran", type: "Gas Infrastructure", capacity: "Regional gas supply", lat: 32.67, lon: 51.70, status: "struck", date: "2026-03-24", source: "Fars News/MEE", note: "Gas admin building + pressure-reduction station on Kaveh St struck by US-Israeli jets" },
+    { name: "Khorramshahr Gas Pipeline", country: "Iran", type: "Gas Infrastructure", capacity: "Local power supply", lat: 30.44, lon: 48.17, status: "struck", date: "2026-03-24", source: "Shafaq News/MEE", note: "Gas pipeline station struck; supplies local power plant; preemptively taken offline" },
     { name: "Lavan Island", country: "Iran", type: "Oil Terminal", capacity: "200k bpd", lat: 26.80, lon: 53.36, status: "operational", note: "" },
     { name: "Kermanshah Refinery", country: "Iran", type: "Refinery", capacity: "22k bpd", lat: 34.33, lon: 47.06, status: "operational", note: "" },
     { name: "Shiraz Refinery", country: "Iran", type: "Refinery", capacity: "40k bpd", lat: 29.62, lon: 52.57, status: "operational", note: "" },
