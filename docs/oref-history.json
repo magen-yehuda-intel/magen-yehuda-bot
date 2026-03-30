@@ -1,6 +1,14 @@
 {
   "alerts": [
     {
+      "ts": 1774828947.281547,
+      "utc": "2026-03-30T00:02:27.281410+00:00",
+      "type": "siren_standdown",
+      "severity": "LOW",
+      "areas": [],
+      "desc": ""
+    },
+    {
       "ts": 1774828448.430411,
       "utc": "2026-03-29T23:54:08.430263+00:00",
       "type": "siren_clear",
@@ -165,20 +173,12 @@
       "severity": "LOW",
       "areas": [],
       "desc": ""
-    },
-    {
-      "ts": 1774804236.806609,
-      "utc": "2026-03-29T17:10:36.806511+00:00",
-      "type": "siren_standdown",
-      "severity": "LOW",
-      "areas": [],
-      "desc": ""
     }
   ],
   "last_title": "ירי רקטות וטילים",
   "last_areas": [
     "ע'ג'ר"
   ],
-  "exported": "2026-03-29T23:55:00Z",
+  "exported": "2026-03-30T00:05:00Z",
   "count": 20
 }
