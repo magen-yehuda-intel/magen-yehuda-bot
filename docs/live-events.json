@@ -2,24 +2,6 @@
   "events": [
     {
       "date": "2026-03-30",
-      "time": "01:57:53",
-      "ts": 1774825073,
-      "lat": 32.794,
-      "lon": 34.989,
-      "type": "missile",
-      "actor": "Hezbollah",
-      "target": "\u05d3\u05d5\u05d1''\u05d1",
-      "desc": "Rocket barrage \u2014 Dov'ev is a northern border siren area and the recent OSINT is not explicit on launch origin, so the most likely source is Lebanon/Hezbollah.",
-      "severity": "critical",
-      "origin_lat": 33.85,
-      "origin_lon": 35.86,
-      "source_country": "lebanon",
-      "weapon_type": "rocket",
-      "confidence": 0.84,
-      "live": true
-    },
-    {
-      "date": "2026-03-30",
       "time": "02:52:12",
       "ts": 1774828332,
       "lat": 32.794,
@@ -359,7 +341,25 @@
       "weapon_type": "rocket",
       "confidence": 0.88,
       "live": true
+    },
+    {
+      "date": "2026-03-30",
+      "time": "11:31:49",
+      "ts": 1774859509,
+      "lat": 32.085,
+      "lon": 34.781,
+      "type": "missile",
+      "actor": "IRGC",
+      "target": "\u05de\u05d9\u05d9\u05e1\u05e8",
+      "desc": "Ballistic missile (Shahab-3/Emad) \u2014 The sirens cover a wide central-northern belt including coastal and inland areas, and recent OSINT explicitly states missiles launched from Iran toward Israel with ",
+      "severity": "critical",
+      "origin_lat": 33.5,
+      "origin_lon": 48.5,
+      "source_country": "iran",
+      "weapon_type": "ballistic_missile",
+      "confidence": 0.97,
+      "live": true
     }
   ],
-  "updated": 1774859166
+  "updated": 1774859509
 }
