@@ -1,11 +1,11 @@
 {
-  "updated": "2026-03-30T15:53:00.000000+00:00",
-  "source": "Wikipedia 2026 Strait of Hormuz crisis + ISW + Reuters + AP + Guardian + Forbes",
+  "updated": "2026-03-21T07:31:27.296501+00:00",
+  "source": "Wikipedia 2026 Strait of Hormuz crisis + ISW + Reuters",
   "attacks": [
     {
       "num": 1,
       "date": "2026-03-01",
-      "name": "MT Skylight",
+      "name": "MT\u00a0Skylight",
       "flag": "Palau",
       "type": "Oil tanker",
       "result": "Abandoned; 2 crew killed, including captain",
@@ -17,7 +17,7 @@
     {
       "num": 2,
       "date": "2026-03-01",
-      "name": "MKD VYOM",
+      "name": "MKD\u00a0VYOM",
       "flag": "Marshall Islands",
       "type": "Oil tanker",
       "result": "Abandoned; 1 crew killed",
@@ -29,7 +29,7 @@
     {
       "num": 3,
       "date": "2026-03-01",
-      "name": "MT Hercules Star",
+      "name": "MT\u00a0Hercules Star",
       "flag": "Gibraltar",
       "type": "Oil tanker",
       "result": "Minor damage",
@@ -53,7 +53,7 @@
     {
       "num": 5,
       "date": "2026-03-01",
-      "name": "LCT Ayeh",
+      "name": "LCT\u00a0Ayeh",
       "flag": "United Arab Emirates",
       "type": "Oil tanker",
       "result": "Damaged",
@@ -77,7 +77,7 @@
     {
       "num": 7,
       "date": "2026-03-02",
-      "name": "Athe Nova",
+      "name": "Athe\u00a0Nova",
       "flag": "Honduras",
       "type": "Bitumen tanker",
       "result": "Damaged",
@@ -125,7 +125,7 @@
     {
       "num": 11,
       "date": "2026-03-04",
-      "name": "MSC Grace",
+      "name": "MSC\u00a0Grace",
       "flag": "Liberia",
       "type": "Container ship",
       "result": "Unharmed",
@@ -161,7 +161,7 @@
     {
       "num": 14,
       "date": "2026-03-06",
-      "name": "Mussafah 2",
+      "name": "Mussafah\u00a02",
       "flag": "United Arab Emirates",
       "type": "Tugboat",
       "result": "Sank; 4 crew dead",
@@ -185,7 +185,7 @@
     {
       "num": 16,
       "date": "2026-03-11",
-      "name": "MV Mayuree Naree",
+      "name": "MV\u00a0Mayuree Naree",
       "flag": "Thailand",
       "type": "Bulk carrier",
       "result": "Abandoned; 3 crew missing",
@@ -285,18 +285,6 @@
       "flag": "Qatar",
       "type": "Offshore vessel",
       "result": "Minor damage",
-      "abandoned": false,
-      "sunk": false,
-      "ablaze": false,
-      "casualties": 0
-    },
-    {
-      "num": 25,
-      "date": "2026-03-21",
-      "name": "Unknown",
-      "flag": "N/A",
-      "type": "Bulk carrier",
-      "result": "Unknown; projectile exploded nearby, 15nm north of Sharjah",
       "abandoned": false,
       "sunk": false,
       "ablaze": false,
@@ -422,70 +410,14 @@
       "shutdown": 7,
       "ships_attacked": 0,
       "label": "Kuwait Mina al-Ahmadi hit again"
-    },
-    {
-      "date": "2026-03-21",
-      "struck": 37,
-      "shutdown": 7,
-      "ships_attacked": 1,
-      "label": "1 ship(s) attacked; Trump 48-hour ultimatum to open Hormuz"
-    },
-    {
-      "date": "2026-03-23",
-      "struck": 37,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "Hormuz ultimatum expired 7:44 PM ET; HRW declares civilian ship attacks 'apparent war crimes'"
-    },
-    {
-      "date": "2026-03-24",
-      "struck": 39,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "US-Israeli strikes on Isfahan gas admin building + Khorramshahr gas pipeline station"
-    },
-    {
-      "date": "2026-03-25",
-      "struck": 39,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "Iran shifts to 'selective access' — permission-based transit with IRGC escorts"
-    },
-    {
-      "date": "2026-03-26",
-      "struck": 39,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "IRGC Navy commander Tangsiri killed in Israeli airstrike"
-    },
-    {
-      "date": "2026-03-27",
-      "struck": 39,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "IRGC formalizes strait closure to US/Israel/allied ports; toll booth regime ($2M/ship); Mayuree Naree aground on Qeshm Island"
-    },
-    {
-      "date": "2026-03-28",
-      "struck": 39,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "Trump extends Hormuz deadline to Apr 6 (2nd extension); Pakistan mediating 15-point framework"
-    },
-    {
-      "date": "2026-03-30",
-      "struck": 39,
-      "shutdown": 7,
-      "ships_attacked": 0,
-      "label": "Trump claims Iran allowed 20 ships through as 'sign of respect'; Iran FM denies; Iran confirms Tangsiri killing"
     }
   ],
   "summary": {
-    "total_attacks": 25,
+    "total_attacks": 24,
     "total_casualties": 11,
     "total_abandoned": 7,
     "total_sunk": 1,
-    "latest_struck": 39,
+    "latest_struck": 37,
     "latest_shutdown": 7
   }
 }
