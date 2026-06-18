@@ -1,11 +1,11 @@
 {
-  "updated": "2026-03-21T07:31:27.296501+00:00",
+  "updated": "2026-06-18T18:47:58.157795+00:00",
   "source": "Wikipedia 2026 Strait of Hormuz crisis + ISW + Reuters",
   "attacks": [
     {
       "num": 1,
       "date": "2026-03-01",
-      "name": "MT\u00a0Skylight",
+      "name": "Skylight",
       "flag": "Palau",
       "type": "Oil tanker",
       "result": "Abandoned; 2 crew killed, including captain",
@@ -17,7 +17,7 @@
     {
       "num": 2,
       "date": "2026-03-01",
-      "name": "MKD\u00a0VYOM",
+      "name": "MKD\u00a0Vyom",
       "flag": "Marshall Islands",
       "type": "Oil tanker",
       "result": "Abandoned; 1 crew killed",
@@ -29,7 +29,7 @@
     {
       "num": 3,
       "date": "2026-03-01",
-      "name": "MT\u00a0Hercules Star",
+      "name": "Hercules Star",
       "flag": "Gibraltar",
       "type": "Oil tanker",
       "result": "Minor damage",
@@ -52,7 +52,7 @@
     },
     {
       "num": 5,
-      "date": "2026-03-01",
+      "date": "2026-03-02",
       "name": "LCT\u00a0Ayeh",
       "flag": "United Arab Emirates",
       "type": "Oil tanker",
@@ -185,11 +185,11 @@
     {
       "num": 16,
       "date": "2026-03-11",
-      "name": "MV\u00a0Mayuree Naree",
+      "name": "Mayuree Naree",
       "flag": "Thailand",
       "type": "Bulk carrier",
-      "result": "Abandoned; 3 crew missing",
-      "abandoned": true,
+      "result": "Aground; 3 crew killed",
+      "abandoned": false,
       "sunk": false,
       "ablaze": false,
       "casualties": 3
@@ -289,6 +289,42 @@
       "sunk": false,
       "ablaze": false,
       "casualties": 0
+    },
+    {
+      "num": 25,
+      "date": "2026-03-21",
+      "name": "Unknown",
+      "flag": "N/A",
+      "type": "Bulk carrier",
+      "result": "Unknown",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 26,
+      "date": "2026-03-30",
+      "name": "Express Rome",
+      "flag": "Liberia",
+      "type": "Container ship",
+      "result": "Unharmed",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
+    },
+    {
+      "num": 27,
+      "date": "2026-03-31",
+      "name": "Al Salmi",
+      "flag": "Kuwait",
+      "type": "Oil tanker",
+      "result": "Damaged",
+      "abandoned": false,
+      "sunk": false,
+      "ablaze": false,
+      "casualties": 0
     }
   ],
   "timeline": [
@@ -308,17 +344,17 @@
     },
     {
       "date": "2026-03-01",
-      "struck": 8,
+      "struck": 7,
       "shutdown": 3,
-      "ships_attacked": 5,
-      "label": "5 ship(s) attacked"
+      "ships_attacked": 4,
+      "label": "4 ship(s) attacked"
     },
     {
       "date": "2026-03-02",
       "struck": 12,
       "shutdown": 4,
-      "ships_attacked": 3,
-      "label": "3 ship(s) attacked; Ras Tanura drone strike; Ras Laffan LNG shutdown"
+      "ships_attacked": 4,
+      "label": "4 ship(s) attacked; Ras Tanura drone strike; Ras Laffan LNG shutdown"
     },
     {
       "date": "2026-03-03",
@@ -410,14 +446,35 @@
       "shutdown": 7,
       "ships_attacked": 0,
       "label": "Kuwait Mina al-Ahmadi hit again"
+    },
+    {
+      "date": "2026-03-21",
+      "struck": 38,
+      "shutdown": 7,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-30",
+      "struck": 39,
+      "shutdown": 7,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked"
+    },
+    {
+      "date": "2026-03-31",
+      "struck": 40,
+      "shutdown": 7,
+      "ships_attacked": 1,
+      "label": "1 ship(s) attacked"
     }
   ],
   "summary": {
-    "total_attacks": 24,
+    "total_attacks": 27,
     "total_casualties": 11,
-    "total_abandoned": 7,
+    "total_abandoned": 6,
     "total_sunk": 1,
-    "latest_struck": 37,
+    "latest_struck": 40,
     "latest_shutdown": 7
   }
 }
