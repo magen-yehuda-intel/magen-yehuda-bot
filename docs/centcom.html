@@ -596,6 +596,11 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .brief-meta { padding:8px 16px; border-top:1px solid var(--panel-border); font-size:10px; color:var(--text-dim); flex-shrink:0; }
 
 /* ═══ MOBILE HORIZONTAL TOOLBAR ═══ */
+#globe3d { position:fixed; inset:0; width:100%; height:100%; border:0; z-index:1; background:#000; }
+#globe3d-toggle { position:fixed; right:12px; bottom:84px; z-index:1200; padding:8px 12px;
+  font-family:var(--font-data); font-size:11px; letter-spacing:1px; color:#7ff; cursor:pointer;
+  background:rgba(10,15,30,0.92); border:1px solid #2aa; border-radius:6px; }
+#globe3d-toggle.on { color:#000; background:#4ee; }
 #mobile-toolbar {
   display:none;
   position:fixed; top:40px; left:0; right:0; z-index:900;
@@ -900,6 +905,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 
 <!-- MAP CONTAINER -->
 <div id="map"></div>
+<iframe id="globe3d" title="3D war-room globe" hidden allow="fullscreen"></iframe>
+<button id="globe3d-toggle" type="button" onclick="toggleGlobe3d()" title="Switch between 2D map and live 3D globe">🌐 3D GLOBE</button>
 
 <!-- TITLE BAR -->
 <div id="titlebar">
@@ -4028,6 +4035,46 @@ function pwaDissmiss() {
 
 // Auto-hide if already installed
 window.addEventListener('appinstalled', () => { pwaDissmiss(); });
+</script>
+<script>
+// ── 3D war-room globe (Aetherwatch, keyless public build) ──
+const GLOBE3D_ORIGIN = 'https://aetherwatch-globe.blackfield-628213bb.eastus.azurecontainerapps.io';
+const GLOBE3D_MAX_AGE_S = 6 * 3600;   // only recent events become pins
+let globe3dReady = false, globe3dSeq = 0;
+function globe3dPins(events, nowS) {
+  const color = s => ({israel:'cyan', us:'cyan', iran:'red', proxy:'amber'})[String(s||'').toLowerCase()] || 'primary';
+  return (events || [])
+    .filter(e => Number.isFinite(e.lat) && Number.isFinite(e.lon) && e.lat && e.lon &&
+                 Number.isFinite(e.ts) && nowS - e.ts >= 0 && nowS - e.ts <= GLOBE3D_MAX_AGE_S)
+    .sort((a, b) => b.ts - a.ts).slice(0, 24)
+    .map(e => ({ type: 'pin', latitude: e.lat, longitude: e.lon, color: color(e.side),
+                 label: String(e.loc || e.src || '').slice(0, 40) + ' ' +
+                        new Date(e.ts * 1000).toISOString().slice(11, 16) + 'Z' }));
+}
+function globe3dView() {
+  return { camera: { lat: 30.5, lon: 47, altitude_m: 3800000, heading_deg: 0, pitch_deg: -70 },
+           layers: ['military', 'flights', 'ais-live-vessels', 'local-firms', 'earthquakes', 'military-installations'],
+           map: 'esri-imagery', style: 'normal',
+           annotations: globe3dPins(typeof feedEvents !== 'undefined' ? feedEvents : [], Date.now() / 1000) };
+}
+function globe3dPush() {
+  const f = document.getElementById('globe3d');
+  if (!globe3dReady || f.hidden) return;
+  f.contentWindow.postMessage({ type: 'gev:view', id: 'magen-' + (++globe3dSeq), view: globe3dView() }, GLOBE3D_ORIGIN);
+}
+function toggleGlobe3d() {
+  const f = document.getElementById('globe3d'), b = document.getElementById('globe3d-toggle');
+  const on = f.hidden;
+  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1';
+  f.hidden = !on; document.getElementById('map').style.visibility = on ? 'hidden' : '';
+  b.classList.toggle('on', on); b.textContent = on ? '🗺 2D MAP' : '🌐 3D GLOBE';
+  if (on) globe3dPush();
+}
+window.addEventListener('message', ev => {
+  if (ev.origin !== GLOBE3D_ORIGIN || !ev.data) return;
+  if (ev.data.type === 'gev:ready') { globe3dReady = true; globe3dPush(); }
+});
+setInterval(globe3dPush, 60000);
 </script>
 </body>
 </html>
