@@ -97,7 +97,8 @@ def main():
                 for a in e.get('alerts', []):
                     text = a.get('text', '')
                     if not text or len(text) < 20: continue
-                    if not relevant_news(text): continue
+                    text = text[:200]
+                    if not relevant_news(text): continue  # gate on exactly what is published
                     source_ts = source_timestamp(a)
                     if source_ts is None or not fresh_timestamp(source_ts, HOURS): continue
 
@@ -121,7 +122,7 @@ def main():
                         'lat': round(lat, 2),
                         'lon': round(lon, 2),
                         'side': side,
-                        'text': text[:200],
+                        'text': text,
                         'breaking': a.get('breaking', False),
                     })
             except:
