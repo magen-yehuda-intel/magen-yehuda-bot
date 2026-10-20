@@ -41,55 +41,55 @@ def _get_token():
         print(f"Auth failed: {e}", file=sys.stderr)
         sys.exit(1)
 
-def load_events(max_hours=48):
-    """Load events from intel-log.jsonl + intel-feed.json within the last max_hours."""
-    cutoff = time.time() - (max_hours * 3600)
-    events = []
+from event_freshness import source_timestamp, fresh_timestamp, relevant_news
 
-    # Load from intel-log.jsonl
+
+def load_events(max_hours=48):
+    """Use original publication dates, never the collector's refresh timestamp."""
+    events = []
+    seen = set()
+
+    def add(item):
+        text = (item.get("notes") or item.get("text") or item.get("summary") or "").strip()
+        # Exported feed time is HH:MM; its numeric ts is authoritative.
+        ts = source_timestamp({"ts": item.get("ts")}) if item.get("ts") else source_timestamp(item)
+        if not text or not relevant_news(text) or not fresh_timestamp(ts, max_hours):
+            return
+        key = text[:200].lower()
+        if key in seen:
+            return
+        seen.add(key)
+        events.append({"_ts": ts, "type": "osint", "src": item.get("channel") or item.get("src") or item.get("source", ""),
+                       "text": text, "loc": item.get("loc") or item.get("location", ""), "link": item.get("link", "")})
+
     try:
-        with open(INTEL_LOG, "r") as f:
+        with open(INTEL_LOG) as f:
             for line in f:
-                line = line.strip()
-                if not line:
-                    continue
                 try:
                     ev = json.loads(line)
-                    ts = ev.get("ts") or ev.get("logged_at") or 0
-                    if ts >= cutoff:
-                        ev["_ts"] = ts
-                        events.append(ev)
-                except json.JSONDecodeError:
+                    if ev.get("alerts"):
+                        for alert in ev["alerts"]:
+                            # Raw scraped alerts must have an actual source publication date.
+                            if fresh_timestamp(source_timestamp(alert), max_hours):
+                                add(alert)
+                    elif ev.get("type") in ("osint", "breaking_news", "energy_rss"):
+                        add(ev)
+                except (json.JSONDecodeError, TypeError, AttributeError):
                     continue
     except FileNotFoundError:
-        print(f"No intel log at {INTEL_LOG}", file=sys.stderr)
-
-    # Load from intel-feed.json (OSINT events with actual text)
-    seen_texts = set()
+        pass
     try:
-        with open(INTEL_FEED, "r") as f:
+        with open(INTEL_FEED) as f:
             feed = json.load(f)
-        feed_events = feed if isinstance(feed, list) else feed.get("events", feed.get("data", []))
-        for ev in feed_events:
-            ts = ev.get("ts", 0)
-            if ts < cutoff:
-                continue
-            text = (ev.get("notes") or ev.get("text") or "").strip()
-            if not text or text in seen_texts:
-                continue
-            seen_texts.add(text)
-            events.append({
-                "_ts": ts,
-                "type": "osint",
-                "src": ev.get("src", ev.get("source", "")),
-                "text": text,
-                "loc": ev.get("location", ev.get("loc", "")),
-                "side": ev.get("side", ""),
-            })
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Could not load intel-feed.json: {e}", file=sys.stderr)
+        for ev in feed if isinstance(feed, list) else feed.get("events", []):
+            # Legacy exports stamped collection time. Reject them until re-exported
+            # by the source-time-aware exporter (which supplies observed_at).
+            if "observed_at" in ev:
+                add(ev)
+    except (FileNotFoundError, json.JSONDecodeError):
+        pass
+    return sorted(events, key=lambda e: e["_ts"], reverse=True)
 
-    return sorted(events, key=lambda e: e.get("_ts", 0), reverse=True)
 
 def filter_events(events, hours):
     cutoff = time.time() - (hours * 3600)
@@ -100,7 +100,7 @@ def events_to_text(events, max_chars=5000):
     lines = []
     for e in events:
         ts = e.get("_ts", 0)
-        t = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%H:%M") if ts else "??:??"
+        t = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC") if ts else "??:??"
         src = e.get("src", "") or e.get("source", "") or e.get("type", "")
         loc = e.get("loc", "") or e.get("location", "")
         text = (e.get("text", "") or e.get("summary", "") or "").strip()[:200]
@@ -135,11 +135,12 @@ def events_to_text(events, max_chars=5000):
 SYSTEM_PROMPT = """You are a military intelligence briefing officer writing a situation report for Israeli civilians monitoring the Iran-Israel conflict.
 
 RULES:
+- GROUND TRUTH — brief ONLY from the events provided in the user message. NEVER introduce outside facts, background history, "Day N of the campaign" counters, ultimatums, pauses, or deadlines that are not present in those events. Inventing continuity or reciting stale history is the single worst failure mode — a sparse brief is always better than a fabricated one.
 - Be DIRECT and CONCISE. No fluff. No filler. No "it's important to note".
 - Lead with what matters: attacks, military movements, political developments.
 - Cut the noise: skip duplicate reports, minor social media chatter, unverified rumors.
 - Group related events into themes (e.g. "Northern Border", "Hormuz", "Diplomacy").
-- Add brief tactical context where useful (e.g. "first time X was used", "3rd attack this week").
+- Add tactical context ONLY if explicitly supported by these events. Never infer historical counts.
 - Use bullet points. Short sentences. Every word earns its place.
 - If there are active sirens or strikes - that goes FIRST, bold.
 
@@ -151,7 +152,7 @@ INTERNATIONAL & GOOD NEWS:
 - End with a "🟢 Good News" bullet if anything positive happened (even small wins).
 
 BOTTOM LINE:
-- End with a 1-line threat assessment (escalating/stable/de-escalating).
+- Give a threat trend ONLY if supported by these events; otherwise say "Insufficient evidence to assess the trend." Absence of reports is not an all-clear.
 
 FORMAT:
 Return a JSON object with two keys:
@@ -160,9 +161,11 @@ Return a JSON object with two keys:
 
 Keep each brief under 300 words. Quality over quantity."""
 
-USER_PROMPT_TEMPLATE = """CONTEXT: This is Day 27 of the US-Israel military campaign against Iran. Trump announced a SECOND pause on Iran energy strikes (10 days, deadline April 6, 2026 8 PM ET) citing "Iranian Government request" and claiming talks are "going very well" — Iran denies any direct talks. The first pause (5-day, Mar 23) was violated hours later when US/Israeli jets struck Isfahan and Khorramshahr. Pakistan is mediating. The conflict continues with Israeli/US airstrikes on Iran and Iranian/Hezbollah/Hamas missile counterstrikes on Israel. Northern border (Hezbollah) active daily. Iran has allowed Hormuz passage for friendly nations (Russia, India, China) while blocking others.
+USER_PROMPT_TEMPLATE = """Today is {today}. You are briefing on the ongoing Iran-Israel-US conflict.
 
-Generate a situation brief from these {count} intel events from the last {window}:
+Base the brief ENTIRELY on the {count} intel events below from the last {window}. Do not add context, history, or developments that are not in these events. If the events are sparse, keep the brief short — do not pad it with background.
+
+Intel events (most recent first):
 
 {events}
 
@@ -170,7 +173,8 @@ Return ONLY valid JSON: {{"en": "<html brief>", "he": "<html brief>"}}"""
 
 def call_llm(events_text, count, window_label, token):
     url = f"{AOAI_ENDPOINT}/openai/deployments/{AOAI_DEPLOYMENT}/chat/completions?api-version={AOAI_API_VERSION}"
-    user_msg = USER_PROMPT_TEMPLATE.format(count=count, window=window_label, events=events_text)
+    today = datetime.now(timezone.utc).strftime("%A, %B %d, %Y")
+    user_msg = USER_PROMPT_TEMPLATE.format(today=today, count=count, window=window_label, events=events_text)
 
     payload = {
         "messages": [
@@ -240,7 +244,6 @@ def call_llm(events_text, count, window_label, token):
 
 def main():
     print(f"[{datetime.now().isoformat()}] Generating briefs...")
-    token = _get_token()
     all_events = load_events(max_hours=48)
     print(f"Loaded {len(all_events)} events from last 48h")
 
@@ -249,8 +252,11 @@ def main():
         output = {"generated_at": datetime.now(timezone.utc).isoformat(), "briefs": {}}
         with open(OUTPUT, "w") as f:
             json.dump(output, f, indent=2)
+        from publish_generated import publish
+        publish(ROOT, ["docs/brief.json"], "brief: no recent source-dated events")
         return
 
+    token = _get_token()
     briefs = {}
     for hours in TIME_WINDOWS:
         filtered = filter_events(all_events, hours)
@@ -288,7 +294,7 @@ def main():
         "briefs": briefs
     }
 
-    TMP_OUTPUT = "/tmp/myi-brief.json"
+    TMP_OUTPUT = os.path.join(ROOT, "state", "brief-pending.json")
     with open(TMP_OUTPUT, "w") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
     
@@ -303,15 +309,8 @@ def main():
         subprocess.run(["cp", TMP_OUTPUT, OUTPUT], check=True)
         print(f"Written to {OUTPUT} (via cp)")
     
-    # Git push
-    import subprocess
-    try:
-        subprocess.run(["git", "add", "docs/brief.json"], cwd=ROOT, check=True)
-        subprocess.run(["git", "commit", "-m", f"auto: brief {datetime.now().strftime('%H:%M')}"], cwd=ROOT, check=True, capture_output=True)
-        subprocess.run(["git", "push", "origin", "main"], cwd=ROOT, check=True, capture_output=True)
-        print("Pushed to GitHub Pages")
-    except subprocess.CalledProcessError as e:
-        print(f"Git push failed: {e}", file=sys.stderr)
+    from publish_generated import publish
+    publish(ROOT, ['docs/brief.json'], 'brief: update source-grounded summaries')
 
 if __name__ == "__main__":
     main()

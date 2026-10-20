@@ -188,7 +188,7 @@ def main():
         text = e.get('text', '') or ''
         ts = float(e.get('timestamp', e.get('ts', 0)))
         age_h = (now - ts) / 3600
-        if age_h > 72:
+        if age_h < 0 or age_h > 72:
             continue
 
         t_lower = text.lower()

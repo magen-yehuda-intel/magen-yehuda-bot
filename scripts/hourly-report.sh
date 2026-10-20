@@ -7,6 +7,7 @@ set -euo pipefail
 SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 CONFIG_FILE="$SKILL_DIR/config.json"
 STATE_DIR="$SKILL_DIR/state"
+cd "$SKILL_DIR"  # Cron starts in HOME; every relative child path must resolve here.
 DISPATCH="python3 $SKILL_DIR/scripts/dispatch.py $CONFIG_FILE"
 
 NOW_UTC=$(date -u '+%Y-%m-%d %H:%M UTC')
@@ -110,14 +111,14 @@ config_file = sys.argv[2]
 en = (
     f'🗺️ <b>INTERACTIVE STRIKES DASHBOARD</b>\n'
     f'\n'
-    f'48,500+ geolocated events since Oct 7, 2023\n'
+    f'Geolocated reports and source-linked updates\n'
     f'📍 US/Coalition bases · Iran military sites · Event filters\n'
     f'📰 Live news feed · Zoomable timeline · Conflict phase presets\n\n'
     f'🔗 <a href="{url}">Open Dashboard</a>'
 )
 he = (
     f'\u200F🗺️ <b>לוח מבצעים אינטראקטיבי</b>\n'
-    f'\u200F48,500+ אירועים ממופים מאז 7 באוקטובר 2023\n'
+    f'\u200Fדיווחים ממופים ועדכונים עם קישורים למקורות\n'
     f'\u200F📍 בסיסי ברית · אתרים צבאיים איראניים · סינון אירועים\n'
     f'\u200F📰 פיד חדשות · ציר זמן · שלבי עימות\n\n'
     f'\u200F🔗 <a href="{url}">פתח לוח מבצעים</a>'

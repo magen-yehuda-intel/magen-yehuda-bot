@@ -91,6 +91,9 @@ def count_events(events):
     return counts
 
 
+from event_freshness import source_timestamp, fresh_timestamp, relevant_news
+
+
 def extract_osint_highlights(events, max_items=8, lang=None):
     """Extract OSINT alert text highlights.
     lang='he' → prefer Hebrew sources/text; lang='en' → prefer English; None → all.
@@ -106,10 +109,12 @@ def extract_osint_highlights(events, max_items=8, lang=None):
     HE_CHARS = re.compile(r'[\u0590-\u05FF]')
 
     highlights = []
-    for ev in events:
+    for ev in reversed(events):
         if ev.get("type") == "osint":
             alerts = ev.get("alerts", [])
-            for a in alerts:
+            for a in sorted(alerts, key=lambda a: source_timestamp(a) or 0, reverse=True):
+                if not fresh_timestamp(source_timestamp(a), 1) or not relevant_news(a.get("text", "")):
+                    continue
                 text = a.get("text", "")[:200]
                 source = a.get("source", "")
                 channel = a.get("channel", "")

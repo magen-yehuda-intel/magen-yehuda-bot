@@ -11,6 +11,8 @@ DOCS_DIR = os.path.join(SKILL_DIR, 'docs')
 INTEL_LOG = os.path.join(STATE_DIR, 'intel-log.jsonl')
 FEED_FILE = os.path.join(DOCS_DIR, 'intel-feed.json')
 
+from event_freshness import source_timestamp, fresh_timestamp, relevant_news
+
 HOURS = 48  # export last 48h
 ME_KEYWORDS = re.compile(
     r'iran|israel|idf|irgc|hamas|hezbollah|houthi|gaza|lebanon|tehran|isfahan|bushehr|'
@@ -95,19 +97,23 @@ def main():
                 for a in e.get('alerts', []):
                     text = a.get('text', '')
                     if not text or len(text) < 20: continue
-                    if not ME_KEYWORDS.search(text): continue
+                    if not relevant_news(text): continue
+                    source_ts = source_timestamp(a)
+                    if source_ts is None or not fresh_timestamp(source_ts, HOURS): continue
 
                     text_key = text[:80].lower().strip()
                     if text_key in seen_texts: continue
                     seen_texts.add(text_key)
 
                     source = a.get('channel', a.get('source', ''))
-                    dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+                    dt = datetime.fromtimestamp(source_ts, tz=timezone.utc)
                     location, lat, lon = detect_location(text)
                     side = detect_side(text)
 
                     events.append({
-                        'ts': int(ts),
+                        'ts': int(source_ts),
+                        'observed_at': ts,
+                        'link': a.get('link', ''),
                         'date': dt.strftime('%Y-%m-%d'),
                         'time': dt.strftime('%H:%M'),
                         'src': source[:30],
@@ -132,8 +138,15 @@ def main():
 
     feed_json = json.dumps(feed, ensure_ascii=False, separators=(',', ':'))
 
+    # Enforce freshness at the output boundary on every scheduled refresh.
+    if feed['count'] != len(feed['events']) or not all(
+        fresh_timestamp(e['ts'], HOURS) and relevant_news(e['text']) for e in events
+    ):
+        raise RuntimeError('Feed integrity gate failed: stale, future, or out-of-scope event')
+
     # Check if changed
     old_hash = ''
+
     if os.path.exists(FEED_FILE):
         with open(FEED_FILE, 'rb') as f:
             old_hash = hashlib.md5(f.read()).hexdigest()
@@ -203,7 +216,7 @@ def main():
     try:
         import urllib.request, urllib.error
         # Push last 100 events via API (batched to avoid huge payloads)
-        recent = events[-100:] if len(events) > 100 else events
+        recent = events[:100]  # events are already newest-first; never push the oldest slice
         payload = json.dumps({"events": recent}).encode()
         req = urllib.request.Request(
             f"{API_URL}/api/push/intel",
@@ -301,20 +314,9 @@ def main():
     except Exception as ex:
         print(f"Siren history export error: {ex}")
 
-    # Git commit + push
-    try:
-        subprocess.run(['git', 'add', 'docs/intel-feed.json', 'docs/oref-alerts.json', 'docs/oref-history.json'], cwd=SKILL_DIR, check=True,
-                       capture_output=True, timeout=10)
-        subprocess.run(['git', 'commit', '-m', f'feed: {len(events)} events ({datetime.now(timezone.utc).strftime("%H:%M UTC")})'],
-                       cwd=SKILL_DIR, check=True, capture_output=True, timeout=10)
-        result = subprocess.run(['git', 'push', 'origin', 'main'], cwd=SKILL_DIR,
-                                capture_output=True, timeout=30)
-        if result.returncode == 0:
-            print("Pushed to GitHub")
-        else:
-            print(f"Push failed: {result.stderr.decode()[:200]}")
-    except Exception as ex:
-        print(f"Git error: {ex}")
+    from publish_generated import publish
+    publish(SKILL_DIR, ['docs/intel-feed.json', 'docs/oref-alerts.json', 'docs/oref-history.json'],
+            f'feed: {len(events)} source-dated events')
 
     # Run energy RSS scanner to pull dedicated energy sources
     try:
@@ -335,15 +337,10 @@ def main():
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
             mod.main()
-            # Commit energy feed too
-            subprocess.run(['git', 'add', 'docs/energy-feed.json'], cwd=SKILL_DIR,
-                           capture_output=True, timeout=10)
-            subprocess.run(['git', 'commit', '-m', 'energy: update feed'],
-                           cwd=SKILL_DIR, capture_output=True, timeout=10)
-            subprocess.run(['git', 'push', 'origin', 'main'], cwd=SKILL_DIR,
-                           capture_output=True, timeout=30)
+            publish(SKILL_DIR, ['docs/energy-feed.json'], 'energy: update source-dated feed')
     except Exception as ex:
-        print(f"Energy tracker error: {ex}")
+        print(f"Energy tracker error: {ex}", file=sys.stderr)
+        raise
 
 if __name__ == '__main__':
     main()

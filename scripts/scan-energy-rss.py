@@ -64,24 +64,12 @@ def parse_rss(xml_text: str, source: str) -> list:
         if not title:
             continue
         
-        # Parse date
-        ts = time.time()
-        if pub:
-            # Strip CDATA wrapper if present
-            pub = re.sub(r'<!\[CDATA\[(.*?)\]\]>', r'\1', pub).strip()
-            try:
-                dt = parsedate_to_datetime(pub)
-                ts = dt.timestamp()
-                # Reject future timestamps
-                if ts > time.time() + 600:
-                    ts = time.time()
-            except Exception:
-                pass
-        
-        # Skip old items (>72h)
-        if time.time() - ts > 72 * 3600:
+        from event_freshness import source_timestamp, fresh_timestamp
+        pub = re.sub(r'<!\[CDATA\[(.*?)\]\]>', r'\1', pub).strip()
+        ts = source_timestamp({'time': pub})
+        if not fresh_timestamp(ts, 72):
             continue
-        
+
         # Dedup key
         text = f'{title}'
         if desc and len(desc) < 300:

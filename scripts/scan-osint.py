@@ -77,6 +77,8 @@ RSS_EXCLUDE_PHRASES = [
     'nato expansion', 'north korea', 'pyongyang',
 ]
 
+from event_freshness import source_timestamp, fresh_timestamp, relevant_news
+
 def matches_keywords(text, keywords):
     text_lower = text.lower()
     return any(kw in text_lower for kw in keywords)
@@ -84,14 +86,7 @@ def matches_keywords(text, keywords):
 
 def is_irrelevant_rss(title):
     """Filter out Russia-Ukraine and other non-ME noise from RSS feeds."""
-    t = title.lower()
-    # Must NOT match any exclude phrase (unless it also mentions Iran/Israel/ME)
-    me_anchors = ['iran', 'israel', 'tehran', 'idf', 'irgc', 'hezbollah',
-                  'houthi', 'gaza', 'beirut', 'syria', 'iraq', 'hormuz',
-                  'gulf', 'centcom', 'middle east']
-    has_exclude = any(phrase in t for phrase in RSS_EXCLUDE_PHRASES)
-    has_me = any(anchor in t for anchor in me_anchors)
-    return has_exclude and not has_me
+    return not relevant_news(title)
 
 
 # ── Breaking news detection ──
@@ -356,7 +351,9 @@ def scan_telegram(config, state_dir, proxy_url=None):
                 text = re.sub(r'<[^>]+>', '', text)
                 text = h.unescape(text).strip()
                 
-                if not text or not matches_keywords(text, keywords):
+                if not fresh_timestamp(source_timestamp({'time': timestamp})):
+                    continue
+                if not text or not relevant_news(text) or not matches_keywords(text, keywords):
                     continue
                 
                 display = text[:250].replace('\n', ' ')
@@ -444,6 +441,8 @@ def scan_twitter(config, state_dir, proxy_url=None):
                         display += '...'
                     
                     created = src.get('created_at', '')
+                    if not fresh_timestamp(source_timestamp({'time': created})) or not relevant_news(text):
+                        continue
                     
                     is_breaking, breaking_topic = check_breaking_news(text, acct)
                     
@@ -526,6 +525,8 @@ def scan_rss(config, state_dir):
                 if (link or title) in prev_links:
                     continue
                 
+                if not fresh_timestamp(source_timestamp({'time': pub_date})):
+                    continue
                 if is_irrelevant_rss(title):
                     continue
                 
