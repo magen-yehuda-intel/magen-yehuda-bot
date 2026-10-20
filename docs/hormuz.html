@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hormuz Crisis Tracker — Live AIS Dashboard</title>
+<title>Hormuz Crisis Tracker — Archived Historical Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
@@ -100,7 +100,7 @@
 <div class="header">
   <div>
     <h1>⚓ HORMUZ <span>CRISIS</span> TRACKER</h1>
-    <div class="meta">Live AIS vessel intelligence • MarineTraffic data</div>
+    <div class="meta" style="color:#fbbf24">ARCHIVED — historical page (archive marker: March 26, 2026); dated entries through March 30. Not current status.</div>
     <div class="meta" id="lastUpdate" style="color:#64748b;font-size:11px">Loading…</div>
   </div>
   <div style="text-align:right">
@@ -131,7 +131,10 @@
 <div style="max-width:1440px;margin:16px auto 0;padding:0 20px">
   <div style="background:linear-gradient(135deg,#0f172a 0%,#1a1005 100%);border:1px solid #f59e0b;border-radius:10px;padding:20px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
-      <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fbbf24;margin:0">⚡ Energy Infrastructure Status</h3>
+      <div>
+        <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fbbf24;margin:0">⚡ Archived Energy Infrastructure Status</h3>
+        <div style="color:#fbbf24;font-size:11px;margin-top:4px">Facility statuses last verified March 7, 2026; historical, not current.</div>
+      </div>
       <div style="display:flex;gap:12px;font-size:12px">
         <div style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#34d399;display:inline-block"></span><span style="color:#94a3b8">Operational</span></div>
         <div style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#f87171;display:inline-block"></span><span style="color:#94a3b8">Struck/Damaged</span></div>
@@ -179,12 +182,12 @@
   </div>
 </div>
 
-<!-- Live Situation Report -->
+<!-- Archived Situation Report -->
 <div style="max-width:1440px;margin:16px auto 0;padding:0 20px">
   <div style="background:linear-gradient(135deg,#0f172a 0%,#1a0f0f 100%);border:1px solid #e05252;border-radius:10px;padding:20px">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-      <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fda4af;margin:0">🔴 Live Situation Report — Mar 30, 2026</h3>
-      <span style="font-size:11px;color:#64748b">Last updated: 11:00 EDT</span>
+      <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fda4af;margin:0">🔴 Archived Situation Report — Mar 30, 2026</h3>
+      <span style="font-size:11px;color:#fbbf24">Historical entries; not current status</span>
     </div>
 
     <!-- Status Change Timeline -->
@@ -509,7 +512,7 @@
 <!-- Oil & LNG News Alerts -->
 <div style="max-width:1440px;margin:16px auto 0;padding:0 20px">
   <div style="background:linear-gradient(135deg,#0f172a 0%,#1a0f10 100%);border:1px solid #f87171;border-radius:10px;padding:20px">
-    <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fda4af;margin-bottom:16px">📰 Oil & LNG Crisis — Latest Headlines</h3>
+    <h3 style="font-size:15px;text-transform:uppercase;letter-spacing:2px;color:#fda4af;margin-bottom:16px">📰 Oil & LNG Crisis — Archived Headlines (through Mar 30, 2026)</h3>
     <div id="newsAlerts" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px">
       <a href="https://www.foxnews.com/live-news/trump-iran-israel-war-updates-march-30" target="_blank" style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:12px 16px;color:#e2e8f0;text-decoration:none;display:flex;align-items:flex-start;gap:10px;transition:border-color 0.2s" onmouseover="this.style.borderColor='#f87171'" onmouseout="this.style.borderColor='#334155'">
         <span style="color:#f87171;font-size:16px;flex-shrink:0">🛢️</span>
@@ -548,7 +551,7 @@
         <div><div style="font-weight:600;line-height:1.3">Iran allows 20 more ships through Hormuz — Pakistan calls it "meaningful step toward peace"</div><div style="color:#94a3b8;font-size:11px;margin-top:4px">Forbes · Mar 28</div></div>
       </a>
     </div>
-    <div style="margin-top:12px;font-size:11px;color:#64748b;text-align:right">Last updated: Mar 30, 2026 · Sources: Fox News, AP, Guardian, Cipher Brief, Windward, HRW, Forbes, ISW</div>
+    <div style="margin-top:12px;font-size:11px;color:#64748b;text-align:right">Archived sources through Mar 30, 2026 · Sources: Fox News, AP, Guardian, Cipher Brief, Windward, HRW, Forbes, ISW</div>
   </div>
 </div>
 
@@ -603,7 +606,7 @@
 <!-- Zone Map -->
 <div style="max-width:1440px;margin:16px auto 0;padding:0 20px">
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;overflow:hidden">
-    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">🗺️ AIS Monitoring Zones — Live Vessel Density</h3>
+    <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">🗺️ Archived AIS Monitoring Zones — Historical Vessel Density</h3>
     <div id="zoneMap" style="height:500px;border-radius:8px;z-index:0"></div>
     <div id="zoneMapLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:12px;font-size:11px;color:#94a3b8"></div>
   </div>
@@ -1700,7 +1703,7 @@ setInterval(tryFetchMetrics, 60000);
     </div>
   `).join('');
 
-  // Timeline chart — facilities offline per day (auto-updated from scraped data)
+  // Historical timeline chart — facility status data last verified March 7, 2026
   fetch('data/hormuz-timeline.json').then(r=>r.json()).then(data => {
     const timeline = data.timeline || [];
     const ctx = document.getElementById('facilityChart').getContext('2d');
@@ -1751,7 +1754,7 @@ setInterval(tryFetchMetrics, 60000);
             currentLine: {
               type: 'line', yMin: offline, yMax: offline,
               borderColor: '#f8717144', borderWidth: 1, borderDash: [4, 4],
-              label: { display: true, content: `Current: ${offline} offline (${Math.round(offline/total*100)}%)`, color: '#f8717188', backgroundColor: 'transparent', font: { size: 9 }, position: 'end' }
+              label: { display: true, content: `Snapshot: ${offline} offline (${Math.round(offline/total*100)}%)`, color: '#f8717188', backgroundColor: 'transparent', font: { size: 9 }, position: 'end' }
             }
           }
         }
