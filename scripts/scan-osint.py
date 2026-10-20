@@ -79,9 +79,17 @@ RSS_EXCLUDE_PHRASES = [
 
 from event_freshness import source_timestamp, fresh_timestamp, relevant_news
 
+_HEB_MARKS = str.maketrans('', '', '\u05f4\u05f3"\'`\u201c\u201d\u2018\u2019')
+
+
+def _kw_norm(value):
+    """Lowercase and drop Hebrew acronym marks so כטב״מ / כטב"מ / כטבמ all match."""
+    return (value or '').lower().translate(_HEB_MARKS)
+
+
 def matches_keywords(text, keywords):
-    text_lower = text.lower()
-    return any(kw in text_lower for kw in keywords)
+    text_norm = _kw_norm(text)
+    return any(_kw_norm(kw) in text_norm for kw in keywords)
 
 
 def is_irrelevant_rss(title):
@@ -323,6 +331,8 @@ def scan_telegram(config, state_dir, proxy_url=None):
             url = f'https://t.me/s/{ch}'
             if proxy_url:
                 raw = fetch_via_proxy(url, proxy_url)
+                if not raw:  # dead proxy must not silently blind the scanner
+                    raw = fetch(url, timeout=10)
             else:
                 raw = fetch(url, timeout=8)
             if not raw:
@@ -400,6 +410,8 @@ def scan_twitter(config, state_dir, proxy_url=None):
             url = f'https://syndication.twitter.com/srv/timeline-profile/screen-name/{acct}'
             if proxy_url:
                 raw = fetch_via_proxy(url, proxy_url)
+                if not raw:  # dead proxy must not silently blind the scanner
+                    raw = fetch(url, timeout=10)
             else:
                 raw = fetch(url, timeout=10)
             if not raw:

@@ -413,6 +413,8 @@ def scan_hacktivist_telegram(config, state_dir, proxy_url=None):
                 url = f"https://t.me/s/{handle}"
                 if proxy_url:
                     raw = fetch_via_proxy(url, proxy_url)
+                    if not raw:  # dead proxy must not silently blind the scanner
+                        raw = fetch(url, timeout=10)
                 else:
                     raw = fetch(url, timeout=8)
                 if not raw:
@@ -478,6 +480,8 @@ def scan_hacktivist_telegram(config, state_dir, proxy_url=None):
             url = f"https://t.me/s/{handle}"
             if proxy_url:
                 raw = fetch_via_proxy(url, proxy_url)
+                if not raw:  # dead proxy must not silently blind the scanner
+                    raw = fetch(url, timeout=10)
             else:
                 raw = fetch(url, timeout=8)
             if not raw:
@@ -569,6 +573,8 @@ def scan_cyber_twitter(config, state_dir, proxy_url=None):
             url = f"https://syndication.twitter.com/srv/timeline-profile/screen-name/{acct}"
             if proxy_url:
                 raw = fetch_via_proxy(url, proxy_url)
+                if not raw:  # dead proxy must not silently blind the scanner
+                    raw = fetch(url, timeout=10)
             else:
                 raw = fetch(url, timeout=10)
             if not raw:

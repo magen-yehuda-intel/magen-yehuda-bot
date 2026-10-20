@@ -601,6 +601,10 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
   font-family:var(--font-data); font-size:11px; letter-spacing:1px; color:#7ff; cursor:pointer;
   background:rgba(10,15,30,0.92); border:1px solid #2aa; border-radius:6px; }
 #globe3d-toggle.on { color:#000; background:#4ee; }
+#globe3d-controls { position:fixed; right:12px; bottom:124px; z-index:1200; display:flex; gap:6px; }
+#globe3d-controls[hidden] { display:none; }
+#globe3d-controls select { font-family:var(--font-data); font-size:11px; color:#7ff; padding:6px;
+  background:rgba(10,15,30,0.92); border:1px solid #2aa; border-radius:6px; }
 #mobile-toolbar {
   display:none;
   position:fixed; top:40px; left:0; right:0; z-index:900;
@@ -907,6 +911,16 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="map"></div>
 <iframe id="globe3d" title="3D war-room globe" hidden allow="fullscreen"></iframe>
 <button id="globe3d-toggle" type="button" onclick="toggleGlobe3d()" title="Switch between 2D map and live 3D globe">🌐 3D GLOBE</button>
+<div id="globe3d-controls" hidden>
+  <select id="globe3d-style" onchange="globe3dPush()" title="Sensor view">
+    <option value="normal">NORMAL</option><option value="surveillance">NVG</option>
+    <option value="thermal">FLIR</option><option value="retro">CRT</option>
+    <option value="noir">NOIR</option><option value="snow">SNOW</option><option value="anime">ANIME</option>
+  </select>
+  <select id="globe3d-map" onchange="globe3dPush()" title="Imagery">
+    <option value="esri-imagery">SATELLITE</option><option value="osm">STREETS</option>
+  </select>
+</div>
 
 <!-- TITLE BAR -->
 <div id="titlebar">
@@ -1184,6 +1198,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
       <span class="feed-time-chip" data-hours="0">ALL</span>
     </div>
     <div class="feed-cat-bar" id="feed-cat-bar"></div>
+    <div class="sb-search" style="padding:4px 8px"><input type="search" id="feed-search" placeholder="Search feed (e.g. MQ-9, כטב״מ, Hormuz)" oninput="renderFeed()"></div>
   </div>
   <div class="feed-list" id="feed-list"></div>
 </div>
@@ -1787,7 +1802,12 @@ function buildCatChips() {
   });
 }
 
+// Search normalises Hebrew acronym marks so כטב״מ / כטב"מ / כטבמ match each other.
+function feedNorm(s) { return String(s || '').toLowerCase().replace(/[\u05f4\u05f3"'`\u201c\u201d\u2018\u2019\-\s]+/g, ''); }
+function feedSearchText(e) { return feedNorm([e.text, e.src, e.source, e.loc, e.side].join(' ')); }
+let feedQuery = '';
 function renderFeed() {
+  feedQuery = feedNorm((document.getElementById('feed-search') || {}).value);
   const now = Date.now() / 1000;
   const cutoff = feedTimeHours > 0 ? now - (feedTimeHours * 3600) : 0;
   let filtered = feedEvents.filter(e => {
@@ -1798,6 +1818,7 @@ function renderFeed() {
     const src = (e.source || e.src || '').toLowerCase();
     const typ = (e.sub_event_type || e.type || '').toLowerCase();
     if (src.includes('nasa') || src.includes('firms') || typ.includes('fire')) return false;
+    if (feedQuery && !feedSearchText(e).includes(feedQuery)) return false;
     return true;
   });
 
@@ -4054,7 +4075,7 @@ function globe3dPins(events, nowS) {
 function globe3dView() {
   return { camera: { lat: 30.5, lon: 47, altitude_m: 3800000, heading_deg: 0, pitch_deg: -70 },
            layers: ['military', 'flights', 'ais-live-vessels', 'local-firms', 'earthquakes', 'military-installations'],
-           map: 'esri-imagery', style: 'normal',
+           map: document.getElementById('globe3d-map').value, style: document.getElementById('globe3d-style').value,
            annotations: globe3dPins(typeof feedEvents !== 'undefined' ? feedEvents : [], Date.now() / 1000) };
 }
 function globe3dPush() {
@@ -4067,6 +4088,7 @@ function toggleGlobe3d() {
   const on = f.hidden;
   if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1';
   f.hidden = !on; document.getElementById('map').style.visibility = on ? 'hidden' : '';
+  document.getElementById('globe3d-controls').hidden = !on;
   b.classList.toggle('on', on); b.textContent = on ? '🗺 2D MAP' : '🌐 3D GLOBE';
   if (on) globe3dPush();
 }
@@ -4074,7 +4096,12 @@ window.addEventListener('message', ev => {
   if (ev.origin !== GLOBE3D_ORIGIN || !ev.data) return;
   if (ev.data.type === 'gev:ready') { globe3dReady = true; globe3dPush(); }
 });
-setInterval(globe3dPush, 60000);
+// Refresh pins only when they change, so the periodic update does not yank the user's camera.
+let globe3dLastPins = '';
+setInterval(() => {
+  const pins = JSON.stringify(globe3dPins(typeof feedEvents !== 'undefined' ? feedEvents : [], Date.now() / 1000));
+  if (pins !== globe3dLastPins) { globe3dLastPins = pins; globe3dPush(); }
+}, 60000);
 </script>
 </body>
 </html>
