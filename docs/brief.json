@@ -1,30 +1,33 @@
 {
-  "generated_at": "2026-10-21T21:30:35.977835+00:00",
+  "generated_at": "2026-10-21T22:01:15.718162+00:00",
   "briefs": {
     "0.5": {
-      "en": "<p>Brief generation failed for 30 minutes window.</p>",
-      "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
-      "count": 5
+      "en": "<h3>Situation Report — Latest 30 minutes</h3><ul><li><b>Air activity over Iraq / Kurdish region</b>: Israeli fighter jets are currently flying over Erbil, Iraqi Kurdistan, near the Iranian border.</li><li>Independent report: Israeli jets are flying above Iraq, described as attempting to intimidate Iran.</li><li><b>Strait of Hormuz</b>: Iran says it will maintain control of the Strait of Hormuz and is ready to ensure safe navigation through the route.</li><li><b>Diplomacy</b>: Russia says it is ready to act as mediator between the US and Iran if both sides are interested.</li><li><b>Bottom line</b>: Insufficient evidence to assess the trend.</li><li>🟢 Good News: Iran states readiness to ensure safe navigation through Hormuz; Russia offering mediation is a diplomatic opening.</li></ul>",
+      "he": "<h3 dir=\"rtl\">דו\"ח מצב — 30 הדקות האחרונות</h3><ul dir=\"rtl\"><li><b>פעילות אווירית מעל עיראק/כורדיסטן</b>: מטוסי קרב ישראליים טסים כעת מעל ארביל, כורדיסטן העיראקית, סמוך לגבול עם איראן.</li><li>דיווח עצמאי: מטוסי הקרב טסים מעל עיראק ותוארו כניסיונות להרתיע את איראן.</li><li><b>מצר הורמוז</b>: איראן מצהירה שתשמור על שליטתה במצר הורמוז ומוכנה להבטיח שייט בטוח דרך המעבר.</li><li><b>דיפלומטיה</b>: רוסיה מצהירה שהיא מוכנה לשמש מתווכת בין ארה\"ב לאיראן במידה ששני הצדדים יהיו מעוניינים.</li><li><b>מסקנה</b>: עד כה אין ראיות מספקות להערכת מגמה.</li><li>🟢 חדשות טובות: איראן מדגישה נכונות להבטיח שייט בטוח במצר הורמוז; רוסיה מציעה מסגרת תיווך דיפלומטית.</li></ul>",
+      "count": 4,
+      "window": "30 minutes"
     },
     "2": {
-      "en": "<p>Brief generation failed for 2 hours window.</p>",
-      "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 24
+      "en": "<h3>Situation report — last 2 hours</h3><ul><li><b>Active strikes and launches:</b> Multiple IRGC cruise missiles launched from Sirik toward the Strait of Hormuz (21:17 UTC). Reports of explosions at Sirik port (20:41 UTC). A strike, presumably American, hit a missile launcher in Sirik (20:20 UTC).</li><li><b>Air operations:</b> Israeli fighter jets currently flying over Erbil, Iraqi Kurdistan near the Iranian border (21:39–21:36 UTC). Additional Israeli sorties reported near Iran’s border and above the West Bank; described as probe/simulation sorties (20:00–20:40 UTC).</li><li><b>Diplomacy & policy:</b> TASS reports Iran says it will maintain control of the Strait of Hormuz while ensuring safe navigation (21:33 UTC). Russia says it is ready to act as mediator between the US and Iran if both are interested (21:31 UTC). White House sources to Haaretz report an apparent change in US position favoring a preemptive strike on Iran (20:25 UTC).</li><li><b>Regional</b>: Saudi authorities say a Houthi drone targeting the Shaybah oil field was intercepted; falling debris killed two foreign workers (20:00 UTC).</li><li><b>Bottom line — threat trend:</b> Escalation. Missile launches, explosions and a strike in Sirik plus intensified Israeli aerial probes indicate rising kinetic activity in the past two hours.</li><li>🟢 Good News: Russia offered to mediate, and Iran publicly stated it will ensure safe navigation through the Strait.</li></ul>",
+      "he": "<h3 dir=\"rtl\">דוח מצב — השעתיים האחרונות</h3><ul dir=\"rtl\"><li><b>פעולות חמות:</b> שיגורי מספר טילי קרוז אירג׳אד מסיריק לעבר מצר הורמוז (21:17 UTC). דיווחים על פיצוצים בנמל סיריק (20:41 UTC). תקיפה, ככל הנראה אמריקאית, פגעה במערכת שיגור בסיריק (20:20 UTC).</li><li><b>פעילות אווירית:</b> מטוסי קרב ישראליים מעופפים מעל ארביל, כורדיסטן העיראקית, בסמוך לגבול עם איראן (21:39–21:36 UTC). דיווחים נוספים על מחוות סימולציה/סריקות של חיל האוויר מעל מערב הבנק והרחק לעבר גבול איראן (20:00–20:40 UTC).</li><li><b>דיפלומטיה ומדיניות:</b> לפי TASS — איראן תמשיך לשלוט במצר הורמוז אך תדאג להבטיח ניווט בטוח (21:33 UTC). רוסיה מציעה לתפקד כמגשר בין ארה\"ב לאיראן אם שתי המדינות מעוניינות (21:31 UTC). מקורות לבית הלבן ל-Haaretz מדווחים על שינוי בעמדת ארה\"ב בעד מהלך תקיף מקדים נגד איראן (20:25 UTC).</li><li><b>אזורי:</b> סעודיה דיווחה כי מטוסי חות'ים היירטו מטרה לשדה שאיבה בשייבא; נפלו שברי טילים שהרגו שני עובדים זרים (20:00 UTC).</li><li><b>סיכום — מגמת איום:</b> הסלמה. שיגורים, פיצוצים ותקיפה בסיריק יחד עם הגברה של סיורים אוויריים מצביעים על עלייה בפעילות הקינטית בשעות האחרונות.</li><li>🟢 חדשות טובות: רוסיה הציעה לתווך, ואיראן הצהירה בפומבי שתשמור על ניווט בטוח במצר.</li></ul>",
+      "count": 21,
+      "window": "2 hours"
     },
     "6": {
-      "en": "<p>Brief generation failed for 6 hours window.</p>",
-      "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 59
+      "en": "<h3>Situation Report — Wed 21 Oct 2026 — last 6 hours</h3><ul><li><b>Active strikes and launches:</b> A U.S. strike hit an anti-ship cruise-missile launcher in Sirik, Hormozgan — explosions and smoke reported at Sirik port. Multiple IRGC cruise missiles were launched from Sirik toward the Strait of Hormuz.</li><li><b>Air operations:</b> Israeli fighter jets observed over Erbil (Iraqi Kurdistan) and elsewhere in Iraq. Jets also reported taking off from Ovda and flying above the West Bank. Described by observers as probe/simulation sorties near Iran.</li><li>U.S. policy reports: Haaretz cites White House sources saying U.S. position has reportedly shifted in favor of a preemptive strike on Iran. Media reports claim U.S. prepared plans to target energy and nuclear infrastructure using very large ordnance.</li><li>Diplomacy & statements: Iran says it will maintain control of the Strait of Hormuz while ensuring navigation; an Iranian official reportedly said “the attack is certain — there will be no diplomatic solution.” Russia says it is ready to act as mediator and to advance a peace initiative.</li><li>Regional spillover: An Ansarallah/Houthi drone targeted Shaybah oil field on the KSA–Emirati border. Saudi authorities said the drone was intercepted; falling debris reportedly killed two foreign workers and caused injuries.</li><li>Intelligence notes: Multiple independent reports align on a strike against a missile launcher in Sirik and visible smoke/explosions at the site.</li><li>Threat trend: Escalating — concurrent missile launches, a foreign strike inside Iran, and reported U.S. shift toward preemption.</li><li>🟢 Good News: Saudi authorities report the Shaybah drone was intercepted.</li></ul>",
+      "he": "<h3>דוח מצב — ד׳ 21 באוקטובר 2026 — שעות אחרונות</h3><ul><li><b>התקפות והשיגורים פעילים:</b> תקיפה אמריקאית פגעה במשגר טילי שיוט נגד ספינות בסיריק, הורמוזגאן — דווחו פיצוצים ועשן בנמל סיריק. משגרי טילי חוף של משמרות המהפכה שוגרו מסיריק לעבר מיצר הורמוז.</li><li><b>פעילות אווירית:</b> מטוסי קרב ישראליים אותרו מעל ארבּיל (כורדיסטן העיראקית) ומעל שטחי עיראק נוספים. דווחו גם טיסות מעל הגדה המערבית לאחר המראה מבסיס עודה. משימות אלו מתוארות כתרגולים/סיורי חיזוי נגד איראן.</li><li>דיווחים על מדיניות ארה״ב: הבעתב של Haaretz מצטטת מקורות בבית הלבן שלפיהם עמדת ארה״ב נוטה כעת לטובת תקיפה מונעת נגד איראן. דיווחי תקשורת מדווחים כי ארה״ב הכינה תכניות לפגיעה בתשתיות אנרגיה וגרעין בעזרת אורדנסיה כבדה מאוד.</li><li>דיפלומטיה והצהרות: איראן: תשמור על שליטה במיצר הורמוז אך תאפשר ניווט בטוח; בכיר איראני אמר באופן מדווח \"התקיפה היא עניין ודאי — לא יהיה פתרון דיפלומטי.\" רוסיה מצהירה שהיא מוכנה לשמש כמגשרת ולקדם יוזמת שלום.</li><li>השפעה אזורית: מזל״ת של אנצאראללה/חות׳ים פגע בשדה השאיבה שיבה על גבול סעודיה–איחוד האמירויות. סעודיה דיווחה על יירוט; פסולת הנפילה גרמה לשני הרוגים זרים ופצועים.</li><li>הערות מודיעיניות: מספר מקורות עצמאיים מתיישבים על תקיפה כנגד משגר בסיריק ותצפיות עשן/פיצוצים באתר.</li><li>מגמת איום: בהאצה — ירי טילים מרובה, תקיפה זרה בתוך איראן ודיווח על שינוי עמדה אמריקאי לטובת פעולה מונעת.</li><li>🟢 חדשות טובות: הרשויות הסעודיות דיווחו כי מזל״ת השיבה יורט.</li></ul>",
+      "count": 61,
+      "window": "6 hours"
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 174
+      "count": 172
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 372
+      "count": 373
     }
   }
 }
