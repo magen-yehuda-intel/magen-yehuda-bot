@@ -1,32 +1,30 @@
 {
-  "generated_at": "2026-10-22T00:01:02.944732+00:00",
+  "generated_at": "2026-10-22T00:30:35.739457+00:00",
   "briefs": {
     "0.5": {
-      "en": "<h3>Situation Report</h3><ul><li><b>Attacks & Strikes</b></li><ul><li><b>King Fahd International Airport (Dammam) was targeted by the Houthis — one fatality reported.</b></li></ul><li><b>Diplomacy</b></li><ul><li>US President Donald Trump said the United States is interacting with Russia and China on resolving the US‑Israeli military conflict with Iran. According to Trump, Russia could have part.</li></ul><li><b>Domestic Politics (Israel)</b></li><ul><li>Times of Israel reports: the Charedi public vow to stay in the race despite pressure from the Prime Minister and allies.</li></ul><li><b>Bottom line</b></li><ul><li>Threat trend: Insufficient evidence to assess the trend.</li></ul></ul>",
-      "he": "<h3>דוח מצב</h3><ul><li><b>תקיפות וירי</b></li><ul><li><b>שדה התעופה המלך פאהד בדמאם הותקף על ידי החות'ים — דווח על הרוג אחד.</b></li></ul><li><b>דיפלומטיה</b></li><ul><li>נשיא ארצות הברית דונלד טראמפ אמר שהארה\"ב נמצאת באינטראקציה עם רוסיה וסין בנוגע להסדרת הסכסוך הצבאי בין ארה\"ב/ישראל לאיראן. לפי טראמפ, רוסיה could have part.</li></ul><li><b>פוליטיקה פנימית (ישראל)</b></li><ul><li>הטלגרם/Times of Israel: הציבור החרדי מכריז שישתתף במרוץ למרות לחץ מהמועמד ראש הממשלה ובעלי בריתו.</li></ul><li><b>סיכום</b></li><ul><li>מגמת איום: אין די ראיות להעריך את המגמה.</li></ul></ul>",
-      "count": 4,
-      "window": "30 minutes"
+      "en": "<p>Brief generation failed for 30 minutes window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 30 minutes.</p>",
+      "count": 1
     },
     "2": {
-      "en": "<h3>Situation report — last 2 hours</h3><b>Airstrike struck a second missile-launch unit in the Sirik Hills (southern Iran). Houthis attacked King Fahd International Airport (Dammam); one killed.</b><ul><li><b>Attacks / strikes</b><ul><li>Airstrike struck a second missile launch unit in the Sirik Hills, southern Iran (report).</li><li>King Fahd International Airport in Dammam was targeted by Houthis; GACA reports one fatality.</li></ul></li><li><b>Regional security / movements</b><ul><li>US ordered departure of personnel from Saudi Arabia, citing Houthi threat (Al Jazeera).</li></ul></li><li><b>Diplomacy & planning</b><ul><li>US interacting with Russia and China on resolving the US–Israeli military conflict with Iran — Trump (TASS).</li><li>NYT report: the US and Israel have developed detailed plans for renewed strikes against Iran following the November 3 midterm elections (report).</li></ul></li><li><b>Domestic politics (Israel)</b><ul><li>Charedi public vows to stay in the race despite pressure from the Prime Minister and allies (Times of Israel).</li></ul></li></ul><b>Threat trend:</b> Escalation — recent cross-border Houthi attack, US personnel withdrawals, an airstrike inside Iran, and planning for further strikes indicate rising operational activity.<ul><li>🟢 Good News: Reported airstrike hit a missile launch unit in the Sirik Hills.</li></ul>",
-      "he": "<div dir=\"rtl\"><h3>דוח מצב — שעתיים אחרונות</h3><b>תקיפה אווירית פגעה ביחידת שיגור שנייה בגבעות סיריק (דרום איראן). חות'ים תקפו את שדה התעופה המלך פהד בדאמאם; אדם אחד נהרג.</b><ul><li><b>תקיפות</b><ul><li>דיווח על תקיפה אווירית שפגעה ביחידת שיגור שנייה בגבעות סיריק, דרום איראן.</li><li>שדה התעופה המלך פהד בדאמאם הותקף על ידי החות'ים; רשות התעופה הכללית הסעודית (GACA) מדווחת על הרוג אחד.</li></ul></li><li><b>ביטחון אזורי / תנועות</b><ul><li>ארה\"ב הורתה לעובדיה לצאת מסעודיה, בציון איום החות'ים (Al Jazeera).</li></ul></li><li><b>דיפלומטיה ותכנון</b><ul><li>טראמפ: ארה\"ב מתקשרת עם רוסיה וסין בנושא פתרון הסכסוך הצבאי עם איראן (TASS).</li><li>דיווח NYT: ארה\"ב וישראל גיבשו תכניות מפורטות להכות מחדש באיראן לאחר בחירות אמצע הקדנציה ב‑3 בנובמבר (דיווח).</li></ul></li><li><b>פוליטיקה פנימית (ישראל)</b><ul><li>הציבור החרדי מצהיר שישאר במירוץ למרות לחצים מהראש ממשלה ובעלי בריתו (Times of Israel).</li></ul></li></ul><b>מגמת איום:</b> הסלמה — התקפת חות'ים חוצה־גבול, נסיגת כוח אמריקאי, תקיפה בתוך איראן ותכנון לפעולות נוספות מצביעות על עלייה בפעילות המבצעית.<ul><li>🟢 חדשות טובות: דווח על פגיעה ביחידת שיגור בגבעות סיריק.</li></ul></div>",
-      "count": 8,
-      "window": "2 hours"
+      "en": "<p>Brief generation failed for 2 hours window.</p>",
+      "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
+      "count": 8
     },
     "6": {
       "en": "<p>Brief generation failed for 6 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 56
+      "count": 52
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 175
+      "count": 176
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 363
+      "count": 362
     }
   }
 }
