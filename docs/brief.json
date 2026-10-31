@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T02:32:06.444567+00:00",
+  "generated_at": "2026-10-31T03:01:51.604985+00:00",
   "briefs": {
     "0.5": {
       "en": "<p>No events in this time window.</p>",
@@ -7,24 +7,25 @@
       "count": 0
     },
     "2": {
-      "en": "<p>Brief generation failed for 2 hours window.</p>",
-      "he": "<p>יצירת תקציר נכשלה עבור חלון של 2 hours.</p>",
-      "count": 2
+      "en": "<h3>Situation Update</h3><ul><li><b>US-Iran military</b><ul><li>Media report (TASS): US may resume strikes on Iran on November 4.</li></ul></li><li><b>Legal / Domestic (US)</b><ul><li>Times of Israel: Four activists charged over threats to University of Michigan officials tied to Israel.</li></ul></li><li><b>Bottom line</b><ul><li>Media indicates a possible near-term resumption of US strikes on Iran (Nov 4). No official confirmation in these reports.</li><li>Insufficient evidence to assess a longer-term trend.</li></ul></li><li>🟢 Good News: Law-enforcement action reported — four activists charged.</li></ul>",
+      "he": "<div dir=\"rtl\"><h3>עדכון מצב</h3><ul><li><b>מיצוב צבאי ארה\"ב–איראן</b><ul><li>דיווח תקשורת (TASS): ארה\"ב עשויה לחדש תקיפות נגד איראן ב-4 בנובמבר.</li></ul></li><li><b>משפטי/פנימי (ארה\"ב)</b><ul><li>Times of Israel: ארבעה פעילים נוספים הועמדו לדין על איומים כלפי בכירים באוניברסיטת מישיגן בקשר לטיב הקשרים שלהם עם ישראל.</li></ul></li><li><b>מסקנה</b><ul><li>הדיווח מצביע על אפשרות לתקיפות קרובות של ארה\"ב כלפי איראן (4 בנובמבר). לא קיים אישור רשמי בדיווחים אלה.</li><li>אין ראיות מספקות להערכת מגמה ארוכת טווח.</li></ul></li><li>🟢 חדשות טובות: דווח על פעולת אכיפה — ארבעה פעילים הועמדו לדין.</li></ul></div>",
+      "count": 2,
+      "window": "2 hours"
     },
     "6": {
       "en": "<p>Brief generation failed for 6 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 6 hours.</p>",
-      "count": 15
+      "count": 12
     },
     "24": {
       "en": "<p>Brief generation failed for 24 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 24 hours.</p>",
-      "count": 124
+      "count": 122
     },
     "48": {
       "en": "<p>Brief generation failed for 48 hours window.</p>",
       "he": "<p>יצירת תקציר נכשלה עבור חלון של 48 hours.</p>",
-      "count": 280
+      "count": 277
     }
   }
 }
