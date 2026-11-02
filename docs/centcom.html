@@ -4096,6 +4096,8 @@ window.addEventListener('message', ev => {
   if (ev.origin !== GLOBE3D_ORIGIN || !ev.data) return;
   if (ev.data.type === 'gev:ready') { globe3dReady = true; globe3dPush(); }
 });
+// Open the advanced map by default; keep the 2D toggle available.
+toggleGlobe3d();
 // Refresh pins only when they change, so the periodic update does not yank the user's camera.
 let globe3dLastPins = '';
 setInterval(() => {
