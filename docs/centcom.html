@@ -4086,7 +4086,7 @@ function globe3dPush() {
 function toggleGlobe3d() {
   const f = document.getElementById('globe3d'), b = document.getElementById('globe3d-toggle');
   const on = f.hidden;
-  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1';
+  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1#v=2&lat=30.5&lon=47&alt=3800000&heading=0&pitch=-70&roll=0&style=normal&map=esri-imagery';
   f.hidden = !on; document.getElementById('map').style.visibility = on ? 'hidden' : '';
   document.getElementById('globe3d-controls').hidden = !on;
   b.classList.toggle('on', on); b.textContent = on ? '🗺 2D MAP' : '🌐 3D GLOBE';
