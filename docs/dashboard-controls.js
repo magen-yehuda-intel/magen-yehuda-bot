@@ -27,6 +27,7 @@
       document.querySelectorAll(`[data-layer="${k}"]`).forEach(el => el.classList.toggle('active', !!activeState[k]));
     });
     updateSidebarRows(); updateMobileButtons(); updateLayerCount(); _updateMissileUI();
+    if ($('globe-borders')) $('globe-borders').checked = activeState.borders;
     if ($('globe-density')) $('globe-density').value = density;
     if ($('globe-sites')) $('globe-sites').checked = globeSites;
     document.querySelectorAll('#feed-time-bar .feed-time-chip').forEach(el => el.classList.toggle('active', Number(el.dataset.hours) === feedTimeHours));
@@ -136,7 +137,7 @@
     localStorage.removeItem('centcom-config'); localStorage.removeItem('strikeWindow'); localStorage.removeItem('missileMode');
     density = 'sparse'; globeSites = false; selectedEventZone = null; $('event-zone-unlock').hidden = true;
     feedTimeHours = 2; feedActiveCats.clear(); feedQuery=''; if ($('feed-search')) $('feed-search').value='';
-    aircraftMode=0;fireMode=0;window._strikeWindowHours=48;stopMissiles();
+    aircraftMode=0;fireMode=0;window._strikeWindowHours=48;stopMissiles();map.stop();map.setView([28,52],5);
     $('globe3d-map').value='esri-imagery';$('globe3d-style').value='normal';oldBasemap('carto');
     briefFontPct=100;applyBriefFont();
     applyLayers(defaults); if (!is3D()) toggleGlobe3d(); renderFeed(); globe3dPush(true); notice('Reset to sparse 3D view, regional borders and a 2-hour news window.');
@@ -186,7 +187,7 @@
     $('event-zone-unlock').hidden=false;$('event-zone-unlock').textContent='🔒 '+selectedEventZone.label+' · Unlock zone';
     if(innerWidth<=1024)closeMobilePanels();globe3dPush(true);
   };
-  window.unlockEventZone = () => {selectedEventZone=null;$('event-zone-unlock').hidden=true;map.flyTo([28,52],5,{duration:0.8});globe3dPush(true);};
+  window.unlockEventZone = () => {selectedEventZone=null;$('event-zone-unlock').hidden=true;if(window._feedHighlight){map.removeLayer(window._feedHighlight);window._feedHighlight=null;}map.flyTo([28,52],5,{duration:0.8});globe3dPush(true);};
   function refreshLegend() {
     const el=$('legend');if(!el)return;
     el.innerHTML = is3D() ? '<div class="legend-title">3D MAP LEGEND</div><button class="legend-close" onclick="toggleLegend()">✕</button><div style="font-size:11px;line-height:1.8">Cyan country areas: regional borders<br>Cyan / red / amber pins: news source side, not verified strike attribution<br>Selected news: one labeled cyan pin<br>Aircraft, vessels, quakes and military sites: independent globe providers<br>Exact Magen overlays are marked 2D.</div>' : originalLegend;
@@ -212,10 +213,10 @@
   if ($('chip-live')) { const count=$('cnt-aircraft'); if(count)new MutationObserver(()=>{$('chip-live').textContent=activeState.aircraft?count.textContent:'—';}).observe(count,{childList:true,characterData:true,subtree:true}); }
   const installRow=document.createElement('button');installRow.type='button';installRow.className='sb-action-btn';installRow.textContent='Install Magen app';installRow.onclick=()=>{if(_deferredInstall)pwaInstall();else notice('Use your browser’s Install app / Add to Home Screen menu.');};document.querySelector('.sb-actions').appendChild(installRow);
   const display=document.createElement('div');display.className='sb-section-title';display.textContent='MAP DISPLAY';
-  const controls=document.createElement('div');controls.innerHTML='<div class="sb-row" role="button" tabindex="0" id="borders-control"><span class="sb-row-name">Regional country borders</span></div><div class="sb-row"><label class="sb-row-name" for="globe-density" title="Object detection labels; country names and selected-event labels remain">3D object labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 newest matching events.</div>';
+  const controls=document.createElement('div');controls.innerHTML='<div class="sb-row map-display-toggle" id="borders-control"><label><input id="globe-borders" type="checkbox"> Regional country borders</label></div><div class="sb-row"><label class="sb-row-name" for="globe-density" title="Object detection labels; country names and selected-event labels remain">3D object labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row map-display-toggle"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 newest matching events.</div>';
   $('tab-layers').insertBefore(controls,$('tab-layers').children[1]);$('tab-layers').insertBefore(display,controls);
-  $('borders-control').onclick=()=>toggleLayer('borders');$('borders-control').onkeydown=e=>{if(e.key==='Enter')toggleLayer('borders');};
-  $('globe-density').onchange=e=>{density=e.target.value;globe3dPush();};$('globe-sites').onchange=e=>{globeSites=e.target.checked;globe3dPush();};
+  $('globe-borders').onchange=()=>toggleLayer('borders');
+  $('globe-density').onchange=e=>{density=e.target.value;if(!is3D())toggleGlobe3d();globe3dPush();};$('globe-sites').onchange=e=>{globeSites=e.target.checked;if(!is3D())toggleGlobe3d();globe3dPush();};
   document.querySelectorAll('#tab-layers .sb-row[onclick],.tb-btn[onclick]').forEach(row=>{
     const m=row.getAttribute('onclick').match(/(?:toggleLayer|isolateIranLayer)\('([^']+)'\)/);
     if(m&&legacyOnly.has(m[1])){row.title='Exact Magen overlay: opens in 2D';const name=row.querySelector('.sb-row-name');if(name)name.append(' · 2D');}
