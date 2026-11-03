@@ -39,7 +39,7 @@ The main and CENTCOM pages were audited together with Aetherwatch's deployed emb
 - Satellite / street imagery and all seven sensor styles.
 - Sparse / balanced / off detection labels through an extended acknowledged embed contract.
 - Regional political areas for Iran, Israel, Lebanon, Syria, Iraq, Jordan, Saudi Arabia, UAE, Yemen, Oman, Kuwait and Qatar. These are annotated country geometries, not a worldwide border-only tile layer.
-- Filtered news pins, capped visibly at 12 newest matches; selected event gets a single selected pin.
+- Filtered news pins, capped at 12 locations; coincident reports share one identified pin and remain accessible through card pagination. Selected news retains its identity through zone focus.
 - ALL or military aircraft, live provider AIS vessels, earthquakes, optional provider military-site inventory.
 - Parent origin AND source-window checks; command errors surfaced; unavailable viewer can fall back to 2D.
 
@@ -55,7 +55,7 @@ These controls are labeled 2D and switch to that renderer. They are not represen
 - Magen siren points, recent strikes and thermal/seismic correlations.
 - Exact fire-age filtering and civilian-only aircraft filtering.
 - Missile path/animation rendering and strike time windows.
-- Standard OpenStreetMap and VIIRS imagery. CARTO’s newly watermarked endpoint was replaced with a keyless attributed basemap.
+- English-label Esri Dark Gray Base + Reference and VIIRS imagery. Standard OpenStreetMap raster used local-language names; the replacement English labels were visually verified over the Gulf without an API-key watermark.
 
 ## Data limitations, not silently 'fixed'
 
@@ -71,6 +71,18 @@ These controls are labeled 2D and switch to that renderer. They are not represen
 - Node status/inline-script parsing tests passed.
 - Shared adapter syntax check passed.
 - Browser preview: 14 settings/preset/reset/routing assertions passed against live data before publication. This was an injected QA preview, not production deployment evidence.
-- Final deployed browser acceptance: 51/51 checks passed. Globe acknowledged style/map/detection/annotation steps successfully, and 3D satellite terrain was visually observed.
+- Final deployed browser acceptance: 51/51 checks passed. Globe acknowledged style/map/detection/annotation steps successfully, and 3D satellite globe imagery was visually observed.
 - Visual follow-up repairs: install prompt moved to the sidebar to avoid covering map controls; key-required 2D tiles replaced; theater camera changed to a top-down regional view. Final deployed control recheck passed 51/51; the mobile drawer and selected-zone map were visually inspected. See `settings-audit-receipt.json` for executable-check results.
 - Aetherwatch protocol implementation: commit `9d282fdc4a1d885164c4521319870d7ec20477d2`, deployed revision `aetherwatch-globe--0000002`; exact delivered bundle SHA256 independently matched `68d7237fca182ec65298e245778e6a98e5ca13632fbb1fa22a6d04097e5ed5be`.
+
+
+## Pin-to-news and renderer recovery release
+
+- The original pins were pointer-transparent SVG annotations, not selectable Cesium entities. They had labels but no reverse news identity.
+- `news-pin-model.js` groups reports by coordinates and emits an opaque `clientId`. `news-pin-bubbles.js` resolves selection only against host-owned current news, checking both origin and source window. Text is rendered as text; report links allow only HTTP(S).
+- A real mouse click, actual phone-size touch tap, and Enter activation on the delivered SVG hit target each opened the expected report. The mobile card was visually inspected with headline, source, timestamp, original link, close and pagination.
+- The deployed settings regression passed **51/51**, news-card/security checks **10/10**, and recovery/security checks **7/7**. Three actual 2D→3D cycles resumed frames without context loss or error panels.
+- `map-render-recovery.js` consumes the actual globe render-error notification, preserves bounded diagnostics, returns to usable 2D, destroys the failed iframe and offers a manual fresh-renderer retry. Retry was verified against a fresh matching command/acknowledgement ID.
+- An explicitly labeled test error was raised through the deployed Cesium scene's real `renderError` event. Its cross-frame notification triggered fallback and fresh retry. This is a recovery test, **not reproduction of the user's fragment-shader compilation failure**. The underlying compiler failure remains unexplained; no guessed GPU flags were applied.
+- Receiver source `a38a1805963bc2a9550595a0f505e21b6884ccc0`, Azure revision `aetherwatch-globe--0000003`; delivered bundle SHA256 `90cc25fcf615003f2736eb80b064457cf4da4ca5944a531fb1636cbbdf65729d` independently verified. Host source `a230721ca065e5be8b63fd17ae25d5edc84dca89`.
+- Executable results: `pin-recovery-receipt.json`. Tests: `test-news-pin-bubbles.js`, `browser-news-bubbles.js`, `browser-render-recovery.js` under `tests/`.
