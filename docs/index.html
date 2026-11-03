@@ -605,6 +605,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 .brief-meta { padding:8px 16px; border-top:1px solid var(--panel-border); font-size:10px; color:var(--text-dim); flex-shrink:0; }
 
 /* ═══ MOBILE HORIZONTAL TOOLBAR ═══ */
+#pwa-install-banner { display:none !important; }
+.magen-dark-basemap { filter:invert(0.9) hue-rotate(180deg) brightness(0.8) contrast(1.05); }
 #globe3d { position:fixed; inset:0; width:100%; height:100%; border:0; z-index:1; background:#000; }
 #globe3d-toggle { position:fixed; right:12px; bottom:84px; z-index:1200; padding:8px 12px;
   font-family:var(--font-data); font-size:11px; letter-spacing:1px; color:#7ff; cursor:pointer;
@@ -1296,11 +1298,11 @@ function dataUrl(endpoint) {
 // MAP INITIALIZATION
 // ═══════════════════════════════════════════════════════════
 const VIIRS_URL = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_Black_Marble/default/2016-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png';
-const CARTO_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const CARTO_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const NE_COUNTRIES = 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson';
 
 const viirsTile = L.tileLayer(VIIRS_URL, { maxZoom: 8, attribution: '© NASA GIBS Black Marble' });
-const cartoTile = L.tileLayer(CARTO_URL, { maxZoom: 18, attribution: '© CARTO', subdomains: 'abcd' });
+const cartoTile = L.tileLayer(CARTO_URL, { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors', className: 'magen-dark-basemap' });
 
 window.map = L.map('map', {
   center: [28, 52], zoom: 5,
@@ -4163,7 +4165,7 @@ function globe3dPins(events, nowS) {
 function globe3dView() {
   return { camera: selectedEventZone
              ? {lat: selectedEventZone.lat, lon: selectedEventZone.lon, altitude_m: selectedEventZone.altitude, heading_deg: 0, pitch_deg: -90}
-             : { lat: 30.5, lon: 47, altitude_m: 3800000, heading_deg: 0, pitch_deg: -70 },
+             : { lat: 30.5, lon: 47, altitude_m: 3800000, heading_deg: 0, pitch_deg: -90 },
            layers: ['military', 'flights', 'ais-live-vessels', 'local-firms', 'earthquakes', 'military-installations'],
            map: document.getElementById('globe3d-map').value, style: document.getElementById('globe3d-style').value,
            annotations: selectedEventZone
@@ -4178,7 +4180,7 @@ function globe3dPush() {
 function toggleGlobe3d() {
   const f = document.getElementById('globe3d'), b = document.getElementById('globe3d-toggle');
   const on = f.hidden;
-  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1#v=2&lat=30.5&lon=47&alt=3800000&heading=0&pitch=-70&roll=0&style=normal&map=esri-imagery&dm=SPARSE&dd=25';
+  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1#v=2&lat=30.5&lon=47&alt=3800000&heading=0&pitch=-90&roll=0&style=normal&map=esri-imagery&dm=SPARSE&dd=25';
   f.hidden = !on; document.getElementById('map').style.visibility = on ? 'hidden' : '';
   document.getElementById('globe3d-controls').hidden = !on;
   b.classList.toggle('on', on); b.textContent = on ? '🗺 2D MAP' : '🌐 3D GLOBE';
@@ -4197,6 +4199,6 @@ setInterval(() => {
   if (pins !== globe3dLastPins) { globe3dLastPins = pins; globe3dPush(); }
 }, 60000);
 </script>
-<script src="dashboard-controls.js?v=settings-audit-1"></script>
+<script src="dashboard-controls.js?v=f81f1dda2371"></script>
 </body>
 </html>

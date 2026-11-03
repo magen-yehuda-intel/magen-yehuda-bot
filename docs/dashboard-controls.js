@@ -81,7 +81,7 @@
     el.removeAttribute('onchange'); el.addEventListener('change', () => setStrikeWindow(el.value));
   }
   const oldBasemap = setBasemap;
-  window.setBasemap = name => { need2D('CARTO / VIIRS basemaps are 2D-only'); oldBasemap(name); };
+  window.setBasemap = name => { need2D('Standard / VIIRS basemaps are 2D-only'); oldBasemap(name); };
   function newsMatches(e, ignoreCategories = false) {
     const now = Date.now()/1000, ts = e.ts || e.timestamp || 0;
     const src = String(e.src || e.source || '').toLowerCase(), type = String(e.type || e.sub_event_type || '').toLowerCase();
@@ -164,13 +164,19 @@
     if(selectedEventZone)annotations.push({type:'pin',latitude:selectedEventZone.lat,longitude:selectedEventZone.lon,color:'cyan',label:selectedEventZone.label});
     else if(activeState.osint)annotations.push(...globe3dPins(feedEvents,Date.now()/1000));
     const view = {layers:enabled,map:$('globe3d-map').value,style:$('globe3d-style').value,annotations:annotations.slice(0,24),detection:{enabled:density!=='off',densityPct:density==='balanced'?50:25,allocationStrategy:'elastic'}};
-    if(includeCamera)view.camera=selectedEventZone ? {lat:selectedEventZone.lat,lon:selectedEventZone.lon,altitude_m:selectedEventZone.altitude,heading_deg:0,pitch_deg:-90} : {lat:30.5,lon:47,altitude_m:3800000,heading_deg:0,pitch_deg:-70};
+    if(includeCamera)view.camera=selectedEventZone ? {lat:selectedEventZone.lat,lon:selectedEventZone.lon,altitude_m:selectedEventZone.altitude,heading_deg:0,pitch_deg:-90} : {lat:30.5,lon:47,altitude_m:3800000,heading_deg:0,pitch_deg:-90};
     return view;
   };
+  let dispatchTimer = null, pendingCamera = false;
   window.globe3dPush = (includeCamera = false) => {
     const f=$('globe3d'); if(!globe3dReady||f.hidden)return;
-    const id='magen-'+(++globe3dSeq); window._lastGlobeCommand={id,view:globe3dView(includeCamera)};
-    f.contentWindow.postMessage({type:'gev:view',...window._lastGlobeCommand},GLOBE3D_ORIGIN);
+    pendingCamera = pendingCamera || includeCamera;
+    clearTimeout(dispatchTimer);
+    dispatchTimer = setTimeout(() => {
+      if(!globe3dReady||f.hidden){pendingCamera=false;return;}
+      const id='magen-'+(++globe3dSeq); window._lastGlobeCommand={id,view:globe3dView(pendingCamera)};pendingCamera=false;
+      f.contentWindow.postMessage({type:'gev:view',...window._lastGlobeCommand},GLOBE3D_ORIGIN);
+    },40);
   };
   window.lockEventZone = (lat,lon,label) => {
     if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
@@ -204,8 +210,9 @@
   }
   if ($('chip-ais')) { $('chip-ais').textContent='—'; $('chip-ais').parentElement.title='Provider AIS count is not exposed to Magen; unknown, not zero.'; }
   if ($('chip-live')) { const count=$('cnt-aircraft'); if(count)new MutationObserver(()=>{$('chip-live').textContent=activeState.aircraft?count.textContent:'—';}).observe(count,{childList:true,characterData:true,subtree:true}); }
+  const installRow=document.createElement('button');installRow.type='button';installRow.className='sb-action-btn';installRow.textContent='Install Magen app';installRow.onclick=()=>{if(_deferredInstall)pwaInstall();else notice('Use your browser’s Install app / Add to Home Screen menu.');};document.querySelector('.sb-actions').appendChild(installRow);
   const display=document.createElement('div');display.className='sb-section-title';display.textContent='MAP DISPLAY';
-  const controls=document.createElement('div');controls.innerHTML='<div class="sb-row" role="button" tabindex="0" id="borders-control"><span class="sb-row-name">Regional country borders</span></div><div class="sb-row"><label class="sb-row-name" for="globe-density">3D labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 newest matching events.</div>';
+  const controls=document.createElement('div');controls.innerHTML='<div class="sb-row" role="button" tabindex="0" id="borders-control"><span class="sb-row-name">Regional country borders</span></div><div class="sb-row"><label class="sb-row-name" for="globe-density" title="Object detection labels; country names and selected-event labels remain">3D object labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 newest matching events.</div>';
   $('tab-layers').insertBefore(controls,$('tab-layers').children[1]);$('tab-layers').insertBefore(display,controls);
   $('borders-control').onclick=()=>toggleLayer('borders');$('borders-control').onkeydown=e=>{if(e.key==='Enter')toggleLayer('borders');};
   $('globe-density').onchange=e=>{density=e.target.value;globe3dPush();};$('globe-sites').onchange=e=>{globeSites=e.target.checked;globe3dPush();};
