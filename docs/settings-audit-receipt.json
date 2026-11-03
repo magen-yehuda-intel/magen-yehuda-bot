@@ -1,0 +1,293 @@
+{
+  "recorded_at_utc": "2026-11-03T02:46:01.349531+00:00",
+  "dashboard_url": "https://magen-yehuda-intel.github.io/magen-yehuda-bot/",
+  "globe_url": "https://aetherwatch-globe.blackfield-628213bb.eastus.azurecontainerapps.io/",
+  "browser_focus_emulation_used": true,
+  "control_acceptance": {
+    "passed": 51,
+    "total": 51,
+    "failures": [],
+    "results": [
+      {
+        "name": "shared settings adapter loaded",
+        "ok": true
+      },
+      {
+        "name": "strike windows have all three options",
+        "ok": true
+      },
+      {
+        "name": "layer search filters nonmatching rows",
+        "ok": true
+      },
+      {
+        "name": "cleared layer search restores every row",
+        "ok": true
+      },
+      {
+        "name": "Iran-only excludes Gulf energy",
+        "ok": true
+      },
+      {
+        "name": "static preset opens visible 2D",
+        "ok": true
+      },
+      {
+        "name": "Clear removes every layer",
+        "ok": true
+      },
+      {
+        "name": "Clear turns missiles off",
+        "ok": true
+      },
+      {
+        "name": "Show All enables every layer",
+        "ok": true
+      },
+      {
+        "name": "US preset excludes Iran sublayers",
+        "ok": true
+      },
+      {
+        "name": "Reset clears all Iran sublayers",
+        "ok": true
+      },
+      {
+        "name": "Reset returns to 3D",
+        "ok": true
+      },
+      {
+        "name": "background settings preserve user camera",
+        "ok": true
+      },
+      {
+        "name": "regional country areas configured",
+        "ok": true
+      },
+      {
+        "name": "default labels are sparse",
+        "ok": true
+      },
+      {
+        "name": "labels OFF reaches 3D view",
+        "ok": true
+      },
+      {
+        "name": "border toggle removes country areas",
+        "ok": true
+      },
+      {
+        "name": "3D military sites toggle reaches provider",
+        "ok": true
+      },
+      {
+        "name": "military exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "infra exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "nuclear exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "missiles exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "naval exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "ad exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "airbases exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "irgc exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "energy exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "sam exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "waterways exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "patrol exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "gpsjam exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "gulfenergy exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "sirens exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "strikes exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "correlations exact overlay routes to visible 2D",
+        "ok": true
+      },
+      {
+        "name": "aircraft ALL reaches globe",
+        "ok": true
+      },
+      {
+        "name": "aircraft MIL excludes civilian provider",
+        "ok": true
+      },
+      {
+        "name": "civilian-only filtering opens 2D",
+        "ok": true
+      },
+      {
+        "name": "first fire click enables age-filtered fires",
+        "ok": true
+      },
+      {
+        "name": "strike selection stays synchronized",
+        "ok": true
+      },
+      {
+        "name": "news selects requested 3D camera",
+        "ok": true
+      },
+      {
+        "name": "zone remains selected through settings update",
+        "ok": true
+      },
+      {
+        "name": "unlock button is visible",
+        "ok": true
+      },
+      {
+        "name": "unlock restores wide camera",
+        "ok": true
+      },
+      {
+        "name": "feed time does not deselect brief window",
+        "ok": true
+      },
+      {
+        "name": "empty news filter shows no cards",
+        "ok": true
+      },
+      {
+        "name": "empty news filter clears 3D pins",
+        "ok": true
+      },
+      {
+        "name": "empty news filter clears 2D OSINT",
+        "ok": true
+      },
+      {
+        "name": "brief font control merged",
+        "ok": true
+      },
+      {
+        "name": "Save includes shared map/filter/display state",
+        "ok": true
+      },
+      {
+        "name": "Reset removes saved config",
+        "ok": true
+      }
+    ]
+  },
+  "display_acknowledgements": {
+    "done": true,
+    "results": [
+      {
+        "control": "globe3d-style",
+        "value": "normal",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "surveillance",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "thermal",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "retro",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "noir",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "snow",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "anime",
+        "ok": true
+      },
+      {
+        "control": "globe3d-map",
+        "value": "osm",
+        "ok": true
+      },
+      {
+        "control": "globe3d-map",
+        "value": "esri-imagery",
+        "ok": true
+      },
+      {
+        "control": "globe-density",
+        "value": "off",
+        "ok": true
+      },
+      {
+        "control": "globe-density",
+        "value": "balanced",
+        "ok": true
+      },
+      {
+        "control": "globe-density",
+        "value": "sparse",
+        "ok": true
+      },
+      {
+        "control": "globe3d-style",
+        "value": "normal",
+        "ok": true
+      }
+    ]
+  },
+  "additional_observations": [
+    "Real Strait of Hormuz news selection in 2D focused globe after switching to 3D; camera step acknowledged ok and satellite imagery/country areas/Unlock visually inspected.",
+    "Save then unsaved change then reload restored strike=168, missile=paths, font=115, feed=6 and selected zone. Reset cleared saved config.",
+    "390px mobile drawer inspected after transition: borders checkbox checked, label selector within viewport, no horizontal overflow or floating-button overlap.",
+    "OpenStreetMap 2D fallback visually rendered without API-key watermark and with source attribution."
+  ]
+}

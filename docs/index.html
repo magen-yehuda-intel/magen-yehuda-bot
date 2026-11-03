@@ -613,6 +613,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 @media(max-width:1024px) {
   body:has(#sidebar.open) #globe3d-toggle, body:has(#sidebar.open) #globe3d-controls, body:has(#sidebar.open) #event-zone-unlock { display:none; }
   #tab-layers, #tab-assets { padding-bottom:64px; }
+  .leaflet-bottom { bottom:64px; }
 }
 .magen-dark-basemap { filter:invert(0.9) hue-rotate(180deg) brightness(0.8) contrast(1.05); }
 #globe3d { position:fixed; inset:0; width:100%; height:100%; border:0; z-index:1; background:#000; }
@@ -1319,7 +1320,7 @@ window.map = L.map('map', {
   layers: [cartoTile],
   attributionControl: false,
 });
-L.control.zoom({ position: 'bottomright' }).addTo(map);
+L.control.zoom({ position: 'bottomleft' }).addTo(map);
 L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
 let currentBasemap = 'carto';
 

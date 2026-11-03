@@ -71,6 +71,6 @@ These controls are labeled 2D and switch to that renderer. They are not represen
 - Node status/inline-script parsing tests passed.
 - Shared adapter syntax check passed.
 - Browser preview: 14 settings/preset/reset/routing assertions passed against live data before publication. This was an injected QA preview, not production deployment evidence.
-- Initial deployed browser acceptance: 51/51 checks passed. Globe acknowledged style/map/detection/annotation steps successfully, and 3D satellite terrain was visually observed.
-- Visual follow-up repairs: install prompt moved to the sidebar to avoid covering map controls; key-required 2D tiles replaced; theater camera changed to a top-down regional view. Final browser recheck follows this cleanup.
+- Final deployed browser acceptance: 51/51 checks passed. Globe acknowledged style/map/detection/annotation steps successfully, and 3D satellite terrain was visually observed.
+- Visual follow-up repairs: install prompt moved to the sidebar to avoid covering map controls; key-required 2D tiles replaced; theater camera changed to a top-down regional view. Final deployed control recheck passed 51/51; the mobile drawer and selected-zone map were visually inspected. See `settings-audit-receipt.json` for executable-check results.
 - Aetherwatch protocol implementation: commit `9d282fdc4a1d885164c4521319870d7ec20477d2`, deployed revision `aetherwatch-globe--0000002`; exact delivered bundle SHA256 independently matched `68d7237fca182ec65298e245778e6a98e5ca13632fbb1fa22a6d04097e5ed5be`.
