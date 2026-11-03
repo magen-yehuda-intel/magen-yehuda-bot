@@ -1163,8 +1163,8 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <!-- COUNTER CHIPS -->
 <div id="chips">
   <div class="chip chip-alert"><span class="chip-icon">🛡</span><div><div class="chip-label">ALERT</div><div class="chip-value" id="chip-alert">0</div></div></div>
-  <div class="chip chip-live"><span class="chip-icon">✈</span><div><div class="chip-label">LIVE</div><div class="chip-value" id="chip-live">0</div></div></div>
-  <div class="chip chip-ais"><span class="chip-icon">🚢</span><div><div class="chip-label">AIS</div><div class="chip-value" id="chip-ais">0</div></div></div>
+  <div class="chip chip-live"><span class="chip-icon">✈</span><div><div class="chip-label">LIVE</div><div class="chip-value" id="chip-live">—</div></div></div>
+  <div class="chip chip-ais"><span class="chip-icon">🚢</span><div><div class="chip-label">AIS</div><div class="chip-value" id="chip-ais">—</div></div></div>
 </div>
 
 <!-- BASEMAP TOGGLE -->
@@ -1208,6 +1208,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
       <span class="feed-time-chip" data-hours="0">ALL</span>
     </div>
     <div class="feed-cat-bar" id="feed-cat-bar"></div>
+    <div class="sb-search" style="padding:4px 8px"><input type="search" id="feed-search" placeholder="Search feed (e.g. MQ-9, כטב״מ, Hormuz)" oninput="renderFeed()"></div>
   </div>
   <div class="feed-list" id="feed-list"></div>
 </div>
@@ -1371,6 +1372,7 @@ const layers = {
   labels: L.layerGroup(),
   aircraft: L.layerGroup(),
   ships: L.layerGroup(),
+  gulfenergy: L.layerGroup(),
   gpsjam: L.layerGroup(),
   strikes: L.layerGroup(),
   seismic: L.layerGroup(),
@@ -1383,7 +1385,7 @@ const activeState = {
   infra: false, nuclear: false, missiles: false, naval: false,
   ad: false, airbases: false, irgc: false, energy: false,
   sam: false, waterways: false, patrol: false, labels: true,
-  aircraft: false, ships: false, gpsjam: false,
+  aircraft: false, ships: false, gpsjam: false, gulfenergy: false,
 };
 
 // Add default-on layers
@@ -1850,7 +1852,13 @@ function buildCatChips() {
   });
 }
 
+// Search normalises Hebrew acronym marks so כטב״מ / כטב"מ / כטבמ match each other.
+function feedNorm(s) { return String(s || '').toLowerCase().replace(/[\u05f4\u05f3"'`\u201c\u201d\u2018\u2019\-\s]+/g, ''); }
+function feedSearchText(e) { return feedNorm([e.text, e.src, e.source, e.loc, e.side].join(' ')); }
+let feedQuery = '';
+function feedEscape(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function renderFeed() {
+  feedQuery = feedNorm((document.getElementById('feed-search') || {}).value);
   const now = Date.now() / 1000;
   const cutoff = feedTimeHours > 0 ? now - (feedTimeHours * 3600) : 0;
   let filtered = feedEvents.filter(e => {
@@ -1861,10 +1869,11 @@ function renderFeed() {
     const src = (e.source || e.src || '').toLowerCase();
     const typ = (e.sub_event_type || e.type || '').toLowerCase();
     if (src.includes('nasa') || src.includes('firms') || typ.includes('fire')) return false;
+    if (feedQuery && !feedSearchText(e).includes(feedQuery)) return false;
     return true;
   });
 
-  document.getElementById('feed-count').textContent = `${filtered.length} events`;
+  document.getElementById('feed-count').textContent = `${filtered.length} events${filtered.length > 200 ? " · showing newest 200" : ""}`;
 
   const list = document.getElementById('feed-list');
   if (filtered.length === 0) {
@@ -1873,33 +1882,43 @@ function renderFeed() {
   }
 
   // Render max 200 for performance
-  const html = filtered.slice(0, 200).map(e => {
+  const visibleEvents = filtered.slice(0, 200);
+  const html = visibleEvents.map((e, index) => {
     const ts = e.ts || 0;
     const ago = ts > 0 ? formatAgo(now - ts) : (e.time || '');
     const sideColor = SIDE_COLORS[e.side] || '#6b7280';
     const breaking = e.breaking ? ' breaking' : '';
-    const text = (e.text || '').length > 180 ? e.text.substring(0, 180) + '…' : (e.text || '');
-    const fullText = (e.text || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const text = feedEscape((e.text || '').length > 180 ? e.text.substring(0, 180) + '…' : (e.text || ''));
+    const fullText = feedEscape(e.text);
     const needsTooltip = (e.text || '').length > 100;
     const timeStr = ts > 0 ? `${localTime(ts)} · ${ago}` : ago;
     const srcLink = getSrcLink(e.src || '');
     const srcHtml = srcLink
-      ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${e.src || ''}</a>`
-      : (e.src || '');
-    return `<div class="feed-item${breaking}" onclick="flyToEvent(${e.lat},${e.lon},\`${(e.text||'').replace(/`/g,"'").replace(/\\/g,'\\\\').slice(0,200)}\`,\`${e.src||''}\`,\`${e.loc||''}\`)" title="">
+      ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;border-bottom:1px dotted rgba(6,182,212,0.4)">${feedEscape(e.src)}</a>`
+      : feedEscape(e.src);
+    return `<div class="feed-item${breaking}" data-feed-index="${index}" role="button" tabindex="0" title="Select and lock map zone">
       <div class="feed-item-header">
         <span class="feed-item-source">${srcHtml}</span>
         <span class="feed-item-time">${timeStr}</span>
       </div>
       <div class="feed-item-loc">
         <span class="feed-item-side" style="background:${sideColor}"></span>
-        ${e.loc || ''}${srcLink ? ` <a href="${srcLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--cyan);font-size:10px;opacity:0.7;text-decoration:none">🔗</a>` : ''}
+        ${feedEscape(e.loc)}${srcLink ? ` <a href="${srcLink}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--cyan);font-size:10px;opacity:0.7;text-decoration:none">🔗</a>` : ''}
       </div>
       <div class="feed-item-text">${text}</div>
       ${needsTooltip ? `<div class="feed-tooltip">${fullText}</div>` : ''}
     </div>`;
   }).join('');
   list.innerHTML = html;
+  list.querySelectorAll('[data-feed-index]').forEach(row => {
+    const select = ev => {
+      if (ev.target.closest('a')) return;
+      const e = visibleEvents[Number(row.dataset.feedIndex)];
+      flyToEvent(e.lat, e.lon, e.text, e.src, e.loc);
+    };
+    row.addEventListener('click', select);
+    row.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(ev); } });
+  });
   syncMapToFeed();
 }
 
@@ -1955,7 +1974,7 @@ function getSrcLink(src) {
 function flyToEvent(lat, lon, text, src, loc) {
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
   lockEventZone(lat, lon, loc || src || 'News event');
-  map.flyTo([lat, lon], 8, { duration: 0.8 });
+  map.flyTo([lat, lon], selectedEventZone && selectedEventZone.altitude > 1000000 ? 5 : 8, { duration: 0.8 });
   // Pulse highlight at event location
   if (window._feedHighlight) { map.removeLayer(window._feedHighlight); }
   const srcLink = getSrcLink(src || '');
@@ -1963,9 +1982,9 @@ function flyToEvent(lat, lon, text, src, loc) {
     ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:#06b6d4;text-decoration:none">🔗 ${src}</a>`
     : (src || '');
   const popupHtml = mkPopup(
-    `📌 ${loc || 'OSINT Event'}`,
+    `📌 ${feedEscape(loc || 'OSINT Event')}`,
     srcHtml,
-    `${(text||'').slice(0,300)}`,
+    feedEscape((text||'').slice(0,300)),
     '#06b6d4'
   );
   window._feedHighlight = L.circleMarker([lat, lon], {
@@ -1994,7 +2013,7 @@ document.getElementById('feed-time-bar').addEventListener('click', e => {
   const chip = e.target.closest('.feed-time-chip');
   if (!chip) return;
   feedTimeHours = parseFloat(chip.dataset.hours);
-  document.querySelectorAll('.feed-time-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('#feed-time-bar .feed-time-chip').forEach(c => c.classList.remove('active'));
   chip.classList.add('active');
   renderFeed();
 });
@@ -2223,14 +2242,14 @@ function renderAllLayers() {
     const emoji = s.type.includes('refinery') ? '🏭' : s.type.includes('lng') ? '🔥' : s.type.includes('oil') ? '🛢' : s.type.includes('gas') ? '⛽' : s.type.includes('processing') ? '🏗' : '🛢';
     const struckBadge = s.struck ? ' 💥 STRUCK' : '';
     const popup = mkPopup(`${emoji} ${s.name}${struckBadge}`, `${s.country} — ${s.type.replace(/_/g,' ').toUpperCase()}`, s.desc, s.struck ? '#ef4444' : '#f59e0b');
-    mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-gulf-energy', 22, popup).addTo(layers.energy);
+    mkMarker(s.lat, s.lon, emoji, s.struck ? 'marker-struck' : 'marker-gulf-energy', 22, popup).addTo(layers.gulfenergy);
   });
 
   // Update struck infrastructure count
   const iranStruck = (V2_DATA.IRAN_ENERGY||[]).filter(s => s.struck).length;
   const gulfStruck = (V2_DATA.GULF_ENERGY||[]).filter(s => s.struck).length;
   const struckEl = document.getElementById('struck-count');
-  if (struckEl && (iranStruck + gulfStruck) > 0) struckEl.textContent = `💥 ${iranStruck + gulfStruck} facilities struck`;
+  if (struckEl && (iranStruck + gulfStruck) > 0) struckEl.textContent = `Archive: ${iranStruck + gulfStruck} facilities marked struck (March 2026)`;
 
   // ─── IRAN INFRASTRUCTURE (power, water, telecom, transport, industrial) ───
   (function loadInfrastructure() {
@@ -2250,8 +2269,10 @@ function renderAllLayers() {
     };
     fetch('data/iran-infrastructure.json').then(r=>r.json()).then(INFRA_DATA => {
       let totalCount = 0;
+      window._infraAssets = [];
       Object.entries(INFRA_CONFIG).forEach(([key, cfg]) => {
         const items = INFRA_DATA[key] || [];
+        window._infraAssets.push(...items.map(s => ({...s, category: cfg.label, emoji: cfg.emoji})));
         items.forEach(s => {
           const icon = typeEmojis[s.type] || cfg.emoji;
           const capStr = s.capacity_mw ? `<br>⚡ ${s.capacity_mw.toLocaleString()} MW` : '';
@@ -2272,6 +2293,8 @@ function renderAllLayers() {
       totalCount += (V2_DATA.IRAN_ENERGY||[]).length;
       const cntEl = document.getElementById('cnt-iran-infra');
       if (cntEl) cntEl.textContent = totalCount;
+      const assetCountEl = document.getElementById('asset-count');
+      if (assetCountEl && window._baseAssetCount !== undefined) assetCountEl.textContent = window._baseAssetCount + window._infraAssets.length;
     }).catch(e => console.warn('Infra data load failed:', e));
   })();
 
@@ -2407,7 +2430,8 @@ function renderStrikeEvents() {
     V2_DATA.IRAN_NAVAL.length + V2_DATA.IRAN_AIRDEFENSE.length + V2_DATA.IRAN_AIRBASES.length +
     V2_DATA.IRAN_IRGC.length + V2_DATA.IRAN_ENERGY.length +
     V2_DATA.GULF_ENERGY.length;
-  document.getElementById('asset-count').textContent = totalAssets;
+  window._baseAssetCount = totalAssets;
+  document.getElementById('asset-count').textContent = totalAssets + (window._infraAssets || []).length;
   document.getElementById('cnt-usbases').textContent = V2_DATA.US_BASES.length;
 })();
 
@@ -2818,6 +2842,7 @@ function renderAssetList(filter) {
   const el = document.getElementById('asset-list');
   filter = (filter || '').toLowerCase();
   const allAssets = [
+    ...(window._infraAssets || []),
     ...V2_DATA.US_BASES.map(b => ({ ...b, category: 'US', emoji: b.emoji })),
     ...V2_DATA.IRAN_NUCLEAR.map(s => ({ ...s, category: 'Nuclear', emoji: '☢️', lon: s.lon })),
     ...V2_DATA.IRAN_MISSILES.map(s => ({ ...s, category: 'Missile', emoji: '🚀', lon: s.lon })),
@@ -2829,7 +2854,7 @@ function renderAssetList(filter) {
     ...V2_DATA.GULF_ENERGY.map(s => ({ ...s, category: 'Gulf Energy', emoji: '🛢', lon: s.lon })),
   ];
   const filtered = filter ? allAssets.filter(a => (a.name||'').toLowerCase().includes(filter) || (a.category||'').toLowerCase().includes(filter)) : allAssets;
-  el.innerHTML = filtered.slice(0, 100).map(a => `
+  el.innerHTML = `<div style="padding:8px;font-size:10px">${filtered.length} matching assets · static inventory</div>` + filtered.map(a => `
     <div class="sb-row" onclick="map.flyTo([${a.lat},${a.lon}],10)">
       <span style="font-size:14px">${a.emoji}</span>
       <span class="sb-row-name" style="font-size:11px">${a.name}</span>
@@ -2951,19 +2976,23 @@ function loadTicker() {
   }).catch(() => { loadTickerFallback(); });
 }
 
+function focusArchivedTicker(index) {
+  const e = V2_DATA.RECENT_EVENTS.slice().reverse()[index];
+  if (e) flyToEvent(e.lat,e.lon,e.desc,e.actor,'Archived: '+(e.target || e.date));
+}
 function loadTickerFallback() {
   // Use static RECENT_EVENTS when no live feed is available
   if (!V2_DATA.RECENT_EVENTS || V2_DATA.RECENT_EVENTS.length === 0) return;
   const label = document.getElementById('ticker-label');
   const hasCritical = V2_DATA.RECENT_EVENTS.some(e => e.severity === 'critical');
-  label.textContent = hasCritical ? '🚨 BREAKING' : 'INTEL';
-  if (hasCritical) label.classList.add('alert');
+  label.textContent = 'ARCHIVE';
+  label.classList.remove('alert');
 
   const severityColors = { critical: '#ff0040', high: '#ff4444', medium: '#ff8800', low: '#ffaa00' };
-  const items = V2_DATA.RECENT_EVENTS.slice().reverse().map(e => {
+  const items = V2_DATA.RECENT_EVENTS.slice().reverse().map((e, index) => {
     const color = severityColors[e.severity] || '#6b7280';
     const sevClass = e.severity === 'critical' ? ' breaking' : '';
-    return `<span class="ticker-item${sevClass}" onclick="map.flyTo([${e.lat},${e.lon}],8)"><span class="ti-dot" style="background:${color}"></span><span class="ti-src">${e.actor}</span>${e.target}: ${e.desc}<span class="ti-time">${e.date}</span></span><span class="ticker-sep">◆</span>`;
+    return `<span class="ticker-item${sevClass}" onclick="focusArchivedTicker(${index})"><span class="ti-dot" style="background:${color}"></span><span class="ti-src">${e.actor}</span>${e.target}: ${e.desc}<span class="ti-time">${e.date}</span></span><span class="ticker-sep">◆</span>`;
   }).join('');
 
   const content = document.getElementById('ticker-content');
@@ -3878,9 +3907,9 @@ function fetchLiveEvents() {
     else window._liveEvents = events;
     // Auto-force animated if fresh critical live event
       if (events.some(e => e.severity === 'critical' && e.live)) {
-        window._missileMode = 'animated';
-        window._missileAnimActive = true;
-        localStorage.setItem('missileMode', 'animated');
+        window._missileMode = localStorage.getItem('missileMode') || 'animated';
+        window._missileAnimActive = window._missileMode !== 'off';
+        localStorage.setItem('missileMode', window._missileMode);
         _updateMissileUI();
       }
       if (events.length) renderMissileArcs();
@@ -4149,15 +4178,15 @@ function globe3dPush() {
 function toggleGlobe3d() {
   const f = document.getElementById('globe3d'), b = document.getElementById('globe3d-toggle');
   const on = f.hidden;
-  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1#v=2&lat=30.5&lon=47&alt=3800000&heading=0&pitch=-70&roll=0&style=normal&map=esri-imagery';
+  if (on && !f.src) f.src = GLOBE3D_ORIGIN + '/?embed=1#v=2&lat=30.5&lon=47&alt=3800000&heading=0&pitch=-70&roll=0&style=normal&map=esri-imagery&dm=SPARSE&dd=25';
   f.hidden = !on; document.getElementById('map').style.visibility = on ? 'hidden' : '';
   document.getElementById('globe3d-controls').hidden = !on;
   b.classList.toggle('on', on); b.textContent = on ? '🗺 2D MAP' : '🌐 3D GLOBE';
-  if (on) globe3dPush();
+  // Shared adapter sends the desired view after reconciling renderer state.
 }
 window.addEventListener('message', ev => {
-  if (ev.origin !== GLOBE3D_ORIGIN || !ev.data) return;
-  if (ev.data.type === 'gev:ready') { globe3dReady = true; globe3dPush(); }
+  if (ev.origin !== GLOBE3D_ORIGIN || ev.source !== document.getElementById('globe3d').contentWindow || !ev.data) return;
+  if (ev.data.type === 'gev:ready') globe3dReady = true;
 });
 // Open the advanced map by default; keep the 2D toggle available.
 toggleGlobe3d();
@@ -4168,5 +4197,6 @@ setInterval(() => {
   if (pins !== globe3dLastPins) { globe3dLastPins = pins; globe3dPush(); }
 }, 60000);
 </script>
+<script src="dashboard-controls.js?v=settings-audit-1"></script>
 </body>
 </html>

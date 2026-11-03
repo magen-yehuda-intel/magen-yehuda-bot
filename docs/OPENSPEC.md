@@ -18,7 +18,10 @@
 | `manifest.json` | PWA manifest |
 
 ## Architecture
-- **Single-file HTML** (~189KB, 3700 lines) — all CSS, JS, and inline data
+- **Shared dashboard HTML** (`centcom.html` and identical `index.html`) plus `dashboard-controls.js`, the shared settings adapter.
+- **Default 3D:** Aetherwatch iframe with sparse labels, regional country outlines and filtered news pins. Exact Magen-only overlays are labeled 2D and switch renderer explicitly. Camera updates are explicit focus/unlock actions; settings/feed refreshes preserve the current camera.
+- **Embed acknowledgements:** `gev:view-applied` errors are surfaced. `gev:ready` proves messaging, not rendered imagery.
+- **Control verification:** `tests/browser-settings-audit.js` exercises controls in a real browser against live data; `tests/test-web-status.js` covers status freshness and JavaScript parsing.
 - **Leaflet.js** map with CARTO dark basemap + VIIRS night lights toggle
   - `boxZoom: false` — no blue rectangle on shift-click/country click
 - **Data source:** `v2-data.js` (static) + API (`magen-yehuda-api` Azure Container App) + `live-events.json`
@@ -79,7 +82,7 @@
 - **Connection health**: "● Live" text pulses 2 times on each successful Oref poll (`.oref-live-pulse` animation, 1.2s). After 5 consecutive failures → "● Offline" (red). Auto-recovers.
 - **Breaking News Banner** — generic `#breaking-banner` element, hidden by default (`display:none`). API: `window._showBreaking(label, popupHtml)` shows banner with pulsing red animation + click-to-expand popup; `window._hideBreaking()` hides it. Replaces the old Trump Hormuz countdown (removed Mar 24). Use for any future breaking event. Internal vars: `_breakingPopupHtml`, function `showBreakingInfo(e)`. Mobile CSS: `#breaking-banner { font-size:8px !important; padding:1px 4px !important; }`.
 - **Alert states:**
-  - `✅ All Clear` — green, safe. Shows last siren info below.
+  - `No new alerts — follow official instructions` — never an all-clear. Unknown or stale observations remain unavailable. Shows last siren info below.
   - `🚨 ACTIVE SIREN — area1, area2, area3 +N more areas` — red, pulsing text (`siren-pulse` 0.8s) + entire banner pulses red glow (`banner-siren` 1.2s alternate). `alert-active` class on banner. Areas extracted from `alert.data[]` array via `flatMap`.
   - `⚠️ Recent Alert — sirens ended Xm ago` — amber/warning, 10min cooldown after active alerts end.
 - Last siren: shows `HH:MM` (24h clock); different day shows `MM/DD HH:MM`

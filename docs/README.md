@@ -9,6 +9,7 @@ GitHub Pages is configured to serve from `docs/`. These are the live dashboard f
 - `hormuz.html` — Strait of Hormuz monitoring
 - `strikes.html` — Strike correlation map
 - `v2-data.js` — Dashboard data layer
+- `dashboard-controls.js` — Shared settings/renderer adapter: explicit 2D-only routing, globe borders/density, saved preferences and event-zone focus
 - `sw.js`, `manifest.json` — PWA support
 - `*.json` feeds — `intel-feed.json`, `live-events.json`, `oref-alerts.json`, etc.
 - `data/` — Static data assets for the dashboard
