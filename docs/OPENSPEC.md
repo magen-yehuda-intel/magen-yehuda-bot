@@ -7,7 +7,14 @@
 | File | Role |
 |------|------|
 | `index.html` | Production dashboard (GitHub Pages root) — copy of centcom.html |
-| `centcom.html` | Working copy / canonical source |
+| `centcom.html` | Byte-identical counterpart of the production entry point |
+| `dashboard-controls.js` | Shared renderer-aware settings, filters, saved state and zone focus |
+| `news-pin-model.js` | Stable host-owned pin identities and co-located report grouping |
+| `news-pin-bubbles.js` | Validated reverse selection, news card and report pagination |
+| `map-render-recovery.js` | Renderer error diagnostics, usable 2D fallback and fresh-iframe retry |
+| `SETTINGS-AUDIT.md` | Control inventory, verified behavior and unsupported distinctions |
+| `settings-audit-receipt.json` | Initial deployed control/display evidence |
+| `pin-recovery-receipt.json` | Real click/touch/keyboard, regression and recovery evidence |
 | ~~`v2-archive.html`~~ | Removed (Mar 21 cleanup). Design notes saved in `references/v3-analysis.md` |
 | `v2-data.js` | Required data blob (33KB) — RECENT_EVENTS, base/asset data. **DO NOT DELETE** |
 | `live-events.json` | Live missile events for arc animation. Written by `write-live-event.py` during attacks |
@@ -22,10 +29,128 @@
 - **Default 3D:** Aetherwatch iframe with sparse labels, regional country outlines and filtered news pins. Exact Magen-only overlays are labeled 2D and switch renderer explicitly. Camera updates are explicit focus/unlock actions; settings/feed refreshes preserve the current camera.
 - **Embed acknowledgements:** `gev:view-applied` errors are surfaced. `gev:ready` proves messaging, not rendered imagery.
 - **Control verification:** `tests/browser-settings-audit.js` exercises controls in a real browser against live data; `tests/test-web-status.js` covers status freshness and JavaScript parsing.
-- **Leaflet.js** map with CARTO dark basemap + VIIRS night lights toggle
+- **Leaflet.js 2D fallback** with English-label Esri Dark Gray Base + Reference layers, attributed to their providers, plus VIIRS night lights toggle
   - `boxZoom: false` — no blue rectangle on shift-click/country click
 - **Data source:** `v2-data.js` (static) + API (`magen-yehuda-api` Azure Container App) + `live-events.json`
 - **API URL:** `https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io`
+
+## Current Map Integration Contract
+
+This section records the shipped map integration. The dated changelog remains history, not an instruction to restore old providers or controls. Detailed results live in `SETTINGS-AUDIT.md`; executed evidence is in `pin-recovery-receipt.json`.
+
+### Requirement: Shared renderer-aware state
+The dashboard MUST keep `index.html` and `centcom.html` byte-identical and use one shared settings adapter for the visible renderer.
+
+#### Scenario: An exact Magen overlay is requested in 3D
+- **WHEN** a control requests a curated overlay without a supported equivalent in the globe
+- **THEN** the control is explicitly labeled 2D and reveals the Leaflet overlay rather than updating an invisible map or silently substituting another dataset.
+
+#### Scenario: Presets and reset reconcile the view
+- **WHEN** a preset, Clear or Reset is invoked
+- **THEN** layer state, loaders, button state, selected highlights and the visible renderer reconcile together; Clear removes overlays, while Reset restores sparse 3D with borders and news.
+
+### Requirement: Camera ownership and zone selection
+The dashboard MUST preserve user navigation during background news/settings updates and send camera changes only for explicit focus, unlock or restoration of a selected zone when returning to 3D.
+
+#### Scenario: A feed report is selected
+- **WHEN** a user selects a geocoded report
+- **THEN** the visible renderer focuses the appropriate local or regional zone, retains the selected report identity through refresh, and exposes Unlock zone.
+
+#### Scenario: Background settings change
+- **WHEN** filters, style, density, layers or news refresh without an explicit focus action
+- **THEN** `gev:view` omits `camera`; the receiver does not fly or stop tracking solely because of the update.
+
+### Requirement: Sparse borders and bounded annotations
+The default globe MUST use sparse detection labels and regional country-area annotations while respecting the combined 24-annotation budget.
+
+#### Scenario: Default regional view loads
+- **WHEN** the default view is applied
+- **THEN** the map starts over the Middle East, with borders/news enabled, detection density 25 and optional provider-site inventory off; borders are named country geometries, not a worldwide border tile layer.
+
+#### Scenario: Many news items share coordinates
+- **WHEN** the filtered feed contains multiple reports at identical finite latitude/longitude
+- **THEN** reports are grouped under one pin, at most 12 news locations are drawn alongside up to 12 country areas, and coincident reports remain accessible rather than being hidden by overlapping annotations.
+
+### Requirement: English-label 2D imagery
+The standard 2D map MUST use the attributed Esri Dark Gray Base and Reference pair for English place labels instead of the local-script OpenStreetMap raster.
+
+#### Scenario: The standard 2D map is shown
+- **WHEN** a user opens the standard 2D view
+- **THEN** the following public base/reference services are composed without a light-map inversion filter, provider attribution is retained, and VIIRS remains a separate imagery option:
+  - `https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`
+  - `https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`
+
+The internal stored basemap key `carto` remains a compatibility value; it no longer names the tile provider. Provider success must be checked visually as well as over HTTP because a watermark can arrive with status 200.
+
+### Requirement: Host-owned news identity
+The host MUST retain full report metadata and identify each interactive globe pin with a bounded opaque `clientId`, preserved unchanged by the receiver.
+
+#### Scenario: Pin identities are generated
+- **WHEN** matching geocoded reports are prepared for the globe
+- **THEN** Magen uses `magen-news:${String(latitude)}:${String(longitude)}` for each location; finite zero coordinates remain valid and impossible coordinates are rejected.
+
+#### Scenario: Annotation normalization occurs
+- **WHEN** a `gev:view` annotation includes a valid 1–128-code-unit `clientId`
+- **THEN** normalization, the annotation engine and renderer preserve it; only identified pins become interactive, while ordinary areas and unidentified marks remain pointer-transparent.
+
+### Requirement: Pin-to-news activation
+The globe MUST support pointer/touch taps and Enter/Space activation on identified SVG pins with a visible 44-CSS-pixel target and must distinguish selection from dragging.
+
+#### Scenario: A real pin is activated
+- **WHEN** an identified pin receives a valid tap or keyboard activation
+- **THEN** it sends `gev:annotation-selected` to the accepted parent's exact nonopaque origin with `clientId` and optional latitude/longitude and viewport-fraction `screenX`/`screenY`; it does not send article HTML, text or URLs.
+
+#### Scenario: The user drags or cancels a gesture
+- **WHEN** movement exceeds the gesture threshold, another pointer intervenes, blur occurs or the pointer is canceled
+- **THEN** selection is canceled and map dragging is not replaced by opening a report.
+
+### Requirement: Validated and safe news cards
+The host MUST validate both the exact globe origin and `event.source === iframe.contentWindow` before resolving selection against its own current pin registry.
+
+#### Scenario: A trusted known pin is selected
+- **WHEN** `gev:annotation-selected` names a currently represented news location
+- **THEN** the host opens a viewport-contained card with report text, source, publication time or explicit unavailability, provenance wording, a valid original/source link when available, close controls and pagination for coincident reports; opening the card does not reset the camera.
+
+#### Scenario: A forged or unsafe message arrives
+- **WHEN** the origin/source is wrong or the identity is unknown
+- **THEN** no card opens; message-provided HTML/URLs are not rendered, report text uses text nodes, and article links accept only HTTP(S) with a safe new-tab relationship.
+
+### Requirement: Saved state is authoritative
+The shared saved configuration MUST restore renderer, layers/modes, display, filters/search, selected news/zone, feed window, strike window, missile mode and brief font without mixing in newer unsaved legacy values.
+
+#### Scenario: Unsaved changes follow a saved snapshot
+- **WHEN** the user saves, changes settings without saving again, and reloads
+- **THEN** the saved snapshot is restored coherently and feed time selection does not clear brief time selection.
+
+### Requirement: Renderer failure remains recoverable
+The integration MUST forward bounded render-error diagnostics to the validated host, keep 2D usable after a 3D failure, destroy the failed iframe and offer a manual fresh-renderer retry rather than an automatic restart loop.
+
+#### Scenario: The renderer reports failure
+- **WHEN** the accepted iframe reports `gev:render-error`
+- **THEN** the host records bounded error/context/dimension diagnostics, closes the news card, returns to 2D, destroys the stopped browsing context and shows an explicit Retry 3D action.
+
+#### Scenario: The user retries
+- **WHEN** Retry 3D is invoked
+- **THEN** a fresh iframe is loaded with readiness initially unknown; acceptance requires a fresh current-frame view acknowledgement, not an old successful `_lastGlobeAck` value or readiness alone.
+
+A null shader compiler log does not prove context loss. The reported fragment-shader incident was not reproduced; verified recovery is not a GPU root-cause repair claim, and no speculative renderer flags were changed.
+
+### Requirement: Verification reflects real execution
+Release reporting MUST separate source tests, deployed asset readback, protocol acknowledgements, real user interactions, visual inspection and deliberately injected failure fixtures.
+
+#### Scenario: The integrated release is accepted
+- **WHEN** completion is reported
+- **THEN** evidence identifies the delivered host/globe versions, actual click/touch/keyboard results, mobile card pixels, settings/security regressions, repeated renderer switches and fresh-retry results; an injected scene error is labeled as a fixture rather than a naturally reproduced shader failure.
+
+### Shipped acceptance evidence
+
+- Host modules load in order: `news-pin-model.js`, `dashboard-controls.js`, `map-render-recovery.js`, `news-pin-bubbles.js`; edited static scripts use content-hash URLs for cache correctness.
+- Executable gates: `tests/test-staleness.py`, `tests/test-web-status.js`, `tests/test-event-zone.js`, `tests/test-news-pin-bubbles.js`, plus the browser settings/news/recovery scripts in `tests/`.
+- Recorded production acceptance: 51/51 settings checks, 10/10 news-card/security checks and 7/7 recovery/security checks; actual mouse click, phone-size touch tap and Enter activation; three successful 2D→3D cycles.
+- A deliberately raised error through the deployed Cesium scene event verified cross-frame fallback and a fresh matching retry command/acknowledgement. It did not reproduce the original GPU fault.
+- Host integration commit: `a230721ca065e5be8b63fd17ae25d5edc84dca89`.
+- Globe source: `a38a1805963bc2a9550595a0f505e21b6884ccc0`; Azure revision: `aetherwatch-globe--0000003`; delivered bundle SHA256: `90cc25fcf615003f2736eb80b064457cf4da4ca5944a531fb1636cbbdf65729d`.
+- Receiver contract source: Aetherwatch `docs/EMBED_PROTOCOL.md`. Exact Magen overlays and independent globe-provider layers remain distinct datasets; unknown counts are not measured zero, archived inventories are not current operational status, and a correlation is not independent confirmation.
 
 ## UI Layout
 
@@ -35,12 +160,12 @@
 │  🇺🇸  U.S. & ISRAEL  vs.  IRAN  🇮🇷             │ Title Bar (44px)
 ├──┬───────────────────────────────────────────────────┤
 │  │ 🛡 PIKUD HAOREF ● Live  🇺🇸 HORMUZ HH:MM:SS  Updated │ Oref Banner
-│  │ ✅ All Clear  (last: Rockets · 06:52)             │
+│  │ No new alerts — follow official instructions     │
 │TB├───────────────────────────────────────────────────┤
 │  │                                                   │
 │☰ │                                                   │
 │⭐│                    MAP                            │
-│🏗│               (Leaflet)                           │
+│🏗│          (3D globe / 2D fallback)                 │
 │✈ │                                                   │
 │🚢│                                                   │
 │🚨│                                                   │
@@ -60,16 +185,16 @@
 │ ☰ ⭐ 🏗 ✈ 🚢 🚨 🔥 📌 🚀 📍│ Top Toolbar (scroll)
 ├─────────────────────────────┤
 │ 🛡 PIKUD HAOREF ● Live 🇺🇸HORMUZ 17:55│ Oref Banner (top:80px)
-│ ✅ All Clear                │
+│ No new alerts               │
 ├─────────────────────────────┤
 │                             │
 │           MAP               │
-│        (Leaflet)            │
+│   (3D / 2D fallback)        │
 │                             │
 │  [Chips]                    │
 │                             │
 ├─────────────────────────────┤
-│  LAYERS  │  FEED  │ LEGEND  │ Bottom Bar (3 buttons)
+│  LAYERS  │  FEED  │ BRIEF   │ Bottom Bar (3 buttons)
 └─────────────────────────────┘
 ```
 
@@ -135,7 +260,7 @@ Grouped layer controls with dot indicators and counts:
 
 ### Live Feed Panel (right side)
 - Real-time OSINT event feed
-- Filterable by time (30m/1h/4h/24h/48h/ALL) and source (ALL/Iran/Israel/Proxy)
+- Filterable by time (30m/1h/2h/6h/24h/48h/ALL), category and free-text search; Hebrew acronym normalization is retained
 - Color-coded event cards with source, timestamp, flag
 - Event count in header
 - **Desktop:** Toggleable via 📡 toolbar button; opening closes Brief panel
@@ -177,11 +302,11 @@ Grouped layer controls with dot indicators and counts:
 - Color-coded: red=active, amber=standdown
 
 ## Map Layers Detail
-- **CARTO dark** basemap (default) / **VIIRS** night lights
+- **3D satellite globe** by default; **English-label Esri dark** / **VIIRS** in the explicitly selected 2D renderer
 - **Marker clustering** with custom colored cluster icons per category
 - **Iran glow effect:** Red radial gradient over Iran territory
 - **Strike events:** Color by actor, shape by type, size by fatalities (from ACLED + FIRMS + seismic)
-- **Ship markers:** Real naval positions with vessel type icons
+- **2D ship markers:** Static fleet estimates with vessel type icons, not verified live positions; native 3D AIS is a separate provider feed
 - **Patrol routes:** Animated dashed polylines
 
 ## Key Functions
@@ -200,7 +325,12 @@ Grouped layer controls with dot indicators and counts:
 | `isolateIranLayer(key)` | Solo-view a specific Iran infrastructure layer |
 | `mtToggle(layer, el)` | Mobile toolbar layer toggle |
 | `toggleSidebar()` | Show/hide desktop sidebar |
-| `setBasemap(name)` | Switch between CARTO dark and VIIRS |
+| `setBasemap(name)` | Switch 2D English-label Esri dark and VIIRS; legacy stored key `carto` remains compatible |
+| `globe3dView(includeCamera)` | Build the current desired globe layers, detection, country areas and identified news pins |
+| `lockEventZone()` / `unlockEventZone()` | Retain selection independently of feed refresh and explicitly focus/unlock the renderer |
+| `MagenNewsPins.createPins()` | Group matching reports into up to 12 location pins with opaque `clientId` |
+| `MagenNewsBubbles` | Resolve current pin identities to host news cards; ignore unknown identities |
+| `MagenMapRecovery` | Expose failure state while fresh-renderer retry is managed by the host |
 
 ## Data Dependencies
 - `v2-data.js` — **REQUIRED** (inline data: bases, assets, recent events, coordinates) — **DO NOT DELETE**
@@ -241,13 +371,20 @@ Grouped layer controls with dot indicators and counts:
 - Source data: ADS-B Exchange NACp (aircraft GPS accuracy) — no public API available
 
 ## Infrastructure Layer (🏗)
-- **Status:** Button exists, NO render function or data wired yet
-- **Planned categories:** Power Plants (⚡), Water (💧), Telecom/IT (📡), Transport (🚢), Industrial (🏭)
-- **Existing energy data:** `IRAN_ENERGY` (39 entries) + `GULF_ENERGY` in `v2-data.js` — oil/gas/refinery/petrochemical
-- **New data:** `data/iran-infrastructure.json` — power plants, water, telecom, transport, industrial (~70 entries)
-- **Planned mode:** OFF → All Infrastructure → OFF (energy layer to be re-homed under infra)
+- **Status:** Implemented as an exact 2D overlay. `data/iran-infrastructure.json` is fetched and its configured categories populate `layers.infra`; Iranian energy assets are also represented there.
+- **Categories:** Power, water, telecom/IT, transport and industrial assets. Counts derive from loaded records rather than historical estimates.
+- **Inventory:** Loaded infrastructure is included in asset search and totals through `_infraAssets`.
+- **Separation:** Iran energy and Gulf energy remain independent controls. An Iran-only preset does not silently enable Gulf facilities.
+- **Provenance:** This inventory is an archived snapshot, not evidence of present operational status or a newly confirmed strike.
 
 ## Changelog
+
+### 2026-11-03 — consolidated map integration
+- Recorded the shipped shared settings adapter, default 3D view, sparse borders/labels, explicit 2D routing, saved-state restoration and camera-preserving updates.
+- Replaced local-script 2D raster labels with the attributed English-label Esri base/reference pair.
+- Closed the reverse interaction loop: identified globe pins open host-owned news cards with provenance, time, original-source links and pagination for coincident reports.
+- Added safe renderer-error fallback, failed-iframe destruction, bounded diagnostics and manual fresh-renderer retry.
+- Linked executed acceptance receipts. The shader compiler incident remains unreproduced; verified recovery is not a claim that its GPU root cause was repaired.
 
 ### 2026-03-24
 - **Brief panel scrollbar:** Added thin custom scrollbar to `.brief-content` matching the live feed panel (`.feed-list`) style — `scrollbar-width:thin`, 4px webkit, `rgba(255,255,255,0.1)` thumb on transparent track. Was using default browser scrollbar.
@@ -338,7 +475,7 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 - **LLM:** Azure OpenAI `gpt-5-mini` on `openai-dev-nt6mukageprxm` (eastus). Switched from `gpt-5.4-mini` on Mar 24 — the newer model's content filter (`ResponsibleAIPolicyViolation`) blocks strike/violence OSINT. The older `gpt-5-mini` has no aggressive content filter. 24h+48h windows generate well; 30min/2h/6h return unparseable format for small event counts (patched with manual brief fallback).
 - **Input:** `state/intel-log.jsonl` + `docs/intel-feed.json` (merged — see ⚠️ fix note below)
 - **Output:** `docs/brief.json` — auto git-pushed to GitHub Pages
-- **Time windows:** 30M, 2H, 6H, 24H, 48H (same as feed filters minus 15M)
+- **Time windows:** 30M, 2H, 6H, 24H, 48H; feed and brief chip selection are scoped independently
 - **Languages:** English (default) + Hebrew (RTL, dir='rtl')
 
 ### Prompt Design
@@ -365,7 +502,7 @@ AI-generated situation briefs from live intel events. Bilingual (EN/HE). Replace
 
 ### Dashboard UI
 - **Panel:** Same style as feed panel, right-side slide-in, full-width on mobile
-- **Header:** EN/עב language toggle + time window chips (30M/2H/6H/24H/48H)
+- **Header:** EN/עב language toggle, time window chips (30M/2H/6H/24H/48H), and persisted font-size controls
 - **Content:** Rendered HTML from brief.json, RTL support via `data-lang="he"`
 - **Auto-refresh:** Fetches new brief.json every 30 min
 - **Mutual exclusivity:** Opening brief closes feed/sidebar and vice versa
