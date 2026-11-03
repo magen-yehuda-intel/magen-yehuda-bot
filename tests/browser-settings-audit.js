@@ -20,7 +20,7 @@
   for(const name of MagenSettingsAudit.legacyOnly){
     if($('globe3d').hidden)toggleGlobe3d();
     const before=activeState[name];toggleLayer(name);
-    check(name+' exact overlay routes to visible 2D',$('globe3d').hidden&&activeState[name]!==before);
+    check(name+' exact overlay routes to visible 2D',$('globe3d').hidden&&activeState[name]);
   }
   resetConfig();cycleAircraft();check('aircraft ALL reaches globe',globe3dView(false).layers.includes('flights'));cycleAircraft();check('aircraft MIL excludes civilian provider',globe3dView(false).layers.includes('military')&&!globe3dView(false).layers.includes('flights'));cycleAircraft();check('civilian-only filtering opens 2D',$('globe3d').hidden&&aircraftMode===3);
   resetConfig();cycleFires();check('first fire click enables age-filtered fires',fireMode===1&&activeState.fires&&$('globe3d').hidden);

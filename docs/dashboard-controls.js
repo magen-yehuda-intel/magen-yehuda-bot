@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const legacyOnly = new Set(['military','infra','nuclear','missiles','naval','ad','airbases','irgc','energy','sam','waterways','patrol','gpsjam','gulfenergy','sirens','strikes','correlations']);
   const countryNames = ['Iran','Israel','Lebanon','Syria','Iraq','Jordan','Saudi Arabia','United Arab Emirates','Yemen','Oman','Kuwait','Qatar'];
-  const defaults = Object.fromEntries(Object.keys(activeState).map(k => [k, ['borders','osint','sirens'].includes(k)]));
+  const defaults = Object.fromEntries(Object.keys(activeState).map(k => [k, ['borders','osint'].includes(k)]));
   let density = 'sparse', globeSites = false, batch = false, lastAck = null, readyTimer, saveTimer;
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem('centcom-config') || 'null'); } catch (_) {}
@@ -24,7 +24,7 @@
   }
   function sync() {
     Object.keys(activeState).forEach(k => {
-      document.querySelectorAll(`[data-layer="${k}"]`).forEach(el => el.classList.toggle('active', !!activeState[k]));
+      document.querySelectorAll(`[data-layer="${k}"]`).forEach(el => el.classList.toggle('active', k === 'labels' && is3D() ? density !== 'off' : !!activeState[k]));
     });
     updateSidebarRows(); updateMobileButtons(); updateLayerCount(); _updateMissileUI();
     if ($('globe-borders')) $('globe-borders').checked = activeState.borders;
@@ -34,6 +34,10 @@
     for (const id of ['strike-window','strike-window-mobile','strike-window-sidebar']) if ($(id)) $(id).value = String(window._strikeWindowHours || 48);
     if (!batch && globe3dReady) globe3dPush();
   }
+  window.updateLayerCount = () => {
+    if(is3D()) { const v=globe3dView(false); $('layer-status').textContent='3D · '+v.layers.length+' provider layers · '+v.annotations.filter(a=>a.type==='pin').length+' pins'; }
+    else $('layer-status').textContent='2D · '+Object.values(activeState).filter(Boolean).length+' active layers';
+  };
   window.updateMobileButtons = () => {
     const colors = {fires:'active-orange',osint:'active-red',sirens:'active-red',infra:'active-orange',aircraft:'active-green',animations:'active-red'};
     document.querySelectorAll('.mt-btn[data-mt]').forEach(el => {
@@ -59,7 +63,7 @@
     if (name === 'labels' && is3D()) { density = density === 'off' ? 'sparse' : 'off'; sync(); return; }
     if (name === 'aircraft') return cycleAircraft();
     if (name === 'fires') return cycleFires();
-    if (legacyOnly.has(name)) need2D('This exact overlay is 2D-only');
+    if (legacyOnly.has(name) && is3D()) { need2D('This exact overlay is 2D-only'); if(activeState[name]){sync();return;} }
     if (name === 'ships' && !is3D()) notice('2D fleet positions are a static estimate, not live AIS.');
     originals.toggleLayer(name); sync();
   };
@@ -216,7 +220,7 @@
   const controls=document.createElement('div');controls.innerHTML='<div class="sb-row map-display-toggle" id="borders-control"><label><input id="globe-borders" type="checkbox"> Regional country borders</label></div><div class="sb-row"><label class="sb-row-name" for="globe-density" title="Object detection labels; country names and selected-event labels remain">3D object labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row map-display-toggle"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 newest matching events.</div>';
   $('tab-layers').insertBefore(controls,$('tab-layers').children[1]);$('tab-layers').insertBefore(display,controls);
   $('globe-borders').onchange=()=>toggleLayer('borders');
-  $('globe-density').onchange=e=>{density=e.target.value;if(!is3D())toggleGlobe3d();globe3dPush();};$('globe-sites').onchange=e=>{globeSites=e.target.checked;if(!is3D())toggleGlobe3d();globe3dPush();};
+  $('globe-density').onchange=e=>{density=e.target.value;if(!is3D())toggleGlobe3d();sync();};$('globe-sites').onchange=e=>{globeSites=e.target.checked;if(!is3D())toggleGlobe3d();globe3dPush();};
   document.querySelectorAll('#tab-layers .sb-row[onclick],.tb-btn[onclick]').forEach(row=>{
     const m=row.getAttribute('onclick').match(/(?:toggleLayer|isolateIranLayer)\('([^']+)'\)/);
     if(m&&legacyOnly.has(m[1])){row.title='Exact Magen overlay: opens in 2D';const name=row.querySelector('.sb-row-name');if(name)name.append(' · 2D');}
