@@ -911,6 +911,7 @@ html, body { width:100%; height:100%; overflow:hidden; background:var(--bg); fon
 <div id="map"></div>
 <iframe id="globe3d" title="3D war-room globe" hidden allow="fullscreen"></iframe>
 <button id="globe3d-toggle" type="button" onclick="toggleGlobe3d()" title="Switch between 2D map and live 3D globe">🌐 3D GLOBE</button>
+<button id="event-zone-unlock" type="button" hidden onclick="unlockEventZone()" style="position:fixed;right:12px;bottom:168px;z-index:1200;max-width:calc(100vw - 24px);padding:8px 12px;color:#7ff;background:#0a0f1eee;border:1px solid #2aa;border-radius:6px;cursor:pointer" aria-label="Unlock selected news zone"></button>
 <div id="globe3d-controls" hidden>
   <select id="globe3d-style" onchange="globe3dPush()" title="Sensor view">
     <option value="normal">NORMAL</option><option value="surveillance">NVG</option>
@@ -1911,7 +1912,8 @@ function getSrcLink(src) {
 }
 
 function flyToEvent(lat, lon, text, src, loc) {
-  if (!lat || !lon) return;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
+  lockEventZone(lat, lon, loc || src || 'News event');
   map.flyTo([lat, lon], 8, { duration: 0.8 });
   // Pulse highlight at event location
   if (window._feedHighlight) { map.removeLayer(window._feedHighlight); }
@@ -4062,6 +4064,22 @@ window.addEventListener('appinstalled', () => { pwaDissmiss(); });
 const GLOBE3D_ORIGIN = 'https://aetherwatch-globe.blackfield-628213bb.eastus.azurecontainerapps.io';
 const GLOBE3D_MAX_AGE_S = 6 * 3600;   // only recent events become pins
 let globe3dReady = false, globe3dSeq = 0;
+let selectedEventZone = null;
+function lockEventZone(lat, lon, label) {
+  const regional = /^(iran|israel|lebanon|syria|iraq|yemen|united states|persian gulf|middle east)$/i.test(String(label).trim());
+  selectedEventZone = {lat, lon, label: String(label).slice(0, 60), altitude: regional ? 1200000 : 180000};
+  const b = document.getElementById('event-zone-unlock');
+  b.hidden = false;
+  b.textContent = '🔒 ' + selectedEventZone.label + ' · Unlock zone';
+  if (typeof closeMobilePanels === 'function' && innerWidth <= 768) closeMobilePanels();
+  globe3dPush();
+}
+function unlockEventZone() {
+  selectedEventZone = null;
+  document.getElementById('event-zone-unlock').hidden = true;
+  map.flyTo([28, 52], 5, {duration: 0.8});
+  globe3dPush();
+}
 function globe3dPins(events, nowS) {
   const color = s => ({israel:'cyan', us:'cyan', iran:'red', proxy:'amber'})[String(s||'').toLowerCase()] || 'primary';
   return (events || [])
@@ -4073,10 +4091,14 @@ function globe3dPins(events, nowS) {
                         new Date(e.ts * 1000).toISOString().slice(11, 16) + 'Z' }));
 }
 function globe3dView() {
-  return { camera: { lat: 30.5, lon: 47, altitude_m: 3800000, heading_deg: 0, pitch_deg: -70 },
+  return { camera: selectedEventZone
+             ? {lat: selectedEventZone.lat, lon: selectedEventZone.lon, altitude_m: selectedEventZone.altitude, heading_deg: 0, pitch_deg: -90}
+             : { lat: 30.5, lon: 47, altitude_m: 3800000, heading_deg: 0, pitch_deg: -70 },
            layers: ['military', 'flights', 'ais-live-vessels', 'local-firms', 'earthquakes', 'military-installations'],
            map: document.getElementById('globe3d-map').value, style: document.getElementById('globe3d-style').value,
-           annotations: globe3dPins(typeof feedEvents !== 'undefined' ? feedEvents : [], Date.now() / 1000) };
+           annotations: selectedEventZone
+             ? [{type:'pin', latitude:selectedEventZone.lat, longitude:selectedEventZone.lon, color:'cyan', label:selectedEventZone.label}]
+             : globe3dPins(typeof feedEvents !== 'undefined' ? feedEvents : [], Date.now() / 1000) };
 }
 function globe3dPush() {
   const f = document.getElementById('globe3d');
