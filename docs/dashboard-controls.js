@@ -157,8 +157,7 @@
     });
   };
   window.switchTab = tab => { originals.switchTab(tab); if(tab==='assets')renderAssetList($('asset-search')?.value); };
-  window.globe3dPins = (events, nowS) => (events || []).filter(e => Number.isFinite(e.lat) && Number.isFinite(e.lon) && Math.abs(e.lat)<=90 && Math.abs(e.lon)<=180 && newsMatches(e))
-    .sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,12).map(e=>({type:'pin',latitude:e.lat,longitude:e.lon,color:({israel:'cyan',us:'cyan',iran:'red',iran_proxy:'amber'})[e.side] || 'primary',label:density==='off'?'':String(e.loc || e.src || '').slice(0,40)}));
+  window.globe3dPins = (events, nowS) => MagenNewsPins.createPins((events || []).filter(e => newsMatches(e)), {labels:density!=='off',maxPins:12});
   window.globe3dView = (includeCamera = true) => {
     const enabled = [];
     if(activeState.aircraft && aircraftMode!==3) { if(aircraftMode===2)enabled.push('military');else enabled.push('military','flights'); }
@@ -166,7 +165,7 @@
     if(activeState.seismic)enabled.push('earthquakes');
     if(globeSites)enabled.push('military-installations');
     const annotations = activeState.borders ? countryNames.map(target=>({type:'area',target,color:'cyan',label:''})) : [];
-    if(selectedEventZone)annotations.push({type:'pin',latitude:selectedEventZone.lat,longitude:selectedEventZone.lon,color:'cyan',label:selectedEventZone.label});
+    if(selectedEventZone)annotations.push({type:'pin',latitude:selectedEventZone.lat,longitude:selectedEventZone.lon,color:'cyan',label:selectedEventZone.label,...(selectedEventZone.newsEvent?{clientId:MagenNewsPins.pinId(selectedEventZone.newsEvent)}:{})});
     else if(activeState.osint)annotations.push(...globe3dPins(feedEvents,Date.now()/1000));
     const view = {layers:enabled,map:$('globe3d-map').value,style:$('globe3d-style').value,annotations:annotations.slice(0,24),detection:{enabled:density!=='off',densityPct:density==='balanced'?50:25,allocationStrategy:'elastic'}};
     if(includeCamera)view.camera=selectedEventZone ? {lat:selectedEventZone.lat,lon:selectedEventZone.lon,altitude_m:selectedEventZone.altitude,heading_deg:0,pitch_deg:-90} : {lat:30.5,lon:47,altitude_m:3800000,heading_deg:0,pitch_deg:-90};
@@ -217,7 +216,7 @@
   if ($('chip-live')) { const count=$('cnt-aircraft'); if(count)new MutationObserver(()=>{$('chip-live').textContent=activeState.aircraft?count.textContent:'—';}).observe(count,{childList:true,characterData:true,subtree:true}); }
   const installRow=document.createElement('button');installRow.type='button';installRow.className='sb-action-btn';installRow.textContent='Install Magen app';installRow.onclick=()=>{if(_deferredInstall)pwaInstall();else notice('Use your browser’s Install app / Add to Home Screen menu.');};document.querySelector('.sb-actions').appendChild(installRow);
   const display=document.createElement('div');display.className='sb-section-title';display.textContent='MAP DISPLAY';
-  const controls=document.createElement('div');controls.innerHTML='<div class="sb-row map-display-toggle" id="borders-control"><label><input id="globe-borders" type="checkbox"> Regional country borders</label></div><div class="sb-row"><label class="sb-row-name" for="globe-density" title="Object detection labels; country names and selected-event labels remain">3D object labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row map-display-toggle"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 newest matching events.</div>';
+  const controls=document.createElement('div');controls.innerHTML='<div class="sb-row map-display-toggle" id="borders-control"><label><input id="globe-borders" type="checkbox"> Regional country borders</label></div><div class="sb-row"><label class="sb-row-name" for="globe-density" title="Object detection labels; country names and selected-event labels remain">3D object labels</label><select id="globe-density"><option value="off">Off</option><option value="sparse" selected>Sparse</option><option value="balanced">Balanced</option></select></div><div class="sb-row map-display-toggle"><label><input id="globe-sites" type="checkbox"> 3D military-site inventory</label></div><div style="padding:8px 14px;font-size:10px;color:#aab">Marked 2D overlays switch to that map. Static inventory is not live operational intelligence. 3D news pins: up to 12 locations; tap a pin to read its reports.</div>';
   $('tab-layers').insertBefore(controls,$('tab-layers').children[1]);$('tab-layers').insertBefore(display,controls);
   $('globe-borders').onchange=()=>toggleLayer('borders');
   $('globe-density').onchange=e=>{density=e.target.value;if(!is3D())toggleGlobe3d();sync();};$('globe-sites').onchange=e=>{globeSites=e.target.checked;if(!is3D())toggleGlobe3d();globe3dPush();};
@@ -240,7 +239,7 @@
     $('globe3d-map').value=['esri-imagery','osm'].includes(saved.globeMap)?saved.globeMap:'esri-imagery';$('globe3d-style').value=saved.globeStyle||'normal';
     if(saved.currentBasemap==='viirs')oldBasemap('viirs');
     if(saved.renderer==='2d'&&is3D())toggleGlobe3d();
-    if(saved.selectedEventZone)lockEventZone(saved.selectedEventZone.lat,saved.selectedEventZone.lon,saved.selectedEventZone.label);
+    if(saved.selectedEventZone){lockEventZone(saved.selectedEventZone.lat,saved.selectedEventZone.lon,saved.selectedEventZone.label);if(saved.selectedEventZone.newsEvent)selectedEventZone.newsEvent=saved.selectedEventZone.newsEvent;}
   }
   applyLayers(activeState);sync();refreshLegend();startReadyTimer();
   window.MagenSettingsAudit={legacyOnly:[...legacyOnly],countries:countryNames,newsMatches,get density(){return density;},get lastAck(){return lastAck;},is3D};

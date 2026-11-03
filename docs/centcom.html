@@ -1929,7 +1929,7 @@ function renderFeed() {
     const select = ev => {
       if (ev.target.closest('a')) return;
       const e = visibleEvents[Number(row.dataset.feedIndex)];
-      flyToEvent(e.lat, e.lon, e.text, e.src, e.loc);
+      flyToEvent(e.lat, e.lon, e.text, e.src, e.loc, e);
     };
     row.addEventListener('click', select);
     row.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); select(ev); } });
@@ -1986,16 +1986,17 @@ function getSrcLink(src) {
   return '';
 }
 
-function flyToEvent(lat, lon, text, src, loc) {
+function flyToEvent(lat, lon, text, src, loc, newsEvent = null) {
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return;
   lockEventZone(lat, lon, loc || src || 'News event');
+  if (newsEvent && selectedEventZone) selectedEventZone.newsEvent = newsEvent;
   map.flyTo([lat, lon], selectedEventZone && selectedEventZone.altitude > 1000000 ? 5 : 8, { duration: 0.8 });
   // Pulse highlight at event location
   if (window._feedHighlight) { map.removeLayer(window._feedHighlight); }
-  const srcLink = getSrcLink(src || '');
+  const srcLink = (newsEvent && typeof MagenNewsPins !== 'undefined' && MagenNewsPins.validNewsLink(newsEvent.link)) || getSrcLink(src || '');
   const srcHtml = srcLink
-    ? `<a href="${srcLink}" target="_blank" rel="noopener" style="color:#06b6d4;text-decoration:none">🔗 ${src}</a>`
-    : (src || '');
+    ? `<a href="${srcLink}" target="_blank" rel="noopener noreferrer" style="color:#06b6d4;text-decoration:none">🔗 ${feedEscape(src)}</a>`
+    : feedEscape(src);
   const popupHtml = mkPopup(
     `📌 ${feedEscape(loc || 'OSINT Event')}`,
     srcHtml,
@@ -4213,6 +4214,9 @@ setInterval(() => {
   if (pins !== globe3dLastPins) { globe3dLastPins = pins; globe3dPush(); }
 }, 60000);
 </script>
-<script src="dashboard-controls.js?v=626bfdab255d"></script>
+<script src="news-pin-model.js?v=3f235f38415c"></script>
+<script src="dashboard-controls.js?v=2e23c7b09f17"></script>
+<script src="map-render-recovery.js?v=745737ced5bc"></script>
+<script src="news-pin-bubbles.js?v=9a0d33893a9e"></script>
 </body>
 </html>
