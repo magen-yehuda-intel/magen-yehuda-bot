@@ -221,7 +221,7 @@ ${RLM}📋 <i>${reason_hebrew}</i>"
       local reason_json
       reason_json=$(echo "$reason" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""')
       curl -sf --max-time 5 -X POST \
-        "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+        "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/push/threat" \
         -H "Content-Type: application/json" \
         -H "X-API-Key: $PUSH_API_KEY" \
         -d "{\"level\":\"$new_level\",\"score\":$THREAT_SCORE,\"reason\":$reason_json}" \
@@ -420,7 +420,7 @@ check_oref() {
 
   # Last resort: API backend (may have stale data, but better than nothing)
   if [ -z "$alerts" ]; then
-    alerts=$(curl -sf --max-time 8 "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/oref" 2>/dev/null | python3 -c "
+    alerts=$(curl -sf --max-time 8 "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/oref" 2>/dev/null | python3 -c "
 import json,sys
 try:
     d=json.load(sys.stdin)
@@ -466,7 +466,7 @@ Pikud HaOref is no longer broadcasting new alerts.
     fi
     echo "" > "$OREF_LAST"
     # Push clear to API
-    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d '{"alerts":[]}' >/dev/null 2>&1 &
+    curl -sf --max-time 5 -X POST "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d '{"alerts":[]}' >/dev/null 2>&1 &
     return
   fi
 
@@ -653,7 +653,7 @@ ${details}
     # Clear OREF_LAST so evaluate_threat_level doesn't think sirens are active
     echo "" > "$OREF_LAST"
     # Push clear to API
-    curl -sf --max-time 5 -X POST "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d '{"alerts":[]}' >/dev/null 2>&1 &
+    curl -sf --max-time 5 -X POST "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/push/oref" -H "Content-Type: application/json" -H "X-API-Key: $PUSH_API_KEY" -d '{"alerts":[]}' >/dev/null 2>&1 &
     return
   fi
 
@@ -827,7 +827,7 @@ except:
     print(json.dumps({'alerts': []}))
 " < "$_alerts_tmp" 2>/dev/null)
   curl -sf --max-time 5 -X POST \
-    "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/oref" \
+    "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/push/oref" \
     -H "Content-Type: application/json" \
     -H "X-API-Key: $PUSH_API_KEY" \
     -d "$push_payload" >/dev/null 2>&1 &
@@ -874,7 +874,7 @@ except:
       (cd "$SKILL_DIR/docs" && git add live-events.json && git commit -m "live: missile arc event $(date +%H:%M)" && git pull --rebase origin main 2>/dev/null; git push origin main) >/dev/null 2>&1 &
       # Push to API alongside threat level
       curl -sf --max-time 5 -X POST \
-        "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+        "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/push/threat" \
         -H "Content-Type: application/json" \
         -H "X-API-Key: $PUSH_API_KEY" \
         -d "{\"level\":\"$THREAT_LEVEL\",\"score\":$THREAT_SCORE,\"reason\":\"Active sirens\",\"attack_class\":$classification}" \
@@ -1760,7 +1760,7 @@ log "   Escalation: GREEN→ELEVATED→HIGH→CRITICAL (auto-scales on sirens)"
 # Push initial threat level to API
 if [ -n "$PUSH_API_KEY" ]; then
   curl -sf --max-time 5 -X POST \
-    "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/push/threat" \
+    "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/push/threat" \
     -H "Content-Type: application/json" \
     -H "X-API-Key: $PUSH_API_KEY" \
     -d "{\"level\":\"$THREAT_LEVEL\",\"score\":${THREAT_SCORE:-0},\"reason\":\"watcher startup\"}" \

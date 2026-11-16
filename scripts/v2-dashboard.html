@@ -2328,7 +2328,7 @@ let _lastOrefActive = null; // track when sirens were last active
 const OREF_COOLDOWN_MIN = 10; // stay in warning state for 10 min after last siren
 
 function pollOrefSirens() {
-  const API = 'https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/oref';
+  const API = 'https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/oref';
   const hud = document.getElementById('siren-hud');
   const label = hud?.querySelector('.siren-label');
   const info = hud?.querySelector('.siren-info');

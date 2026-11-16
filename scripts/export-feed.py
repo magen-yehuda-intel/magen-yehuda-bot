@@ -212,7 +212,7 @@ def main():
     print(f"Exported {len(events)} events ({size_kb:.0f}KB) → {FEED_FILE}")
 
     # Sync recent events to Azure via API (best-effort, 30s timeout)
-    API_URL = "https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io"
+    API_URL = "https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io"
     API_KEY = "myi-fcf15b5484f76e9b"
     try:
         import urllib.request, urllib.error
