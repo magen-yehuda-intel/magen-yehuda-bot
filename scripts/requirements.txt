@@ -1,0 +1,9 @@
+# Runtime deps for scheduled jobs + watcher (install into repo .venv:
+#   python3 -m venv .venv && .venv/bin/pip install -r scripts/requirements.txt)
+requests>=2.31
+Pillow>=10.0
+azure-data-tables>=12.5
+azure-identity>=1.15
+# strikes map (generate-strikes-map.py); optional — job degrades without it
+matplotlib>=3.7
+cartopy>=0.22
