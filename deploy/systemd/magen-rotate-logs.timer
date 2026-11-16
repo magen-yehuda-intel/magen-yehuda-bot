@@ -1,0 +1,10 @@
+[Unit]
+Description=Magen timer: rotate-logs
+
+[Timer]
+OnCalendar=*-*-* *:15:00
+Persistent=false
+AccuracySec=10s
+
+[Install]
+WantedBy=timers.target

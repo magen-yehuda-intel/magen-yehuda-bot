@@ -1,0 +1,10 @@
+[Unit]
+Description=Magen timer: enrich-intel
+
+[Timer]
+OnCalendar=*-*-* *:00:30
+Persistent=false
+AccuracySec=10s
+
+[Install]
+WantedBy=timers.target

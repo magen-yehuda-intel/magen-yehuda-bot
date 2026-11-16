@@ -1,0 +1,17 @@
+[Unit]
+Description=Magen real-time watcher (Oref/OSINT/fires/seismic -> Telegram + API)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/.openclaw/workspace/skills/iran-israel-alerts
+Environment=SKILL_DIR=%h/.openclaw/workspace/skills/iran-israel-alerts
+ExecStart=/bin/bash %h/.openclaw/workspace/skills/iran-israel-alerts/scripts/run-job.sh watcher
+Restart=always
+RestartSec=10
+StandardOutput=append:%h/.openclaw/workspace/skills/iran-israel-alerts/state/watcher.log
+StandardError=append:%h/.openclaw/workspace/skills/iran-israel-alerts/state/watcher.log
+
+[Install]
+WantedBy=default.target

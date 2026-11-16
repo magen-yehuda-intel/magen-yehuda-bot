@@ -1,0 +1,10 @@
+[Unit]
+Description=Magen timer: hourly-report
+
+[Timer]
+OnCalendar=*-*-* *:00:00
+Persistent=false
+AccuracySec=10s
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+[Unit]
+Description=Magen job: fr24
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/.openclaw/workspace/skills/iran-israel-alerts
+ExecStart=/bin/bash %h/.openclaw/workspace/skills/iran-israel-alerts/scripts/run-job.sh fr24
+TimeoutStartSec=50min

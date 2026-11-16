@@ -1,0 +1,10 @@
+[Unit]
+Description=Magen timer: export-feed
+
+[Timer]
+OnCalendar=*-*-* *:00/5:00
+Persistent=false
+AccuracySec=10s
+
+[Install]
+WantedBy=timers.target
