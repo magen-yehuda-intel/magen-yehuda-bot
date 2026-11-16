@@ -868,7 +868,7 @@ except:
       log "  Attack classification: $classification"
       # Write live event for dashboard missile arcs
       local live_result
-      live_result=$(echo "$classification" | python3 "$SKILL_DIR/scripts/write-live-event.py" --oref-areas "$oref_areas" 2>&1)
+      live_result=$(echo "$classification" | python3 "$SKILL_DIR/scripts/write_live_event.py" --oref-areas "$oref_areas" 2>&1)
       log "  Live event: $live_result"
       # Auto-push live-events.json to GitHub Pages for dashboard missile arcs
       (cd "$SKILL_DIR/docs" && git add live-events.json && git commit -m "live: missile arc event $(date +%H:%M)" && git pull --rebase origin main 2>/dev/null; git push origin main) >/dev/null 2>&1 &

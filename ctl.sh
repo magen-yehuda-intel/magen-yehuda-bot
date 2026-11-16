@@ -14,7 +14,7 @@ MAX_LOG_FILES=5       # Keep 5 rotated logs
 
 rotate_log() {
   [ ! -f "$LOG_FILE" ] && return
-  local size=$(stat -f%z "$LOG_FILE" 2>/dev/null || echo 0)
+  local size=$(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null || echo 0)
   if [ "$size" -gt "$MAX_LOG_SIZE" ]; then
     mkdir -p "$LOG_DIR"
     local ts=$(date +%Y%m%d-%H%M%S)
@@ -88,15 +88,23 @@ case "${1:-help}" in
   status)
     echo "🔴 Iran-Israel Alert Monitor — Status"
     echo "======================================"
-    # Watcher
-    if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-      echo "📡 Real-time watcher: RUNNING (PID $(cat "$PID_FILE"))"
-      echo "   Log: tail -20 $LOG_FILE"
-    else
-      echo "📡 Real-time watcher: STOPPED"
+    # Watcher: supervisor first (launchd/systemd), then process scan, then pid file
+    _wstate="STOPPED"; _wdetail=""
+    if [ "$(uname)" = "Darwin" ] && launchctl list com.openclaw.iran-israel-watcher >/dev/null 2>&1; then
+      _lpid=$(launchctl list com.openclaw.iran-israel-watcher 2>/dev/null | awk -F'= ' '/"PID"/{gsub(/;/,"",$2);print $2}')
+      [ -n "$_lpid" ] && { _wstate="RUNNING"; _wdetail="launchd com.openclaw.iran-israel-watcher PID $_lpid"; } || _wdetail="launchd job loaded but not running"
+    elif command -v systemctl >/dev/null 2>&1 && systemctl --user is-active --quiet magen-watcher 2>/dev/null; then
+      _wstate="RUNNING"; _wdetail="systemd --user magen-watcher (PID $(systemctl --user show -p MainPID --value magen-watcher))"
     fi
+    if [ "$_wstate" = "STOPPED" ]; then
+      _ppid=$(pgrep -f "realtime-watcher\\.sh" 2>/dev/null | head -1 || true)
+      if [ -n "$_ppid" ]; then _wstate="RUNNING"; _wdetail="process PID $_ppid (unsupervised)";
+      elif [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then _wstate="RUNNING"; _wdetail="pid file PID $(cat "$PID_FILE")"; fi
+    fi
+    echo "📡 Real-time watcher: $_wstate${_wdetail:+ — $_wdetail}"
+    echo "   Log: tail -20 $LOG_FILE"
     # Cron
-    CRON_STATUS=$(openclaw cron list 2>/dev/null | grep -i "iran-israel" || echo "")
+    CRON_STATUS=$( (crontab -l 2>/dev/null | grep -v '^#' | grep -c "iran-israel-alerts"; systemctl --user list-timers 'magen-*' --no-legend 2>/dev/null | wc -l) 2>/dev/null | paste -sd' ' - | awk '$1+$2>0{print "crontab lines="$1", systemd timers="$2}' || true)
     if [ -n "$CRON_STATUS" ]; then
       echo "⏰ Cron job: ACTIVE"
       echo "   $CRON_STATUS"
@@ -137,7 +145,7 @@ print(f'Threat: {d.get(\"threat_level\", \"unknown\")} (score: {d.get(\"threat_s
     # Force log rotation
     rotate_log
     echo "✅ Log rotation checked"
-    echo "   Current: $(stat -f%z "$LOG_FILE" 2>/dev/null || echo 0) bytes"
+    echo "   Current: $(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null || echo 0) bytes"
     echo "   Archived: $(ls "$LOG_DIR"/watcher-*.log 2>/dev/null | wc -l | tr -d ' ') files"
     ls -lh "$LOG_DIR"/watcher-*.log 2>/dev/null | awk '{print "     "$NF" ("$5")"}'
     ;;
@@ -166,7 +174,7 @@ print(f'Threat: {d.get(\"threat_level\", \"unknown\")} (score: {d.get(\"threat_s
       CPU=$(ps -p "$PID" -o %cpu= 2>/dev/null | xargs)
       MEM=$(ps -p "$PID" -o rss= 2>/dev/null | awk '{printf "%.1f", $1/1024}')
       THREAT=$(cat "$SKILL_DIR/state/watcher-threat-level.txt" 2>/dev/null || echo "?")
-      LOGSIZE=$(stat -f%z "$LOG_FILE" 2>/dev/null || echo 0)
+      LOGSIZE=$(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null || echo 0)
       LOGSIZE_H=$(echo "$LOGSIZE" | awk '{if($1>1048576) printf "%.1fMB",$1/1048576; else printf "%.0fKB",$1/1024}')
       echo "│  Status:    ✅ RUNNING"
       echo "│  PID:       $PID"

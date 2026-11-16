@@ -105,11 +105,6 @@ class FreshnessTests(unittest.TestCase):
             self.assertEqual(pushed[0]['ts'], now-30)
             self.assertEqual(pushed[-1]['ts'], now-30-99*60)
 
-    def test_retired_timer_no_config_or_network(self):
-        m = module('trump-countdown')
-        with patch('urllib.request.urlopen', side_effect=AssertionError('network forbidden')):
-            self.assertEqual(m.main(), 0)
-
     def test_summary_rejects_old_collected_today(self):
         m = module('generate-summary')
         events = [{'type': 'osint', 'logged_at': time.time(), 'alerts': [

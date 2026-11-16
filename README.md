@@ -744,7 +744,6 @@ iran-israel-alerts/
 │   ├── scan-naval.py            # Naval vessel tracker
 │   ├── scan_cyber.py            # Cyber warfare & hacktivist monitor
 │   ├── correlate-strikes.py     # Fire+seismic strike correlation
-│   ├── hourly-brief.sh          # Quick hourly brief generator
 │   ├── hourly-report.sh         # Hourly cron: map+summaries+GIF
 │   ├── generate-*.py            # Map/timelapse/summary generators
 │   ├── format-*.py              # Bilingual formatters
