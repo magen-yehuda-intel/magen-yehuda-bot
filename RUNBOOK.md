@@ -39,7 +39,7 @@ Git credential: set the repo's `credential.helper` to `!gh auth git-credential`,
 bash ctl.sh status                       # launchd / systemd / pgrep aware
 launchctl list com.openclaw.iran-israel-watcher        # Mac
 systemctl --user status magen-watcher; systemctl --user list-timers 'magen-*'   # Linux
-curl -s https://magen-yehuda-api.blackfield-628213bb.eastus.azurecontainerapps.io/api/health | jq .watcher
+curl -s https://magen-api.victoriouswave-06c56d24.eastus.azurecontainerapps.io/api/health | jq .watcher
 git log origin/main -5 --format='%h %an %s'           # feed/fr24 commits arriving?
 tail state/feed-export.log state/hourly-report.log
 ```
